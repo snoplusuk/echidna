@@ -7,7 +7,7 @@ class Spectra(object):
     time, z. This histogram can be flattened to 2d (energy, radius) or 1d 
     (energy).
 
-    Attributes
+    Attributes:
       _energy_low (float): Lowest bin edge in MeV
       _energy_high (float): Highest bin edge in MeV
       _energy_bins (int): Number of energy bins
