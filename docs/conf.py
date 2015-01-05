@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # echidna documentation build configuration file, created by
-# sphinx-quickstart on Wed Dec 17 15:40:34 2014.
+# sphinx-quickstart on Mon Jan  5 10:49:53 2015.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -18,7 +18,7 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration ------------------------------------------------
 
@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'echidna'
-copyright = u'2014, Author'
+copyright = u'2015, Ashley R. Back, Philip G. Jones'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -267,7 +267,7 @@ texinfo_documents = [
 epub_title = u'echidna'
 epub_author = u'Author'
 epub_publisher = u'Author'
-epub_copyright = u'2014, Author'
+epub_copyright = u'2015, Author'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'echidna'

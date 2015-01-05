@@ -49,7 +49,7 @@ class Spectra(object):
           raidus (float): Radial value to fill.
           time (float): Time value to fill.
           weight (float, optional): Defaults to 1.0, weight to fill the bin 
-            with.
+          with.
 
         Raises:
           ValueError: If the energy, radius or time is beyond the bin limits.
