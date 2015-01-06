@@ -37,8 +37,10 @@ class Spectra(object):
           _data (:class:`numpy.ndarray`): The histogram of data
           _name (str): The name of this spectra
         """
-        self._data = numpy.ndarray(shape=(Spectra._energy_bins, Spectra._radial_bins, Spectra._time_bins), dtype=float)
-        self._data.fill(0)
+        self._data = numpy.zeros(shape=(Spectra._energy_bins, 
+                                        Spectra._radial_bins, 
+                                        Spectra._time_bins), 
+                                 dtype=float)
         self._name = name
         
     def fill(self, energy, radius, time, weight=1.0):
@@ -49,7 +51,7 @@ class Spectra(object):
           raidus (float): Radial value to fill.
           time (float): Time value to fill.
           weight (float, optional): Defaults to 1.0, weight to fill the bin 
-          with.
+            with.
 
         Raises:
           ValueError: If the energy, radius or time is beyond the bin limits.

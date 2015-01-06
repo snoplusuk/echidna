@@ -23,6 +23,12 @@ class TestSpectra(unittest.TestCase):
             self.assertTrue(test_spectra._data[x_bin, y_bin, z_bin] > 0)
         # Also test the sum method at the same time
         self.assertTrue(test_spectra.sum() == test_points)
+        self.assertRaises(ValueError, test_spectra.fill, -1, 0, 0)
+        self.assertRaises(ValueError, test_spectra.fill, 0, -1, 0)
+        self.assertRaises(ValueError, test_spectra.fill, 0, 0, -1)
+        self.assertRaises(ValueError, test_spectra.fill, spectra.Spectra._energy_high + 1, 0, 0)
+        self.assertRaises(ValueError, test_spectra.fill, 0, spectra.Spectra._radial_high + 1, 0)
+        self.assertRaises(ValueError, test_spectra.fill, 0, 0, spectra.Spectra._time_high + 1)
 
     def test_project(self):
         """ Test the projection method of the spectra.
