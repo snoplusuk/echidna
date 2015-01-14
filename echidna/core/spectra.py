@@ -90,3 +90,12 @@ class Spectra(object):
           The sum of the values in the `_data` histogram.
         """
         return self._data.sum()
+
+    def normalise(self, count):
+        """ Normalise the total counts in the spectra to count, i.e. times each
+        bin by count / self.sum().
+        
+        Args:
+          count (float): Total number of events to normalise to.
+        """
+        numpy.multiply(self._data, count / self.sum())

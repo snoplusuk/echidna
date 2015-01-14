@@ -57,3 +57,20 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(numpy.array_equal(energy_projection, test_spectra.project(0)))
         self.assertTrue(numpy.array_equal(radial_projection, test_spectra.project(1)))
         self.assertTrue(numpy.array_equal(time_projection, test_spectra.project(2)))
+
+    def test_normalise(self):
+        """ Test the normalisation method of the spectra.
+
+        This creates a spectra and then normalises it.
+        """
+        test_spectra = spectra.Spectra("Test")
+        test_points = 10
+        for x in range(0, test_points):
+            energy = random.randrange(0, 10.0)
+            radius = random.randrange(0, 6000.0)
+            time = random.randrange(0, 10.0)
+            test_spectra.fill(energy, radius, time)
+        self.assertTrue(test_spectra.sum(), test_points)
+        count = 150
+        test_spectra.normalise(count)
+        self.assertTrue(test_spectra.sum(), count)
