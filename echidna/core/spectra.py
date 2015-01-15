@@ -83,6 +83,17 @@ class Spectra(object):
         elif axis == 2:
             return self._data.sum(0).sum(0)
 
+    def surface(self, axis):
+        """ Project the histogram along two axis, along the `axis`.
+        
+        Args:
+          axis (int): To project away
+        
+        Returns:
+          The 2d surface of the histogram.
+        """
+        return self._data.sum(axis)
+
     def sum(self):
         """ Calculate and return the sum of the `_data` values.
 

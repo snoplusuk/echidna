@@ -1,0 +1,22 @@
+echidna.output package
+======================
+
+Submodules
+----------
+
+echidna.output.plot module
+--------------------------
+
+.. automodule:: echidna.output.plot
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: echidna.output
+    :members:
+    :undoc-members:
+    :show-inheritance:
