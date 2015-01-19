@@ -83,6 +83,17 @@ class Spectra(object):
         elif axis == 2:
             return self._data.sum(0).sum(0)
 
+    def surface(self, axis):
+        """ Project the histogram along two axis, along the `axis`.
+        
+        Args:
+          axis (int): To project away
+        
+        Returns:
+          The 2d surface of the histogram.
+        """
+        return self._data.sum(axis)
+
     def sum(self):
         """ Calculate and return the sum of the `_data` values.
 
@@ -90,3 +101,12 @@ class Spectra(object):
           The sum of the values in the `_data` histogram.
         """
         return self._data.sum()
+
+    def normalise(self, count):
+        """ Normalise the total counts in the spectra to count, i.e. times each
+        bin by count / self.sum().
+        
+        Args:
+          count (float): Total number of events to normalise to.
+        """
+        numpy.multiply(self._data, count / self.sum())
