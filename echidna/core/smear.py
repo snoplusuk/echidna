@@ -1,5 +1,6 @@
 import numpy
 import decimal
+import spectra
 
 class Smear(object):
     """ This class smears the energy and radius of a spectra.
@@ -70,7 +71,7 @@ class Smear(object):
           Smeared energy value
         """
         sigma = self.get_energy_sigma(energy)
-        return numpy.random.normal(energy,sigma)   
+        return numpy.fabs(numpy.random.normal(energy,sigma))   
 
     def smear_energy_1d(self,energies, bins, binned = False):
         """ Smears a 1 dimensional array of energy values
@@ -109,7 +110,7 @@ class Smear(object):
         sigma = self.get_energy_sigma(energy)
         smeared_energies = []
         for i in range(entries):
-            smeared_energies.append(numpy.random.normal(energy,sigma))
+            smeared_energies.append(numpy.fabs(numpy.random.normal(energy,sigma)))
         return smeared_energies
 
     def smear_radius_0d(self,radius):
@@ -121,7 +122,7 @@ class Smear(object):
         Returns:
           Smeared radius value
         """
-        return numpy.random.normal(radius,self._position_resolution)
+        return numpy.fabs(numpy.random.normal(radius,self._position_resolution))
 
     def smear_radii_1d(self,radii, bins, binned = False):
         """ Smears a 1 dimensional array of radius values
@@ -159,5 +160,65 @@ class Smear(object):
         """
         smeared_radii = []
         for i in range(entries):
-            smeared_radii.append(numpy.random.normal(radius,self._position_resolution))
+            smeared_radii.append(numpy.fabs(numpy.random.normal(radius,self._position_resolution)))
         return smeared_radii
+
+
+    def gaussian_smear_spectra_energy(self,true_spectrum):
+        """ Smears the energy of a spectra object using a gaussian.
+
+        Args:
+          true_spectrum (spectra): spectrum to be smeared
+
+        Returns:
+          A smeared spectra object.
+        """
+        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
+        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
+        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+"_smeared_"+str(self._light_yield)+"_light_yield")
+        for time_bin in range(true_spectrum._time_bins):
+            mean_time = time_bin*time_step+0.5*time_step
+            for radial_bin in range(true_spectrum._radial_bins):
+                mean_radius = radial_bin*radial_step+0.5*radial_step
+                for energy_bin in range(true_spectrum._energy_bins):
+                    mean_energy = energy_bin*energy_step+0.5*energy_step
+                    entries = true_spectrum._data[energy_bin, radial_bin, time_bin]
+                    for i in range(int(entries)):
+                        sigma = self.get_energy_sigma(mean_energy)
+                        try:
+                            smeared_spectrum.fill(numpy.fabs(numpy.random.normal(mean_energy,sigma)),mean_radius,mean_time)
+                        except:
+                            # Only occurs when smeared energy is greater than max bin
+                            print "Warning: Smeared energy out of bounds. Skipping."
+                            continue
+        return smeared_spectrum
+
+    def gaussian_smear_spectra_radius(self,true_spectrum):
+        """ Smears the radius of a spectra object using a gaussian.
+
+        Args:
+          true_spectrum (spectra): spectrum to be smeared
+
+        Returns:
+          A smeared spectra object.
+        """
+        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
+        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
+        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+"_smeared_"+str(self._light_yield)+"_position_resolution")
+        for time_bin in range(true_spectrum._time_bins):
+            mean_time = time_bin*time_step+0.5*time_step
+            for energy_bin in range(true_spectrum._energy_bins):
+                mean_energy = energy_bin*energy_step+0.5*energy_step
+                for radial_bin in range(true_spectrum._radial_bins):
+                    mean_radius = radial_bin*radial_step+0.5*radial_step
+                    entries = true_spectrum._data[energy_bin, radial_bin, time_bin]
+                    for i in range(int(entries)):
+                        try:
+                            smeared_spectrum.fill(mean_energy, numpy.fabs(numpy.random.normal(mean_radius,self._position_resolution)),mean_time)
+                        except:
+                            # Only occurs when smeared radius is greater than max bin
+                            print "Warning: Smeared radius out of bounds. Skipping."
+                            continue
+        return smeared_spectrum
