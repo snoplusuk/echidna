@@ -4,6 +4,14 @@ echidna.core package
 Submodules
 ----------
 
+echidna.core.chi_squared module
+-------------------------------
+
+.. automodule:: echidna.core.chi_squared
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.core.spectra module
 ---------------------------
 

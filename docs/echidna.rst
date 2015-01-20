@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     echidna.core
-    echidna.output
 
 Module contents
 ---------------
