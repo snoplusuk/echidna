@@ -14,8 +14,8 @@ class TestChiSquared(unittest.TestCase):
         self.assertEqual(chi_squared.pearson_chi_squared(100.0, 110.0), (10.0 / 11.0))
         self.assertEqual(chi_squared.pearson_chi_squared(100.0, 90.0), (10.0 / 9.0))
         self.assertEqual(chi_squared.pearson_chi_squared(100.0, 100.0), 0.0)
-        self.assertEqual(chi_squared.pearson_chi_squared(0.0, 100.0), 100.0)
-        self.assertRaises(ZeroDivisionError, chi_squared.pearson_chi_squared, 100.0, 0.0)
+        self.assertRaises(ValueError, chi_squared.pearson_chi_squared, 0.0, 100.0)
+        self.assertRaises(ValueError, chi_squared.pearson_chi_squared, 100.0, 0.0)
 
     def test_neyman_chi_squared(self):
         """ Test the neyman chi squared function
@@ -25,8 +25,8 @@ class TestChiSquared(unittest.TestCase):
         self.assertEqual(chi_squared.neyman_chi_squared(100.0, 110.0), 1.0)
         self.assertEqual(chi_squared.neyman_chi_squared(100.0, 90.0), 1.0)
         self.assertEqual(chi_squared.neyman_chi_squared(100.0, 100.0), 0.0)
-        self.assertRaises(ZeroDivisionError, chi_squared.neyman_chi_squared, 0.0, 100.0)
-        self.assertEqual(chi_squared.neyman_chi_squared(100.0, 0.0), 100.0)
+        self.assertRaises(ValueError, chi_squared.neyman_chi_squared, 0.0, 100.0)
+        self.assertRaises(ValueError, chi_squared.neyman_chi_squared, 100.0, 0.0)
 
     def test_log_likelihood(self):
         """ Test the log likelihood function
@@ -39,7 +39,7 @@ class TestChiSquared(unittest.TestCase):
         self.assertEqual(test2, 1.072103131565271)
         self.assertEqual(chi_squared.log_likelihood(100.0, 100.0), 0.0)
         self.assertRaises(ValueError, chi_squared.log_likelihood, 0.0, 100.0)
-        self.assertRaises(ZeroDivisionError, chi_squared.log_likelihood, 100.0, 0.0)
+        self.assertRaises(ValueError, chi_squared.log_likelihood, 100.0, 0.0)
 
     def test_get_chi_squared(self):
         """ Tests get chi squared method
@@ -63,7 +63,7 @@ class TestChiSquared(unittest.TestCase):
             if (energy >= energy_low) and (energy < energy_high):
                 energy_bin = int((energy-energy_low)/(energy_high-energy_low) * n_bins)
                 data_spectrum[energy_bin] += 1
-        
+
         # create mock MC spectrum
         mc_spectrum = data_spectrum * 1.1
         
