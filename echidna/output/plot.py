@@ -35,7 +35,7 @@ def plot_projection(spectra, dimension):
         pylab.xlabel("Time [yr]")
     pylab.ylabel("Count per bin")
     data = spectra.project(dimension)
-    axis.bar(x,data)
+    axis.bar(x, data, width=(x[1] - x[0])) # Assumes constant width bins
     pylab.show()
 
 
@@ -54,21 +54,21 @@ def plot_surface(spectra, dimension):
         x = _produce_axis(spectra._radial_low, spectra._radial_high, spectra._radial_bins)
         y = _produce_axis(spectra._energy_low, spectra._energy_high, spectra._energy_bins)
         data = spectra.surface(2)
-        pylab.xlabel("Radius [mm]")
-        pylab.ylabel("Energy [MeV]")
+        axis.set_xlabel("Radius [mm]")
+        axis.set_ylabel("Energy [MeV]")
     elif dimension == 1:
         x = _produce_axis(spectra._time_low, spectra._time_high, spectra._time_bins)
         y = _produce_axis(spectra._energy_low, spectra._energy_high, spectra._energy_bins)
         data = spectra.surface(1)
-        pylab.xlabel("Time [yr]")
-        pylab.ylabel("Energy [MeV]")
+        axis.set_xlabel("Time [yr]")
+        axis.set_ylabel("Energy [MeV]")
     elif dimension == 2:
         x = _produce_axis(spectra._time_low, spectra._time_high, spectra._time_bins)
         y = _produce_axis(spectra._radial_low, spectra._radial_high, spectra._radial_bins)
         data = spectra.surface(0)   
-        pylab.xlabel("Time [yr]")
-        pylab.ylabel("Radius [mm]")
-    #pylab.zlabel("Count per bin")
+        axis.set_xlabel("Time [yr]")
+        axis.set_ylabel("Radius [mm]")
+    axis.set_zlabel("Count per bin")
     X, Y = numpy.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
     axis.plot_surface(X, Y, data)
     pylab.show()
