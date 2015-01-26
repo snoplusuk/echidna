@@ -72,8 +72,11 @@ class TestChiSquared(unittest.TestCase):
         neyman_calculator = chi_squared.ChiSquared("neyman")
         likelihood_calculator = chi_squared.ChiSquared("poisson_likelihood")
         penalty_calculator = chi_squared.ChiSquared("poisson_likelihood",
-                                                    penalty_term={"parameter_value" : 0.5,
-                                                                  "sigma" : 1.0})
+                                                    penalty_terms={ "bkg1" : 
+                                                                    { "parameter_value" : 0.5,
+                                                                      "sigma" : 1.0 
+                                                                      }
+                                                                    })
         
         pearson_chi_squared = pearson_calculator.get_chi_squared(data_spectrum,
                                                                  mc_spectrum)
@@ -81,7 +84,6 @@ class TestChiSquared(unittest.TestCase):
                                                                mc_spectrum)
         likelihood_chi_squared = likelihood_calculator.get_chi_squared(data_spectrum,
                                                                        mc_spectrum)
-        
         self.assertNotEqual(pearson_chi_squared, neyman_chi_squared)
         self.assertNotEqual(neyman_chi_squared, likelihood_chi_squared)
         self.assertNotEqual(likelihood_chi_squared, pearson_chi_squared)
@@ -92,16 +94,23 @@ class TestChiSquared(unittest.TestCase):
         self.assertNotEqual(penalty_chi_squared,
                             penalty_calculator.get_chi_squared(data_spectrum,
                                                                mc_spectrum,
-                                                               penalty_term={"parameter_value" : 1.0,
-                                                                             "sigma" : 1.0}))
-        self.assertEqual(penalty_chi_squared,
-                         likelihood_calculator.get_chi_squared(data_spectrum,
-                                                               mc_spectrum,
-                                                               penalty_term={"parameter_value" : 0.5,
-                                                                             "sigma" : 1.0}))
+                                                               penalty_terms={ "bkg1" : 
+                                                                               { "parameter_value" : 1.0 
+                                                                                 } 
+                                                                               }))
         self.assertEqual(likelihood_chi_squared,
                          penalty_calculator.get_chi_squared(data_spectrum,
                                                             mc_spectrum,
-                                                            penalty_term={"parameter_value" : 0.0,
-                                                                          "sigma" : 1.0}))
-        
+                                                            penalty_terms={ "bkg1" : 
+                                                                            { "parameter_value" : 0.0,
+                                                                              "sigma" : 0.5 
+                                                                              } 
+                                                                            }))
+        self.assertEqual(penalty_chi_squared,
+                         likelihood_calculator.get_chi_squared(data_spectrum,
+                                                               mc_spectrum,
+                                                               penalty_terms={ "bkg1" : 
+                                                                               { "parameter_value" : 0.5,
+                                                                                 "sigma" : 1.0 
+                                                                                 } 
+                                                                               }))

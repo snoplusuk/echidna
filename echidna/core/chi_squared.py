@@ -27,20 +27,24 @@ class ChiSquared(object):
 
       Keyword arguments include
 
-        * penalty_term (*dict*): specify value for
+        * penalty_terms (*dict*): specify (for each penalty term) values for:
 
           * "parameter_value" (*optional*)
-          * "sigma"
+          * "sigma" 
         
     Attributes:
       _form (str): form of chi squared calculation to use
+      _penalty_terms (dict): information about each penalty term
+      _penalty_terms_set (bool): True if one or more penalty terms have been set
     """
     def __init__(self, form="poisson_likelihood", **kwargs):
         self._form = form
-        if (kwargs.get("penalty_term") != None):
-            self._penalty_term = kwargs.get("penalty_term")
+        if (kwargs.get("penalty_terms") != None):
+            self._penalty_terms = kwargs.get("penalty_terms")
+            self._penalty_terms_set = True
         else:
-            self._penalty_term = None 
+            self._penalty_terms = None
+            self._penalty_terms_set = False
 
     def get_chi_squared(self, observed, expected, **kwargs):
         """ Calculate the chi squared comparing observed to expected.
@@ -54,32 +58,35 @@ class ChiSquared(object):
         
           Keyword arguments include
 
-            * penalty_term (*dict*): specify values for
+            * penalty_terms (*dict*): specify (for each penalty term) values for:
 
               * "parameter_value"
               * "sigma" (*optional*)
 
         .. warning::
 
-          A penalty term sigma defined here will overwrite one defined in the
-          constructor.
+          A named penalty term defined here will overwrite one with the same
+          name defined in the constructor.
 
         Returns:
           float. Value of chi squared calculated
         """
         # Set up penalty term
-        penalty_term_set = False
-        if (kwargs.get("penalty_term") != None):
-            parameter_value = kwargs.get("penalty_term").get("parameter_value")
-            if (kwargs.get("penalty_term").get("sigma") != None):
-                sigma = kwargs.get("penalty_term").get("sigma")
-            else:
-                sigma = self._penalty_term.get("sigma")
-            penalty_term_set = True
-        elif (self._penalty_term != None):
-            parameter_value = self._penalty_term.get("parameter_value")
-            sigma = self._penalty_term.get("sigma")
-            penalty_term_set = True
+        if (kwargs.get("penalty_terms") != None):
+            if self._penalty_terms_set:
+                for name, penalty_term in kwargs.get("penalty_terms").iteritems():
+                    if (self._penalty_terms.get(name) != None):
+                        _penalty_term = self._penalty_terms.get(name)
+                        # overwrite existing entries
+                        if (penalty_term.get("parameter_value") != None):
+                            _penalty_term["parameter_value"] = penalty_term.get("parameter_value")
+                        if (penalty_term.get("sigma") != None):
+                            _penalty_term["sigma"] = penalty_term.get("sigma")
+                    else: # create new entry
+                        self._penalty_terms[name] = penalty_term
+            else: # no penalty term information currently set
+                self._penalty_terms = kwargs.get("penalty_terms")
+                self._penalty_terms_set = True
 
         # Calculate chi squared
         if (self._form == "pearson"):
@@ -89,9 +96,10 @@ class ChiSquared(object):
         else: # (self._form == "poisson_likelihood")
             chi_squared = 2.0 * log_likelihood(observed, expected)
 
-        # Add penalty term
-        if penalty_term_set:
-            chi_squared += math.pow(parameter_value/sigma, 2)
+        # Add penalty term(s)
+        if self._penalty_terms_set:
+            for name, penalty_term in self._penalty_terms.iteritems():
+                chi_squared += numpy.power(penalty_term.get("parameter_value")/penalty_term.get("sigma"), 2.0)
         return chi_squared
 
 def check_bin_content(array):
