@@ -9,6 +9,9 @@ def plot_projection(spectra, dimension):
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
       dimension (int): The dimension to project the spectra onto.
+
+    Returns:
+      (:class`ROOT.TH1D`:) plot.
     """
     if dimension == 0:
         plot = TH1D("Energy", ";Energy[MeV];Count per bin", spectra._energy_bins, spectra._energy_low, spectra._energy_high)
@@ -21,6 +24,7 @@ def plot_projection(spectra, dimension):
         plot.SetBinContent(index, datum)
     plot.Draw()
     raw_input("Return to quit")
+    return plot
 
 def plot_surface(spectra, dimension):
     """ Plot the spectra with the dimension projected out.
@@ -30,6 +34,9 @@ def plot_surface(spectra, dimension):
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
       dimension (int): The dimension to project out.
+    
+    Returns:
+      (:class`ROOT.TH2D`:) plot.
     """
     if dimension == 0:
         plot = TH2D("EnergyRadial", ";Energy[MeV];Radius[mm];Count per bin", 
@@ -51,3 +58,4 @@ def plot_surface(spectra, dimension):
             plot.SetBinContent(index_x, index_y, datum)
     plot.Draw("COLZ")
     raw_input("Return to quit")
+    return plot

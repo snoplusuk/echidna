@@ -26,16 +26,19 @@ def plot_projection(spectra, dimension):
     axis = figure.add_subplot(1,1,1)
     if dimension == 0:
         x = _produce_axis(spectra._energy_low, spectra._energy_high, spectra._energy_bins)
+        width = spectra._energy_width
         pylab.xlabel("Energy [MeV]")
     elif dimension == 1:
         x = _produce_axis(spectra._radial_low, spectra._radial_high, spectra._radial_bins)
+        width = spectra._radial_width
         pylab.xlabel("Radius [mm]")
     elif dimension == 2:
         x = _produce_axis(spectra._time_low, spectra._time_high, spectra._time_bins)
+        width = spectra._time_width
         pylab.xlabel("Time [yr]")
-    pylab.ylabel("Count per bin")
+    pylab.ylabel("Count per %f bin" % width)
     data = spectra.project(dimension)
-    axis.bar(x, data, width=(x[1] - x[0])) # Assumes constant width bins
+    axis.bar(x, data, width=width)
     pylab.show()
 
 

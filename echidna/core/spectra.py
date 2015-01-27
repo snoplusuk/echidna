@@ -11,22 +11,28 @@ class Spectra(object):
       _energy_low (float): Lowest bin edge in MeV
       _energy_high (float): Highest bin edge in MeV
       _energy_bins (int): Number of energy bins
+      _energy_width (float): Width of a single bin in MeV
       _radial_low (float): Lowest bin edge in mm
       _radial_high (float): Highest bin edge in mm
       _radial_bins (int): Number of raidal bins
+      _radial_width (float): Width of a single bin in mm
       _time_low (float): Lowest bin edge in years
       _time_high (float): Highest bin edge in years
       _time_bins (int): Number of time bins
+      _time_width (float): Width of a single bin in yr
     """
     _energy_low = 0.0 # MeV
     _energy_high = 10.0 # MeV
     _energy_bins = 1000
+    _energy_width = (_energy_high - _energy_low) / _energy_bins
     _radial_low = 0.0 # mm
     _radial_high = 6000.0 # mm
     _radial_bins = 600
+    _radial_width = (_radial_high - _radial_low) / _radial_bins
     _time_low = 0.0 # years
     _time_high = 10.0 # years
     _time_bins = 10
+    _time_width = (_time_high - _time_low) / _time_bins
     def __init__(self, name):
         """ Initialise the spectra data container.
 
