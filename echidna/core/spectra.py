@@ -7,32 +7,7 @@ class Spectra(object):
     time, z. This histogram can be flattened to 2d (energy, radius) or 1d 
     (energy).
 
-    Attributes:
-      _energy_low (float): Lowest bin edge in MeV
-      _energy_high (float): Highest bin edge in MeV
-      _energy_bins (int): Number of energy bins
-      _energy_width (float): Width of a single bin in MeV
-      _radial_low (float): Lowest bin edge in mm
-      _radial_high (float): Highest bin edge in mm
-      _radial_bins (int): Number of raidal bins
-      _radial_width (float): Width of a single bin in mm
-      _time_low (float): Lowest bin edge in years
-      _time_high (float): Highest bin edge in years
-      _time_bins (int): Number of time bins
-      _time_width (float): Width of a single bin in yr
     """
-    _energy_low = 0.0 # MeV
-    _energy_high = 10.0 # MeV
-    _energy_bins = 1000
-    _energy_width = (_energy_high - _energy_low) / _energy_bins
-    _radial_low = 0.0 # mm
-    _radial_high = 6000.0 # mm
-    _radial_bins = 600
-    _radial_width = (_radial_high - _radial_low) / _radial_bins
-    _time_low = 0.0 # years
-    _time_high = 10.0 # years
-    _time_bins = 10
-    _time_width = (_time_high - _time_low) / _time_bins
     def __init__(self, name):
         """ Initialise the spectra data container.
 
@@ -42,10 +17,34 @@ class Spectra(object):
         Attributes:
           _data (:class:`numpy.ndarray`): The histogram of data
           _name (str): The name of this spectra
+          _energy_low (float): Lowest bin edge in MeV
+          _energy_high (float): Highest bin edge in MeV
+          _energy_bins (int): Number of energy bins
+          _energy_width (float): Width of a single bin in MeV
+          _radial_low (float): Lowest bin edge in mm
+          _radial_high (float): Highest bin edge in mm
+          _radial_bins (int): Number of raidal bins
+          _radial_width (float): Width of a single bin in mm
+          _time_low (float): Lowest bin edge in years
+          _time_high (float): Highest bin edge in years
+          _time_bins (int): Number of time bins
+          _time_width (float): Width of a single bin in yr
         """
-        self._data = numpy.zeros(shape=(Spectra._energy_bins, 
-                                        Spectra._radial_bins, 
-                                        Spectra._time_bins), 
+        self._energy_low = 0.0 # MeV
+        self._energy_high = 10.0 # MeV
+        self._energy_bins = 1000
+        self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
+        self._radial_low = 0.0 # mm
+        self._radial_high = 6000.0 # mm
+        self._radial_bins = 600
+        self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
+        self._time_low = 0.0 # years
+        self._time_high = 10.0 # years
+        self._time_bins = 10
+        self._time_width = (self._time_high - self._time_low) / self._time_bins
+        self._data = numpy.zeros(shape=(self._energy_bins, 
+                                        self._radial_bins, 
+                                        self._time_bins), 
                                  dtype=float)
         self._name = name
         
@@ -62,15 +61,15 @@ class Spectra(object):
         Raises:
           ValueError: If the energy, radius or time is beyond the bin limits.
         """
-        if not Spectra._energy_low <= energy < Spectra._energy_high:
+        if not self._energy_low <= energy < self._energy_high:
             raise ValueError("Energy out of range")
-        if not Spectra._radial_low <= radius < Spectra._radial_high:
+        if not self._radial_low <= radius < self._radial_high:
             raise ValueError("Radius out of range")
-        if not Spectra._time_low <= time < Spectra._time_high:
+        if not self._time_low <= time < self._time_high:
             raise ValueError("Time out of range")
-        energy_bin = (energy - Spectra._energy_low) / (Spectra._energy_high - Spectra._energy_low) * Spectra._energy_bins
-        radial_bin = (radius - Spectra._radial_low) / (Spectra._radial_high - Spectra._radial_low) * Spectra._radial_bins
-        time_bin = (time - Spectra._time_low) / (Spectra._time_high - Spectra._time_low) * Spectra._time_bins
+        energy_bin = (energy - self._energy_low) / (self._energy_high - self._energy_low) * self._energy_bins
+        radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
+        time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
 
     def project(self, axis):
@@ -116,3 +115,68 @@ class Spectra(object):
           count (float): Total number of events to normalise to.
         """
         numpy.multiply(self._data, count / self.sum())
+
+    def shrink(self, energy_low=None, energy_high=None, radial_low=None, 
+              radial_high=None, time_low=None, time_high=None):
+        """ Shirnk the data such that it only contains values between energy_low
+        and energy_high (for example) by slicing. This updates the internal bin 
+        information as well as the data.
+
+        Args:
+          energy_low (float): Optional new low bound of the energy.
+          energy_low (float): Optional new high bound of the energy.
+          radial_low (float): Optional new low bound of the radius.
+          radial_low (float): Optional new high bound of the radius.
+          time_low (float): Optional new low bound of the time.
+          time_low (float): Optional new high bound of the time.
+
+        Notes:
+          The logic in this method is the same for each dimension, first 
+        check the new values are within the existing ones (can only compress).
+        Then calculate the low bin number and high bin number (relative to the
+        existing binning low). Finally update all the bookeeping and slice.
+        """
+        if(energy_low is not None and energy_low < self._energy_low):
+            raise ValueError("Energy low is below exist bound")
+        if(energy_high is not None and energy_high < self._energy_high):
+            raise ValueError("Energy high is below exist bound")
+        if(radial_low is not None and radial_low < self._radial_low):
+            raise ValueError("Radial low is below exist bound")
+        if(radial_high is not None and radial_high < self._radial_high):
+            raise ValueError("Radial high is below exist bound")
+        if(time_low is not None and time_low < self._time_low):
+            raise ValueError("Time low is below exist bound")
+        if(time_high is not None and time_high < self._time_high):
+            raise ValueError("Time high is below exist bound")
+
+        energy_low_bin = 0
+        energy_high_bin = self._energy_bins
+        if(energy_low is not None and energy_high is not None):
+            energy_low_bin = (energy_low - self._energy_low) / self._energy_width
+            energy_high_bin = (energy_high - self._energy_low) / self._energy_width
+            self._energy_low = energy_low
+            self._energy_high = energy_high
+            self._energy_bins = energy_high_bin - energy_low_bin
+
+        radial_low_bin = 0
+        radial_high_bin = self._radial_bins
+        if(radial_low is not None and radial_high is not None):
+            radial_low_bin = (radial_low - self._radial_low) / self._radial_width
+            radial_high_bin = (radial_high - self._radial_low) / self._radial_width
+            self._radial_low = radial_low
+            self._radial_high = radial_high
+            self._radial_bins = radial_high_bin - radial_low_bin
+
+        time_low_bin = 0
+        time_high_bin = self._time_bins
+        if(time_low is not None and time_high is not None):
+            time_low_bin = (time_low - self._time_low) / self._time_width
+            time_high_bin = (time_high - self._time_low) / self._time_width
+            self._time_low = time_low
+            self._time_high = time_high
+            self._time_bins = time_high_bin - time_low_bin
+
+        # Internal bookeeping complete, now slice the data
+        self._data = self._data[energy_low_bin:energy_high_bin, 
+                                radial_low_bin:radial_high_bin,
+                                time_low_bin:time_high_bin]
