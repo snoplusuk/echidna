@@ -1,5 +1,13 @@
-echidna package
+echidna Package
 ===============
+
+:mod:`echidna` Package
+----------------------
+
+.. automodule:: echidna.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Subpackages
 -----------
@@ -7,12 +15,4 @@ Subpackages
 .. toctree::
 
     echidna.core
-    echidna.output
 
-Module contents
----------------
-
-.. automodule:: echidna
-    :members:
-    :undoc-members:
-    :show-inheritance:
