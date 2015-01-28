@@ -1,8 +1,9 @@
 import ROOT
 import rat
 import math
+import echidna.core.spectra as spectra
 
-def _scint_weights(initial_time, final_time, T):
+def _scint_weights(T):
     """This method applies to the scintillator backgrounds.
     It produces the list of time periods to study the time 
     dependence. For each time period it is calculated the
@@ -20,12 +21,13 @@ def _scint_weights(initial_time, final_time, T):
     """
     times = [0]
     weights = [0]
-    for time_step in range(initial_time, final_time):
-        weights.append( math.exp(-time_step/T) )
-        times.append(time_step)
+    for time_step in range(0, spectra.Spectra._time_bins):
+        time = time_step * spectra.Spectra._time_width + spectra.Spectra._time_low 
+        weights.append( math.exp(-time/T) )
+        times.append(time)
     return (times, weights)
 
-def fill_spectrum(filename, spectrum, initial_time, final_time, T):
+def fill_spectrum(filename, spectrumname, T):
     """This function fills in the ndarray of energies, radii, times 
     and weights. It takes the reconstructed energies and positions
     of the events from the root file. In order to keep the statistics, 
@@ -41,7 +43,14 @@ def fill_spectrum(filename, spectrum, initial_time, final_time, T):
       T (float): The Half-life of a studied background
     """
     print filename
-    times, weights = _scint_weights(initial_time , final_time , T)
+    print spectrumname
+    spectrum = spectra.Spectra( str(spectrumname) )
+ 
+    if 'AV' in spectrumname:
+        print "AV timimg scaling is currently unavailale"
+    else:
+        times, weights = _scint_weights(T)
+
     total_events = 0
     reconstructed_events = 0
     for ds, run in rat.dsreader(filename):
@@ -62,4 +71,5 @@ def fill_spectrum(filename, spectrum, initial_time, final_time, T):
         for time, weight in zip(times, weights):
             spectrum.fill(vertex.GetEnergy(), vertex.GetPosition().Mag(), time, weight)
 
+    return spectrum
     
