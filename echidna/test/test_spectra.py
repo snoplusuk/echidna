@@ -3,8 +3,9 @@ import echidna.core.spectra as spectra
 import random
 import numpy
 
+
 class TestSpectra(unittest.TestCase):
-    
+
     def test_fill(self):
         """ Test the fill method.
 
@@ -66,7 +67,7 @@ class TestSpectra(unittest.TestCase):
         test_spectra = spectra.Spectra("Test")
         test_points = 10
         for x in range(0, test_points):
-            energy = random.uniform(test_spectra._energy_low, 
+            energy = random.uniform(test_spectra._energy_low,
                                     test_spectra._energy_high)
             radius = random.uniform(test_spectra._radial_low,
                                     test_spectra._radial_high)
@@ -80,24 +81,24 @@ class TestSpectra(unittest.TestCase):
 
     def test_slicing(self):
         """ Test the slicing shirnks the spectra in the correct way.
-        
+
         """
         test_spectra = spectra.Spectra("Test")
-        self.assertRaises(ValueError, 
+        self.assertRaises(ValueError,
                           test_spectra.shrink(test_spectra._energy_low,
                                               2 * test_spectra._energy_high,
                                               test_spectra._radial_low,
                                               test_spectra._radial_high,
                                               test_spectra._time_low,
                                               test_spectra._time_high))
-        self.assertRaises(ValueError, 
+        self.assertRaises(ValueError,
                           test_spectra.shrink(test_spectra._energy_low,
                                               test_spectra._energy_high,
                                               test_spectra._radial_low,
                                               2 * test_spectra._radial_high,
                                               test_spectra._time_low,
                                               test_spectra._time_high))
-        self.assertRaises(ValueError, 
+        self.assertRaises(ValueError,
                           test_spectra.shrink(test_spectra._energy_low,
                                               test_spectra._energy_high,
                                               test_spectra._radial_low,
@@ -106,7 +107,7 @@ class TestSpectra(unittest.TestCase):
                                               2 * test_spectra._time_high))
         test_spectra.shrink(2 * test_spectra._energy_low,
                             test_spectra._energy_high,
-                            2 *test_spectra._radial_low,
+                            2 * test_spectra._radial_low,
                             test_spectra._radial_high,
                             2 * test_spectra._time_low,
                             test_spectra._time_high)

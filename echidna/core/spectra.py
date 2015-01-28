@@ -1,10 +1,11 @@
 import numpy
 
+
 class Spectra(object):
     """ This class contains a spectra as a function of energy, radius and time.
-    
-    The spectra is stored as histogram binned in energy, x, radius, y, and 
-    time, z. This histogram can be flattened to 2d (energy, radius) or 1d 
+
+    The spectra is stored as histogram binned in energy, x, radius, y, and
+    time, z. This histogram can be flattened to 2d (energy, radius) or 1d
     (energy).
 
     """
@@ -30,24 +31,24 @@ class Spectra(object):
           _time_bins (int): Number of time bins
           _time_width (float): Width of a single bin in yr
         """
-        self._energy_low = 0.0 # MeV
-        self._energy_high = 10.0 # MeV
+        self._energy_low = 0.0  # MeV
+        self._energy_high = 10.0  # MeV
         self._energy_bins = 1000
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
-        self._radial_low = 0.0 # mm
-        self._radial_high = 6000.0 # mm
+        self._radial_low = 0.0  # mm
+        self._radial_high = 6000.0  # mm
         self._radial_bins = 600
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
-        self._time_low = 0.0 # years
-        self._time_high = 10.0 # years
+        self._time_low = 0.0  # years
+        self._time_high = 10.0  # years
         self._time_bins = 10
         self._time_width = (self._time_high - self._time_low) / self._time_bins
-        self._data = numpy.zeros(shape=(self._energy_bins, 
-                                        self._radial_bins, 
-                                        self._time_bins), 
+        self._data = numpy.zeros(shape=(self._energy_bins,
+                                        self._radial_bins,
+                                        self._time_bins),
                                  dtype=float)
         self._name = name
-        
+
     def fill(self, energy, radius, time, weight=1.0):
         """ Fill the bin for the `energy` `radius` and `time` with weight.
 
@@ -55,7 +56,7 @@ class Spectra(object):
           energy (float): Energy value to fill.
           raidus (float): Radial value to fill.
           time (float): Time value to fill.
-          weight (float, optional): Defaults to 1.0, weight to fill the bin 
+          weight (float, optional): Defaults to 1.0, weight to fill the bin
             with.
 
         Raises:
@@ -74,7 +75,7 @@ class Spectra(object):
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
-        
+
         Args:
           axis (int): To project onto
 
@@ -90,10 +91,10 @@ class Spectra(object):
 
     def surface(self, axis):
         """ Project the histogram along two axis, along the `axis`.
-        
+
         Args:
           axis (int): To project away
-        
+
         Returns:
           The 2d surface of the histogram.
         """
@@ -110,16 +111,16 @@ class Spectra(object):
     def normalise(self, count):
         """ Normalise the total counts in the spectra to count, i.e. times each
         bin by count / self.sum().
-        
+
         Args:
           count (float): Total number of events to normalise to.
         """
         numpy.multiply(self._data, count / self.sum())
 
-    def shrink(self, energy_low=None, energy_high=None, radial_low=None, 
-              radial_high=None, time_low=None, time_high=None):
+    def shrink(self, energy_low=None, energy_high=None, radial_low=None,
+               radial_high=None, time_low=None, time_high=None):
         """ Shirnk the data such that it only contains values between energy_low
-        and energy_high (for example) by slicing. This updates the internal bin 
+        and energy_high (for example) by slicing. This updates the internal bin
         information as well as the data.
 
         Args:
@@ -131,7 +132,7 @@ class Spectra(object):
           time_low (float): Optional new high bound of the time.
 
         Notes:
-          The logic in this method is the same for each dimension, first 
+          The logic in this method is the same for each dimension, first
         check the new values are within the existing ones (can only compress).
         Then calculate the low bin number and high bin number (relative to the
         existing binning low). Finally update all the bookeeping and slice.
@@ -177,6 +178,6 @@ class Spectra(object):
             self._time_bins = time_high_bin - time_low_bin
 
         # Internal bookeeping complete, now slice the data
-        self._data = self._data[energy_low_bin:energy_high_bin, 
+        self._data = self._data[energy_low_bin:energy_high_bin,
                                 radial_low_bin:radial_high_bin,
                                 time_low_bin:time_high_bin]

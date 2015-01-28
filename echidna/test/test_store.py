@@ -4,11 +4,12 @@ import echidna.output.store as store
 import random
 import numpy
 
+
 class TestStore(unittest.TestCase):
 
     def test_serialisation(self):
         """ Test saving and then reloading a test spectra.
-        
+
         """
         test_spectra = spectra.Spectra("Test")
         test_points = 10
@@ -17,7 +18,7 @@ class TestStore(unittest.TestCase):
             radius = random.uniform(0, test_spectra._radial_high)
             time = random.uniform(0, test_spectra._time_high)
             test_spectra.fill(energy, radius, time)
-            
+
         store.dump("test.hdf5", test_spectra)
         loaded_spectra = store.load("test.hdf5")
         self.assertTrue(numpy.array_equal(test_spectra._data, loaded_spectra._data))

@@ -3,7 +3,7 @@ from ROOT import TH1D, TH2D
 
 def plot_projection(spectra, dimension):
     """ Plot the spectra as projected onto the dimension.
-    For example dimension == 0 will plot the spectra as projected onto the 
+    For example dimension == 0 will plot the spectra as projected onto the
     energy dimension.
 
     Args:
@@ -14,11 +14,20 @@ def plot_projection(spectra, dimension):
       (:class`ROOT.TH1D`:) plot.
     """
     if dimension == 0:
-        plot = TH1D("Energy", ";Energy[MeV];Count per bin", spectra._energy_bins, spectra._energy_low, spectra._energy_high)
+        plot = TH1D("Energy", ";Energy[MeV];Count per bin",
+                    spectra._energy_bins,
+                    spectra._energy_low,
+                    spectra._energy_high)
     elif dimension == 1:
-        plot = TH1D("Radial", ";Radius[mm];Count per bin", spectra._radial_bins, spectra._radial_low, spectra._radial_high)
+        plot = TH1D("Radial", ";Radius[mm];Count per bin",
+                    spectra._radial_bins,
+                    spectra._radial_low,
+                    spectra._radial_high)
     elif dimension == 2:
-        plot = TH1D("Time", ";Time[yr];Count per bin", spectra._time_bins, spectra._time_low, spectra._time_high)
+        plot = TH1D("Time", ";Time[yr];Count per bin",
+                    spectra._time_bins,
+                    spectra._time_low,
+                    spectra._time_high)
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index, datum)
@@ -26,33 +35,34 @@ def plot_projection(spectra, dimension):
     raw_input("Return to quit")
     return plot
 
+
 def plot_surface(spectra, dimension):
     """ Plot the spectra with the dimension projected out.
-    For example dimension == 0 will plot the spectra as projected onto the 
+    For example dimension == 0 will plot the spectra as projected onto the
     radial and time dimensions i.e. not energy.
 
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
       dimension (int): The dimension to project out.
-    
+
     Returns:
       (:class`ROOT.TH2D`:) plot.
     """
     if dimension == 0:
-        plot = TH2D("EnergyRadial", ";Energy[MeV];Radius[mm];Count per bin", 
+        plot = TH2D("EnergyRadial", ";Energy[MeV];Radius[mm];Count per bin",
                     spectra._energy_bins, spectra._energy_low, spectra._energy_high,
                     spectra._radial_bins, spectra._radial_low, spectra._radial_high)
         data = spectra.surface(2)
     elif dimension == 1:
-        plot = TH2D("TimeEnergy", ";Time[yr];Energy[MeV];Count per bin", 
+        plot = TH2D("TimeEnergy", ";Time[yr];Energy[MeV];Count per bin",
                     spectra._time_bins, spectra._time_low, spectra._time_high,
                     spectra._energy_bins, spectra._energy_low, spectra._energy_high)
         data = spectra.surface(1)
     elif dimension == 2:
-        plot = TH2D("TimeRadial", ";Time[yr];Radius[mm];Count per bin", 
+        plot = TH2D("TimeRadial", ";Time[yr];Radius[mm];Count per bin",
                     spectra._time_bins, spectra._time_low, spectra._time_high,
                     spectra._radial_bins, spectra._radial_low, spectra._radial_high)
-        data = spectra.surface(0)   
+        data = spectra.surface(0)
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
             plot.SetBinContent(index_x, index_y, datum)

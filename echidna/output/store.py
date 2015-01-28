@@ -1,6 +1,7 @@
 import h5py
 import echidna.core.spectra
 
+
 def dump(file_path, spectra):
     """ Dump the spectra to the file_path.
 
@@ -8,7 +9,7 @@ def dump(file_path, spectra):
       file_path (string): Location to save to.
       spectra (:class:`echidna.core.spectra.Spectra`): The spectra to save
     """
-    
+
     with h5py.File(file_path, "w") as file_:
         file_.attrs["name"] = spectra._name
         file_.attrs["energy_low"] = spectra._energy_low
@@ -29,7 +30,7 @@ def dump(file_path, spectra):
 
 def load(file_path):
     """ Load a spectra from file_path.
-    
+
     Args:
       file_path (string): Location to save to.
 
