@@ -1,27 +1,30 @@
-core Package
-============
+echidna.core package
+====================
 
-:mod:`core` Package
--------------------
+Submodules
+----------
 
-.. automodule:: echidna.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`smear` Module
--------------------
+echidna.core.smear module
+-------------------------
 
 .. automodule:: echidna.core.smear
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`spectra` Module
----------------------
+echidna.core.spectra module
+---------------------------
 
 .. automodule:: echidna.core.spectra
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: echidna.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
