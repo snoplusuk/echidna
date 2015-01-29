@@ -3,29 +3,39 @@ import rat
 import math
 import echidna.core.spectra as spectra
 
-def _scint_weights(T):
+def _scint_weights(times, T):
     """This method applies to the scintillator backgrounds.
-    It produces the list of time periods to study the time 
-    dependence. For each time period it is calculated the
-    weight, based on radioactive decay rate formula, and
-    stored in a list. Both, studied time and Half-life must
-    be written in the same units. 
+    It produces the list of weights relative to each time period. 
+    The calculation of weights is based on radioactive decay formula.
  
     Args:
-      initial_time (int): The beginning of time period to study
-      final_time (int): The end time of time period to study
+      times (*list* of *int*): Time periods 
       T (float): The Half-life of a studied background
 
     Returns:
-      (*tuple*). Times (*list* of *int*) and Weights (*list* of *float*)
+      Weights (*list* of *float*)
     """
-    times = [0]
     weights = [0]
-    for time_step in range(0, spectra.Spectra._time_bins):
-        time = time_step * spectra.Spectra._time_width + spectra.Spectra._time_low 
+    for time in times:
         weights.append( math.exp(-time/T) )
-        times.append(time)
-    return (times, weights)
+    return (weights)
+
+def _av_weights(times, T):
+    """This method applies to the backgrounds due to AV leaching.
+    It produces the list of weights relative to each time period. 
+    The calculation of weights is based on radioactive decay formula.
+ 
+    Args:
+      times (*list* of *int*): Time periods 
+      T (float): The Half-life of a studied background
+
+    Returns:
+      Weights (*list* of *float*)
+    """
+    weights = [0]
+    for time in times:
+        weights.append( 1.0 )
+    return (weights)
 
 def fill_spectrum(filename, spectrumname, T):
     """This function fills in the ndarray of energies, radii, times 
@@ -37,24 +47,28 @@ def fill_spectrum(filename, spectrumname, T):
     
     Args:
       filename (str): A root file to study 
-      spectrum (spectra.Spectra): Ndarray to be filled
-      initial_time (int): The beginning of time period to study
-      final_time (int): The end time of time period to study
+      spectrumname (str): A name of future ndarray 
       T (float): The Half-life of a studied background
+
+      Returns:
+        spectrum (spectra.Spectra) 
     """
     print filename
     print spectrumname
-    spectrum = spectra.Spectra( str(spectrumname) )
- 
-    if 'AV' in spectrumname:
-        print "AV timimg scaling is currently unavailale"
-    else:
-        times, weights = _scint_weights(T)
+    spectrum = spectra.Spectra(str(spectrumname))
 
-    total_events = 0
-    reconstructed_events = 0
+    times = [0]
+    for time_step in range(0, spectrum._time_bins):
+        time = time_step * spectrum._time_width + spectrum._time_low 
+        times.append(time)
+
+    if 'AV' in spectrumname:
+        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
+        weights = _av_weights(times, T)
+    else:
+        weights = _scint_weights(times, T)
+
     for ds, run in rat.dsreader(filename):
-        total_events += 1
         if ds.GetEVCount() == 0:
             continue
         ev = ds.GetEV(0)       
@@ -63,12 +77,10 @@ def fill_spectrum(filename, spectrumname, T):
             continue
         if not vertex.ContainsPosition() or not vertex.ValidPosition():
             continue
-        reconstructed_events += 1
+        if vertex.GetPosition().Mag() > 3500.0:
+            continue
 
-        if vertex.GetPosition().Mag() > 4000.0:
-            continue 
-        
-        for time, weight in zip(times, weights):
+        for time,weight in zip(times, weights):
             spectrum.fill(vertex.GetEnergy(), vertex.GetPosition().Mag(), time, weight)
 
     return spectrum
