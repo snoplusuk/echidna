@@ -51,7 +51,7 @@ def fill_spectrum(filename, spectrumname, T):
       T (float): The Half-life of a studied background
 
       Returns:
-        spectrum (spectra.Spectra) 
+        spectrum (:class:`echidna.core.spectra.Spectra`) 
     """
     print filename
     print spectrumname
