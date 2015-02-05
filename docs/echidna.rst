@@ -8,6 +8,7 @@ Subpackages
 
     echidna.core
     echidna.limit
+    echidna.output
 
 Module contents
 ---------------
