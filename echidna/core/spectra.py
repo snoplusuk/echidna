@@ -9,11 +9,13 @@ class Spectra(object):
     (energy).
 
     """
-    def __init__(self, name):
+    def __init__(self, name, num_decays):
         """ Initialise the spectra data container.
 
         Args:
           name (str): The name of this spectra
+          num_decays (float): The number of decays this spectra is created to 
+            represent.
 
         Attributes:
           _data (:class:`numpy.ndarray`): The histogram of data
@@ -30,6 +32,8 @@ class Spectra(object):
           _time_high (float): Highest bin edge in years
           _time_bins (int): Number of time bins
           _time_width (float): Width of a single bin in yr
+          _num_decays (float): The number of decays this spectra currently 
+            represents.
         """
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
@@ -43,6 +47,7 @@ class Spectra(object):
         self._time_high = 10.0  # years
         self._time_bins = 10
         self._time_width = (self._time_high - self._time_low) / self._time_bins
+        self._num_decays = num_decays
         self._data = numpy.zeros(shape=(self._energy_bins,
                                         self._radial_bins,
                                         self._time_bins),
@@ -108,18 +113,24 @@ class Spectra(object):
         """
         return self._data.sum()
 
-    def normalise(self, count):
-        """ Normalise the total counts in the spectra to count, i.e. times each
-        bin by count / self.sum().
+    def scale(self, num_decays):
+        """ Scale THIS spectra to represent *num_decays* worth of decays over
+        the entire unshrunken spectra.
+
+        This rescales each bin by the ratio of *num_decays* to 
+        *self._num_decays*, i.e. it changes the spectra from representing
+        *self._num_decays* to *num_decays*. *self._num_decays* is updated
+        to equal *num_decays* after.
 
         Args:
-          count (float): Total number of events to normalise to.
+          num_decays (float): Number of decays this spectra should represent.
         """
-        numpy.multiply(self._data, count / self.sum())
+        self._data = numpy.multiply(self._data, num_decays / self._num_decays)
+        self._num_decays = num_decays
 
     def shrink(self, energy_low=None, energy_high=None, radial_low=None,
                radial_high=None, time_low=None, time_high=None):
-        """ Shirnk the data such that it only contains values between energy_low
+        """ Shrink the data such that it only contains values between energy_low
         and energy_high (for example) by slicing. This updates the internal bin
         information as well as the data.
 

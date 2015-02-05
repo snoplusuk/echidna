@@ -11,9 +11,9 @@ class TestSpectra(unittest.TestCase):
 
         Basically tests bin positioning makes sense.
         """
-        test_spectra = spectra.Spectra("Test")
-        test_points = 10
-        for x in range(0, test_points):
+        test_decays = 10
+        test_spectra = spectra.Spectra("Test", test_decays)
+        for x in range(0, test_decays):
             energy = random.uniform(0, test_spectra._energy_high)
             radius = random.uniform(0, test_spectra._radial_high)
             time = random.uniform(0, test_spectra._time_high)
@@ -23,7 +23,7 @@ class TestSpectra(unittest.TestCase):
             z_bin = time / test_spectra._time_high * test_spectra._time_bins
             self.assertTrue(test_spectra._data[x_bin, y_bin, z_bin] > 0)
         # Also test the sum method at the same time
-        self.assertTrue(test_spectra.sum() == test_points)
+        self.assertTrue(test_spectra.sum() == test_decays)
         self.assertRaises(ValueError, test_spectra.fill, -1, 0, 0)
         self.assertRaises(ValueError, test_spectra.fill, 0, -1, 0)
         self.assertRaises(ValueError, test_spectra.fill, 0, 0, -1)
@@ -36,15 +36,15 @@ class TestSpectra(unittest.TestCase):
 
         This creates projected spectra alongside the actual spectra.
         """
-        test_spectra = spectra.Spectra("Test")
-        test_points = 10
+        test_decays = 10
+        test_spectra = spectra.Spectra("Test", test_decays)
         energy_projection = numpy.ndarray(shape=(test_spectra._energy_bins), dtype=float)
         energy_projection.fill(0)
         radial_projection = numpy.ndarray(shape=(test_spectra._radial_bins), dtype=float)
         radial_projection.fill(0)
         time_projection = numpy.ndarray(shape=(test_spectra._time_bins), dtype=float)
         time_projection.fill(0)
-        for x in range(0, test_points):
+        for x in range(0, test_decays):
             energy = random.uniform(0, 10.0)
             radius = random.uniform(0, 6000.0)
             time = random.uniform(0, 10.0)
@@ -59,14 +59,14 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(numpy.array_equal(radial_projection, test_spectra.project(1)))
         self.assertTrue(numpy.array_equal(time_projection, test_spectra.project(2)))
 
-    def test_normalise(self):
-        """ Test the normalisation method of the spectra.
+    def test_scale(self):
+        """ Test the scale method of the spectra.
 
-        This creates a spectra and then normalises it.
+        This creates a spectra and then scales it.
         """
-        test_spectra = spectra.Spectra("Test")
-        test_points = 10
-        for x in range(0, test_points):
+        test_decays = 10
+        test_spectra = spectra.Spectra("Test", test_decays)
+        for x in range(0, test_decays):
             energy = random.uniform(test_spectra._energy_low,
                                     test_spectra._energy_high)
             radius = random.uniform(test_spectra._radial_low,
@@ -74,16 +74,17 @@ class TestSpectra(unittest.TestCase):
             time = random.uniform(test_spectra._time_low,
                                   test_spectra._time_high)
             test_spectra.fill(energy, radius, time)
-        self.assertTrue(test_spectra.sum(), test_points)
+        self.assertTrue(test_spectra.sum() == test_decays)
         count = 150
-        test_spectra.normalise(count)
-        self.assertTrue(test_spectra.sum(), count)
+        test_spectra.scale(count)
+        self.assertTrue(test_spectra.sum() == count)
 
     def test_slicing(self):
         """ Test the slicing shirnks the spectra in the correct way.
 
         """
-        test_spectra = spectra.Spectra("Test")
+        test_decays = 10
+        test_spectra = spectra.Spectra("Test", test_decays)
         self.assertRaises(ValueError,
                           test_spectra.shrink(test_spectra._energy_low,
                                               2 * test_spectra._energy_high,

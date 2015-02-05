@@ -24,6 +24,7 @@ def dump(file_path, spectra):
         file_.attrs["time_high"] = spectra._time_high
         file_.attrs["time_bins"] = spectra._time_bins
         file_.attrs["time_width"] = spectra._time_width
+        file_.attrs["num_decays"] = spectra._num_decays
 
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
@@ -38,7 +39,7 @@ def load(file_path):
       Loaded spectra (:class:`echidna.core.spectra.Spectra`).
     """
     with h5py.File(file_path, "r") as file_:
-        spectra = echidna.core.spectra.Spectra(file_.attrs["name"])
+        spectra = echidna.core.spectra.Spectra(file_.attrs["name"], file_.attrs["num_decays"])
         spectra._energy_low = file_.attrs["energy_low"]
         spectra._energy_high = file_.attrs["energy_high"]
         spectra._energy_bins = file_.attrs["energy_bins"]
