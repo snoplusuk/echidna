@@ -114,8 +114,9 @@ class Spectra(object):
         return self._data.sum()
 
     def scale(self, num_decays):
-        """ Scale THIS spectra to represent *num_decays* worth of decays.
-        
+        """ Scale THIS spectra to represent *num_decays* worth of decays over
+        the entire unshrunken spectra.
+
         This rescales each bin by the ratio of *num_decays* to 
         *self._num_decays*, i.e. it changes the spectra from representing
         *self._num_decays* to *num_decays*. *self._num_decays* is updated
@@ -129,7 +130,7 @@ class Spectra(object):
 
     def shrink(self, energy_low=None, energy_high=None, radial_low=None,
                radial_high=None, time_low=None, time_high=None):
-        """ Shirnk the data such that it only contains values between energy_low
+        """ Shrink the data such that it only contains values between energy_low
         and energy_high (for example) by slicing. This updates the internal bin
         information as well as the data.
 
