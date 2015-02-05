@@ -77,8 +77,6 @@ def fill_reco_spectrum(filename, spectrumname, T):
             continue
         if not vertex.ContainsPosition() or not vertex.ValidPosition():
             continue
-        if vertex.GetPosition().Mag() > 3500.0:
-            continue
 
         for time,weight in zip(times, weights):
             spectrum.fill(vertex.GetEnergy(), vertex.GetPosition().Mag(), time, weight)
@@ -126,14 +124,6 @@ def fill_mc_spectrum(filename, spectrumname, T):
         for iparticle in range(0, particle_count):
             the_particle = mc.GetMCParticle(iparticle)
             magnitude = the_particle.GetPosition().Mag()
-
-        vertex = ev.GetFitResult("scintFitter").GetVertex(0)
-        if not vertex.ContainsEnergy() or not vertex.ValidEnergy():
-            continue
-        if not vertex.ContainsPosition() or not vertex.ValidPosition():
-            continue
-        if vertex.GetPosition().Mag() > 3500.0:
-            continue
 
         for time,weight in zip(times, weights):
             spectrum.fill(mc.GetScintEnergyDeposit(), magnitude, time, weight)
