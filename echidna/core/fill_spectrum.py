@@ -120,13 +120,10 @@ def fill_mc_spectrum(filename, spectrumname, T):
             continue
         ev = ds.GetEV(0) 
         mc = ds.GetMC()
-        particle_count = mc.GetMCParticleCount()
-        for iparticle in range(0, particle_count):
-            the_particle = mc.GetMCParticle(iparticle)
-            magnitude = the_particle.GetPosition().Mag()
-
-        for time,weight in zip(times, weights):
-            spectrum.fill(mc.GetScintEnergyDeposit(), magnitude, time, weight)
+        if mc.GetMCParticleCount() > 0 :
+            magnitude = mc.GetMCParticle(0).GetPosition().Mag()
+            for time,weight in zip(times, weights):
+                spectrum.fill(mc.GetScintEnergyDeposit(), magnitude, time, weight)
 
     return spectrum
     
