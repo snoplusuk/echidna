@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     echidna.core
+    echidna.limit
 
 Module contents
 ---------------
