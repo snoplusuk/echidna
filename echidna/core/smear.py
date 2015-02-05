@@ -2,7 +2,6 @@ import numpy as np
 import decimal
 import spectra
 
-
 class Smear(object):
     """ This class smears the energy and radius of a spectra.
 
