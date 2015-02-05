@@ -124,14 +124,8 @@ class Spectra(object):
         Args:
           num_decays (float): Number of decays this spectra should represent.
         """
-        numpy.multiply(self._data, num_decays / self._num_decays)
-        num_decays = self._num_decays
-
-    def normalise(self):
-        """ Normalised this spectra, such that it represents 1 decay.
-
-        """
-        self.scale(1.0)
+        self._data = numpy.multiply(self._data, num_decays / self._num_decays)
+        self._num_decays = num_decays
 
     def shrink(self, energy_low=None, energy_high=None, radial_low=None,
                radial_high=None, time_low=None, time_high=None):
