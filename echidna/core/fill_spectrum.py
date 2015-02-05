@@ -1,4 +1,5 @@
 import rat
+from ROOT import RAT
 import math
 import echidna.core.spectra as spectra
 
@@ -54,8 +55,8 @@ def fill_reco_spectrum(filename, spectrumname, T):
     """
     print filename
     print spectrumname
-    dsreader = rat.dsreader(filename)
-    spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntries())
+    dsreader = RAT.DU.DSReader(filename)
+    spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
 
     times = [0]
     for time_step in range(0, spectrum._time_bins):
@@ -68,7 +69,8 @@ def fill_reco_spectrum(filename, spectrumname, T):
     else:
         weights = _scint_weights(times, T)
 
-    for ds, run in dsreader:
+    for ievent in range(0, dsreader.GetEntryCount()):
+        ds = dsreader.GetEntry(ievent)
         for ievent in range(0, ds.GetEVCount()):
             ev = ds.GetEV(ievent)       
             if not ev.DefaultFitVertexExists() or not ev.GetDefaultFitVertex().ContainsEnergy() or not ev.GetDefaultFitVertex().ValidEnergy():
@@ -76,7 +78,10 @@ def fill_reco_spectrum(filename, spectrumname, T):
             energy = ev.GetDefaultFitVertex().GetEnergy()
             position = ev.GetDefaultFitVertex().GetPosition().Mag()            
             for time,weight in zip(times, weights):
-                spectrum.fill(energy, position, time, weight)
+                try:
+                    spectrum.fill(energy, position, time, weight)
+                except ValueError:
+                    pass
 
     return spectrum
     
@@ -99,8 +104,8 @@ def fill_mc_spectrum(filename, spectrumname, T):
     """
     print filename
     print spectrumname
-    dsreader = rat.dsreader(filename)
-    spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntries())
+    dsreader = RAT.DU.DSReader(filename)
+    spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
 
     times = [0]
     for time_step in range(0, spectrum._time_bins):
@@ -113,15 +118,17 @@ def fill_mc_spectrum(filename, spectrumname, T):
     else:
         weights = _scint_weights(times, T)
 
-    for ds, run in dsreader:
-        if ds.GetEVCount() == 0:
-            continue
+    for ievent in range(0, dsreader.GetEntryCount()):
+        ds = dsreader.GetEntry(ievent)
         mc = ds.GetMC()
         if mc.GetMCParticleCount() > 0 :
             energy = mc.GetScintQuenchedEnergyDeposit()
             position = mc.GetMCParticle(0).GetPosition().Mag()
             for time,weight in zip(times, weights):
-                spectrum.fill(energy, position, time, weight)
+                try:
+                    spectrum.fill(energy, position, time, weight)
+                except ValueError:
+                    pass
 
     return spectrum
     
