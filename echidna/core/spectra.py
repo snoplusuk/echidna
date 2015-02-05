@@ -150,15 +150,15 @@ class Spectra(object):
         """
         if(energy_low is not None and energy_low < self._energy_low):
             raise ValueError("Energy low is below exist bound")
-        if(energy_high is not None and energy_high < self._energy_high):
+        if(energy_high is not None and energy_high > self._energy_high):
             raise ValueError("Energy high is below exist bound")
         if(radial_low is not None and radial_low < self._radial_low):
             raise ValueError("Radial low is below exist bound")
-        if(radial_high is not None and radial_high < self._radial_high):
+        if(radial_high is not None and radial_high > self._radial_high):
             raise ValueError("Radial high is below exist bound")
         if(time_low is not None and time_low < self._time_low):
             raise ValueError("Time low is below exist bound")
-        if(time_high is not None and time_high < self._time_high):
+        if(time_high is not None and time_high > self._time_high):
             raise ValueError("Time high is below exist bound")
 
         energy_low_bin = 0
@@ -168,7 +168,7 @@ class Spectra(object):
             energy_high_bin = (energy_high - self._energy_low) / self._energy_width
             self._energy_low = energy_low
             self._energy_high = energy_high
-            self._energy_bins = energy_high_bin - energy_low_bin
+            self._energy_bins = int(energy_high_bin - energy_low_bin)
 
         radial_low_bin = 0
         radial_high_bin = self._radial_bins
@@ -177,7 +177,7 @@ class Spectra(object):
             radial_high_bin = (radial_high - self._radial_low) / self._radial_width
             self._radial_low = radial_low
             self._radial_high = radial_high
-            self._radial_bins = radial_high_bin - radial_low_bin
+            self._radial_bins = int(radial_high_bin - radial_low_bin)
 
         time_low_bin = 0
         time_high_bin = self._time_bins
@@ -186,7 +186,7 @@ class Spectra(object):
             time_high_bin = (time_high - self._time_low) / self._time_width
             self._time_low = time_low
             self._time_high = time_high
-            self._time_bins = time_high_bin - time_low_bin
+            self._time_bins = int(time_high_bin - time_low_bin)
 
         # Internal bookeeping complete, now slice the data
         self._data = self._data[energy_low_bin:energy_high_bin,
