@@ -135,7 +135,7 @@ def pearson_chi_squared(observed, expected):
 
     .. note::
 
-      Following the definition in `Baker and Cousins, 1984 
+      Following the definition in `Baker and Cousins, 1984
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
@@ -164,7 +164,7 @@ def neyman_chi_squared(observed, expected):
 
     .. note::
 
-      Following the definition in `Baker and Cousins, 1984 
+      Following the definition in `Baker and Cousins, 1984
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
@@ -197,7 +197,7 @@ def log_likelihood(observed, expected):
 
     .. note::
 
-      Following the definition in `Baker and Cousins, 1984 
+      Following the definition in `Baker and Cousins, 1984
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
