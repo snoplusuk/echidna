@@ -4,18 +4,18 @@ echidna.core package
 Submodules
 ----------
 
-echidna.core.limit_config module
---------------------------------
+echidna.core.fill_spectrum module
+---------------------------------
 
-.. automodule:: echidna.core.limit_config
+.. automodule:: echidna.core.fill_spectrum
     :members:
     :undoc-members:
     :show-inheritance:
 
-echidna.core.limit_setting module
----------------------------------
+echidna.core.smear module
+-------------------------
 
-.. automodule:: echidna.core.limit_setting
+.. automodule:: echidna.core.smear
     :members:
     :undoc-members:
     :show-inheritance:
