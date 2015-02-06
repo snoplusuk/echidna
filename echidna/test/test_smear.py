@@ -71,9 +71,9 @@ class TestSmear(unittest.TestCase):
         Integral of smeared spectrum is checked against original number of
         entries.
         """
-        test_spectra = spectra.Spectra("Test")
-        energy = 2.5  # MeV
         num_entries = 10000
+        test_spectra = spectra.Spectra("Test", num_entries)
+        energy = 2.5  # MeV
         for i in range(num_entries):
             test_spectra.fill(energy, 0, 0)
         smearing = smear.Smear()
@@ -94,9 +94,9 @@ class TestSmear(unittest.TestCase):
         Integral of smeared spectrum is checked against original number of
         entries.
         """
-        test_spectra = spectra.Spectra("Test")
-        energy = 2.5  # MeV
         num_entries = 100000
+        test_spectra = spectra.Spectra("Test",num_entries)
+        energy = 2.5  # MeV
         for i in range(num_entries):
             test_spectra.fill(energy, 0, 0)
         smearing = smear.Smear()
@@ -116,16 +116,16 @@ class TestSmear(unittest.TestCase):
         Integral of smeared spectrum is checked against original number of
         entries.
         """
-        test_spectra = spectra.Spectra("Test")
-        radius = 1000.  # mm
         num_entries = 10000
+        test_spectra = spectra.Spectra("Test", num_entries)
+        radius = 1000.  # mm
         for i in range(num_entries):
             test_spectra.fill(0, radius, 0)
         smearing = smear.Smear()
         smearing._position_resolution = 100.  # mm
         smeared_spectra = smearing.weight_gaussian_radius_spectra(test_spectra,
                                                                   num_sigma=5.)
-        mean, sigma, integral = self.fit_gaussian_radius(smeared_spectrum)
+        mean, sigma, integral = self.fit_gaussian_radius(smeared_spectra)
         self.assertTrue(radius < 1.01*mean and radius > 0.99*mean)
         self.assertTrue(smearing._position_resolution < 1.01*sigma and smearing._position_resolution > 0.99*sigma)
         self.assertAlmostEqual(integral/float(num_entries), 1.0)
@@ -138,9 +138,9 @@ class TestSmear(unittest.TestCase):
         Integral of smeared spectrum is checked against original number of
         entries.
         """
-        test_spectra = spectra.Spectra("Test")
-        radius = 1000.  # mm
         num_entries = 100000
+        test_spectra = spectra.Spectra("Test", num_entries)
+        radius = 1000.  # mm
         for i in range(num_entries):
             test_spectra.fill(0, radius, 0)
         smearing = smear.Smear()

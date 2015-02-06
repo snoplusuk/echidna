@@ -205,7 +205,8 @@ class Smear(object):
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._light_yield)+"_light_yield")
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._light_yield)+"_light_yield",
+                                           true_spectrum._num_decays)
         for time_bin in range(true_spectrum._time_bins):
             mean_time = time_bin*time_step+0.5*time_step
             for radial_bin in range(true_spectrum._radial_bins):
@@ -244,7 +245,8 @@ class Smear(object):
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._light_yield)+"_light_yield")
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._light_yield)+"_light_yield",
+                                           true_spectrum._num_decays)
         for time_bin in range(true_spectrum._time_bins):
             mean_time = time_bin*time_step+0.5*time_step
             for radial_bin in range(true_spectrum._radial_bins):
@@ -295,7 +297,8 @@ class Smear(object):
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._position_resolution)+"_position_resolution")
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._position_resolution)+"_position_resolution",
+                                           true_spectrum._num_decays)
         for time_bin in range(true_spectrum._time_bins):
             mean_time = time_bin*time_step+0.5*time_step
             for energy_bin in range(true_spectrum._energy_bins):
@@ -333,7 +336,8 @@ class Smear(object):
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._position_resolution)+"_position_resolution")
+        smeared_spectrum = spectra.Spectra(true_spectrum._name+str(self._position_resolution)+"_position_resolution",
+                                           true_spectrum._num_decays)
         for time_bin in range(true_spectrum._time_bins):
             mean_time = time_bin*time_step+0.5*time_step
             for energy_bin in range(true_spectrum._energy_bins):
