@@ -86,32 +86,35 @@ class TestSpectra(unittest.TestCase):
         test_decays = 10
         test_spectra = spectra.Spectra("Test", test_decays)
         self.assertRaises(ValueError,
-                          test_spectra.shrink(test_spectra._energy_low,
-                                              2 * test_spectra._energy_high,
-                                              test_spectra._radial_low,
-                                              test_spectra._radial_high,
-                                              test_spectra._time_low,
-                                              test_spectra._time_high))
+                          test_spectra.shrink,
+                          test_spectra._energy_low,
+                          2 * test_spectra._energy_high,
+                          test_spectra._radial_low,
+                          test_spectra._radial_high,
+                          test_spectra._time_low,
+                          test_spectra._time_high)
         self.assertRaises(ValueError,
-                          test_spectra.shrink(test_spectra._energy_low,
-                                              test_spectra._energy_high,
-                                              test_spectra._radial_low,
-                                              2 * test_spectra._radial_high,
-                                              test_spectra._time_low,
-                                              test_spectra._time_high))
+                          test_spectra.shrink,
+                          test_spectra._energy_low,
+                          test_spectra._energy_high,
+                          test_spectra._radial_low,
+                          2 * test_spectra._radial_high,
+                          test_spectra._time_low,
+                          test_spectra._time_high)
         self.assertRaises(ValueError,
-                          test_spectra.shrink(test_spectra._energy_low,
-                                              test_spectra._energy_high,
-                                              test_spectra._radial_low,
-                                              test_spectra._radial_high,
-                                              test_spectra._time_low,
-                                              2 * test_spectra._time_high))
-        test_spectra.shrink(2 * test_spectra._energy_low,
-                            test_spectra._energy_high,
-                            2 * test_spectra._radial_low,
-                            test_spectra._radial_high,
-                            2 * test_spectra._time_low,
-                            test_spectra._time_high)
-        self.assertTrue(test_spectra._data.shape == (test_spectra._energy_bins / 2,
-                                                     test_spectra._radial_bins / 2,
-                                                     test_spectra._time_bins / 2))
+                          test_spectra.shrink,
+                          test_spectra._energy_low,
+                          test_spectra._energy_high,
+                          test_spectra._radial_low,
+                          test_spectra._radial_high,
+                          test_spectra._time_low,
+                          2 * test_spectra._time_high)
+        test_spectra.shrink(test_spectra._energy_low,
+                            test_spectra._energy_high / 2,
+                            test_spectra._radial_low,
+                            test_spectra._radial_high / 2,
+                            test_spectra._time_low,
+                            test_spectra._time_high / 2)
+        self.assertTrue(test_spectra._data.shape == (test_spectra._energy_bins,
+                                                     test_spectra._radial_bins,
+                                                     test_spectra._time_bins))
