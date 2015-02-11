@@ -12,6 +12,14 @@ echidna.core.fill_spectrum module
     :undoc-members:
     :show-inheritance:
 
+echidna.core.smear module
+-------------------------
+
+.. automodule:: echidna.core.smear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.core.spectra module
 ---------------------------
 
