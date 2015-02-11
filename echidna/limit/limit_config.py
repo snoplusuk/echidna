@@ -15,7 +15,7 @@ class LimitConfig(object):
       _sigma (float): prior constraint on counts
       _chi_squareds (:class:`numpy.array`): array filled with chi
         squared corresponding to each count value
- 
+
     Args:
       prior_counts (float): prior/expected counts
       counts (list): list of count (*float*) to use for scaling
@@ -28,7 +28,7 @@ class LimitConfig(object):
         self._chi_squareds = numpy.zeros(shape=[0], dtype=float)
 
     def get_count(self):
-        """ 
+        """
         Yields:
           float: next count in array
 
@@ -43,10 +43,10 @@ class LimitConfig(object):
         """
         for count in self._counts:
             yield count
-    
+
     def add_chi_squared(self, chi_squared):
         """ Add chi squared to config chi squared array.
-        
+
         Args:
           chi_squared (float): chi squared value to add
         """

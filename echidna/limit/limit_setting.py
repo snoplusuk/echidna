@@ -1,6 +1,6 @@
 import numpy
 
-from echidna.errors.custom_errors import CompatibilityError 
+from echidna.errors.custom_errors import CompatibilityError
 
 
 class LimitSetting(object):
@@ -114,7 +114,7 @@ class LimitSetting(object):
           float: Signal counts at required limit
 
         Raises:
-          IndexError: If no limit can be calculated. Relies on finding 
+          IndexError: If no limit can be calculated. Relies on finding
             the first bin with a chi squared value above
             :obj:`limit_chi_squared`. If no bin contains a chi squared
             value greater than :obj:`limit_chi_squared`, then there is
@@ -145,7 +145,7 @@ class LimitSetting(object):
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
-            raise IndexError("unable to calculate confidence limit - " + 
+            raise IndexError("unable to calculate confidence limit - " +
                              str(detail))
 
     def _get_chi_squared(self, backgrounds, total_backgrounds, current=-1):
@@ -185,7 +185,7 @@ class LimitSetting(object):
             background.scale(count)
             if (current < total_backgrounds-1):
                 config.add_chi_squared(
-                    self._get_chi_squared(self._backgrounds, 
+                    self._get_chi_squared(self._backgrounds,
                                           len(self._backgrounds),
                                           current))  # function recursion
             else:
@@ -196,7 +196,7 @@ class LimitSetting(object):
                     total_background += background.project(0)
                 expected = total_background + self._signal.project(0)
                 if config._sigma is not None:
-                    penalty_term = { 
+                    penalty_term = {
                         name: {
                             "parameter_value": count - config._prior_count,
                             "sigma": config._sigma
@@ -207,8 +207,8 @@ class LimitSetting(object):
                 try:
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
-                            self._observed, 
-                            expected, 
+                            self._observed,
+                            expected,
                             penalty_term=penalty_term))
                 except ValueError as detail:  # Either histogram has bins with
                                               # zero events
@@ -216,7 +216,7 @@ class LimitSetting(object):
                         print "WARNING:", detail
                         print " --> shrinking spectra"
                         energy_low, energy_high = self._roi
-                        
+
                         # Shrink signal to ROI
                         self._signal.shrink(energy_low, energy_high)
 

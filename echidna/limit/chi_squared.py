@@ -68,8 +68,8 @@ class ChiSquared(object):
               * "parameter_value"
               * "sigma" (*optional*)
 
-        .. warning:: A named penalty term defined here will overwrite one with the
-          same name defined in the constructor.
+        .. warning:: A named penalty term defined here will overwrite
+          one with the same name defined in the constructor.
 
         Returns:
           float: Value of chi squared calculated
