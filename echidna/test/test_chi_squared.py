@@ -40,10 +40,10 @@ class TestChiSquared(unittest.TestCase):
 
         Tests that the function calculates accurate values
         """
-        self.assertEqual(2.0 * chi_squared.log_likelihood(100.0, 110.0),
-                         0.9379640391350215)
-        self.assertEqual(2.0 * chi_squared.log_likelihood(100.0, 90.0),
-                         1.072103131565271)
+        self.assertAlmostEqual(2.0 * chi_squared.log_likelihood(100.0, 110.0),
+                               0.9379640391350215)
+        self.assertAlmostEqual(2.0 * chi_squared.log_likelihood(100.0, 90.0),
+                               1.072103131565271)
         self.assertEqual(chi_squared.log_likelihood(100.0, 100.0), 0.0)
         self.assertRaises(ValueError, chi_squared.log_likelihood,
                           0.0, 100.0)
