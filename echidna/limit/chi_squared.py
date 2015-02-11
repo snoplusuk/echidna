@@ -2,16 +2,19 @@ import numpy
 
 
 class ChiSquared(object):
-    """ This class calculates the chi squared comparing "data" to "montecarlo".
+    """ This class calculates the chi squared comparing "data" to
+    "montecarlo".
 
-    The calculation is based on a spectrum containing observed events and one
-    containing expected events. The paradigm assumed is that the observed
-    events form the data spectrum and the expected events form the montecarlo
-    spectrum. A couple of different methods for calculating chi squared are
-    included, as well as the option to add constraints via a penalty term.
+    The calculation is based on a spectrum containing observed events
+    and one containing expected events. The paradigm assumed is that the
+    observed events form the "data" spectrum and the expected events
+    form the "montecarlo" spectrum. A couple of different methods for
+    calculating chi squared are included, as well as the option to add
+    constraints via a penalty term.
 
     Args:
-      form (str, optional): specify form of chi squared calculation to use
+      form (str, optional): specify form of chi squared calculation to
+        use
       **kwargs: Keyword arguments
 
     .. note::
@@ -23,10 +26,10 @@ class ChiSquared(object):
         * "poisson_likelihood" (*default*)
 
     .. note::
-
       Keyword arguments include
 
-        * penalty_terms (*dict*): specify (for each penalty term) values for:
+        * penalty_terms (*dict*): specify (for each penalty term) values
+          for:
 
           * "parameter_value" (*optional*)
           * "sigma"
@@ -34,8 +37,8 @@ class ChiSquared(object):
     Attributes:
       _form (str): form of chi squared calculation to use
       _penalty_terms (dict): information about each penalty term
-      _penalty_terms_set (bool): True if one or more penalty terms have been
-        set
+      _penalty_terms_set (bool): True if one or more penalty terms have
+        been set
     """
     def __init__(self, form="poisson_likelihood", **kwargs):
         self._form = form
@@ -50,27 +53,26 @@ class ChiSquared(object):
         """ Calculate the chi squared comparing observed to expected.
 
         Args:
-          observed (:class:`numpy.array`): energy spectrum of observed events
-          expected (:class:`numpy.array`): energy spectrum of expected events
+          observed (:class:`numpy.array`): energy spectrum of observed
+            events
+          expected (:class:`numpy.array`): energy spectrum of expected
+            events
           **kwargs: keyword argumets
 
         .. note::
-
           Keyword arguments include
 
-            * penalty_terms (*dict*): specify (for each penalty term) values
-              for:
+            * penalty_terms (*dict*): specify (for each penalty term)
+              values for:
 
               * "parameter_value"
               * "sigma" (*optional*)
 
-        .. warning::
-
-          A named penalty term defined here will overwrite one with the same
-          name defined in the constructor.
+        .. warning:: A named penalty term defined here will overwrite one with the
+          same name defined in the constructor.
 
         Returns:
-          *float*. Value of chi squared calculated
+          float: Value of chi squared calculated
         """
         # Set up penalty term
         if (kwargs.get("penalty_terms") is not None):
@@ -116,7 +118,7 @@ def check_bin_content(array):
       array (:class:`numpy.array`, *float*): Array or value to check
 
     Returns:
-      *bool*, *string*. Tuple containing result of check and an error message
+      tuple: (result of check (*bool*), error message (*str*))
     """
     if (numpy.sum(array <= 0.0) != 0):
         result = False
@@ -139,14 +141,16 @@ def pearson_chi_squared(observed, expected):
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
-      observed (:class:`numpy.array`, *float*): Number of observed events
-      expected (:class:`numpy.array`, *float*): Number of expected events
+      observed (:class:`numpy.array`, *float*): Number of observed
+        events
+      expected (:class:`numpy.array`, *float*): Number of expected
+        events
 
     Raises:
       ValueError: If either array contains a bin with content <= 0.0
 
     Returns:
-      *float*. Calculated Pearson's chi squared
+      float: Calculated Pearson's chi squared
     """
     correct_bin_content, message = check_bin_content(observed)
     if not correct_bin_content:
@@ -168,14 +172,16 @@ def neyman_chi_squared(observed, expected):
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
-      observed (:class:`numpy.array`, *float*): Number of observed events.
-      expected (:class:`numpy.array`, *float*): Number of expected events.
+      observed (:class:`numpy.array`, *float*): Number of observed
+        events
+      expected (:class:`numpy.array`, *float*): Number of expected
+        events
 
     Raises:
       ValueError: If either array contains a bin with content <= 0.0
 
     Returns:
-      float. Calculated Neyman's chi squared
+      float: Calculated Neyman's chi squared
     """
     correct_bin_content, message = check_bin_content(observed)
     if not correct_bin_content:
@@ -201,14 +207,16 @@ def log_likelihood(observed, expected):
       <http://www.sciencedirect.com/science/article/pii/0167508784900164>`_
 
     Args:
-      observed (:class:`numpy.array`, *float*): Number of observed events
-      expected (:class:`numpy.array`, *float*): Number of expected events
+      observed (:class:`numpy.array`, *float*): Number of observed
+        events
+      expected (:class:`numpy.array`, *float*): Number of expected
+        events
 
     Raises:
       ValueError: If either array contains a bin with content <= 0.0
 
     Returns:
-      *float*. Calculated Neyman's chi squared
+      float: Calculated Neyman's chi squared
     """
     correct_bin_content, message = check_bin_content(observed)
     if not correct_bin_content:
