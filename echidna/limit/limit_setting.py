@@ -212,8 +212,8 @@ class LimitSetting(object):
                             penalty_term=penalty_term))
                 except ValueError as detail:  # Either histogram has bins with
                                               # zero events
-                    print "WARNING:", detail
                     if self._roi is not None:
+                        print "WARNING:", detail
                         print " --> shrinking spectra"
                         energy_low, energy_high = self._roi
                         

@@ -20,6 +20,14 @@ echidna.test.test_limit_setting module
     :undoc-members:
     :show-inheritance:
 
+echidna.test.test_smear module
+------------------------------
+
+.. automodule:: echidna.test.test_smear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.test.test_spectra module
 --------------------------------
 

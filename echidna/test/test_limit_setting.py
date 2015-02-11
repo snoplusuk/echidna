@@ -99,7 +99,7 @@ class TestLimitSetting(unittest.TestCase):
 
         limit_setter_2 = limit_setting.LimitSetting(self._signal,
                                                     self._backgrounds[:1],
-                                                    roi=roi)
+                                                    roi=roi, pre_shrink=True)
         limit_setter_2.configure_signal(signal_config)
         limit_setter_2.configure_background("bkg_1", bkg_1_config)
         limit_setter_2.set_calculator(calculator)
