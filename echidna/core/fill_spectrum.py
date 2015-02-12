@@ -16,7 +16,7 @@ def _scint_weights(times, T):
     Returns:
       Weights (*list* of *float*)
     """
-    weights = [0]
+    weights = []
     for time in times:
         weights.append( math.exp(-time/T) )
     return (weights)
@@ -33,7 +33,7 @@ def _av_weights(times, T):
     Returns:
       Weights (*list* of *float*)
     """
-    weights = [0]
+    weights = []
     for time in times:
         weights.append( 1.0 )
     return (weights)
@@ -108,7 +108,7 @@ def fill_mc_spectrum(filename, spectrumname, T):
     dsreader = RAT.DU.DSReader(filename)
     spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
 
-    times = [0]
+    times = []
     for time_step in range(0, spectrum._time_bins):
         time = time_step * spectrum._time_width + spectrum._time_low 
         times.append(time)
@@ -156,7 +156,7 @@ def fill_reco_ntuple_spectrum(filename, spectrumname, T):
     chain.Add(filename)
     spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
 
-    times = [0]
+    times = []
     for time_step in range(0, spectrum._time_bins):
         time = time_step * spectrum._time_width + spectrum._time_low 
         times.append(time)
@@ -168,6 +168,8 @@ def fill_reco_ntuple_spectrum(filename, spectrumname, T):
         weights = _scint_weights(times, T)
       
     for event in chain:
+        if event.scintFit == 0:
+            continue
         energy = event.energy
         position = math.fabs(math.sqrt((event.posx)**2 +
                                        (event.posy)**2 + (event.posz)**2))            
@@ -202,7 +204,7 @@ def fill_mc_ntuple_spectrum(filename, spectrumname, T):
     chain.Add(filename)
     spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
 
-    times = [0]
+    times = []
     for time_step in range(0, spectrum._time_bins):
         time = time_step * spectrum._time_width + spectrum._time_low 
         times.append(time)
