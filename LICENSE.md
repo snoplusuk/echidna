@@ -1,6 +1,7 @@
 The MIT License (MIT)
 
-Copyright (c) 2014 Ashley R. Back, Philip G. Jones, Evelina Arushanova
+Copyright (c) 2014 Ashley R. Back, Philip G. Jones, Evelina Arushanova, James
+Waterfield
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

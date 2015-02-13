@@ -114,8 +114,9 @@ class Spectra(object):
         return self._data.sum()
 
     def scale(self, num_decays):
-        """ Scale THIS spectra to represent *num_decays* worth of decays.
-        
+        """ Scale THIS spectra to represent *num_decays* worth of decays over
+        the entire unshrunken spectra.
+
         This rescales each bin by the ratio of *num_decays* to 
         *self._num_decays*, i.e. it changes the spectra from representing
         *self._num_decays* to *num_decays*. *self._num_decays* is updated
@@ -124,18 +125,12 @@ class Spectra(object):
         Args:
           num_decays (float): Number of decays this spectra should represent.
         """
-        numpy.multiply(self._data, num_decays / self._num_decays)
-        num_decays = self._num_decays
-
-    def normalise(self):
-        """ Normalised this spectra, such that it represents 1 decay.
-
-        """
-        self.scale(1.0)
+        self._data = numpy.multiply(self._data, num_decays / self._num_decays)
+        self._num_decays = num_decays
 
     def shrink(self, energy_low=None, energy_high=None, radial_low=None,
                radial_high=None, time_low=None, time_high=None):
-        """ Shirnk the data such that it only contains values between energy_low
+        """ Shrink the data such that it only contains values between energy_low
         and energy_high (for example) by slicing. This updates the internal bin
         information as well as the data.
 
@@ -154,17 +149,17 @@ class Spectra(object):
         existing binning low). Finally update all the bookeeping and slice.
         """
         if(energy_low is not None and energy_low < self._energy_low):
-            raise ValueError("Energy low is below exist bound")
+            raise ValueError("Energy low is below existing bound")
         if(energy_high is not None and energy_high > self._energy_high):
-            raise ValueError("Energy high is below exist bound")
+            raise ValueError("Energy high is above existing bound")
         if(radial_low is not None and radial_low < self._radial_low):
-            raise ValueError("Radial low is below exist bound")
+            raise ValueError("Radial low is below existing bound")
         if(radial_high is not None and radial_high > self._radial_high):
-            raise ValueError("Radial high is below exist bound")
+            raise ValueError("Radial high is above existing bound")
         if(time_low is not None and time_low < self._time_low):
-            raise ValueError("Time low is below exist bound")
+            raise ValueError("Time low is below existing bound")
         if(time_high is not None and time_high > self._time_high):
-            raise ValueError("Time high is below exist bound")
+            raise ValueError("Time high is above existing bound")
 
         energy_low_bin = 0
         energy_high_bin = self._energy_bins

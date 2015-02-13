@@ -4,6 +4,22 @@ echidna.core package
 Submodules
 ----------
 
+echidna.core.fill_spectrum module
+---------------------------------
+
+.. automodule:: echidna.core.fill_spectrum
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.core.smear module
+-------------------------
+
+.. automodule:: echidna.core.smear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.core.spectra module
 ---------------------------
 
