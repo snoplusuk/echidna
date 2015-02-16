@@ -40,8 +40,8 @@ class Spectra(object):
         self._energy_bins = 1000
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
         self._radial_low = 0.0  # mm
-        self._radial_high = 6000.0  # mm
-        self._radial_bins = 600
+        self._radial_high = 10000.0  # mm
+        self._radial_bins = 1000
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_low = 0.0  # years
         self._time_high = 10.0  # years
