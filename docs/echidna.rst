@@ -10,6 +10,7 @@ Subpackages
     echidna.errors
     echidna.limit
     echidna.output
+    echidna.scripts
     echidna.test
 
 Module contents
