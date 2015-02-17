@@ -223,8 +223,8 @@ class Smear(object):
                                                                            sigma)),
                                                   mean_radius,
                                                   mean_time)
-                        except:
-                            # Occurs when smeared energy is > max bin
+                        except ValueError:
+                            # Occurs when smeared energy is outside bin range
                             print "Warning: Smeared energy out of bounds. Skipping."
                             continue
         return smeared_spectrum
@@ -275,10 +275,15 @@ class Smear(object):
                     i = 0
                     tot_weight = np.array(weights).sum()
                     for energy in np.arange(lower_bin, upper_bin, energy_step):
-                        smeared_spectrum.fill(energy,
-                                              mean_radius,
-                                              mean_time,
-                                              entries*weights[i]/tot_weight)
+                        try:
+                            smeared_spectrum.fill(energy,
+                                                  mean_radius,
+                                                  mean_time,
+                                                  entries*weights[i]/tot_weight)
+                        except ValueError:
+                            # Occurs when smeared energy is outside bin range
+                            print "Warning: Smeared energy out of bounds. Skipping."
+                            continue
                         i += 1
         return smeared_spectrum
 
@@ -314,8 +319,8 @@ class Smear(object):
                                                   np.fabs(np.random.normal(mean_radius,
                                                                            self._position_resolution)),
                                                   mean_time)
-                        except:
-                            # Occurs when smeared radius is > max bin
+                        except ValueError:
+                            # Occurs when smeared radius is outside bin range
                             print "Warning: Smeared radius out of bounds. Skipping."
                             continue
         return smeared_spectrum
@@ -365,9 +370,14 @@ class Smear(object):
                     weight_tot = np.array(weights).sum()
                     i = 0
                     for radius in np.arange(lower_bin, upper_bin, radial_step):
-                        smeared_spectrum.fill(mean_energy,
-                                              radius,
-                                              mean_time,
-                                              entries*weights[i]/weight_tot)
+                        try:
+                            smeared_spectrum.fill(mean_energy,
+                                                  radius,
+                                                  mean_time,
+                                                  entries*weights[i]/weight_tot)
+                        except ValueError:
+                            # Occurs when smeared radius is outside bin range
+                            print "Warning: Smeared radius out of bounds. Skipping."
+                            continue
                         i += 1
         return smeared_spectrum
