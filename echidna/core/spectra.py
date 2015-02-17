@@ -35,7 +35,8 @@ class Spectra(object):
           _num_decays (float): The number of decays this spectra currently
             represents.
           _raw_events (int): The number of raw events used to generate the
-            spectra.
+            spectra. Increments by one with each fill independent of
+            weight.
         """
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
