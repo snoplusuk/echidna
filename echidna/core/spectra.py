@@ -34,6 +34,8 @@ class Spectra(object):
           _time_width (float): Width of a single bin in yr
           _num_decays (float): The number of decays this spectra currently 
             represents.
+          _raw_events (int): The number of raw events used to generate the
+            spectra.
         """
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
@@ -48,6 +50,7 @@ class Spectra(object):
         self._time_bins = 10
         self._time_width = (self._time_high - self._time_low) / self._time_bins
         self._num_decays = num_decays
+        self._raw_events = 0
         self._data = numpy.zeros(shape=(self._energy_bins,
                                         self._radial_bins,
                                         self._time_bins),
@@ -77,6 +80,7 @@ class Spectra(object):
         radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
         time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
+        self._raw_events += 1
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
