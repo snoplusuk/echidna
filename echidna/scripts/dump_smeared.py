@@ -9,10 +9,15 @@ This script:
 
 Examples:
   To smear hdf5 file ``example.hdf5`` using the random Gaussian method::
-  
+
     $ python dump_smeared.py --smear_method "random" /path/to/example.hdf5
 
   This will create the smeared hdf5 file ``/path/to/example_smeared.hdf5``.
+
+.. note:: Valid smear methods include:
+
+  * "gaussian", default
+  * "random"
 """
 
 import echidna.output.store as store
@@ -22,7 +27,8 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--smear_method", type=str,
+    parser.add_argument("-m", "--smear_method", nargs='?', const="gaussian",
+                        type=str, default="gaussian",
                         help="specify the smearing method to use")
     parser.add_argument("path", type=str,
                         help="specify path to hdf5 file")
@@ -35,14 +41,14 @@ if __name__ == "__main__":
     smearer = smear.Smear()
     spectrum = store.load(args.path)
 
-    if (args.smear_method == "random"):
-        smeared_spectrum = smearer.random_gaussian_energy_spectra(spectrum)
-        smeared_spectrum = smearer.random_gaussian_radius_spectra(
-            smeared_spectrum)
-    else:  # Use default smear method
+    if args.smear_method == "gaussian":  # Use default smear method
         smeared_spectrum = smearer.weight_gaussian_energy_spectra(spectrum)
-        smeared_spectrum = smearer.weight_gaussian_radius_spectra(
-            smeared_spectrum)
-    
+        smeared_spectrum = smearer.weight_gaussian_radius_spectra(smeared_spectrum)
+    elif args.smear_method == "random":
+        smeared_spectrum = smearer.random_gaussian_energy_spectra(spectrum)
+        smeared_spectrum = smearer.random_gaussian_radius_spectra(smeared_spectrum)
+    else:  # Not a valid smear method
+        parser.error(args.smear_method + " is not a valid smear method")
+
     filename = directory + filename + "_smeared" + ".hdf5"
     store.dump(filename, smeared_spectrum)
