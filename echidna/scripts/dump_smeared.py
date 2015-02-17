@@ -16,7 +16,7 @@ Examples:
 
 .. note:: Valid smear methods include:
 
-  * "gaussian", default
+  * "weight", default
   * "random"
 """
 
@@ -27,8 +27,8 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--smear_method", nargs='?', const="gaussian",
-                        type=str, default="gaussian",
+    parser.add_argument("-m", "--smear_method", nargs='?', const="weight",
+                        type=str, default="weight",
                         help="specify the smearing method to use")
     parser.add_argument("path", type=str,
                         help="specify path to hdf5 file")
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     smearer = smear.Smear()
     spectrum = store.load(args.path)
 
-    if args.smear_method == "gaussian":  # Use default smear method
+    if args.smear_method == "weight":  # Use default smear method
         smeared_spectrum = smearer.weight_gaussian_energy_spectra(spectrum)
         smeared_spectrum = smearer.weight_gaussian_radius_spectra(smeared_spectrum)
     elif args.smear_method == "random":
