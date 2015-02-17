@@ -223,8 +223,8 @@ class Smear(object):
                                                                            sigma)),
                                                   mean_radius,
                                                   mean_time)
-                        except:
-                            # Occurs when smeared energy is > max bin
+                        except ValueError:
+                            # Occurs when smeared energy is outside bin range
                             print "Warning: Smeared energy out of bounds. Skipping."
                             continue
         return smeared_spectrum
@@ -280,7 +280,8 @@ class Smear(object):
                                                   mean_radius,
                                                   mean_time,
                                                   entries*weights[i]/tot_weight)
-                        except:
+                        except ValueError:
+                            # Occurs when smeared energy is outside bin range
                             print "Warning: Smeared energy out of bounds. Skipping."
                             continue
                         i += 1
@@ -318,8 +319,8 @@ class Smear(object):
                                                   np.fabs(np.random.normal(mean_radius,
                                                                            self._position_resolution)),
                                                   mean_time)
-                        except:
-                            # Occurs when smeared radius is > max bin
+                        except ValueError:
+                            # Occurs when smeared radius is outside bin range
                             print "Warning: Smeared radius out of bounds. Skipping."
                             continue
         return smeared_spectrum
@@ -374,8 +375,8 @@ class Smear(object):
                                                   radius,
                                                   mean_time,
                                                   entries*weights[i]/weight_tot)
-                        except:
-                            # Occurs when smeared radius is > max bin
+                        except ValueError:
+                            # Occurs when smeared radius is outside bin range
                             print "Warning: Smeared radius out of bounds. Skipping."
                             continue
                         i += 1
