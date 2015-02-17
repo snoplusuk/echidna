@@ -202,6 +202,7 @@ class Smear(object):
         Returns:
           A smeared spectra object.
         """
+        raw_events = true_spectrum._raw_events
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
@@ -227,6 +228,7 @@ class Smear(object):
                             # Occurs when smeared energy is outside bin range
                             print "Warning: Smeared energy out of bounds. Skipping."
                             continue
+        smeared_spectrum._raw_events = raw_events
         return smeared_spectrum
 
     def weight_gaussian_energy_spectra(self, true_spectrum, num_sigma=5.):
@@ -242,6 +244,7 @@ class Smear(object):
         Returns:
           A smeared spectra object.
         """
+        raw_events = true_spectrum._raw_events
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
@@ -285,6 +288,7 @@ class Smear(object):
                             print "Warning: Smeared energy out of bounds. Skipping."
                             continue
                         i += 1
+        smeared_spectrum._raw_events = raw_events
         return smeared_spectrum
 
     def random_gaussian_radius_spectra(self, true_spectrum):
@@ -299,6 +303,7 @@ class Smear(object):
         Returns:
           A smeared spectra object.
         """
+        raw_events = true_spectrum._raw_events
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
@@ -323,6 +328,7 @@ class Smear(object):
                             # Occurs when smeared radius is outside bin range
                             print "Warning: Smeared radius out of bounds. Skipping."
                             continue
+        smeared_spectrum._raw_events = raw_events
         return smeared_spectrum
 
     def weight_gaussian_radius_spectra(self, true_spectrum, num_sigma=5.):
@@ -338,6 +344,7 @@ class Smear(object):
         Returns:
           A smeared spectra object.
         """
+        raw_events = true_spectrum._raw_events
         energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
         time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
         radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
@@ -380,4 +387,5 @@ class Smear(object):
                             print "Warning: Smeared radius out of bounds. Skipping."
                             continue
                         i += 1
+        smeared_spectrum._raw_events = raw_events
         return smeared_spectrum
