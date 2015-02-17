@@ -14,7 +14,7 @@ class Spectra(object):
 
         Args:
           name (str): The name of this spectra
-          num_decays (float): The number of decays this spectra is created to 
+          num_decays (float): The number of decays this spectra is created to
             represent.
 
         Attributes:
@@ -32,7 +32,7 @@ class Spectra(object):
           _time_high (float): Highest bin edge in years
           _time_bins (int): Number of time bins
           _time_width (float): Width of a single bin in yr
-          _num_decays (float): The number of decays this spectra currently 
+          _num_decays (float): The number of decays this spectra currently
             represents.
           _raw_events (int): The number of raw events used to generate the
             spectra.
@@ -121,7 +121,7 @@ class Spectra(object):
         """ Scale THIS spectra to represent *num_decays* worth of decays over
         the entire unshrunken spectra.
 
-        This rescales each bin by the ratio of *num_decays* to 
+        This rescales each bin by the ratio of *num_decays* to
         *self._num_decays*, i.e. it changes the spectra from representing
         *self._num_decays* to *num_decays*. *self._num_decays* is updated
         to equal *num_decays* after.
