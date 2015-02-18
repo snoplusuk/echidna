@@ -8,35 +8,34 @@ class Spectra(object):
     time, z. This histogram can be flattened to 2d (energy, radius) or 1d
     (energy).
 
+    Args:
+      name (str): The name of this spectra
+      num_decays (float): The number of decays this spectra is created to
+        represent.
+
+    Attributes:
+      _data (:class:`numpy.ndarray`): The histogram of data
+      _name (str): The name of this spectra
+      _energy_low (float): Lowest bin edge in MeV
+      _energy_high (float): Highest bin edge in MeV
+      _energy_bins (int): Number of energy bins
+      _energy_width (float): Width of a single bin in MeV
+      _radial_low (float): Lowest bin edge in mm
+      _radial_high (float): Highest bin edge in mm
+      _radial_bins (int): Number of raidal bins
+      _radial_width (float): Width of a single bin in mm
+      _time_low (float): Lowest bin edge in years
+      _time_high (float): Highest bin edge in years
+      _time_bins (int): Number of time bins
+      _time_width (float): Width of a single bin in yr
+      _num_decays (float): The number of decays this spectra currently
+        represents.
+      _raw_events (int): The number of raw events used to generate the
+        spectra. Increments by one with each fill independent of
+        weight.
     """
     def __init__(self, name, num_decays):
         """ Initialise the spectra data container.
-
-        Args:
-          name (str): The name of this spectra
-          num_decays (float): The number of decays this spectra is created to
-            represent.
-
-        Attributes:
-          _data (:class:`numpy.ndarray`): The histogram of data
-          _name (str): The name of this spectra
-          _energy_low (float): Lowest bin edge in MeV
-          _energy_high (float): Highest bin edge in MeV
-          _energy_bins (int): Number of energy bins
-          _energy_width (float): Width of a single bin in MeV
-          _radial_low (float): Lowest bin edge in mm
-          _radial_high (float): Highest bin edge in mm
-          _radial_bins (int): Number of raidal bins
-          _radial_width (float): Width of a single bin in mm
-          _time_low (float): Lowest bin edge in years
-          _time_high (float): Highest bin edge in years
-          _time_bins (int): Number of time bins
-          _time_width (float): Width of a single bin in yr
-          _num_decays (float): The number of decays this spectra currently
-            represents.
-          _raw_events (int): The number of raw events used to generate the
-            spectra. Increments by one with each fill independent of
-            weight.
         """
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
