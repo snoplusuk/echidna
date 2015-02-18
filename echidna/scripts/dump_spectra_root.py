@@ -1,5 +1,22 @@
+""" Example script to create spectrum objects from rat_ds root files and store
+    in hdf5 format.
+
+This script:
+  * Reads in rat_ds root file of background / signal isotope
+  * Creates and fills spectra objects with mc and reconstructed information
+  * Plots Energy, radius and time dimensions of spectra object
+  * Saves spectra objects to file in hdf5 format
+
+Examples:
+  To read rat_ds root file "example.root", with isotope half-life "half_life":
+    $ python dump_spectra_ntuple.py /path/to/example.root half_life
+
+  This will create the smeared hdf5 file ``./example.hdf5``.
+  To specify a save directory, include a -s flag followed by path to
+  the required save destination.
+"""
 import numpy
-import optparse
+import argparse
 import csv
 import echidna.output.store as store
 import echidna.core.fill_spectrum as fill_spectrum
@@ -62,36 +79,31 @@ def read_tab_delim_file(fname):
     return file_paths, half_lives
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser("Usage: python dump_spectra.py [option] <file_path> <half_life>")
-    parser.add_option("-t", "--text",
-                      dest="Read_from_txt_file",
-                      default=False,
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--read_text_file",
+                      type=str,
                       help="Pass path to list .txt of tab separated filepaths and half_lives.")
-    parser.add_option("-s", "--Save",
-                      dest="Savepath",
-                      default=False,
+    parser.add_argument("-s", "--save_path",
+                      type=str,
+                      default="./",
                       help="Enter destination path for .hdf5 spectra files.")
-    (options, args) = parser.parse_args()
-
-    # Set-up save path
-    if options.Savepath is False:
-        save_path = "./"
-    else:
-        save_path = options.Savepath
+    parser.add_argument("fname",
+                      type=str,
+                      help="Path to root file to be read.")
+    parser.add_argument("half_life",
+                      type=float,
+                      help="Half-life of isotope.root file being read")
+    args = parser.parse_args()
 
     # If args passed directly, deal with them
-    if len(args) % 2 == 0:
-        for i in range(0, len(args)/2+1, 2):
-            fname = args[i]
-            spectrum_name = fname[fname.rfind('/', 0, -1)+1:]  
-            read_and_dump_root(fname, float(args[i+1]), spectrum_name, save_path)
-    elif len(args) % 2 == 1:
-        raise Exception("Expecting pairs of file paths and respective half lifes as arguments!")
+    fname = args.fname
+    spectrum_name = fname[fname.rfind('/', 0, -1)+1:]  
+    read_and_dump_root(fname, args.half_life, spectrum_name, args.save_path)
 
     # If passed text file: read, format and dump 
-    if options.Read_from_txt_file is not False:
-        path_list, half_life_list = read_tab_delim_file(options.Read_from_txt_file)
+    if args.read_text_file:
+        path_list, half_life_list = read_tab_delim_file(args.read_text_file)
         for idx, fname in enumerate(path_list):
             spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
-            read_and_dump_root(path, half_life_list[idx], spectrum_name, save_path)
+            read_and_dump_root(path, half_life_list[idx], spectrum_name, args.save_path)
             
