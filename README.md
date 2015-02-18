@@ -19,11 +19,9 @@ Note: After updating code be sure to run in the base directory
 Software Requirements
 ---------------------
 
-The software and corresponding version numbers required to run echidna are listed in requirements.txt. To install a package using pip run
+The software and corresponding version numbers required to run echidna are listed in requirements.txt. To install all packages using pip run
 
-    sudo pip install software_name==version_number
-
-where software_name and version_number are as listed in requirements.txt
+    sudo pip install -r requirements.txt
 
 Testing
 -------
