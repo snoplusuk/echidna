@@ -8,32 +8,34 @@ class Spectra(object):
     time, z. This histogram can be flattened to 2d (energy, radius) or 1d
     (energy).
 
+    Args:
+      name (str): The name of this spectra
+      num_decays (float): The number of decays this spectra is created to
+        represent.
+
+    Attributes:
+      _data (:class:`numpy.ndarray`): The histogram of data
+      _name (str): The name of this spectra
+      _energy_low (float): Lowest bin edge in MeV
+      _energy_high (float): Highest bin edge in MeV
+      _energy_bins (int): Number of energy bins
+      _energy_width (float): Width of a single bin in MeV
+      _radial_low (float): Lowest bin edge in mm
+      _radial_high (float): Highest bin edge in mm
+      _radial_bins (int): Number of raidal bins
+      _radial_width (float): Width of a single bin in mm
+      _time_low (float): Lowest bin edge in years
+      _time_high (float): Highest bin edge in years
+      _time_bins (int): Number of time bins
+      _time_width (float): Width of a single bin in yr
+      _num_decays (float): The number of decays this spectra currently
+        represents.
+      _raw_events (int): The number of raw events used to generate the
+        spectra. Increments by one with each fill independent of
+        weight.
     """
     def __init__(self, name, num_decays):
         """ Initialise the spectra data container.
-
-        Args:
-          name (str): The name of this spectra
-          num_decays (float): The number of decays this spectra is created to 
-            represent.
-
-        Attributes:
-          _data (:class:`numpy.ndarray`): The histogram of data
-          _name (str): The name of this spectra
-          _energy_low (float): Lowest bin edge in MeV
-          _energy_high (float): Highest bin edge in MeV
-          _energy_bins (int): Number of energy bins
-          _energy_width (float): Width of a single bin in MeV
-          _radial_low (float): Lowest bin edge in mm
-          _radial_high (float): Highest bin edge in mm
-          _radial_bins (int): Number of raidal bins
-          _radial_width (float): Width of a single bin in mm
-          _time_low (float): Lowest bin edge in years
-          _time_high (float): Highest bin edge in years
-          _time_bins (int): Number of time bins
-          _time_width (float): Width of a single bin in yr
-          _num_decays (float): The number of decays this spectra currently 
-            represents.
         """
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
@@ -48,6 +50,7 @@ class Spectra(object):
         self._time_bins = 10
         self._time_width = (self._time_high - self._time_low) / self._time_bins
         self._num_decays = num_decays
+        self._raw_events = 0
         self._data = numpy.zeros(shape=(self._energy_bins,
                                         self._radial_bins,
                                         self._time_bins),
@@ -77,6 +80,7 @@ class Spectra(object):
         radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
         time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
+        self._raw_events += 1
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
@@ -117,7 +121,7 @@ class Spectra(object):
         """ Scale THIS spectra to represent *num_decays* worth of decays over
         the entire unshrunken spectra.
 
-        This rescales each bin by the ratio of *num_decays* to 
+        This rescales each bin by the ratio of *num_decays* to
         *self._num_decays*, i.e. it changes the spectra from representing
         *self._num_decays* to *num_decays*. *self._num_decays* is updated
         to equal *num_decays* after.
