@@ -16,6 +16,15 @@ Note: After updating code be sure to run in the base directory
     
     sphinx-apidoc -f -H echidna -o docs echidna/
 
+Software Requirements
+---------------------
+
+The software and corresponding version numbers required to run echidna are listed in requirements.txt. To install a package using pip run
+
+    sudo pip install software_name==version_number
+
+where software_name and version_number are as listed in requirements.txt
+
 Testing
 -------
 To test the code is working as expected run
