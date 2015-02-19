@@ -15,6 +15,8 @@ This documentation is built using the napoleon extension to sphinx, which allows
 Note: After updating code be sure to run in the base directory
     
     sphinx-apidoc -f -H echidna -o docs echidna/
+    cd docs
+    make html
 
 Software Requirements
 ---------------------
