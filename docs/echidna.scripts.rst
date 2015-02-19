@@ -20,6 +20,14 @@ echidna.scripts.dump_smeared module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.zero_nu_limit module
+------------------------------------
+
+.. automodule:: echidna.scripts.zero_nu_limit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
