@@ -25,6 +25,15 @@ The software and corresponding version numbers required to run echidna are liste
 
     sudo pip install -r requirements.txt
 
+Running echidna
+---------------
+
+Example scripts are located in the echidna/scripts/ folder. To run example scripts you must set your python path to
+
+    export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+from the echidna base directory. Details on how to run individual scripts can be found in their respective documentation.
+
 Testing
 -------
 To test the code is working as expected run
