@@ -6,7 +6,7 @@ Documentation
 -------------
 Sphinx based documentation is available in the `docs` directory. To build HTML documentation,
 
-    cd doc
+    cd docs
     make html
 
 Output is placed in `doc/_build/html`.
