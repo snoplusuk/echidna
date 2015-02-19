@@ -8,7 +8,8 @@ This script:
   * Saves spectra objects to file in hdf5 format
 
 Examples:
-  To read rat_ds root file "example.root", with isotope half-life "half_life":
+  To read rat_ds root file "example.root", with isotope half-life "half_life"::
+
     $ python dump_spectra_ntuple.py /path/to/example.root half_life
 
   This will create the smeared hdf5 file ``./example.hdf5``.

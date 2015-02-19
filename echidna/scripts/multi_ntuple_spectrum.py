@@ -11,7 +11,8 @@ This script:
 
 Examples:
   To read all ntuples in a directory and save both individual and summed 
-  spectra to file.
+  spectra to file::
+
     $ python multi_ntuple_spectrum.py /path/to/ntuple/direc/
 
   This will create hdf5 spectra files in diectory structure:
