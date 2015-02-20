@@ -20,6 +20,30 @@ echidna.scripts.dump_smeared module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.dump_spectra_ntuple module
+------------------------------------------
+
+.. automodule:: echidna.scripts.dump_spectra_ntuple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.scripts.dump_spectra_root module
+----------------------------------------
+
+.. automodule:: echidna.scripts.dump_spectra_root
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.scripts.multi_ntuple_spectrum module
+--------------------------------------------
+
+.. automodule:: echidna.scripts.multi_ntuple_spectrum
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.scripts.zero_nu_limit module
 ------------------------------------
 
