@@ -6,7 +6,7 @@ This script:
   * Dumps spectrum to ``combined.hdf5``
 
 Examples:
-  To combine hdf5 files ``example1.hdf5``and ``example2.hdf5`` ::
+  To combine hdf5 files ``example1.hdf5`` and ``example2.hdf5`` ::
 
     $ python echidna/scripts/combine_hdf5.py -f /path/to/example1.hdf5
       /path/to/example2.hdf5
