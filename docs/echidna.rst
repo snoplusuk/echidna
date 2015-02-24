@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    echidna.calc
     echidna.core
     echidna.errors
     echidna.limit

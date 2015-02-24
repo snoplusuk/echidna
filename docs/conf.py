@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'echidna'
-copyright = u'2015, Ashley R. Back, Philip G. Jones'
+copyright = u'2015, Ashley R. Back, Philip G. Jones, James T. Waterfield'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
