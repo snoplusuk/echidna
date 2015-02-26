@@ -23,15 +23,15 @@ def get_n_atoms(mass, atm_weight, abundance):
     return (mass*1000.*_avagadros*abundance)/atm_weight
 
 
-def get_activity(halflife, N_atoms):
+def get_activity(halflife, n_atoms):
     """ Calculates the activity for an isotope with a given half-life
       and number of atoms.
 
     Args:
       halflife (float): Half-life of an isotope in years.
-      N_atoms (float): Number of atoms of an isotope.
+      n_atoms (float): Number of atoms of an isotope.
     """
-    return (numpy.log(2)/halflife)*N_atoms
+    return (numpy.log(2)/halflife)*n_atoms
 
 
 def get_0n2b_half_life(phase_space, matrix_elem, eff_mass):
@@ -84,6 +84,6 @@ def dbd_halflife_to_counts(halflife, mass, atm_weight,
     """
     if abundance < 0. or abundance > 1.:
         raise ValueError("Abundance ranges from 0 to 1")
-    N_atoms = get_N_atoms(mass, atm_weight, abundance)
-    activity = get_activity(half_life, N_atoms)
+    n_atoms = get_n_atoms(mass, atm_weight, abundance)
+    activity = get_activity(half_life, n_atoms)
     return dbd_activity_to_counts(activity, years)
