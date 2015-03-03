@@ -6,7 +6,7 @@ import echidna.core.spectra as spectra
 
 
 def _scint_weights(times, T):
-    """**CURRENTLY DIABLED** 
+    """**CURRENTLY DISABLED** 
     This method applies to the scintillator backgrounds.
     It produces the list of weights relative to each time period.
     The calculation of weights is based on radioactive decay formula.
