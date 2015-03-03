@@ -71,8 +71,10 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
+        spectrum = spectra.Spectra(str(spectrumname),
+                                   10.*dsreader.GetEntryCount())
     else:
+        spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -98,7 +100,7 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
             spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
-                    spectrum.fill(energy, position, time, weight)
+                    spectrum.fill(energy, position, time, 1.)
                 except ValueError:
                     pass
 
@@ -135,8 +137,10 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
+        spectrum = spectra.Spectra(str(spectrumname),
+                                   10.*dsreader.GetEntryCount())
     else:
+        spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -160,7 +164,7 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
             spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
-                    spectrum.fill(energy, position, time, weight)
+                    spectrum.fill(energy, position, time, 1.)
                 except ValueError:
                     pass
 
@@ -197,8 +201,9 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
     else:
+        spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -222,7 +227,7 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
-                spectrum.fill(energy, position, time, weight)
+                spectrum.fill(energy, position, time, 1.)
             except ValueError:
                 pass
 
@@ -259,8 +264,9 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
     else:
+        spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -282,7 +288,7 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
-                spectrum.fill(energy, position, time, weight)
+                spectrum.fill(energy, position, time, 1.)
             except ValueError:
                 pass
 
