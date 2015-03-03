@@ -1,5 +1,6 @@
 import numpy
 from echidna.calc import constants
+import constants as const
 
 
 class DBIsotope(object):
@@ -24,7 +25,6 @@ class DBIsotope(object):
       ValueError: If abundance is < 0. or > 1.
       ValueError: If loading is < 0. or > 1.
     """
-
     def __init__(self, name, loading, atm_weight_iso, atm_weight_nat,
                  abundance, phase_space, matrix_element,
                  fv_radius=None, scint_density=None):
@@ -54,7 +54,6 @@ class DBIsotope(object):
             raise ValueError("Loading ranges from 0 to 1")
         if self._abundance < 0. or self._abundance > 1.:
             raise ValueError("Abundance ranges from 0 to 1")
-        const = constants.Constants()
         mass_iso = self._atm_weight_iso*const._atomic_mass_unit  # kg/atom
         mass_nat = self._atm_weight_nat*const._atomic_mass_unit  # kg/atom
         mass_fraction = self._abundance*mass_iso/mass_nat
@@ -80,8 +79,9 @@ class DBIsotope(object):
         return (numpy.log(2)/half_life)*n_atoms
 
     def get_0n2b_half_life(self, eff_mass):
-        """ Calculates the 0n2b of an isotope given a phase space,
-          matrix element and an effective Majorana mass.
+        """ Calculates the 0n2b half-life of an isotope given a
+          phase space, matrix element and an effective Majorana
+          mass.
 
         Args:
           eff_mass (float): Effective majorana mass
@@ -107,8 +107,9 @@ class DBIsotope(object):
         return activity*livetime
 
     def eff_mass_to_counts(self, eff_mass, livetime=5.):
-        """ Calculates the 0n2b of an isotope given a phase space,
-          matrix element and an effective Majorana mass.
+        """ Calculates the 0n2b counts of an isotope given a
+          phase space, matrix element and an effective Majorana
+          mass.
 
         Args:
           eff_mass (float): Effective majorana mass in eV
