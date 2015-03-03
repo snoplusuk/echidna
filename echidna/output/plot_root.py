@@ -15,17 +15,17 @@ def plot_projection(spectra, dimension):
     """
     if dimension == 0:
         plot = TH1D("Energy", ";Energy[MeV];Count per bin",
-                    spectra._energy_bins,
+                    int(spectra._energy_bins),
                     spectra._energy_low,
                     spectra._energy_high)
     elif dimension == 1:
         plot = TH1D("Radial", ";Radius[mm];Count per bin",
-                    spectra._radial_bins,
+                    int(spectra._radial_bins),
                     spectra._radial_low,
                     spectra._radial_high)
     elif dimension == 2:
         plot = TH1D("Time", ";Time[yr];Count per bin",
-                    spectra._time_bins,
+                    int(spectra._time_bins),
                     spectra._time_low,
                     spectra._time_high)
     data = spectra.project(dimension)
@@ -50,18 +50,24 @@ def plot_surface(spectra, dimension):
     """
     if dimension == 0:
         plot = TH2D("EnergyRadial", ";Energy[MeV];Radius[mm];Count per bin",
-                    spectra._energy_bins, spectra._energy_low, spectra._energy_high,
-                    spectra._radial_bins, spectra._radial_low, spectra._radial_high)
+                    int(spectra._energy_bins),
+                    spectra._energy_low, spectra._energy_high,
+                    int(spectra._radial_bins),
+                    spectra._radial_low, spectra._radial_high)
         data = spectra.surface(2)
     elif dimension == 1:
         plot = TH2D("TimeEnergy", ";Time[yr];Energy[MeV];Count per bin",
-                    spectra._time_bins, spectra._time_low, spectra._time_high,
-                    spectra._energy_bins, spectra._energy_low, spectra._energy_high)
+                    int(spectra._time_bins),
+                    spectra._time_low, spectra._time_high,
+                    int(spectra._energy_bins),
+                    spectra._energy_low, spectra._energy_high)
         data = spectra.surface(1)
     elif dimension == 2:
         plot = TH2D("TimeRadial", ";Time[yr];Radius[mm];Count per bin",
-                    spectra._time_bins, spectra._time_low, spectra._time_high,
-                    spectra._radial_bins, spectra._radial_low, spectra._radial_high)
+                    int(spectra._time_bins),
+                    spectra._time_low, spectra._time_high,
+                    int(spectra._radial_bins),
+                    spectra._radial_low, spectra._radial_high)
         data = spectra.surface(0)
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
