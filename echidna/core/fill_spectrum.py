@@ -95,6 +95,7 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
                 continue
             energy = ev.GetDefaultFitVertex().GetEnergy()
             position = ev.GetDefaultFitVertex().GetPosition().Mag()
+            spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
                     spectrum.fill(energy, position, time, weight)
@@ -156,6 +157,7 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
         if mc.GetMCParticleCount() > 0:
             energy = mc.GetScintQuenchedEnergyDeposit()
             position = mc.GetMCParticle(0).GetPosition().Mag()
+            spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
                     spectrum.fill(energy, position, time, weight)
@@ -217,6 +219,7 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         energy = event.energy
         position = math.fabs(math.sqrt((event.posx)**2 +
                                        (event.posy)**2 + (event.posz)**2))
+        spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
                 spectrum.fill(energy, position, time, weight)
@@ -276,6 +279,7 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         energy = event.mcEdepQuenched
         position = math.fabs(math.sqrt((event.mcPosx)**2 +
                                        (event.mcPosy)**2 + (event.mcPosz)**2))
+        spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
                 spectrum.fill(energy, position, time, weight)

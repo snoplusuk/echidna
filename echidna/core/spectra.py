@@ -80,7 +80,6 @@ class Spectra(object):
         radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
         time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
-        self._raw_events += 1
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
@@ -229,3 +228,4 @@ class Spectra(object):
             raise ValueError("Width of time bins in spectra are not equal.")
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
+        self._num_decays += spectrum._num_decays
