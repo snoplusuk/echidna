@@ -1,7 +1,5 @@
 import numpy
-from echidna.calc import constants
-import constants as const
-
+from echidna.calc import constants as const
 
 class DBIsotope(object):
     """ Class which calculates expected counts for a DBD isotope
@@ -89,7 +87,6 @@ class DBIsotope(object):
         Returns:
           float: Zero neutrino half-life.
         """
-        const = constants.Constants()
         sq_mass_ratio = eff_mass**2/const._electron_mass**2
         return 1/(self._phase_space*self._matrix_element**2*sq_mass_ratio)
 
