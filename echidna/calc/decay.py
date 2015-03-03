@@ -3,31 +3,31 @@ from echidna.calc import constants
 
 
 class DBIsotope(object):
+    """ Class which calculates expected counts for a DBD isotope
+      over a given experiment livetime.
+
+    Args:
+      name (string): Name of the isotope
+      loading (float): Loading of isotope with 0 to 1 equivalent
+        to 0% to 100%.
+      atm_weight_iso (float): Atomic weight of isotope in g/mol.
+      atm_weight_nat (float): Atomic weight of natural element in g/mol.
+      abundance (float): Natural abundance of isotope with 0 to 1
+        equivalent to 0% to 100%.
+      phase_space (float): Phase space of the isotope.
+      matrix_element (float): Matrix element of the isotope.
+      fv_radius (float): Fiducial volume radius. Defaults to SNO+ values.
+      scint_density (float): Density of liquid scintillator. Defaults to
+        SNO+ values.
+
+    Raises:
+      ValueError: If abundance is < 0. or > 1.
+      ValueError: If loading is < 0. or > 1.
+    """
 
     def __init__(self, name, loading, atm_weight_iso, atm_weight_nat,
                  abundance, phase_space, matrix_element,
                  fv_radius=None, scint_density=None):
-        """ Class which calculates expected counts for a DBD isotope
-          over a given experiment livetime.
-
-        Args:
-          name (string): Name of the isotope
-          loading (float): Loading of isotope with 0 to 1 equivalent
-            to 0% to 100%.
-          atm_weight_iso (float): Atomic weight of isotope in g/mol.
-          atm_weight_nat (float): Atomic weight of natural element in g/mol.
-          abundance (float): Natural abundance of isotope with 0 to 1
-          equivalent to 0% to 100%.
-          phase_space (float): Phase space of the isotope.
-          matrix_element (float): Matrix element of the isotope.
-          fv_radius (float): Fiducial volume radius. Defaults to SNO+ values.
-          scint_density (float): Density of liquid scintillator. Defaults to
-            SNO+ values.
-
-        Raises:
-          ValueError: If abundance is < 0. or > 1.
-          ValueError: If loading is < 0. or > 1.
-        """
 
         if loading < 0. or loading > 1.:
             raise ValueError("Loading ranges from 0 to 1")
