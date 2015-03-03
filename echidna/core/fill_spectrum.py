@@ -6,7 +6,8 @@ import echidna.core.spectra as spectra
 
 
 def _scint_weights(times, T):
-    """This method applies to the scintillator backgrounds.
+    """**CURRENTLY DISABLED** 
+    This method applies to the scintillator backgrounds.
     It produces the list of weights relative to each time period.
     The calculation of weights is based on radioactive decay formula.
 
@@ -24,7 +25,8 @@ def _scint_weights(times, T):
 
 
 def _av_weights(times, T):
-    """This method applies to the backgrounds due to AV leaching.
+    """**UNAVAILABLE**
+    This method applies to the backgrounds due to AV leaching.
     It produces the list of weights relative to each time period.
     The calculation of weights is based on radioactive decay formula.
 
@@ -42,7 +44,8 @@ def _av_weights(times, T):
 
 
 def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
-    """This function fills in the ndarray of energies, radii, times
+    """**Weights have been disabled.**
+    This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
     of the events from the root file. In order to keep the statistics,
     the time dependence is performed via adding weights to every event
@@ -71,8 +74,10 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
+        spectrum = spectra.Spectra(str(spectrumname),
+                                   10.*dsreader.GetEntryCount())
     else:
+        spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -98,7 +103,7 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
             spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
-                    spectrum.fill(energy, position, time, weight)
+                    spectrum.fill(energy, position, time, 1.)
                 except ValueError:
                     pass
 
@@ -106,7 +111,8 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
 
 
 def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
-    """This function fills in the ndarray of true energies, radii, times
+    """**Weights have been disabled.**
+    This function fills in the ndarray of true energies, radii, times
     and weights. It takes the true energies and positions of the events
     from the root file. In order to keep the statistics, the time
     dependence is performed via adding weights to every event depending
@@ -135,8 +141,10 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), dsreader.GetEntryCount())
+        spectrum = spectra.Spectra(str(spectrumname),
+                                   10.*dsreader.GetEntryCount())
     else:
+        spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -160,7 +168,7 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
             spectrum._raw_events += 1
             for time, weight in zip(times, weights):
                 try:
-                    spectrum.fill(energy, position, time, weight)
+                    spectrum.fill(energy, position, time, 1.)
                 except ValueError:
                     pass
 
@@ -168,7 +176,8 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
 
 
 def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
-    """This function fills in the ndarray of energies, radii, times
+    """**Weights have been disabled.**
+    This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
     of the events from the ntuple. In order to keep the statistics,
     the time dependence is performed via adding weights to every event
@@ -197,8 +206,9 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
     else:
+        spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -222,7 +232,7 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
-                spectrum.fill(energy, position, time, weight)
+                spectrum.fill(energy, position, time, 1.)
             except ValueError:
                 pass
 
@@ -230,7 +240,8 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
 
 
 def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
-    """This function fills in the ndarray of energies, radii, times
+    """**Weights have been disabled.**
+    This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
     of the events from ntuple. In order to keep the statistics,
     the time dependence is performed via adding weights to every event
@@ -259,8 +270,9 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
     else:
+        spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -282,7 +294,7 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
         spectrum._raw_events += 1
         for time, weight in zip(times, weights):
             try:
-                spectrum.fill(energy, position, time, weight)
+                spectrum.fill(energy, position, time, 1.)
             except ValueError:
                 pass
 
