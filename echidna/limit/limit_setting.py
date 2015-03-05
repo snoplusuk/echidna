@@ -1,6 +1,81 @@
 import numpy
 
 from echidna.errors.custom_errors import CompatibilityError
+import echidna.utilities as utilities
+
+
+class SystAnalyser(object):
+    """ Class to analyse the effect of systematics
+
+    Records all chi squared data for a systematic and data about how the
+    systematic affects the limit setting code.
+
+    Args:
+      name (float): Name of systematic. Ideally should be the same name
+        as corresponding :class:`limit_config` key and penalty term.
+      signal_counts (:class:`numpy.ndarray`): Array of signal counts
+      syst_values (:class:`numpy.ndarray`): Array of values for systematic
+
+    Attributes:
+      _name (float): Name of systematic. Ideally should be the same name
+        as corresponding :class:`limit_config` key and penalty term.
+      _chi_squareds (:class:`numpy.ndarray`): Axes 0: signal counts,
+        1: systematic values (e.g. background counts), 2: layer.
+        Records the chi squared values for every iteration over the
+        list of systematic values (layer).
+      _preferred_values (:class:`numpy.ndarray`): Axes 0: signal counts,
+        1: layer. Stores the prefered value, out of all systematic
+        values in the loop, for each iteration (layer) over the values.
+      _minima (:class:`numpy.ndarray`): Stores x,y coordinates for the
+        position of each minima --> col 0: singnal count, col 1: value
+        of systemaitc.
+      _x_axis (:class:`numpy.ndarray`): Array of signal counts.
+      _y_axis (:class:`numpy.ndarray`): Array of values for systematic
+      _layer (int): current layer/iteration over systematic values.
+      """
+    def __init__(self, name, signal_counts, syst_values):
+        self._name = name  # ideally same name as config and penalty term
+        self._chi_squareds = numpy.zeros(shape=(1, len(signal_counts),
+                                                len(syst_values)))
+        self._preferred_vales = numpy.zeros(shape=(len(signal_counts), 1))
+        self._minima = numpy.zeros(shape=(2, 1))
+        self._x_axis = signal_counts
+        self._y_axis = syst_values
+        self._layer = 1
+
+    def add_chi_squareds(self, signal_bin, chi_squareds):
+        """ Adds to :attr:`_chi_squareds`
+
+        Args:
+          signal_bin (int): Bin corresponding to current value in signal
+            counts.
+          chi_squareds (:class:`numpy.ndarray`): 1D array of chi
+            squareds to add
+
+        Raises:
+          CompatibilityError: If supplied chi squareds array does not have
+            correct shape.
+        """
+        required_shape = self._chi_squareds[0][0].shape
+        if chi_squareds.shape != required_shape:
+            raise CompatibilityError("chi_squareds array does not have "
+                                     "required shape - " + str(required_shape))
+        if self._chi_squareds.shape[0] < self._layer:  # layer doesn't exist
+            # Create new layer
+            new_layer = numpy.zeros(shape=self._chi_squareds[0].shape)
+            self._chi_squareds = numpy.append(self._chi_squareds, [new_layer],
+                                              axis=0)
+        self._chi_squareds[self._layer-1][signal_bin] = chi_squareds
+
+    def add_preferred_value(self, signal_bin, preferred_value):
+        """ *** NOT IMPLEMENTED YET ***
+        """
+        pass
+
+    def add_minima(self, signal_count, syst_value):
+        """ *** NOT IMPLEMENTED YET ***
+        """
+        pass
 
 
 class LimitSetting(object):
@@ -21,6 +96,8 @@ class LimitSetting(object):
         * pre_shrink (*bool*): If set to True, :meth:`shrink` method is
           called on all spectra before limit setting, shrinking to
           ROI. Only applies if ROI has been set via ``roi`` keyword.
+        * verbose (*bool*): If set to True, progress and timing
+          information is printed to the terminal during limit setting.
 
     Attributes:
       _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum
@@ -36,6 +113,8 @@ class LimitSetting(object):
       _observed (:class:`numpy.array`): energy spectrum of observed
         events (data)
       _roi (tuple): (lower energy, upper energy)
+      _verbose (bool): print progress and timing information to terminal
+        during limit setting.
 
     Raises:
       CompatibilityError: If any background spectrum is incompatible
@@ -46,6 +125,7 @@ class LimitSetting(object):
         self._signal_config = None
         self._backgrounds = backgrounds
         self._background_configs = {}
+        self._syst_analysers = {}
         self._data = data
         self._calculator = None
         self._observed = None
@@ -58,6 +138,10 @@ class LimitSetting(object):
                     background.shrink(energy_low, energy_high)
         else:
             self._roi = None
+        if kwargs.get("verbose"):
+            self._verbose = True
+        else:
+            self._verbose = False
 
         # Check spectra are compatible
         for background in backgrounds:
@@ -80,14 +164,30 @@ class LimitSetting(object):
         """
         self._signal_config = signal_config
 
-    def configure_background(self, name, background_config):
+    def configure_background(self, name, background_config, **kwargs):
         """ Supply configuration object associated with the background.
 
         Args:
           background_config (:class:`echidna.limit.limit_config.LimitConfig`): background
             configuration
+
+        .. note::
+
+          Keyword arguments include:
+
+            * plot_systematic (*bool*): if true produces signal vs systematic
+              plots
+
+        Raises:
+          TypeError: If config has not been set for signal.
         """
+        if self._signal_config is None:
+            raise TypeError("signal configuration not set")
         self._background_configs[name] = background_config
+        if kwargs.get("plot_systematic"):
+            self._syst_analysers[name] = SystAnalyser(
+                name+"_counts", self._signal_config._counts,
+                background_config._counts)
 
     def set_calculator(self, calculator):
         """ Sets the chi squared calculator to use for limit setting
@@ -114,6 +214,9 @@ class LimitSetting(object):
           float: Signal counts at required limit
 
         Raises:
+          TypeError: If config has not been set for signal.
+          KeyError: If config has not been set for one or more
+            backgrounds.
           IndexError: If no limit can be calculated. Relies on finding
             the first bin with a chi squared value above
             :obj:`limit_chi_squared`. If no bin contains a chi squared
@@ -138,10 +241,15 @@ class LimitSetting(object):
             self._observed = self._data
         self._signal_config.reset_chi_squareds()
         for signal_count in self._signal_config.get_count():
-            self._signal.scale(signal_count)
-            self._signal_config.add_chi_squared(
-                self._get_chi_squared(self._backgrounds,
-                                      len(self._backgrounds)))
+            with utilities.Timer() as t:  # set timer
+                self._signal.scale(signal_count)
+                self._signal_config.add_chi_squared(
+                    self._get_chi_squared(self._backgrounds,
+                                          len(self._backgrounds)),
+                    signal_count, self._signal.sum())
+            if self._verbose:
+                print ("Calculations for %.4f signal counts took %.03f "
+                       "seconds." % (signal_count, t._interval))
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
@@ -180,6 +288,12 @@ class LimitSetting(object):
         config = self._background_configs.get(name)
         config.reset_chi_squareds()
 
+        try:
+            syst_analyser = self._syst_analysers[name]
+        except KeyError:  # No syst_analyser set for this background
+            syst_analyser = None
+        sig_config = self._signal_config
+
         # Loop over count values
         for count in config.get_count():  # Generator
             background.scale(count)
@@ -187,7 +301,8 @@ class LimitSetting(object):
                 config.add_chi_squared(
                     self._get_chi_squared(self._backgrounds,
                                           len(self._backgrounds),
-                                          current))  # function recursion
+                                          current),
+                    count, background.sum())  # function recursion
             else:
                 total_background = numpy.zeros(
                     shape=[self._signal._energy_bins],
@@ -207,9 +322,9 @@ class LimitSetting(object):
                 try:
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
-                            self._observed,
-                            expected,
-                            penalty_term=penalty_term))
+                            self._observed, expected,
+                            penalty_term=penalty_term),
+                        count, background.sum())
                 except ValueError as detail:  # Either histogram has bins with
                                               # zero events
                     if self._roi is not None:
@@ -234,10 +349,16 @@ class LimitSetting(object):
                             self._observed = total_background
                         config.add_chi_squared(
                             self._calculator.get_chi_squared(
-                                self._observed,
-                                expected,
-                                penalty_term=penalty_term))
+                                self._observed, expected,
+                                penalty_term=penalty_term),
+                            count, background.sum())
                     else:
                         raise
+        minimum = config.get_minimum()
+        if syst_analyser is not None:
+            syst_analyser.add_chi_squareds(
+                numpy.where(sig_config._counts == sig_config._current_count)[0][0],
+                config._chi_squareds[0])
+            syst_analyser._layer += 1
         current -= 1
-        return config.get_minimum()
+        return minimum
