@@ -136,4 +136,5 @@ class TestLimitSetting(unittest.TestCase):
 
         # Check chi squareds have been recorded for each background
         for config in limit_setter_3._background_configs.values():
-            self.assertTrue(config._chi_squareds)
+            chi_squareds = config._chi_squareds
+            self.assertTrue(chi_squareds.shape[1] > 0)
