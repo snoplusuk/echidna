@@ -1,5 +1,10 @@
-import h5py
+import numpy
+
 import echidna.core.spectra
+import echidna.limit.limit_setting as limit_setting
+
+import h5py
+import sys
 
 
 def dump(file_path, spectra):
@@ -28,6 +33,30 @@ def dump(file_path, spectra):
 
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
+def dump_ndarray(file_path, ndarray_object):
+    """ Dump any other class, mostly containing numpy arrays.
+
+    Args:
+      file_path (string): Location to save to.
+      ndarray_object (object): Any class instance mainly consisting of
+        numpy array(s).
+
+    Raises:
+      AttributeError: If attribute in not an ndarray and is larger than
+        64k - h5py limit for attribute sizes.
+    """
+    with h5py.File(file_path, "w") as file_:
+        for attr_name, attribute in ndarray_object.__dict__.iteritems():
+            if type(attribute).__name__ == "ndarray":
+                file_.create_dataset(attr_name, data=attribute,
+                                     compression="gzip")
+            elif sys.getsizeof(attribute) < 65536:  # 64k
+                file_.attrs[attr_name] = attribute
+            else:
+                raise AttributeError("attribute " + str(attr_name) + " is not "
+                                     "an 'ndarray' and is too large to be "
+                                     "saved as an h5py attribute.")
+
 
 def load(file_path):
     """ Load a spectra from file_path.
@@ -55,3 +84,21 @@ def load(file_path):
 
         spectra._data = file_["data"].value
     return spectra
+
+
+def load_ndarray(file_path, ndarray_object):
+    """ Dump any other class, mostly containing numpy arrays.
+
+    Args:
+      file_path (string): Location to load class attributes from.
+      array_object (object): Any class instance mainly consisting of
+        numpy array(s).
+    """
+    with h5py.File(file_path, "r") as file_:
+        for attr_name, attribute in ndarray_object.__dict__.iteritems():
+            if type(attribute).__name__ == "ndarray":
+                setattr(ndarray_object, attr_name, file_[attr_name].value)
+            else:
+                setattr(ndarray_object, attr_name, file_.attrs[attr_name])
+    return ndarray_object
+

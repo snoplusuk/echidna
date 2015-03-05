@@ -25,7 +25,8 @@ class LimitConfig(object):
         self._prior_count = prior_count
         self._counts = counts
         self._sigma = sigma
-        self._chi_squareds = numpy.zeros(shape=[0], dtype=float)
+        # Chi squared array col-0: chi squared, col-1: get_counts, col-2: spectra.sum()
+        self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)
 
     def get_count(self):
         """
@@ -40,25 +41,36 @@ class LimitConfig(object):
           >>> for count in bkg_config.get_count():
           ...     spectrum.scale(count)
           ...     # spectrum scaled to each value of count
+
+        Attributes:
+          _current_count (float): current count (scaling). The value
+            most recently returned by :meth:`get_count()`
         """
         for count in self._counts:
+            self._current_count = count
             yield count
 
-    def add_chi_squared(self, chi_squared):
+    def add_chi_squared(self, chi_squared, scaling, events):
         """ Add chi squared to config chi squared array.
 
         Args:
           chi_squared (float): chi squared value to add
         """
-        self._chi_squareds = numpy.append(self._chi_squareds, chi_squared)
+        entry_to_append = numpy.zeros((3,1))
+        entry_to_append[0][0] = chi_squared
+        entry_to_append[1][0] = scaling
+        entry_to_append[2][0] = events
+        # Append new entry, axis is 1 as we are appending an entry not a column
+        self._chi_squareds = numpy.append(self._chi_squareds,
+                                          entry_to_append, axis=1)
 
     def get_minimum(self):
         """ Get minimum value from chi_squared array.
 
         Returns:
-          float: Minimum of _chi_squareds
+          float: Minimum of :attr:`_chi_squareds`
         """
-        return numpy.min(self._chi_squareds)
+        return numpy.min(self._chi_squareds[0])
 
     def get_first_bin_above(self, limit):
         """ For signal, determine the count corresponding to limit.
@@ -71,12 +83,13 @@ class LimitConfig(object):
             confidence limit
 
         Returns:
-          float: Count at limit
+          float: number of events (result of
+            :meth:`echidna.core.spectra.Spectra.sum()`) at limit
         """
-        return self._counts[numpy.where(self._chi_squareds > limit)[0][0]]
+        return self._chi_squareds[2, numpy.where(self._chi_squareds[0] > limit)[0][0]]
 
     def reset_chi_squareds(self):
         """ Resets :attr:`_chi_squareds` to an empty
-          :class:`numpy.array`
+          :class:`numpy.ndarray`
         """
-        self._chi_squareds = numpy.zeros(shape=(0), dtype=float)
+        self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)

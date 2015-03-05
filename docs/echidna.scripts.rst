@@ -36,6 +36,14 @@ echidna.scripts.dump_spectra_root module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.klz_limits module
+---------------------------------
+
+.. automodule:: echidna.scripts.klz_limits
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.scripts.multi_ntuple_spectrum module
 --------------------------------------------
 
