@@ -2,9 +2,21 @@ from mpl_toolkits.mplot3d import Axes3D
 import pylab
 import numpy
 
-from matplotlib import rc
 
 def chi_squared_vs_signal(signal_config, **kwargs):
+    """ Plot the chi squared as a function of signal counts
+
+    Args:
+      signal_config (:class:`echidna.limit.limit_config.LimitConfig`): signal
+        config class, where chi squareds have been stored.
+
+    .. note::
+
+      Keyword arguments include:
+
+        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config
+          for signal with penalty term.
+    """
     figure = pylab.figure()
     axis = figure.add_subplot(1, 1, 1)
     x = signal_config._chi_squareds[2]

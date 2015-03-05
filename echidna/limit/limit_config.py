@@ -13,8 +13,9 @@ class LimitConfig(object):
       _prior_counts (float): prior/expected counts
       _counts (list): list of count rates (*float*) to use for scaling
       _sigma (float): prior constraint on counts
-      _chi_squareds (:class:`numpy.array`): array filled with chi
-        squared corresponding to each count value
+      _chi_squareds (:class:`numpy.array`): Array col-0:
+        :obj:`chi_squared`, col-1: :obj:`get_counts`, col-2:
+        :meth:`spectra.sum()`.
 
     Args:
       prior_counts (float): prior/expected counts
@@ -25,7 +26,6 @@ class LimitConfig(object):
         self._prior_count = prior_count
         self._counts = counts
         self._sigma = sigma
-        # Chi squared array col-0: chi squared, col-1: get_counts, col-2: spectra.sum()
         self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)
 
     def get_count(self):
@@ -56,7 +56,7 @@ class LimitConfig(object):
         Args:
           chi_squared (float): chi squared value to add
         """
-        entry_to_append = numpy.zeros((3,1))
+        entry_to_append = numpy.zeros((3, 1))
         entry_to_append[0][0] = chi_squared
         entry_to_append[1][0] = scaling
         entry_to_append[2][0] = events

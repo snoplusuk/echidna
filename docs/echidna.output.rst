@@ -12,6 +12,14 @@ echidna.output.plot module
     :undoc-members:
     :show-inheritance:
 
+echidna.output.plot_chi_squared module
+--------------------------------------
+
+.. automodule:: echidna.output.plot_chi_squared
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.output.plot_root module
 -------------------------------
 

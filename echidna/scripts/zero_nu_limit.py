@@ -11,10 +11,9 @@ parameters.
 Examples:
   To use simply run the script::
 
-    $ python zero_nu_limit.py
+    $ python zero_nu_limit.py -s /path/to/signal.hdf5 -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 
-.. note:: The script assumes that hdf5 files have already been generated
-  for the signal and both backgrounds and are saved in ``echidna/data``
+.. note:: Use the -v option to print out progress and timing information
 """
 import numpy
 
@@ -25,40 +24,45 @@ import echidna.limit.limit_setting as limit_setting
 import echidna.limit.chi_squared as chi_squared
 import echidna.output.plot_chi_squared as plot_chi_squared
 
+import argparse
+import os
+
+
+class ReadableDir(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        prospective_dir = values
+        if not os.path.isfile(prospective_dir):
+            raise argparse.ArgumentTypeError("ReadableDir:{0} is not a valid "
+                                             "path".format(prospective_dir))
+        if os.access(prospective_dir, os.R_OK):
+            setattr(namespace, self.dest, prospective_dir)
+        else:
+            raise argparse.ArgumentTypeError("ReadableDir:{0} is not readable"
+                                             .format(prospective_dir))
 
 if __name__ == "__main__":
-    import argparse
-    
-
     parser = argparse.ArgumentParser(description="Example limit setting script")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print progress and timing information")
+    parser.add_argument("-s", "--signal", action=ReadableDir,
+                        help="Supply path for signal hdf5 file")
+    parser.add_argument("-t", "--two_nu", action=ReadableDir,
+                        help="Supply paths for Te130_2n2b hdf5 files")
+    parser.add_argument("-b", "--b8_solar", action=ReadableDir,
+                        help="Supply paths for B8_Solar hdf5 files")
     args = parser.parse_args()
 
     # Create signal spectrum
-    Te130_0n2b = store.load(echidna.__echidna_home__ +
-                            "/data/Te130_0n2b_mc_smeared.hdf5")
-    print Te130_0n2b._name
+    Te130_0n2b = store.load(args.signal)
 
     # Create background spectra
-    Te130_2n2b = store.load(echidna.__echidna_home__ +
-                            "/data/Te130_2n2b_mc_smeared.hdf5")
-    print Te130_2n2b._name
-    B8_Solar = store.load(echidna.__echidna_home__ +
-                          "/data/B8_Solar_mc_smeared.hdf5")
-    print B8_Solar._name
+    Te130_2n2b = store.load(args.two_nu)
+    B8_Solar = store.load(args.b8_solar)
 
     # Shrink spectra to 5 years - livetime used by Andy
     # And make 3.5m fiducial volume cut
-    # Temporary fix to _num_decays and _raw_events
-    Te130_0n2b._num_decays = Te130_0n2b.sum()
-    Te130_0n2b._raw_events = 200034
     Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    Te130_2n2b._num_decays = Te130_2n2b.sum()
-    Te130_2n2b._raw_events = 75073953
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    B8_Solar._num_decays = B8_Solar.sum()
-    B8_Solar._raw_events = 106228
     B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
     # Create list of backgrounds
@@ -94,7 +98,8 @@ if __name__ == "__main__":
     # Configure B8_Solar
     B8_Solar_counts = numpy.arange(12529.9691, 12530.9691, 1.0, dtype=float)
     # again, no penalty term for now
-    B8_Solar_prior = 12529.9691  # from integrating whole spectrum scaled to Valentina's number
+    B8_Solar_prior = 12529.9691  # from integrating whole spectrum scaled to
+                                 # Valentina's number
     B8_Solar_config = limit_config.LimitConfig(B8_Solar_prior, B8_Solar_counts)
     set_limit.configure_background(B8_Solar._name, B8_Solar_config)
 
@@ -117,7 +122,8 @@ if __name__ == "__main__":
 
     # Set new configs this time with more counts
     Te130_2n2b_counts = numpy.arange(8.7e6, 13.3e6, 0.1e6, dtype=float)
-    sigma = 2.2647e6  # To use in penalty term (20%, Andy's document on systematics)
+    sigma = 2.2647e6  # To use in penalty term (20%, Andy's document on
+                      # systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
                                                          Te130_2n2b_counts,
                                                          sigma)

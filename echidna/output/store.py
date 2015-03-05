@@ -33,6 +33,7 @@ def dump(file_path, spectra):
 
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
+
 def dump_ndarray(file_path, ndarray_object):
     """ Dump any other class, mostly containing numpy arrays.
 
@@ -68,7 +69,8 @@ def load(file_path):
       Loaded spectra (:class:`echidna.core.spectra.Spectra`).
     """
     with h5py.File(file_path, "r") as file_:
-        spectra = echidna.core.spectra.Spectra(file_.attrs["name"], file_.attrs["num_decays"])
+        spectra = echidna.core.spectra.Spectra(file_.attrs["name"],
+                                               file_.attrs["num_decays"])
         spectra._energy_low = file_.attrs["energy_low"]
         spectra._energy_high = file_.attrs["energy_high"]
         spectra._energy_bins = file_.attrs["energy_bins"]
@@ -101,4 +103,3 @@ def load_ndarray(file_path, ndarray_object):
             else:
                 setattr(ndarray_object, attr_name, file_.attrs[attr_name])
     return ndarray_object
-

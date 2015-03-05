@@ -13,6 +13,18 @@ Subpackages
     echidna.scripts
     echidna.test
 
+Submodules
+----------
+
+echidna.utilities module
+------------------------
+
+.. automodule:: echidna.utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Module contents
 ---------------
 

@@ -5,6 +5,34 @@ import echidna.utilities as utilities
 
 
 class SystAnalyser(object):
+    """ Class to analyse the effect of systematics
+
+    Records all chi squared data for a systematic and data about how the
+    systematic affects the limit setting code.
+
+    Args:
+      name (float): Name of systematic. Ideally should be the same name
+        as corresponding :class:`limit_config` key and penalty term.
+      signal_counts (:class:`numpy.ndarray`): Array of signal counts
+      syst_values (:class:`numpy.ndarray`): Array of values for systematic
+
+    Attributes:
+      _name (float): Name of systematic. Ideally should be the same name
+        as corresponding :class:`limit_config` key and penalty term.
+      _chi_squareds (:class:`numpy.ndarray`): Axes 0: signal counts,
+        1: systematic values (e.g. background counts), 2: layer.
+        Records the chi squared values for every iteration over the
+        list of systematic values (layer).
+      _preferred_values (:class:`numpy.ndarray`): Axes 0: signal counts,
+        1: layer. Stores the prefered value, out of all systematic
+        values in the loop, for each iteration (layer) over the values.
+      _minima (:class:`numpy.ndarray`): Stores x,y coordinates for the
+        position of each minima --> col 0: singnal count, col 1: value
+        of systemaitc.
+      _x_axis (:class:`numpy.ndarray`): Array of signal counts.
+      _y_axis (:class:`numpy.ndarray`): Array of values for systematic
+      _layer (int): current layer/iteration over systematic values.
+      """
     def __init__(self, name, signal_counts, syst_values):
         self._name = name  # ideally same name as config and penalty term
         self._chi_squareds = numpy.zeros(shape=(1, len(signal_counts),
@@ -14,15 +42,41 @@ class SystAnalyser(object):
         self._x_axis = signal_counts
         self._y_axis = syst_values
         self._layer = 1
+
     def add_chi_squareds(self, signal_bin, chi_squareds):
+        """ Adds to :attr:`_chi_squareds`
+
+        Args:
+          signal_bin (int): Bin corresponding to current value in signal
+            counts.
+          chi_squareds (:class:`numpy.ndarray`): 1D array of chi
+            squareds to add
+
+        Raises:
+          CompatibilityError: If supplied chi squareds array does not have
+            correct shape.
+        """
+        required_shape = self._chi_squareds[0][0].shape
+        if chi_squareds.shape != required_shape:
+            raise CompatibilityError("chi_squareds array does not have "
+                                     "required shape - " + str(required_shape))
         if self._chi_squareds.shape[0] < self._layer:  # layer doesn't exist
             # Create new layer
             new_layer = numpy.zeros(shape=self._chi_squareds[0].shape)
             self._chi_squareds = numpy.append(self._chi_squareds, [new_layer],
                                               axis=0)
         self._chi_squareds[self._layer-1][signal_bin] = chi_squareds
+
     def add_preferred_value(self, signal_bin, preferred_value):
+        """ *** NOT IMPLEMENTED YET ***
+        """
         pass
+
+    def add_minima(self, signal_count, syst_value):
+        """ *** NOT IMPLEMENTED YET ***
+        """
+        pass
+
 
 class LimitSetting(object):
     """ Class to handle main limit setting.
@@ -119,10 +173,10 @@ class LimitSetting(object):
 
         .. note::
 
-        Keyword arguments include:
+          Keyword arguments include:
 
-          * plot_systematic (*bool*): if true produces signal vs systematic
-            plots        
+            * plot_systematic (*bool*): if true produces signal vs systematic
+              plots
 
         Raises:
           TypeError: If config has not been set for signal.
@@ -234,7 +288,7 @@ class LimitSetting(object):
         config = self._background_configs.get(name)
         config.reset_chi_squareds()
 
-        try: 
+        try:
             syst_analyser = self._syst_analysers[name]
         except KeyError:  # No syst_analyser set for this background
             syst_analyser = None
@@ -268,8 +322,7 @@ class LimitSetting(object):
                 try:
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
-                            self._observed,
-                            expected,
+                            self._observed, expected,
                             penalty_term=penalty_term),
                         count, background.sum())
                 except ValueError as detail:  # Either histogram has bins with
@@ -296,8 +349,7 @@ class LimitSetting(object):
                             self._observed = total_background
                         config.add_chi_squared(
                             self._calculator.get_chi_squared(
-                                self._observed,
-                                expected,
+                                self._observed, expected,
                                 penalty_term=penalty_term),
                             count, background.sum())
                     else:
