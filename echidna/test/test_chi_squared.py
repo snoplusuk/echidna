@@ -12,43 +12,61 @@ class TestChiSquared(unittest.TestCase):
 
         Tests that the function calculates accurate values
         """
-        self.assertEqual(chi_squared.pearson_chi_squared(100.0, 110.0),
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([110.0])
+        self.assertEqual(chi_squared.pearson_chi_squared(array1, array2),
                          (10.0 / 11.0))
-        self.assertEqual(chi_squared.pearson_chi_squared(100.0, 90.0),
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([90.0])
+        self.assertEqual(chi_squared.pearson_chi_squared(array1, array2),
                          (10.0 / 9.0))
-        self.assertEqual(chi_squared.pearson_chi_squared(100.0, 100.0), 0.0)
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([100.0])
+        self.assertEqual(chi_squared.pearson_chi_squared(array1, array2), 0.0)
+        array1 = numpy.array([1])
+        array2 = numpy.array([1, 2])
         self.assertRaises(ValueError, chi_squared.pearson_chi_squared,
-                          0.0, 100.0)
-        self.assertRaises(ValueError, chi_squared.pearson_chi_squared,
-                          100.0, 0.0)
+                          array1, array2)
 
     def test_neyman_chi_squared(self):
         """ Test the neyman chi squared function
 
         Tests that the function calculates accurate values
         """
-        self.assertEqual(chi_squared.neyman_chi_squared(100.0, 110.0), 1.0)
-        self.assertEqual(chi_squared.neyman_chi_squared(100.0, 90.0), 1.0)
-        self.assertEqual(chi_squared.neyman_chi_squared(100.0, 100.0), 0.0)
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([110.0])
+        self.assertEqual(chi_squared.neyman_chi_squared(array1, array2), 1.0)
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([90.0])
+        self.assertEqual(chi_squared.neyman_chi_squared(array1, array2), 1.0)
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([100.0])
+        self.assertEqual(chi_squared.neyman_chi_squared(array1, array2), 0.0)
+        array1 = numpy.array([1])
+        array2 = numpy.array([1, 2])
         self.assertRaises(ValueError, chi_squared.neyman_chi_squared,
-                          0.0, 100.0)
-        self.assertRaises(ValueError, chi_squared.neyman_chi_squared,
-                          100.0, 0.0)
+                          array1, array2)
 
     def test_log_likelihood(self):
         """ Test the log likelihood function
 
         Tests that the function calculates accurate values
         """
-        self.assertAlmostEqual(2.0 * chi_squared.log_likelihood(100.0, 110.0),
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([110.0])
+        self.assertAlmostEqual(2.0*chi_squared.log_likelihood(array1, array2),
                                0.9379640391350215)
-        self.assertAlmostEqual(2.0 * chi_squared.log_likelihood(100.0, 90.0),
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([90.0])
+        self.assertAlmostEqual(2.0*chi_squared.log_likelihood(array1, array2),
                                1.072103131565271)
-        self.assertEqual(chi_squared.log_likelihood(100.0, 100.0), 0.0)
+        array1 = numpy.array([100.0])
+        array2 = numpy.array([100.0])
+        self.assertEqual(chi_squared.log_likelihood(array1, array2), 0.0)
+        array1 = numpy.array([1])
+        array2 = numpy.array([1, 2])
         self.assertRaises(ValueError, chi_squared.log_likelihood,
-                          0.0, 100.0)
-        self.assertRaises(ValueError, chi_squared.log_likelihood,
-                          100.0, 0.0)
+                          array1, array2)
 
     def test_get_chi_squared(self):
         """ Tests get chi squared method

@@ -91,7 +91,6 @@ class TestLimitSetting(unittest.TestCase):
         limit_setter_1.configure_background("bkg_1", bkg_1_config)
         self.assertRaises(TypeError, limit_setter_1.get_limit)
         limit_setter_1.set_calculator(calculator)
-        self.assertRaises(ValueError, limit_setter_1.get_limit)
 
         # Test 2: different limits with and without penalty term
         # Define ROI

@@ -108,6 +108,7 @@ class ChiSquared(object):
                                            penalty_term.get("sigma"), 2.0)
         return chi_squared
 
+
 def pearson_chi_squared(observed, expected):
     """ Calculates Pearson's chi squared.
 
@@ -161,7 +162,7 @@ def neyman_chi_squared(observed, expected):
 
     Returns:
       float: Calculated Neyman's chi squared
-    """ 
+    """
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
     epsilon = 1e-34  # In the limit of zero
