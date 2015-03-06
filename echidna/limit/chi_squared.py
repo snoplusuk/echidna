@@ -109,29 +109,6 @@ class ChiSquared(object):
         return chi_squared
 
 
-def check_bin_content(array):
-    """ Checks bin content of a numpy array.
-
-    Bin content must be > 0 to be used in chi squared calculations
-
-    Args:
-      array (:class:`numpy.array`, *float*): Array or value to check
-
-    Returns:
-      tuple: (result of check (*bool*), error message (*str*))
-    """
-    if (numpy.sum(array <= 0.0) != 0):
-        result = False
-        zero_bins, = numpy.where(array <= 0.0)
-        message = "array contains " + str(len(zero_bins)) + \
-            " bins with content <= 0.0. First instance at bin " + \
-            str(zero_bins[0]) + "."
-    else:
-        result = True
-        message = "array - all bins > 0.0"
-    return result, message
-
-
 def pearson_chi_squared(observed, expected):
     """ Calculates Pearson's chi squared.
 
@@ -147,20 +124,24 @@ def pearson_chi_squared(observed, expected):
         events
 
     Raises:
-      ValueError: If either array contains a bin with content <= 0.0
+      ValueError: If arrays are different lengths.
 
     Returns:
       float: Calculated Pearson's chi squared
     """
-    correct_bin_content, message = check_bin_content(observed)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: observed " +
-                         message)
-    correct_bin_content, message = check_bin_content(expected)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: expected " +
-                         message)
-    return numpy.sum((observed-expected)**2 / expected)
+    if len(observed) != len(expected):
+        raise ValueError("Arrays are different lengths")
+    # Chosen due to backgrounds with low rates in ROI
+    epsilon = 1e-34 # Limit of zero
+    total = 0
+    for i in range(len(observed)):
+        if expected[i] < epsilon:
+            expected[i] = epsilon
+        if observed[i] < epsilon:
+            total += expected[i]
+        else:
+            total += (observed[i]-expected[i])**2/expected[i]
+    return total
 
 
 def neyman_chi_squared(observed, expected):
@@ -178,20 +159,24 @@ def neyman_chi_squared(observed, expected):
         events
 
     Raises:
-      ValueError: If either array contains a bin with content <= 0.0
+      ValueError: If arrays are different lengths
 
     Returns:
       float: Calculated Neyman's chi squared
     """
-    correct_bin_content, message = check_bin_content(observed)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: observed " +
-                         message)
-    correct_bin_content, message = check_bin_content(expected)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: expected " +
-                         message)
-    return numpy.sum((observed-expected)**2 / observed)
+    if len(observed) != len(expected):
+        raise ValueError("Arrays are different lengths")
+    # Chosen due to backgrounds with low rates in ROI
+    epsilon = 1e-34  # In the limit of zero
+    total = 0
+    for i in range(len(observed)):
+        if observed[i] < epsilon:
+            expected[i] = epsilon
+        if expected[i] < epsilon:
+            total += observed[i]
+        else:
+            total += (expected[i]-observed[i])**2/observed[i]
+    return total
 
 
 def log_likelihood(observed, expected):
@@ -213,18 +198,21 @@ def log_likelihood(observed, expected):
         events
 
     Raises:
-      ValueError: If either array contains a bin with content <= 0.0
+      ValueError: If arrays are different lengths.
 
     Returns:
       float: Calculated Neyman's chi squared
     """
-    correct_bin_content, message = check_bin_content(observed)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: observed " +
-                         message)
-    correct_bin_content, message = check_bin_content(expected)
-    if not correct_bin_content:
-        raise ValueError("chi_squared.pearson_chi_squared: expected " +
-                         message)
-    return numpy.sum(expected - observed +
-                     observed*numpy.log(observed/expected))
+    if len(observed) != len(expected):
+        raise ValueError("Arrays are different lengths")
+    # Chosen due to backgrounds with low rates in ROI
+    epsilon = 1e-34  # In the limit of zero
+    total = 0
+    for i in range(len(observed)):
+        if expected[i] < epsilon:
+            expected[i] = epsilon
+        if observed[i] < epsilon:
+            total += expected[i]
+        else:
+            total += expected[i]-observed[i]+observed[i]*numpy.log(observed[i]/expected[i])
+    return total
