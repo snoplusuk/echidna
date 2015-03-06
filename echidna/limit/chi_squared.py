@@ -131,7 +131,8 @@ def pearson_chi_squared(observed, expected):
     """
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
-    epsilon = 1e-34  # In the limit of zero
+    # Chosen due to backgrounds with low rates in ROI
+    epsilon = 1e-34 # Limit of zero
     total = 0
     for i in range(len(observed)):
         if expected[i] < epsilon:
@@ -165,6 +166,7 @@ def neyman_chi_squared(observed, expected):
     """
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
+    # Chosen due to backgrounds with low rates in ROI
     epsilon = 1e-34  # In the limit of zero
     total = 0
     for i in range(len(observed)):
@@ -203,6 +205,7 @@ def log_likelihood(observed, expected):
     """
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
+    # Chosen due to backgrounds with low rates in ROI
     epsilon = 1e-34  # In the limit of zero
     total = 0
     for i in range(len(observed)):
