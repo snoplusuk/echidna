@@ -32,7 +32,7 @@ def plot_projection(spectra, dimension, graphical=True):
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index, datum)
-    if graphical == True:
+    if graphical:
         plot.Draw()
         raw_input("Return to quit")
     return plot
@@ -75,7 +75,7 @@ def plot_surface(spectra, dimension, graphical=True):
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
             plot.SetBinContent(index_x, index_y, datum)
-    if graphical == True:
+    if graphical:
         plot.Draw("COLZ")
         raw_input("Return to quit")
     return plot
