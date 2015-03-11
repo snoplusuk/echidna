@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 262.0143  # Based on T_1/2 = 9.94e25 y @ 90% CL
+    Te130_0n2b_prior = 0.0  # Based on T_1/2 = 9.94e25 y @ 90% CL
                                  # (SNO+-doc-2593-v8) for 5 year livetime
                                  # Note extrapolating here to 10 years
     Te130_0n2b_config = limit_config.LimitConfig(Te130_0n2b_prior,
@@ -86,10 +86,10 @@ if __name__ == "__main__":
     set_limit.configure_signal(Te130_0n2b_config)
 
     # Configure Te130_2n2b
-    Te130_2n2b_counts = numpy.arange(11.323579e6, 11.323580e6,
-                                     1.0, dtype=float)
+    Te130_2n2b_counts = numpy.arange(37.5e6, 38.5e6,
+                                     1.0e6, dtype=float)
     # no penalty term to start with so just an array containing one value
-    Te130_2n2b_prior = 11.323579e6  # Based on T_1/2 = 2.3e21 y for 10 years
+    Te130_2n2b_prior = 37.5e6  # Based on T_1/2 = 2.3e21 y for 10 years
     Te130_2n2b_config = limit_config.LimitConfig(Te130_2n2b_prior,
                                                  Te130_2n2b_counts)
     set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_config)
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     # Now try with a penalty term
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 262.0143  # Based on T_1/2 = 9.94e25 y @ 90% CL
+    Te130_0n2b_prior = 0.0  # Based on T_1/2 = 9.94e25 y @ 90% CL
                                  # (SNO+-doc-2593-v8) for 5 year livetime
                                  # Note extrapolating here to 10 years
     Te130_0n2b_penalty_config = limit_config.LimitConfig(Te130_0n2b_prior,
@@ -121,8 +121,8 @@ if __name__ == "__main__":
     set_limit.configure_signal(Te130_0n2b_penalty_config)
 
     # Set new configs this time with more counts
-    Te130_2n2b_counts = numpy.arange(8.7e6, 13.3e6, 0.1e6, dtype=float)
-    sigma = 2.2647e6  # To use in penalty term (20%, Andy's document on
+    Te130_2n2b_counts = numpy.arange(30.0e6, 45.0e6, 0.1e6, dtype=float)
+    sigma = 7.5e6  # To use in penalty term (20%, Andy's document on
                       # systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
                                                          Te130_2n2b_counts,

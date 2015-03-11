@@ -2,6 +2,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import pylab
 import numpy
 
+import echidna.calc.decay as decay
+
 
 def chi_squared_vs_signal(signal_config, **kwargs):
     """ Plot the chi squared as a function of signal counts
@@ -19,7 +21,11 @@ def chi_squared_vs_signal(signal_config, **kwargs):
     """
     figure = pylab.figure()
     axis = figure.add_subplot(1, 1, 1)
-    x = signal_config._chi_squareds[2]
+    effective_masses = numpy.zeros(shape=(signal_config._chi_squareds[2].shape))
+    for i_bin, count in enumerate(signal_config._chi_squareds[2]):
+        effective_mass = decay.
+        effective_masses[i_bin] = effective_mass
+    x = effective_masses
     pylab.xlabel("Signal counts")
     pylab.ylabel(r"$\chi^{2}$")
     if kwargs.get("penalty") is not None:
