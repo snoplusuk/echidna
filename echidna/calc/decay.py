@@ -24,7 +24,7 @@ class DBIsotope(object):
       ValueError: If loading is < 0. or > 1.
     """
     def __init__(self, name, loading, atm_weight_iso, atm_weight_nat,
-                 abundance, phase_space, matrix_element, g_A,
+                 abundance, phase_space, matrix_element,
                  fv_radius=None, scint_density=None):
 
         if loading < 0. or loading > 1.:
@@ -38,7 +38,6 @@ class DBIsotope(object):
         self._abundance = abundance
         self._phase_space = phase_space
         self._matrix_element = matrix_element
-        self._g_A = g_A
         self._fv_radius = fv_radius
         self._scint_density = scint_density
 
@@ -89,7 +88,7 @@ class DBIsotope(object):
           float: Zero neutrino half-life.
         """
         sq_mass_ratio = eff_mass**2/const._electron_mass**2
-        return 1/(self._g_A**4*self._phase_space*self._matrix_element**2*sq_mass_ratio)
+        return 1/(self._phase_space*self._matrix_element**2*sq_mass_ratio)
 
     def activity_to_counts(self, activity, livetime):
         """ Converts activity to number of counts assuming constant activity.
@@ -103,20 +102,6 @@ class DBIsotope(object):
           float: Number of counts.
         """
         return activity*livetime
-
-    def counts_to_activty(self, counts, livetime=5.):
-        return counts/livetime
-
-    def activity_to_half_life(self, activity, n_atoms):
-        return 1/((activity/n_atoms)*numpy.log(2))
-
-    def half_life_to_mass(self, half_life):
-        return numpy.sqrt(const._electron_mass**2/(self.g_A**4*self._phase_space*self._matrix_element**2*half_life))
-
-    def counts_to_mass(self, counts, n_atoms, livetime=5.):
-        activity = counts_to_activty(self, counts, livetime)
-        half_life = activity_to_half_life(self, n_atoms, activity)
-        return half_life_to_mass(self, half_life)
 
     def eff_mass_to_counts(self, eff_mass, livetime=5.):
         """ Calculates the 0n2b counts of an isotope given a
