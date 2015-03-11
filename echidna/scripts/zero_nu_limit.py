@@ -59,6 +59,13 @@ if __name__ == "__main__":
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
 
+    Te130_0n2b._num_decays = Te130_0n2b.sum()
+    Te130_0n2b._raw_events = 200034
+    Te130_2n2b._num_decays = Te130_2n2b.sum()
+    Te130_2n2b._raw_events = 75073953
+    B8_Solar._num_decays = B8_Solar.sum()
+    B8_Solar._raw_events = 106228
+
     # Shrink spectra to 5 years - livetime used by Andy
     # And make 3.5m fiducial volume cut
     Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
@@ -121,7 +128,7 @@ if __name__ == "__main__":
     set_limit.configure_signal(Te130_0n2b_penalty_config)
 
     # Set new configs this time with more counts
-    Te130_2n2b_counts = numpy.arange(8.7e6, 13.3e6, 0.1e6, dtype=float)
+    Te130_2n2b_counts = numpy.arange(6.8e6, 15.9e6, 0.1e6, dtype=float)
     sigma = 2.2647e6  # To use in penalty term (20%, Andy's document on
                       # systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
@@ -130,7 +137,7 @@ if __name__ == "__main__":
     set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_penalty_config,
                                    plot_systematic=True)
 
-    B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.1e3, dtype=float)
+    B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.05e3, dtype=float)
     sigma = 501.1988  # To use in penalty term
     B8_Solar_penalty_config = limit_config.LimitConfig(B8_Solar_prior,
                                                        B8_Solar_counts, sigma)
