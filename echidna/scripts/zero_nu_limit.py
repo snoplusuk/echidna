@@ -59,6 +59,13 @@ if __name__ == "__main__":
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
 
+    Te130_0n2b._num_decays = Te130_0n2b.sum()
+    Te130_0n2b._raw_events = 200034
+    Te130_2n2b._num_decays = Te130_2n2b.sum()
+    Te130_2n2b._raw_events = 75073953
+    B8_Solar._num_decays = B8_Solar.sum()
+    B8_Solar._raw_events = 106228
+
     # Shrink spectra to 5 years - livetime used by Andy
     # And make 3.5m fiducial volume cut
     Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
@@ -78,7 +85,7 @@ if __name__ == "__main__":
 
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 0.0  # Based on T_1/2 = 9.94e25 y @ 90% CL
+    Te130_0n2b_prior = 0.0       #262.0143 Based on T_1/2 = 9.94e25 y @ 90% CL
                                  # (SNO+-doc-2593-v8) for 5 year livetime
                                  # Note extrapolating here to 10 years
     Te130_0n2b_config = limit_config.LimitConfig(Te130_0n2b_prior,
@@ -113,7 +120,7 @@ if __name__ == "__main__":
     # Now try with a penalty term
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 0.0  # Based on T_1/2 = 9.94e25 y @ 90% CL
+    Te130_0n2b_prior = 0.0       # 262.0143 Based on T_1/2 = 9.94e25 y @ 90% CL
                                  # (SNO+-doc-2593-v8) for 5 year livetime
                                  # Note extrapolating here to 10 years
     Te130_0n2b_penalty_config = limit_config.LimitConfig(Te130_0n2b_prior,

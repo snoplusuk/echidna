@@ -234,15 +234,19 @@ class LimitSetting(object):
                                    dtype=float)
             for background in self._backgrounds:
                 config = self._background_configs.get(background._name)
+                print background._name, background.sum(), config._prior_count
                 background.scale(config._prior_count)
                 observed += background.project(0)
             self._observed = observed
+            print numpy.sum(self._observed)
+            raw_input("RETURN to continue")
         else:  # _data is not None
             self._observed = self._data
         self._signal_config.reset_chi_squareds()
         for signal_count in self._signal_config.get_count():
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
+                print self._signal._name, self._signal.sum()
                 self._signal_config.add_chi_squared(
                     self._get_chi_squared(self._backgrounds,
                                           len(self._backgrounds)),
@@ -297,6 +301,7 @@ class LimitSetting(object):
         # Loop over count values
         for count in config.get_count():  # Generator
             background.scale(count)
+            print background._name, background.sum()
             if (current < total_backgrounds-1):
                 config.add_chi_squared(
                     self._get_chi_squared(self._backgrounds,
@@ -320,6 +325,8 @@ class LimitSetting(object):
                 else:
                     penalty_term = {}
                 try:
+                    print "observed:", numpy.sum(self._observed)
+                    print "expected:", numpy.sum(expected)
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
                             self._observed, expected,
