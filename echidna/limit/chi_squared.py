@@ -39,6 +39,8 @@ class ChiSquared(object):
       _penalty_terms (dict): information about each penalty term
       _penalty_terms_set (bool): True if one or more penalty terms have
         been set
+      _current_values (dict): Stores the current value of each named
+        penalty term
     """
     def __init__(self, form="poisson_likelihood", **kwargs):
         self._form = form
@@ -48,6 +50,17 @@ class ChiSquared(object):
         else:
             self._penalty_terms = None
             self._penalty_terms_set = False
+        self._current_values = {}
+
+    def set_penalty_term(self, name, penalty_term):
+        """ Set the value of a named penlty term
+
+        Args:
+          name (string): Name of penalty term to set
+          penalty_term (dict): Specify "parameter_value" and "sigma"
+            values in dict.
+        """
+        self._penalty_terms[name] = penalty_term
 
     def get_chi_squared(self, observed, expected, **kwargs):
         """ Calculate the chi squared comparing observed to expected.
@@ -104,8 +117,10 @@ class ChiSquared(object):
         # Add penalty term(s)
         if self._penalty_terms_set:
             for name, penalty_term in self._penalty_terms.iteritems():
-                chi_squared += numpy.power(penalty_term.get("parameter_value")/
+                value = numpy.power(penalty_term.get("parameter_value")/
                                            penalty_term.get("sigma"), 2.0)
+                self._current_values[name] = value
+                chi_squared += value
         return chi_squared
 
 
