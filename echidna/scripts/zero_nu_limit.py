@@ -137,7 +137,7 @@ if __name__ == "__main__":
     set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_penalty_config,
                                    plot_systematic=True)
 
-    B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.1e3, dtype=float)
+    B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.05e3, dtype=float)
     sigma = 501.1988  # To use in penalty term
     B8_Solar_penalty_config = limit_config.LimitConfig(B8_Solar_prior,
                                                        B8_Solar_counts, sigma)
@@ -147,7 +147,11 @@ if __name__ == "__main__":
     # Calculate confidence limit
     print "90% CL at: " + str(set_limit.get_limit()) + " counts"
     plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config,
-                                           penalty=Te130_0n2b_penalty_config)
+                                           penalty=Te130_0n2b_penalty_config,
+                                           save_as="chi_squared_penalty.png")
 
     for syst_analyser in set_limit._syst_analysers.values():
+        print syst_analyser._syst_values
         store.dump_ndarray(syst_analyser._name+".hdf5", syst_analyser)
+    store.dump_ndarray("Te130_0n2b_config.hdf5", Te130_0n2b_config)
+    store.dump_ndarray("Te130_0n2b_penalty_config.hdf5", Te130_0n2b_penalty_config)

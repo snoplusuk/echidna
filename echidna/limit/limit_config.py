@@ -26,7 +26,6 @@ class LimitConfig(object):
     """
     def __init__(self, prior_count, counts, sigma=None):
         self._prior_count = prior_count
-        print self._prior_count
         self._counts = counts
         self._sigma = sigma
         self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)
@@ -82,7 +81,6 @@ class LimitConfig(object):
             * minimum_bin (*bool*): If True, returns the position (bin
               number) in addition to minimum chi squared
         """
-        print self._chi_squareds[0]
         minimum = numpy.min(self._chi_squareds[0])
         if kwargs.get("minimum_bin"):
             return minimum, numpy.where(self._chi_squareds[0] == minimum)

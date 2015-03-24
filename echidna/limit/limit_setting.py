@@ -211,6 +211,7 @@ class LimitSetting(object):
             raise TypeError("signal configuration not set")
         self._background_configs[name] = background_config
         if kwargs.get("plot_systematic"):
+            print background_config._counts
             self._syst_analysers[name] = SystAnalyser(
                 name+"_counts", self._signal_config._counts,
                 background_config._counts)
@@ -260,11 +261,9 @@ class LimitSetting(object):
                                    dtype=float)
             for background in self._backgrounds:
                 config = self._background_configs.get(background._name)
-                print background._name, background.sum(), config._prior_count
                 background.scale(config._prior_count)
                 observed += background.project(0)
             self._observed = observed
-            print numpy.sum(self._observed)
             raw_input("RETURN to continue")
         else:  # _data is not None
             self._observed = self._data
@@ -274,7 +273,6 @@ class LimitSetting(object):
                 syst_analyser._layer = 1  # reset layers 
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
-                print self._signal._name, self._signal.sum()
                 self._signal_config.add_chi_squared(
                     self._get_chi_squared(self._backgrounds,
                                           len(self._backgrounds)),
@@ -283,6 +281,7 @@ class LimitSetting(object):
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
         for syst_analyser in self._syst_analysers.values():
+            print syst_analyser._syst_values
             syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
@@ -331,7 +330,6 @@ class LimitSetting(object):
         # Loop over count values
         for count in config.get_count():  # Generator
             background.scale(count)
-            print background._name, background.sum()
             if (current < total_backgrounds-1):
                 # Add penalty terms manually
                 if config._sigma is not None:
@@ -362,8 +360,6 @@ class LimitSetting(object):
                 else:
                     penalty_term = {}
                 try:
-                    print "observed:", numpy.sum(self._observed)
-                    print "expected:", numpy.sum(expected)
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
                             self._observed, expected,
