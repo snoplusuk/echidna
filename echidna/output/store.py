@@ -49,7 +49,9 @@ def dump_ndarray(file_path, ndarray_object):
     with h5py.File(file_path, "w") as file_:
         for attr_name, attribute in ndarray_object.__dict__.iteritems():
             print attr_name
-            if type(attribute).__name__ == "ndarray":
+            if attribute is None:  # Can't save to hdf5, skip --> continue
+                continue
+            elif type(attribute).__name__ == "ndarray":
                 file_.create_dataset(attr_name, data=attribute,
                                      compression="gzip")
             elif sys.getsizeof(attribute) < 65536:  # 64k
@@ -100,8 +102,13 @@ def load_ndarray(file_path, ndarray_object):
     with h5py.File(file_path, "r") as file_:
         for attr_name, attribute in ndarray_object.__dict__.iteritems():
             print attr_name
-            if type(attribute).__name__ == "ndarray":
-                setattr(ndarray_object, attr_name, file_[attr_name].value)
-            else:
-                setattr(ndarray_object, attr_name, file_.attrs[attr_name])
+            try:
+                if type(attribute).__name__ == "ndarray":
+                    setattr(ndarray_object, attr_name, file_[attr_name].value)
+                else:
+                    setattr(ndarray_object, attr_name, file_.attrs[attr_name])
+            except KeyError as detail:  # unable to locate attribute, skip
+                print detail
+                print " --> skipping!"
+                continue
     return ndarray_object

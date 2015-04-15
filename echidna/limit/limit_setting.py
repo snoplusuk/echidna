@@ -17,7 +17,7 @@ class SystAnalyser(object):
       syst_values (:class:`numpy.ndarray`): Array of values for systematic
 
     Attributes:
-      _name (float): Name of systematic. Ideally should be the same name
+      _name (string): Name of systematic. Ideally should be the same name
         as corresponding :class:`limit_config` key and penalty term.
       _chi_squareds (:class:`numpy.ndarray`): Axes 0: signal counts,
         1: systematic values (e.g. background counts), 2: layer.
@@ -26,12 +26,14 @@ class SystAnalyser(object):
       _preferred_values (:class:`numpy.ndarray`): Axes 0: signal counts,
         1: layer. Stores the prefered value, out of all systematic
         values in the loop, for each iteration (layer) over the values.
+      _penalty_values (:class:`numpy.ndarray`): col-0 = value of
+        systematic, col-1 = value of penalty term.
       _minima (:class:`numpy.ndarray`): Stores x,y coordinates for the
-        position of each minima --> col 0: singnal count, col 1: value
-        of systemaitc.
+        position of each minima --> col-0 = signal count, col-1: value
+        of systematic.
       _signal_counts (:class:`numpy.ndarray`): Array of signal counts.
-      _syst_values (:class:`numpy.ndarray`): Array of values for 
-        systematic
+      _syst_values (:class:`numpy.ndarray`): Array of values for
+        systematic.
       _actual_counts (:class:`numpy.ndarray`): Array of actual signal
         counts. A copy of :obj:`signal_config._chi_squareds[2]` after
         limit setting is complete.
@@ -51,8 +53,15 @@ class SystAnalyser(object):
                                           dtype=float)
         self._layer = 1
 
+    def get_name(self):
+        """
+        Returns:
+          string: :attr:`_name`
+        """
+        return self._name
+
     def add_chi_squareds(self, signal_bin, chi_squareds):
-        """ Adds to :attr:`_chi_squareds`
+        """ Adds to :attr:`_chi_squareds`.
 
         Args:
           signal_bin (int): Bin corresponding to current value in signal
@@ -76,18 +85,49 @@ class SystAnalyser(object):
                                               axis=1)
         self._chi_squareds[signal_bin][self._layer-1] = chi_squareds
 
+    def get_chi_squareds(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_chi_squareds` Axes 0: signal
+            counts, 1: systematic values (e.g. background counts), 2:
+            layer. Records the chi squared values for every iteration
+            over the list of systematic values (layer).
+        """
+        return self._chi_squareds
+
     def add_preferred_value(self, signal_bin, preferred_value):
-        """ *** NOT IMPLEMENTED YET ***
+        """ Adds to :attr:`_preferred_values`
+
+        Args:
+          signal_bin (int): Bin corresponding to current value in signal
+            counts.
+          preferred_values (:class:`numpy.ndarray`): 1D array of
+            preferred values to add.
         """
         if self._preferred_values.shape[1] < self._layer:  # doesn't exist
-            new_layer = numpy.zeros(shape=self._preferred_values[:,0:1].shape,
+            new_layer = numpy.zeros(shape=self._preferred_values[:, 0: 1].shape,
                                     dtype=float)
             self._preferred_values = numpy.append(self._preferred_values,
                                                   new_layer, axis=1)
         self._preferred_values[signal_bin][self._layer-1] = preferred_value
 
+    def get_preferred_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_preferred_values`. Axes 0:
+          signal counts, 1: layer. Stores the prefered value, out of
+          all systematic values in the loop, for each iteration (layer)
+          over the values.
+        """
+        return self._preferred_values
+
     def add_penalty_value(self, syst_value, penalty_value):
-        """ *** NOT IMPLEMENTED YET ***
+        """ Adds to :attr:`_penalty_values`
+
+        Args:
+          syst_value (float): value of systematic.
+          penalty_value (float): value of penalty term, corresponding
+            to given systematic value.
         """
         entry_to_append = numpy.zeros((2, 1), dtype=float)
         entry_to_append[0][0] = syst_value
@@ -95,13 +135,55 @@ class SystAnalyser(object):
         self._penalty_values = numpy.append(self._penalty_values,
                                             entry_to_append, axis=1)
 
+    def get_penalty_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_penalty_values`. col-0 =
+            value of systematic, col-1 = value of penalty term.
+        """
+        return self._penalty_values
+
     def add_minima(self, signal_count, syst_value):
-        """ *** NOT IMPLEMENTED YET ***
+        """ Adds to :attr:`_minima`
+
+        Args:
+          signal_count (float): current signal count
+          syst_value (float): current value of systematic at given
+            signal count.
         """
         entry_to_append = numpy.zeros((2, 1), dtype=float)
         entry_to_append[0][0] = signal_count
         entry_to_append[1][0] = syst_value
         self._minima = numpy.append(self._minima, entry_to_append, axis=1)
+
+    def get_minima(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_minima`. col-0 = signal
+            count, col-1 = value of systematic.
+        """
+        return self._minima
+
+    def get_signal_counts(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_signal_counts`.
+        """
+        return self._signal_counts
+
+    def get_syst_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_syst_values`.
+        """
+        return self._syst_values
+
+    def get_actual_counts(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_actual_counts`.
+        """
+        return self._actual_counts
 
 
 class LimitSetting(object):
@@ -270,7 +352,7 @@ class LimitSetting(object):
         self._signal_config.reset_chi_squareds()
         for signal_count in self._signal_config.get_count():
             for syst_analyser in self._syst_analysers.values():
-                syst_analyser._layer = 1  # reset layers 
+                syst_analyser._layer = 1  # reset layers
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
                 self._signal_config.add_chi_squared(

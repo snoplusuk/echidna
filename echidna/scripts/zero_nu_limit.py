@@ -17,7 +17,6 @@ Examples:
 """
 import numpy
 
-import echidna
 import echidna.output.store as store
 import echidna.limit.limit_config as limit_config
 import echidna.limit.limit_setting as limit_setting
@@ -29,6 +28,12 @@ import os
 
 
 class ReadableDir(argparse.Action):
+    """ Custom argparse action
+
+    Adapted from http://stackoverflow.com/a/11415816
+
+    Checks that hdf5 files supplied via command line exist and can be read
+    """
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir = values
         if not os.path.isfile(prospective_dir):
@@ -85,28 +90,28 @@ if __name__ == "__main__":
 
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 0.0       #262.0143 Based on T_1/2 = 9.94e25 y @ 90% CL
-                                 # (SNO+-doc-2593-v8) for 5 year livetime
-                                 # Note extrapolating here to 10 years
+    # Expected 0n2b counts = 262.0143. Based on T_1/2 = 9.94e25 y @ 90% CL
+    # (SNO+-doc-2593-v8) for 5 year livetime. Note extrapolating here to 10
+    # years. But here we want to set prior to 0.0 counts.
+    Te130_0n2b_prior = 0.0
     Te130_0n2b_config = limit_config.LimitConfig(Te130_0n2b_prior,
                                                  Te130_0n2b_counts)
     set_limit.configure_signal(Te130_0n2b_config)
 
     # Configure Te130_2n2b
-    Te130_2n2b_counts = numpy.arange(37.5e6, 38.5e6,
-                                     1.0e6, dtype=float)
+    Te130_2n2b_counts = numpy.arange(37.396e6, 38.396e6, 1.0e6, dtype=float)
     # no penalty term to start with so just an array containing one value
-    Te130_2n2b_prior = 37.5e6  # Based on T_1/2 = 2.3e21 y for 10 years
+    Te130_2n2b_prior = 37.396e6  # Based on NEMO-3 T_1/2, for 10 years
     Te130_2n2b_config = limit_config.LimitConfig(Te130_2n2b_prior,
                                                  Te130_2n2b_counts)
-    set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_config)
     # configs should have same name as background
+    set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_config)
 
     # Configure B8_Solar
     B8_Solar_counts = numpy.arange(12529.9691, 12530.9691, 1.0, dtype=float)
     # again, no penalty term for now
-    B8_Solar_prior = 12529.9691  # from integrating whole spectrum scaled to
-                                 # Valentina's number
+    # from integrating whole spectrum scaled to Valentina's number
+    B8_Solar_prior = 12529.9691
     B8_Solar_config = limit_config.LimitConfig(B8_Solar_prior, B8_Solar_counts)
     set_limit.configure_background(B8_Solar._name, B8_Solar_config)
 
@@ -116,21 +121,26 @@ if __name__ == "__main__":
 
     # Calculate confidence limit
     print "90% CL at: " + str(set_limit.get_limit()) + " counts"
+    print "2n2b ROI events: " + str(Te130_2n2b.sum()) + " counts"
+    print "Solar ROI events: " + str(B8_Solar.sum()) + " counts"
+
+    raw_input("RETURN to continue")
 
     # Now try with a penalty term
     # Configure Te130_0n2b
     Te130_0n2b_counts = numpy.arange(5.0, 500.0, 5.0, dtype=float)
-    Te130_0n2b_prior = 0.0       # 262.0143 Based on T_1/2 = 9.94e25 y @ 90% CL
-                                 # (SNO+-doc-2593-v8) for 5 year livetime
-                                 # Note extrapolating here to 10 years
+    # Expected 0n2b counts = 262.0143. Based on T_1/2 = 9.94e25 y @ 90% CL
+    # (SNO+-doc-2593-v8) for 5 year livetime. Note extrapolating here to 10
+    # years. But here we want to set prior to 0.0 counts.
+    Te130_0n2b_prior = 0.0
     Te130_0n2b_penalty_config = limit_config.LimitConfig(Te130_0n2b_prior,
                                                          Te130_0n2b_counts)
     set_limit.configure_signal(Te130_0n2b_penalty_config)
 
     # Set new configs this time with more counts
     Te130_2n2b_counts = numpy.arange(30.0e6, 45.0e6, 0.1e6, dtype=float)
-    sigma = 7.5e6  # To use in penalty term (20%, Andy's document on
-                      # systematics)
+    # to use in penalty term (20%, Andy's document on systematics)
+    sigma = 7.5e6
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
                                                          Te130_2n2b_counts,
                                                          sigma)
@@ -148,10 +158,12 @@ if __name__ == "__main__":
     print "90% CL at: " + str(set_limit.get_limit()) + " counts"
     plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config,
                                            penalty=Te130_0n2b_penalty_config,
-                                           save_as="chi_squared_penalty.png")
+                                           save_as="chi_squared_penalty.png",
+                                           effective_mass=True)
 
     for syst_analyser in set_limit._syst_analysers.values():
         print syst_analyser._syst_values
         store.dump_ndarray(syst_analyser._name+".hdf5", syst_analyser)
     store.dump_ndarray("Te130_0n2b_config.hdf5", Te130_0n2b_config)
-    store.dump_ndarray("Te130_0n2b_penalty_config.hdf5", Te130_0n2b_penalty_config)
+    store.dump_ndarray("Te130_0n2b_penalty_config.hdf5",
+                       Te130_0n2b_penalty_config)

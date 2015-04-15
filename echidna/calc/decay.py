@@ -41,6 +41,7 @@ class DBIsotope(object):
         self._g_A = g_A
         self._fv_radius = fv_radius
         self._scint_density = scint_density
+        self._roi_factor = 0.62465  # integral of roi / integral of full spectrum
 
     def get_n_atoms(self):
         """ Calculates the number of atoms of an isotope within the
@@ -74,6 +75,7 @@ class DBIsotope(object):
 
         Returns:
           float: Activity in decays per year.
+
         """
         return (numpy.log(2)/half_life)*n_atoms
 
@@ -89,9 +91,9 @@ class DBIsotope(object):
           float: Zero neutrino half-life.
         """
         sq_mass_ratio = eff_mass**2/const._electron_mass**2
-        return 1/(self._g_A**4*self._phase_space*self._matrix_element**2*sq_mass_ratio)
+        return 1/(self._phase_space*self._matrix_element**2*sq_mass_ratio)
 
-    def activity_to_counts(self, activity, livetime):
+    def activity_to_counts(self, activity, livetime, **kwargs):
         """ Converts activity to number of counts assuming constant activity.
 
         Args:
@@ -101,24 +103,50 @@ class DBIsotope(object):
 
         Returns:
           float: Number of counts.
-        """
-        return activity*livetime
 
-    def counts_to_activty(self, counts, livetime=5.):
-        return counts/livetime
+        .. note::
+
+          keyword arguments include:
+
+            * roi_cut (*bool*): if true counts in roi is used
+        """
+        if kwargs.get("roi_cut"):
+            return activity*livetime*self._roi_factor
+        else:
+            return activity*livetime
+
+    def counts_to_activty(self, counts, livetime=5., **kwargs):
+        """
+        .. note::
+
+          keyword arguments include:
+
+            * roi_cut (*bool*): if true counts in roi is used
+        """
+        if kwargs.get("roi_cut"):
+            return counts/(livetime*self._roi_factor)
+        else:
+            return counts/livetime
 
     def activity_to_half_life(self, activity, n_atoms):
-        return 1/((activity/n_atoms)*numpy.log(2))
+        return numpy.log(2)*n_atoms/activity
 
     def half_life_to_mass(self, half_life):
-        return numpy.sqrt(const._electron_mass**2/(self.g_A**4*self._phase_space*self._matrix_element**2*half_life))
+        return numpy.sqrt(const._electron_mass**2/(self._phase_space*self._matrix_element**2*half_life))
 
-    def counts_to_mass(self, counts, n_atoms, livetime=5.):
-        activity = counts_to_activty(self, counts, livetime)
-        half_life = activity_to_half_life(self, n_atoms, activity)
-        return half_life_to_mass(self, half_life)
+    def counts_to_mass(self, counts, n_atoms, livetime=5., **kwargs):
+        """
+        .. note::
 
-    def eff_mass_to_counts(self, eff_mass, livetime=5.):
+          keyword arguments include:
+
+            * roi_cut (*bool*): if true counts in roi is used
+        """
+        activity = self.counts_to_activty(counts, livetime, **kwargs)
+        half_life = self.activity_to_half_life(activity, n_atoms)
+        return self.half_life_to_mass(half_life)
+
+    def eff_mass_to_counts(self, eff_mass, livetime=5., **kwargs):
         """ Calculates the 0n2b counts of an isotope given a
           phase space, matrix element and an effective Majorana
           mass.
@@ -134,9 +162,9 @@ class DBIsotope(object):
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.get_0n2b_half_life(eff_mass)
-        return self.half_life_to_counts(half_life, livetime)
+        return self.half_life_to_counts(half_life, livetime, kwargs)
 
-    def half_life_to_counts(self, half_life, livetime=5.):
+    def half_life_to_counts(self, half_life, livetime=5., **kwargs):
         """ Converts a double beta decay isotopes half-life
         and mass into counts in years.
 
@@ -149,7 +177,13 @@ class DBIsotope(object):
 
         Returns:
           float: Number of expected counts.
+
+        .. note::
+
+          keyword arguments include:
+
+            * roi_cut (*bool*): if true counts in roi is used
         """
         n_atoms = self.get_n_atoms()
         activity = self.get_activity(half_life, n_atoms)
-        return self.activity_to_counts(activity, livetime)
+        return self.activity_to_counts(activity, livetime, **kwargs)
