@@ -185,12 +185,10 @@ def chi_squared_map(syst_analyser, **kwargs):
 def penalty_vs_systematic(syst_analyser):
     plt.subplot(1, 1, 1)
     x = syst_analyser._penalty_values[0]
-    print x
     y = syst_analyser._penalty_values[1]
-    print y
-    plt.xlabel("Value of systematic")
+    plt.xlabel(syst_analyser.get_name())
     plt.ylabel("Value of penalty term")
-    plt.plot(x, y, "o-")
+    plt.plot(x, y, "bo")
     plt.show()
 
 

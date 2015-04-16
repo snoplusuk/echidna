@@ -45,8 +45,8 @@ class SystAnalyser(object):
                                                 len(syst_values)), dtype=float)
         self._preferred_values = numpy.zeros(shape=(len(signal_counts), 1),
                                              dtype=float)
-        self._penalty_values = numpy.zeros(shape=(2, 1), dtype=float)
-        self._minima = numpy.zeros(shape=(2, 1), dtype=float)
+        self._penalty_values = numpy.zeros(shape=(2, 0), dtype=float)
+        self._minima = numpy.zeros(shape=(2, 0), dtype=float)
         self._signal_counts = signal_counts
         self._syst_values = syst_values
         self._actual_counts = numpy.zeros(shape=(len(signal_counts)),
@@ -447,9 +447,6 @@ class LimitSetting(object):
                             self._observed, expected,
                             penalty_terms=penalty_term),
                         count, background.sum())
-                    if syst_analyser is not None:
-                        penalty_value = self._calculator._current_values[name]
-                        syst_analyser.add_penalty_value(count, penalty_value)
                 except ValueError as detail:  # Either histogram has bins with
                                               # zero events
                     if self._roi is not None:
@@ -477,11 +474,11 @@ class LimitSetting(object):
                                 self._observed, expected,
                                 penalty_terms=penalty_term),
                             count, background.sum())
-                        if syst_analyser is not None:
-                            penalty_value = self._calculator._current_values[name]
-                            syst_analyser.add_penalty_value(count, penalty_value)
                     else:
                         raise
+            if syst_analyser is not None:
+                penalty_value = self._calculator._current_values[name]
+                syst_analyser.add_penalty_value(count, penalty_value)
         minimum, minimum_bin = config.get_minimum(minimum_bin=True)
         sig_bin = numpy.where(sig_config._counts == sig_config._current_count)[0][0]
         preferred_value = config._chi_squareds[1][minimum_bin][0]
