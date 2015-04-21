@@ -1,18 +1,8 @@
 <nav>
-  <ul>
-    {% for p in site.pages %}
-    {{ p.title }}
-    <li>
-      {% if p == feed.xml %}
-      {% else %}
-      <a {% if p.url == page.url %}class="active"{% endif %} href="{{ site.baseurl }}{{ p.url }}">
-        {{ p.title }}
-      </a>
-      {% endif %}
-      <a class="active" href="{{ site.url }}/docs/index.html">
-        docs
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
+  <a class="active" href="{{ site.baseurl }}/index.html">
+    home
+  </a>
+  <a class="active" href="{{ site.baseurl }}/docs/index.html">
+    docs
+  </a>
 </nav>
