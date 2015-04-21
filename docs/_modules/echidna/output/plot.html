@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.output.plot &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.output.plot</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="_produce_axis"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot._produce_axis">[docs]</a><span class="k">def</span> <span class="nf">_produce_axis</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This method produces an array that represents the axis between low and</span>
+<span class="sd">    high with bins.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      low (float): Low edge of the axis</span>
+<span class="sd">      high (float): High edge of the axis</span>
+<span class="sd">      bins (int): Number of bins</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">low</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">)]</span>
+
+</div>
+<div class="viewcode-block" id="plot_projection"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.plot_projection">[docs]</a><span class="k">def</span> <span class="nf">plot_projection</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot the spectra as projected onto the dimension.</span>
+<span class="sd">    For example dimension == 0 will plot the spectra as projected onto the</span>
+<span class="sd">    energy dimension.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      spectra (:class:`echidna.core.spectra`): The spectra to plot.</span>
+<span class="sd">      dimension (int): The dimension to project the spectra onto.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span>
+        <span class="n">pylab</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span>
+        <span class="n">pylab</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span>
+        <span class="n">pylab</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Count per </span><span class="si">%f</span><span class="s"> bin&quot;</span> <span class="o">%</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="plot_surface"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.plot_surface">[docs]</a><span class="k">def</span> <span class="nf">plot_surface</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot the spectra with the dimension projected out.</span>
+<span class="sd">    For example dimension == 0 will plot the spectra as projected onto the</span>
+<span class="sd">    radial and time dimensions i.e. not energy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      spectra (:class:`echidna.core.spectra`): The spectra to plot.</span>
+<span class="sd">      dimension (int): The dimension to project out.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s">&quot;Count per bin&quot;</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>  <span class="c"># `plot_surface` expects `x` and `y` data to be 2D</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

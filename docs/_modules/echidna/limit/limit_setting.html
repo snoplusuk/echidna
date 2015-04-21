@@ -1,0 +1,457 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.limit.limit_setting &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.limit.limit_setting</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">CompatibilityError</span>
+<span class="kn">import</span> <span class="nn">echidna.utilities</span> <span class="kn">as</span> <span class="nn">utilities</span>
+
+
+<div class="viewcode-block" id="SystAnalyser"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.SystAnalyser">[docs]</a><span class="k">class</span> <span class="nc">SystAnalyser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to analyse the effect of systematics</span>
+
+<span class="sd">    Records all chi squared data for a systematic and data about how the</span>
+<span class="sd">    systematic affects the limit setting code.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (float): Name of systematic. Ideally should be the same name</span>
+<span class="sd">        as corresponding :class:`limit_config` key and penalty term.</span>
+<span class="sd">      signal_counts (:class:`numpy.ndarray`): Array of signal counts</span>
+<span class="sd">      syst_values (:class:`numpy.ndarray`): Array of values for systematic</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (float): Name of systematic. Ideally should be the same name</span>
+<span class="sd">        as corresponding :class:`limit_config` key and penalty term.</span>
+<span class="sd">      _chi_squareds (:class:`numpy.ndarray`): Axes 0: signal counts,</span>
+<span class="sd">        1: systematic values (e.g. background counts), 2: layer.</span>
+<span class="sd">        Records the chi squared values for every iteration over the</span>
+<span class="sd">        list of systematic values (layer).</span>
+<span class="sd">      _preferred_values (:class:`numpy.ndarray`): Axes 0: signal counts,</span>
+<span class="sd">        1: layer. Stores the prefered value, out of all systematic</span>
+<span class="sd">        values in the loop, for each iteration (layer) over the values.</span>
+<span class="sd">      _minima (:class:`numpy.ndarray`): Stores x,y coordinates for the</span>
+<span class="sd">        position of each minima --&gt; col 0: singnal count, col 1: value</span>
+<span class="sd">        of systemaitc.</span>
+<span class="sd">      _x_axis (:class:`numpy.ndarray`): Array of signal counts.</span>
+<span class="sd">      _y_axis (:class:`numpy.ndarray`): Array of values for systematic</span>
+<span class="sd">      _layer (int): current layer/iteration over systematic values.</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">signal_counts</span><span class="p">,</span> <span class="n">syst_values</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>  <span class="c"># ideally same name as config and penalty term</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal_counts</span><span class="p">),</span>
+                                                <span class="nb">len</span><span class="p">(</span><span class="n">syst_values</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_vales</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signal_counts</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minima</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_axis</span> <span class="o">=</span> <span class="n">signal_counts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_axis</span> <span class="o">=</span> <span class="n">syst_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="SystAnalyser.add_chi_squareds"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_chi_squareds">[docs]</a>    <span class="k">def</span> <span class="nf">add_chi_squareds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_bin</span><span class="p">,</span> <span class="n">chi_squareds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds to :attr:`_chi_squareds`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          signal_bin (int): Bin corresponding to current value in signal</span>
+<span class="sd">            counts.</span>
+<span class="sd">          chi_squareds (:class:`numpy.ndarray`): 1D array of chi</span>
+<span class="sd">            squareds to add</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          CompatibilityError: If supplied chi squareds array does not have</span>
+<span class="sd">            correct shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">required_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">chi_squareds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">required_shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;chi_squareds array does not have &quot;</span>
+                                     <span class="s">&quot;required shape - &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">required_shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">:</span>  <span class="c"># layer doesn&#39;t exist</span>
+            <span class="c"># Create new layer</span>
+            <span class="n">new_layer</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">,</span> <span class="p">[</span><span class="n">new_layer</span><span class="p">],</span>
+                                              <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">signal_bin</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi_squareds</span>
+</div>
+<div class="viewcode-block" id="SystAnalyser.add_preferred_value"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_preferred_value">[docs]</a>    <span class="k">def</span> <span class="nf">add_preferred_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_bin</span><span class="p">,</span> <span class="n">preferred_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; *** NOT IMPLEMENTED YET ***</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="SystAnalyser.add_minima"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_minima">[docs]</a>    <span class="k">def</span> <span class="nf">add_minima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_count</span><span class="p">,</span> <span class="n">syst_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; *** NOT IMPLEMENTED YET ***</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+</div></div>
+<div class="viewcode-block" id="LimitSetting"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting">[docs]</a><span class="k">class</span> <span class="nc">LimitSetting</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to handle main limit setting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      signal (:class:`echidna.core.spectra.Spectra`): signal spectrum</span>
+<span class="sd">      backgrounds (list): one :class:`echidna.core.spectra.Spectra` for</span>
+<span class="sd">        each background</span>
+<span class="sd">      data (:class:`numpy.array`, optional): 1D data energy spectrum</span>
+<span class="sd">      **kwargs (dict): keyword arguments</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">      Keyword arguments include:</span>
+
+<span class="sd">        * roi (*tuple*): (energy_lower, energy_upper)</span>
+<span class="sd">        * pre_shrink (*bool*): If set to True, :meth:`shrink` method is</span>
+<span class="sd">          called on all spectra before limit setting, shrinking to</span>
+<span class="sd">          ROI. Only applies if ROI has been set via ``roi`` keyword.</span>
+<span class="sd">        * verbose (*bool*): If set to True, progress and timing</span>
+<span class="sd">          information is printed to the terminal during limit setting.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum</span>
+<span class="sd">      _signal_config (:class:`echidna.limit.limit_config.LimitConfig`):</span>
+<span class="sd">        signal configuration</span>
+<span class="sd">      _backgrounds (list): one :class:`echidna.core.spectra.Spectra` for</span>
+<span class="sd">        each background</span>
+<span class="sd">      _background_configs (dict): one</span>
+<span class="sd">        :class:`echidna.limit.limit_config.LimitConfig` for each</span>
+<span class="sd">        background, with :attr:`Spectra._name` as the corresponding key</span>
+<span class="sd">      _calculator (:class:`echidna.limit.chi_squared.ChiSquared`): chi</span>
+<span class="sd">        squared calculator to use for limit setting</span>
+<span class="sd">      _observed (:class:`numpy.array`): energy spectrum of observed</span>
+<span class="sd">        events (data)</span>
+<span class="sd">      _roi (tuple): (lower energy, upper energy)</span>
+<span class="sd">      _verbose (bool): print progress and timing information to terminal</span>
+<span class="sd">        during limit setting.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      CompatibilityError: If any background spectrum is incompatible</span>
+<span class="sd">        with the signal spectrum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">backgrounds</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">signal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span> <span class="o">=</span> <span class="n">backgrounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_syst_analysers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;pre_shrink&quot;</span><span class="p">):</span>
+                <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
+                    <span class="n">background</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;verbose&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># Check spectra are compatible</span>
+        <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="n">backgrounds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
+                                         <span class="s">&quot;different energy bin widths&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
+                                         <span class="s">&quot;different radial bin widths&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_time_width</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
+                                         <span class="s">&quot;different time bin width&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LimitSetting.configure_signal"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_signal">[docs]</a>    <span class="k">def</span> <span class="nf">configure_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Supply a configuration object associated with the signal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          signal_config (:class:`echidna.limit.limit_config.LimitConfig`): signal</span>
+<span class="sd">            configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="o">=</span> <span class="n">signal_config</span>
+</div>
+<div class="viewcode-block" id="LimitSetting.configure_background"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_background">[docs]</a>    <span class="k">def</span> <span class="nf">configure_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">background_config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Supply configuration object associated with the background.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          background_config (:class:`echidna.limit.limit_config.LimitConfig`): background</span>
+<span class="sd">            configuration</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Keyword arguments include:</span>
+
+<span class="sd">            * plot_systematic (*bool*): if true produces signal vs systematic</span>
+<span class="sd">              plots</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If config has not been set for signal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;signal configuration not set&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">background_config</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;plot_systematic&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SystAnalyser</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">+</span><span class="s">&quot;_counts&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">_counts</span><span class="p">,</span>
+                <span class="n">background_config</span><span class="o">.</span><span class="n">_counts</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LimitSetting.set_calculator"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.set_calculator">[docs]</a>    <span class="k">def</span> <span class="nf">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the chi squared calculator to use for limit setting</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          calculator (:class:`echidna.limit.chi_squared.ChiSquared`): chi</span>
+<span class="sd">            squared calculator to use for limit setting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="n">calculator</span>
+</div>
+<div class="viewcode-block" id="LimitSetting.get_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_chi_squared</span><span class="o">=</span><span class="mf">2.71</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get signal counts at limit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit_chi_squared (float, optional): chi squared required for</span>
+<span class="sd">            limit.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Default value for :obj:`limit_chi_squared` is 2.71, the chi</span>
+<span class="sd">          squared value corresponding to a 90% confidence limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Signal counts at required limit</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If config has not been set for signal.</span>
+<span class="sd">          KeyError: If config has not been set for one or more</span>
+<span class="sd">            backgrounds.</span>
+<span class="sd">          IndexError: If no limit can be calculated. Relies on finding</span>
+<span class="sd">            the first bin with a chi squared value above</span>
+<span class="sd">            :obj:`limit_chi_squared`. If no bin contains a chi squared</span>
+<span class="sd">            value greater than :obj:`limit_chi_squared`, then there is</span>
+<span class="sd">            no bin to be found, raising IndexError.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;signal configuration not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;missing configuration for one or more backgrounds&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;chi squared calculator not set&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+                                   <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
+                <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+                <span class="n">background</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">_prior_count</span><span class="p">)</span>
+                <span class="n">observed</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="n">observed</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># _data is not None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">reset_chi_squareds</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">signal_count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_count</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>  <span class="c"># set timer</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">signal_count</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
+                                          <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)),</span>
+                    <span class="n">signal_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+                <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Calculations for </span><span class="si">%.4f</span><span class="s"> signal counts took </span><span class="si">%.03f</span><span class="s"> &quot;</span>
+                       <span class="s">&quot;seconds.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">signal_count</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">_interval</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_first_bin_above</span><span class="p">(</span><span class="n">limit_chi_squared</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;unable to calculate confidence limit - &quot;</span> <span class="o">+</span>
+                             <span class="nb">str</span><span class="p">(</span><span class="n">detail</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="LimitSetting._get_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting._get_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">_get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backgrounds</span><span class="p">,</span> <span class="n">total_backgrounds</span><span class="p">,</span> <span class="n">current</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Internal method to minimise chi squared for each background.</span>
+
+<span class="sd">        This method is called recursively to minimise the chi squared</span>
+<span class="sd">        contribution for each background, and return the minimum to the</span>
+<span class="sd">        previous background, which then minimises over all chi squareds</span>
+<span class="sd">        it recieves.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          backgrounds (list): one :class:`echidna.core.spectra.Spectra`</span>
+<span class="sd">            for each background</span>
+<span class="sd">          total_backgrounds (int): total number of backgrounds to</span>
+<span class="sd">            include in fit</span>
+<span class="sd">          current (int, optional): counter to keep track of the current</span>
+<span class="sd">            background being floated. Default is -1, so that it is</span>
+<span class="sd">            immediately set to zero after function call.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Minimum chi squared obtained by floating backgrounds</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If chi squared calculation raises ValueError (due</span>
+<span class="sd">            to bins containing zero events) even after an attempt to</span>
+<span class="sd">            resolve the error by shrinking each spectra to the supplied</span>
+<span class="sd">            Region Of Interest (ROI).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="n">backgrounds</span><span class="p">[</span><span class="n">current</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">_name</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">reset_chi_squareds</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">syst_analyser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>  <span class="c"># No syst_analyser set for this background</span>
+            <span class="n">syst_analyser</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">sig_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span>
+
+        <span class="c"># Loop over count values</span>
+        <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_count</span><span class="p">():</span>  <span class="c"># Generator</span>
+            <span class="n">background</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">current</span> <span class="o">&lt;</span> <span class="n">total_backgrounds</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
+                                          <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">),</span>
+                                          <span class="n">current</span><span class="p">),</span>
+                    <span class="n">count</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>  <span class="c"># function recursion</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">total_background</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
+                    <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">penalty_term</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">name</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s">&quot;parameter_value&quot;</span><span class="p">:</span> <span class="n">count</span> <span class="o">-</span> <span class="n">config</span><span class="o">.</span><span class="n">_prior_count</span><span class="p">,</span>
+                            <span class="s">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">_sigma</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">penalty_term</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span>
+                            <span class="n">penalty_term</span><span class="o">=</span><span class="n">penalty_term</span><span class="p">),</span>
+                        <span class="n">count</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>  <span class="c"># Either histogram has bins with</span>
+                                              <span class="c"># zero events</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&quot;WARNING:&quot;</span><span class="p">,</span> <span class="n">detail</span>
+                        <span class="k">print</span> <span class="s">&quot; --&gt; shrinking spectra&quot;</span>
+                        <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span>
+
+                        <span class="c"># Shrink signal to ROI</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+
+                        <span class="c"># Create new total background with shrunk spectra</span>
+                        <span class="n">total_background</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
+                            <span class="n">background</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+                            <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                        <span class="c"># Set make new expected and _observed (if required)</span>
+                        <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="n">total_background</span>
+                        <span class="n">config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span>
+                                <span class="n">penalty_term</span><span class="o">=</span><span class="n">penalty_term</span><span class="p">),</span>
+                            <span class="n">count</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span>
+        <span class="n">minimum</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_minimum</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">syst_analyser</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">syst_analyser</span><span class="o">.</span><span class="n">add_chi_squareds</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sig_config</span><span class="o">.</span><span class="n">_counts</span> <span class="o">==</span> <span class="n">sig_config</span><span class="o">.</span><span class="n">_current_count</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_layer</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">current</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">minimum</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

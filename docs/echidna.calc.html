@@ -1,0 +1,329 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.calc package &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="index.html" />
+    <link rel="up" title="echidna package" href="echidna.html" />
+    <link rel="next" title="echidna.core package" href="echidna.core.html" />
+    <link rel="prev" title="echidna package" href="echidna.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.core.html" title="echidna.core package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="echidna.html" title="echidna package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" accesskey="U">echidna package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="echidna-calc-package">
+<h1>echidna.calc package<a class="headerlink" href="#echidna-calc-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-echidna.calc.constants">
+<span id="echidna-calc-constants-module"></span><h2>echidna.calc.constants module<a class="headerlink" href="#module-echidna.calc.constants" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-echidna.calc.decay">
+<span id="echidna-calc-decay-module"></span><h2>echidna.calc.decay module<a class="headerlink" href="#module-echidna.calc.decay" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.calc.decay.DBIsotope">
+<em class="property">class </em><code class="descclassname">echidna.calc.decay.</code><code class="descname">DBIsotope</code><span class="sig-paren">(</span><em>name</em>, <em>loading</em>, <em>atm_weight_iso</em>, <em>atm_weight_nat</em>, <em>abundance</em>, <em>phase_space</em>, <em>matrix_element</em>, <em>fv_radius=None</em>, <em>scint_density=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="docutils">
+<dt>Class which calculates expected counts for a DBD isotope</dt>
+<dd>over a given experiment livetime.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of the isotope</li>
+<li><strong>loading</strong> (<em>float</em>) &#8211; Loading of isotope with 0 to 1 equivalent
+to 0% to 100%.</li>
+<li><strong>atm_weight_iso</strong> (<em>float</em>) &#8211; Atomic weight of isotope in g/mol.</li>
+<li><strong>atm_weight_nat</strong> (<em>float</em>) &#8211; Atomic weight of natural element in g/mol.</li>
+<li><strong>abundance</strong> (<em>float</em>) &#8211; Natural abundance of isotope with 0 to 1
+equivalent to 0% to 100%.</li>
+<li><strong>phase_space</strong> (<em>float</em>) &#8211; Phase space of the isotope.</li>
+<li><strong>matrix_element</strong> (<em>float</em>) &#8211; Matrix element of the isotope.</li>
+<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Fiducial volume radius. Defaults to SNO+ values.</li>
+<li><strong>scint_density</strong> (<em>float</em>) &#8211; Density of liquid scintillator. Defaults to
+SNO+ values.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If abundance is &lt; 0. or &gt; 1.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If loading is &lt; 0. or &gt; 1.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.activity_to_counts">
+<code class="descname">activity_to_counts</code><span class="sig-paren">(</span><em>activity</em>, <em>livetime</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.activity_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.activity_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts activity to number of counts assuming constant activity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>activity</strong> (<em>float</em>) &#8211; Initial activity of the isotope in
+<span class="math">\(years^{-1}\)</span>.</li>
+<li><strong>livetime</strong> (<em>float</em>) &#8211; Amount of years of data taking.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of counts.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.eff_mass_to_counts">
+<code class="descname">eff_mass_to_counts</code><span class="sig-paren">(</span><em>eff_mass</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.eff_mass_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.eff_mass_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the 0n2b counts of an isotope given a</dt>
+<dd>phase space, matrix element and an effective Majorana
+mass.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass in eV</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">0 neutrino half-life.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.get_0n2b_half_life">
+<code class="descname">get_0n2b_half_life</code><span class="sig-paren">(</span><em>eff_mass</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_0n2b_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_0n2b_half_life" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the 0n2b half-life of an isotope given a</dt>
+<dd>phase space, matrix element and an effective Majorana
+mass.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Zero neutrino half-life.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.get_activity">
+<code class="descname">get_activity</code><span class="sig-paren">(</span><em>half_life</em>, <em>n_atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_activity" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the activity for an isotope with a given half-life</dt>
+<dd>and number of atoms.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>half_life</strong> (<em>float</em>) &#8211; Half-life of an isotope in years.</li>
+<li><strong>n_atoms</strong> (<em>float</em>) &#8211; Number of atoms of an isotope.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Activity in decays per year.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.get_n_atoms">
+<code class="descname">get_n_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_n_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the number of atoms of an isotope within the</dt>
+<dd>fiducial volume.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Number of atoms.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.half_life_to_counts">
+<code class="descname">half_life_to_counts</code><span class="sig-paren">(</span><em>half_life</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.half_life_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.half_life_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a double beta decay isotopes half-life
+and mass into counts in years.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>half_life</strong> (<em>float</em>) &#8211; Isotope&#8217;s half-life in years.</li>
+<li><strong>livetime</strong> (<em>float</em>) &#8211; Number of years of data taking.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If abundance is &lt; 0. or &gt; 1.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of expected counts.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.calc">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-echidna.calc" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">echidna.calc package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-echidna.calc.constants">echidna.calc.constants module</a></li>
+<li><a class="reference internal" href="#module-echidna.calc.decay">echidna.calc.decay module</a></li>
+<li><a class="reference internal" href="#module-echidna.calc">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="echidna.html"
+                        title="previous chapter">echidna package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="echidna.core.html"
+                        title="next chapter">echidna.core package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/echidna.calc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.core.html" title="echidna.core package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="echidna.html" title="echidna package"
+             >previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" >echidna package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

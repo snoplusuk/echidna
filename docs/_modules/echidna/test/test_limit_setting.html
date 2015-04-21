@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.test.test_limit_setting &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.test.test_limit_setting</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.limit.limit_setting</span> <span class="kn">as</span> <span class="nn">limit_setting</span>
+<span class="kn">import</span> <span class="nn">echidna.limit.limit_config</span> <span class="kn">as</span> <span class="nn">limit_config</span>
+<span class="kn">import</span> <span class="nn">echidna.limit.chi_squared</span> <span class="kn">as</span> <span class="nn">chi_squared</span>
+<span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">CompatibilityError</span>
+
+
+<div class="viewcode-block" id="TestLimitSetting"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting">[docs]</a><span class="k">class</span> <span class="nc">TestLimitSetting</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestLimitSetting.setUp"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span> <span class="o">=</span> <span class="mf">1e5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;signal&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
+                             <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)]</span>
+</div>
+<div class="viewcode-block" id="TestLimitSetting.test_init"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test initialisation of the class.</span>
+
+<span class="sd">        Checks that the CompatibilityError is raised when necessary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Test energy compatibility</span>
+        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
+                          <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="n">width_orig</span>
+
+        <span class="c"># Test radial compatibility</span>
+        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
+                          <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="n">width_orig</span>
+
+        <span class="c"># Test time compatibility</span>
+        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
+                          <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="n">width_orig</span>
+</div>
+<div class="viewcode-block" id="TestLimitSetting.test_get_limit"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test main limit setting code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="mf">5.0</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">for</span> <span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
+                <span class="n">background</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+        <span class="c"># Configure signal</span>
+        <span class="n">signal_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">55.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">signal_prior</span> <span class="o">=</span> <span class="mf">18.0</span>
+        <span class="n">signal_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">signal_prior</span><span class="p">,</span>
+                                                 <span class="n">signal_counts</span><span class="p">)</span>
+
+        <span class="c"># Configure bkg_1</span>
+        <span class="c"># No penalty term to start with so just an array containing one value</span>
+        <span class="n">bkg_1_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">101.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">bkg_1_prior</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="n">bkg_1_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">bkg_1_prior</span><span class="p">,</span> <span class="n">bkg_1_counts</span><span class="p">)</span>
+
+        <span class="c"># set chi squared calculator</span>
+        <span class="n">calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">()</span>
+
+        <span class="c"># Test 1: test Exceptions</span>
+        <span class="n">limit_setter_1</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
+        <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
+        <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
+        <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
+
+        <span class="c"># Test 2: different limits with and without penalty term</span>
+        <span class="c"># Define ROI</span>
+        <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="n">limit_setter_2</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
+                                                    <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
+        <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
+        <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
+        <span class="n">limit_2</span> <span class="o">=</span> <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
+
+        <span class="c"># Now try with a penalty term</span>
+        <span class="c"># set new config this time with more background counts to cycle through</span>
+        <span class="n">bkg_1_penalty_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">75.0</span><span class="p">,</span> <span class="mf">125.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">bkg_1_sigma</span> <span class="o">=</span> <span class="mf">25.0</span>  <span class="c"># To use in penalty term</span>
+        <span class="n">bkg_1_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">bkg_1_prior</span><span class="p">,</span>
+                                                        <span class="n">bkg_1_penalty_counts</span><span class="p">,</span>
+                                                        <span class="n">bkg_1_sigma</span><span class="p">)</span>
+
+        <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_penalty_config</span><span class="p">)</span>
+        <span class="n">limit_2_penalty</span> <span class="o">=</span> <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_2_penalty</span><span class="p">)</span>
+
+        <span class="c"># Test 3: Try with a second background</span>
+        <span class="c"># Configure bkg_2</span>
+        <span class="c"># No penalty term so just an array containing one value</span>
+        <span class="n">bkg_2_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">bkg_2_prior</span> <span class="o">=</span> <span class="mf">10.0</span>
+        <span class="n">bkg_2_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">bkg_2_prior</span><span class="p">,</span> <span class="n">bkg_2_counts</span><span class="p">)</span>
+
+        <span class="n">limit_setter_3</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
+                                                    <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
+        <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
+        <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_2&quot;</span><span class="p">,</span> <span class="n">bkg_2_config</span><span class="p">)</span>
+        <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
+        <span class="n">limit_3</span> <span class="o">=</span> <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_3</span><span class="p">)</span>
+
+        <span class="c"># Check chi squareds have been recorded for each background</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">chi_squareds</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">_chi_squareds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">chi_squareds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

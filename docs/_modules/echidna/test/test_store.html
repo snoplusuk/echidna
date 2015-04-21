@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.test.test_store &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.test.test_store</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="TestStore"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_store.TestStore">[docs]</a><span class="k">class</span> <span class="nc">TestStore</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestStore.test_serialisation"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_store.TestStore.test_serialisation">[docs]</a>    <span class="k">def</span> <span class="nf">test_serialisation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test saving and then reloading a test spectra.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">test_decays</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">test_spectra</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;Test&quot;</span><span class="p">,</span> <span class="n">test_decays</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_decays</span><span class="p">):</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">)</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">)</span>
+            <span class="n">test_spectra</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;test.hdf5&quot;</span><span class="p">,</span> <span class="n">test_spectra</span><span class="p">)</span>
+        <span class="n">loaded_spectra</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;test.hdf5&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">loaded_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">test_decays</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_time_width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">==</span> <span class="n">loaded_spectra</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

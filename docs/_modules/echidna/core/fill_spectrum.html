@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.core.fill_spectrum &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.core.fill_spectrum</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">rat</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">RAT</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">TChain</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+
+
+<div class="viewcode-block" id="_scint_weights"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._scint_weights">[docs]</a><span class="k">def</span> <span class="nf">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**CURRENTLY DISABLED** </span>
+<span class="sd">    This method applies to the scintillator backgrounds.</span>
+<span class="sd">    It produces the list of weights relative to each time period.</span>
+<span class="sd">    The calculation of weights is based on radioactive decay formula.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      times (*list* of *int*): Time periods</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Weights (*list* of *float*)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">time</span><span class="o">/</span><span class="n">T</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="_av_weights"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._av_weights">[docs]</a><span class="k">def</span> <span class="nf">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**UNAVAILABLE**</span>
+<span class="sd">    This method applies to the backgrounds due to AV leaching.</span>
+<span class="sd">    It produces the list of weights relative to each time period.</span>
+<span class="sd">    The calculation of weights is based on radioactive decay formula.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      times (*list* of *int*): Time periods</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Weights (*list* of *float*)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="fill_reco_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_reco_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_reco_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
+<span class="sd">    This function fills in the ndarray of energies, radii, times</span>
+<span class="sd">    and weights. It takes the reconstructed energies and positions</span>
+<span class="sd">    of the events from the root file. In order to keep the statistics,</span>
+<span class="sd">    the time dependence is performed via adding weights to every event</span>
+<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
+<span class="sd">    be written in the same units.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      filename (str): A root file to study</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
+<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
+<span class="sd">        new spectrum.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">        spectrum.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="n">filename</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span>
+                                   <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
+        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()):</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">DefaultFitVertexExists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ContainsEnergy</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ValidEnergy</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetEnergy</span><span class="p">()</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span>
+            <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">spectrum</span>
+
+</div>
+<div class="viewcode-block" id="fill_mc_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_mc_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_mc_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
+<span class="sd">    This function fills in the ndarray of true energies, radii, times</span>
+<span class="sd">    and weights. It takes the true energies and positions of the events</span>
+<span class="sd">    from the root file. In order to keep the statistics, the time</span>
+<span class="sd">    dependence is performed via adding weights to every event depending</span>
+<span class="sd">    on the time period. Both, studied time and Half-life must be</span>
+<span class="sd">    written in the same units.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      filename (str): A root file to study</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
+<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
+<span class="sd">        new spectrum.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">        spectrum.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="n">filename</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span>
+                                   <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
+        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetScintQuenchedEnergyDeposit</span><span class="p">()</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span>
+            <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">spectrum</span>
+
+</div>
+<div class="viewcode-block" id="fill_reco_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_reco_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_reco_ntuple_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
+<span class="sd">    This function fills in the ndarray of energies, radii, times</span>
+<span class="sd">    and weights. It takes the reconstructed energies and positions</span>
+<span class="sd">    of the events from the ntuple. In order to keep the statistics,</span>
+<span class="sd">    the time dependence is performed via adding weights to every event</span>
+<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
+<span class="sd">    be written in the same units.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      filename (str): The ntuple to study</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
+<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
+<span class="sd">        new spectrum.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">        spectrum.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="n">filename</span>
+    <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
+    <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
+        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                       <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">spectrum</span>
+
+</div>
+<div class="viewcode-block" id="fill_mc_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_mc_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_mc_ntuple_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
+<span class="sd">    This function fills in the ndarray of energies, radii, times</span>
+<span class="sd">    and weights. It takes the reconstructed energies and positions</span>
+<span class="sd">    of the events from ntuple. In order to keep the statistics,</span>
+<span class="sd">    the time dependence is performed via adding weights to every event</span>
+<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
+<span class="sd">    be written in the same units.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      filename (str): The ntuple to study</span>
+<span class="sd">      T (float): The Half-life of a studied background</span>
+<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
+<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
+<span class="sd">        new spectrum.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">        spectrum.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="n">filename</span>
+    <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
+    <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
+        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="n">spectrumname</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">mcEdepQuenched</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                       <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">spectrum</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

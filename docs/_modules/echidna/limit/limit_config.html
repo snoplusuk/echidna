@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.limit.limit_config &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.limit.limit_config</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="LimitConfig"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig">[docs]</a><span class="k">class</span> <span class="nc">LimitConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to handle configuration parameters for each spectrum.</span>
+
+<span class="sd">    In limit setting we want to be able to add multiple backgrounds and</span>
+<span class="sd">    a signal spectrum. Each background will have a different range of</span>
+<span class="sd">    counts to use in floating it and some will be constrained by a</span>
+<span class="sd">    penalty term. This class keeps track of all this information.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _prior_counts (float): prior/expected counts</span>
+<span class="sd">      _counts (list): list of count rates (*float*) to use for scaling</span>
+<span class="sd">      _sigma (float): prior constraint on counts</span>
+<span class="sd">      _chi_squareds (:class:`numpy.array`): Array col-0:</span>
+<span class="sd">        :obj:`chi_squared`, col-1: :obj:`get_counts`, col-2:</span>
+<span class="sd">        :meth:`spectra.sum()`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      prior_counts (float): prior/expected counts</span>
+<span class="sd">      counts (list): list of count (*float*) to use for scaling</span>
+<span class="sd">      sigma (float, optional): prior constraint on counts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_count</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prior_count</span> <span class="o">=</span> <span class="n">prior_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LimitConfig.get_count"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields:</span>
+<span class="sd">          float: next count in array</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">          When dealing with multiple backgrounds, just select the</span>
+<span class="sd">          corresponding config for each background (e.g. ``bkg_config``)</span>
+<span class="sd">          then you can correctly loop over the background scalings</span>
+
+<span class="sd">          &gt;&gt;&gt; for count in bkg_config.get_count():</span>
+<span class="sd">          ...     spectrum.scale(count)</span>
+<span class="sd">          ...     # spectrum scaled to each value of count</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">          _current_count (float): current count (scaling). The value</span>
+<span class="sd">            most recently returned by :meth:`get_count()`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_count</span> <span class="o">=</span> <span class="n">count</span>
+            <span class="k">yield</span> <span class="n">count</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.add_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.add_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">add_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chi_squared</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add chi squared to config chi squared array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          chi_squared (float): chi squared value to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entry_to_append</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi_squared</span>
+        <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaling</span>
+        <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">events</span>
+        <span class="c"># Append new entry, axis is 1 as we are appending an entry not a column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">,</span>
+                                          <span class="n">entry_to_append</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_minimum"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get minimum value from chi_squared array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Minimum of :attr:`_chi_squareds`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_first_bin_above"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_first_bin_above">[docs]</a>    <span class="k">def</span> <span class="nf">get_first_bin_above</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; For signal, determine the count corresponding to limit.</span>
+
+<span class="sd">        The limit count is the first count value that takes the chi</span>
+<span class="sd">        squared over the threshold set by the desired confidence limit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit (float): chi squared value corresponding to desired</span>
+<span class="sd">            confidence limit</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: number of events (result of</span>
+<span class="sd">            :meth:`echidna.core.spectra.Spectra.sum()`) at limit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.reset_chi_squareds"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.reset_chi_squareds">[docs]</a>    <span class="k">def</span> <span class="nf">reset_chi_squareds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Resets :attr:`_chi_squareds` to an empty</span>
+<span class="sd">          :class:`numpy.ndarray`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

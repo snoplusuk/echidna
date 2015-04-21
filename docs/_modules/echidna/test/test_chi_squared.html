@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.test.test_chi_squared &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.test.test_chi_squared</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.limit.chi_squared</span> <span class="kn">as</span> <span class="nn">chi_squared</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+
+<div class="viewcode-block" id="TestChiSquared"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_chi_squared.TestChiSquared">[docs]</a><span class="k">class</span> <span class="nc">TestChiSquared</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestChiSquared.test_pearson_chi_squared"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_pearson_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">test_pearson_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test the pearson chi squared function</span>
+
+<span class="sd">        Tests that the function calculates accurate values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">110.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">pearson_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mf">10.0</span> <span class="o">/</span> <span class="mf">11.0</span><span class="p">))</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">pearson_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mf">10.0</span> <span class="o">/</span> <span class="mf">9.0</span><span class="p">))</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">pearson_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">pearson_chi_squared</span><span class="p">,</span>
+                          <span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestChiSquared.test_neyman_chi_squared"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_neyman_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">test_neyman_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test the neyman chi squared function</span>
+
+<span class="sd">        Tests that the function calculates accurate values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">110.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">neyman_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">neyman_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">neyman_chi_squared</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">neyman_chi_squared</span><span class="p">,</span>
+                          <span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestChiSquared.test_log_likelihood"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_log_likelihood">[docs]</a>    <span class="k">def</span> <span class="nf">test_log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Test the log likelihood function</span>
+
+<span class="sd">        Tests that the function calculates accurate values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">110.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
+                               <span class="mf">0.9379640391350215</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
+                               <span class="mf">1.072103131565271</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">,</span>
+                          <span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestChiSquared.test_get_chi_squared"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_get_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Tests get chi squared method</span>
+
+<span class="sd">        Tests functionality of the ChiSquared class and its principal</span>
+<span class="sd">        method in different use case scenarios</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># create mock data spectrum</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">energy_low</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">energy_high</span> <span class="o">=</span> <span class="mf">10.0</span>
+        <span class="n">data_spectrum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_bins</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">data_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c"># fill mock data spectrum from random gaussian</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="mf">5.0</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1.5</span>
+        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">energy</span> <span class="o">&gt;=</span> <span class="n">energy_low</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">energy_high</span><span class="p">):</span>
+                <span class="n">energy_bin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">energy</span><span class="o">-</span><span class="n">energy_low</span><span class="p">)</span> <span class="o">/</span>
+                                 <span class="p">(</span><span class="n">energy_high</span><span class="o">-</span><span class="n">energy_low</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_bins</span><span class="p">)</span>
+                <span class="n">data_spectrum</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c"># create mock MC spectrum</span>
+        <span class="n">mc_spectrum</span> <span class="o">=</span> <span class="n">data_spectrum</span> <span class="o">*</span> <span class="mf">1.1</span>
+
+        <span class="c"># set-up chi squared calculators</span>
+        <span class="n">pearson_calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">(</span><span class="s">&quot;pearson&quot;</span><span class="p">)</span>
+        <span class="n">neyman_calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">(</span><span class="s">&quot;neyman&quot;</span><span class="p">)</span>
+        <span class="n">likelihood_calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">(</span><span class="s">&quot;poisson_likelihood&quot;</span><span class="p">)</span>
+        <span class="n">penalty_calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">(</span>
+            <span class="s">&quot;poisson_likelihood&quot;</span><span class="p">,</span>
+            <span class="n">penalty_terms</span><span class="o">=</span><span class="p">{</span>
+                <span class="s">&quot;bkg1&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&quot;parameter_value&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+                    <span class="s">&quot;sigma&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+
+        <span class="n">pearson_chi_squared</span> <span class="o">=</span> <span class="n">pearson_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span><span class="n">data_spectrum</span><span class="p">,</span>
+                                                                 <span class="n">mc_spectrum</span><span class="p">)</span>
+        <span class="n">neyman_chi_squared</span> <span class="o">=</span> <span class="n">neyman_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span><span class="n">data_spectrum</span><span class="p">,</span>
+                                                               <span class="n">mc_spectrum</span><span class="p">)</span>
+        <span class="n">likelihood_chi_squared</span> <span class="o">=</span> <span class="n">likelihood_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+            <span class="n">data_spectrum</span><span class="p">,</span>
+            <span class="n">mc_spectrum</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">pearson_chi_squared</span><span class="p">,</span> <span class="n">neyman_chi_squared</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">neyman_chi_squared</span><span class="p">,</span> <span class="n">likelihood_chi_squared</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">likelihood_chi_squared</span><span class="p">,</span> <span class="n">pearson_chi_squared</span><span class="p">)</span>
+
+        <span class="n">penalty_chi_squared</span> <span class="o">=</span> <span class="n">penalty_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span><span class="n">data_spectrum</span><span class="p">,</span>
+                                                                 <span class="n">mc_spectrum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">likelihood_chi_squared</span><span class="p">,</span> <span class="n">penalty_chi_squared</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span>
+            <span class="n">penalty_chi_squared</span><span class="p">,</span>
+            <span class="n">penalty_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+                <span class="n">data_spectrum</span><span class="p">,</span>
+                <span class="n">mc_spectrum</span><span class="p">,</span>
+                <span class="n">penalty_terms</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s">&quot;bkg1&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&quot;parameter_value&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+                        <span class="p">}</span>
+                    <span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">likelihood_chi_squared</span><span class="p">,</span>
+            <span class="n">penalty_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+                <span class="n">data_spectrum</span><span class="p">,</span>
+                <span class="n">mc_spectrum</span><span class="p">,</span>
+                <span class="n">penalty_terms</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s">&quot;bkg1&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&quot;parameter_value&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                        <span class="s">&quot;sigma&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+                        <span class="p">}</span>
+                    <span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">penalty_chi_squared</span><span class="p">,</span>
+            <span class="n">likelihood_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span>
+                <span class="n">data_spectrum</span><span class="p">,</span>
+                <span class="n">mc_spectrum</span><span class="p">,</span>
+                <span class="n">penalty_terms</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s">&quot;bkg1&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&quot;parameter_value&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+                        <span class="s">&quot;sigma&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+                        <span class="p">}</span>
+                    <span class="p">}))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

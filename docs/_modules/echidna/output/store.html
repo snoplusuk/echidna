@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.output.store &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.output.store</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.limit.limit_setting</span> <span class="kn">as</span> <span class="nn">limit_setting</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<div class="viewcode-block" id="dump"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.dump">[docs]</a><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Dump the spectra to the file_path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (string): Location to save to.</span>
+<span class="sd">      spectra (:class:`echidna.core.spectra.Spectra`): The spectra to save</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_num_decays</span>
+
+        <span class="n">file_</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">spectra</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="dump_ndarray"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.dump_ndarray">[docs]</a><span class="k">def</span> <span class="nf">dump_ndarray</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">ndarray_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Dump any other class, mostly containing numpy arrays.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (string): Location to save to.</span>
+<span class="sd">      ndarray_object (object): Any class instance mainly consisting of</span>
+<span class="sd">        numpy array(s).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      AttributeError: If attribute in not an ndarray and is larger than</span>
+<span class="sd">        64k - h5py limit for attribute sizes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">ndarray_object</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;ndarray&quot;</span><span class="p">:</span>
+                <span class="n">file_</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attribute</span><span class="p">,</span>
+                                     <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">65536</span><span class="p">:</span>  <span class="c"># 64k</span>
+                <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;attribute &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; is not &quot;</span>
+                                     <span class="s">&quot;an &#39;ndarray&#39; and is too large to be &quot;</span>
+                                     <span class="s">&quot;saved as an h5py attribute.&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Load a spectra from file_path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (string): Location to save to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Loaded spectra (:class:`echidna.core.spectra.Spectra`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+        <span class="n">spectra</span> <span class="o">=</span> <span class="n">echidna</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">],</span>
+                                               <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">])</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_low&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_high&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_bins&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_width&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_low&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_high&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_bins&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_width&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_low&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_high&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_bins&quot;</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_width&quot;</span><span class="p">]</span>
+
+        <span class="n">spectra</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">file_</span><span class="p">[</span><span class="s">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">spectra</span>
+
+</div>
+<div class="viewcode-block" id="load_ndarray"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.load_ndarray">[docs]</a><span class="k">def</span> <span class="nf">load_ndarray</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">ndarray_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Dump any other class, mostly containing numpy arrays.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (string): Location to load class attributes from.</span>
+<span class="sd">      array_object (object): Any class instance mainly consisting of</span>
+<span class="sd">        numpy array(s).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">ndarray_object</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;ndarray&quot;</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">ndarray_object</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">file_</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">ndarray_object</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ndarray_object</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

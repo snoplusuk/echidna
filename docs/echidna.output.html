@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.output package &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="index.html" />
+    <link rel="up" title="echidna package" href="echidna.html" />
+    <link rel="next" title="echidna.scripts package" href="echidna.scripts.html" />
+    <link rel="prev" title="echidna.limit package" href="echidna.limit.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.scripts.html" title="echidna.scripts package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="echidna.limit.html" title="echidna.limit package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" accesskey="U">echidna package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="echidna-output-package">
+<h1>echidna.output package<a class="headerlink" href="#echidna-output-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-echidna.output.plot">
+<span id="echidna-output-plot-module"></span><h2>echidna.output.plot module<a class="headerlink" href="#module-echidna.output.plot" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="echidna.output.plot._produce_axis">
+<code class="descclassname">echidna.output.plot.</code><code class="descname">_produce_axis</code><span class="sig-paren">(</span><em>low</em>, <em>high</em>, <em>bins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#_produce_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot._produce_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method produces an array that represents the axis between low and
+high with bins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>low</strong> (<em>float</em>) &#8211; Low edge of the axis</li>
+<li><strong>high</strong> (<em>float</em>) &#8211; High edge of the axis</li>
+<li><strong>bins</strong> (<em>int</em>) &#8211; Number of bins</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot.plot_projection">
+<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the spectra as projected onto the dimension.
+For example dimension == 0 will plot the spectra as projected onto the
+energy dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
+<li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project the spectra onto.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot.plot_surface">
+<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the spectra with the dimension projected out.
+For example dimension == 0 will plot the spectra as projected onto the
+radial and time dimensions i.e. not energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
+<li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project out.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.output.plot_chi_squared">
+<span id="echidna-output-plot-chi-squared-module"></span><h2>echidna.output.plot_chi_squared module<a class="headerlink" href="#module-echidna.output.plot_chi_squared" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.chi_squared_vs_signal">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the chi squared as a function of signal counts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>signal_config</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>) &#8211; signal
+config class, where chi squareds have been stored.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>penalty (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>): config
+for signal with penalty term.</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.output.plot_root">
+<span id="echidna-output-plot-root-module"></span><h2>echidna.output.plot_root module<a class="headerlink" href="#module-echidna.output.plot_root" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="echidna.output.plot_root.plot_projection">
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the spectra as projected onto the dimension.
+For example dimension == 0 will plot the spectra as projected onto the
+energy dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
+<li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project the spectra onto.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(:class`ROOT.TH1D`:) plot.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_root.plot_surface">
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the spectra with the dimension projected out.
+For example dimension == 0 will plot the spectra as projected onto the
+radial and time dimensions i.e. not energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
+<li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project out.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(:class`ROOT.TH2D`:) plot.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.output.store">
+<span id="echidna-output-store-module"></span><h2>echidna.output.store module<a class="headerlink" href="#module-echidna.output.store" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="echidna.output.store.dump">
+<code class="descclassname">echidna.output.store.</code><code class="descname">dump</code><span class="sig-paren">(</span><em>file_path</em>, <em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/store.html#dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.store.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump the spectra to the file_path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>string</em>) &#8211; Location to save to.</li>
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectra to save</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.store.dump_ndarray">
+<code class="descclassname">echidna.output.store.</code><code class="descname">dump_ndarray</code><span class="sig-paren">(</span><em>file_path</em>, <em>ndarray_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/store.html#dump_ndarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.store.dump_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump any other class, mostly containing numpy arrays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_path</strong> (<em>string</em>) &#8211; Location to save to.</li>
+<li><strong>ndarray_object</strong> (<em>object</em>) &#8211; Any class instance mainly consisting of
+numpy array(s).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; 
+If attribute in not an ndarray and is larger than
+64k - h5py limit for attribute sizes.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.store.load">
+<code class="descclassname">echidna.output.store.</code><code class="descname">load</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/store.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.store.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a spectra from file_path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>string</em>) &#8211; Location to save to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Loaded spectra (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.store.load_ndarray">
+<code class="descclassname">echidna.output.store.</code><code class="descname">load_ndarray</code><span class="sig-paren">(</span><em>file_path</em>, <em>ndarray_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/store.html#load_ndarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.store.load_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump any other class, mostly containing numpy arrays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>string</em>) &#8211; Location to load class attributes from.</li>
+<li><strong>array_object</strong> (<em>object</em>) &#8211; Any class instance mainly consisting of
+numpy array(s).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.output">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-echidna.output" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">echidna.output package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-echidna.output.plot">echidna.output.plot module</a></li>
+<li><a class="reference internal" href="#module-echidna.output.plot_chi_squared">echidna.output.plot_chi_squared module</a></li>
+<li><a class="reference internal" href="#module-echidna.output.plot_root">echidna.output.plot_root module</a></li>
+<li><a class="reference internal" href="#module-echidna.output.store">echidna.output.store module</a></li>
+<li><a class="reference internal" href="#module-echidna.output">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="echidna.limit.html"
+                        title="previous chapter">echidna.limit package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="echidna.scripts.html"
+                        title="next chapter">echidna.scripts package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/echidna.output.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.scripts.html" title="echidna.scripts package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="echidna.limit.html" title="echidna.limit package"
+             >previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" >echidna package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>
