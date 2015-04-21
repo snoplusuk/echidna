@@ -45,7 +45,7 @@ from the echidna base directory. Details on how to run individual scripts can be
 Documentation
 -------------
 
-A copy of the latest version of the HTML documentation is available [here](echidna/blob/gh-pages/docs/html/docs/index.html)
+A copy of the latest version of the HTML documentation is available [here](https://snoplusuk.github.io/echidna/docs/index.html)
 
 But if you prefer you can build a copy of the Sphinx-based documentation locally. To build HTML documentation:
 
