@@ -1,3 +1,4 @@
+from echidna.util import root_help
 from ROOT import TH1D, TH2D
 
 
