@@ -1,4 +1,4 @@
-import root_help
+from echidna.core import root_help
 import rat
 from ROOT import RAT
 from ROOT import TChain
