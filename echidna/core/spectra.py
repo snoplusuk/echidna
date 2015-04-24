@@ -50,7 +50,7 @@ class Spectra(object):
         self._time_bins = 10
         self._time_width = (self._time_high - self._time_low) / self._time_bins
         self._num_decays = num_decays
-        self._raw_events = 0
+        self._raw_events = 0.
         self._data = numpy.zeros(shape=(self._energy_bins,
                                         self._radial_bins,
                                         self._time_bins),
@@ -229,3 +229,29 @@ class Spectra(object):
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
         self._num_decays += spectrum._num_decays
+
+    def rebin(self, *args):
+        '''rebin spectra data into a smaller spectra of the same rank whose
+        dimensions are factors of the original dimensions.
+        Adapted from http://wiki.scipy.org/Cookbook/Rebinning
+        
+        Args:
+          *args (int): comma seperated values for new bin numbers.
+
+        Raises:
+          ValueError: Number of dimensions incorrect for spectra
+          ValueError: Old bins/ New bins must be integer
+        '''
+        shape = self._data.shape
+        len_shape = len(shape)
+        if len_shape != len(args):
+            raise ValueError("Number of dimensions incorrect")
+        for i in range(len_shape):
+            if shape[i] % args[i] != 0:
+                raise ValueError("Old bins/ New bins must be integer")
+        factor = asarray(shape)/asarray(args)
+        evList = ['self._data.reshape('] + \
+            ['args[%d],factor[%d],'%(i,i) for i in range(len_shape)] + \
+            [')'] + ['.sum(%d)'%(i+1) for i in range(len_shape)] + \
+            ['/factor[%d]'%i for i in range(len_shape)]
+        return eval(''.join(evList))        
