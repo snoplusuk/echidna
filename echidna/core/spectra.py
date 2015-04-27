@@ -249,9 +249,9 @@ class Spectra(object):
         for i in range(len_shape):
             if shape[i] % args[i] != 0:
                 raise ValueError("Old bins/ New bins must be integer")
-        factor = asarray(shape)/asarray(args)
+        factor = numpy.asarray(shape)/numpy.asarray(args)
         evList = ['self._data.reshape('] + \
-            ['args[%d],factor[%d],' % (i, i) for i in range(len_shape)] + \
+            ['args[ % d],factor[%d],' % (i, i) for i in range(len_shape)] + \
             [')'] + ['.sum(%d)' % (i+1) for i in range(len_shape)] + \
-            ['/factor[%d]' % i for i in range(len_shape)]
-        return eval(''.join(evList))
+            ['/factor[ % d]' % i for i in range(len_shape)]
+        self._data = eval(''.join(evList))
