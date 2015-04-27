@@ -24,7 +24,7 @@ class DBIsotope(object):
       ValueError: If loading is < 0. or > 1.
     """
     def __init__(self, name, loading, atm_weight_iso, atm_weight_nat,
-                 abundance, phase_space, matrix_element, g_A,
+                 abundance, phase_space, matrix_element,
                  fv_radius=None, scint_density=None):
 
         if loading < 0. or loading > 1.:
@@ -38,7 +38,6 @@ class DBIsotope(object):
         self._abundance = abundance
         self._phase_space = phase_space
         self._matrix_element = matrix_element
-        self._g_A = g_A
         self._fv_radius = fv_radius
         self._scint_density = scint_density
         self._roi_factor = 0.62465  # integral of roi / integral of full spectrum

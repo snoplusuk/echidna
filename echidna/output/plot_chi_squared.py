@@ -37,7 +37,7 @@ def chi_squared_vs_signal(signal_config, **kwargs):
     if kwargs.get("effective_mass"):
         effective_masses = numpy.zeros(shape=(signal_config.get_chi_squareds()[2].shape))
         te130_converter = decay.DBIsotope("Te130", 0.003, 129.906229, 127.6,
-                                          0.3408, 3.69e-14, 4.03, 1.269)
+                                          0.3408, 3.69e-14, 4.03)
         n_atoms = te130_converter.get_n_atoms()
         for i_bin, count in enumerate(signal_config.get_chi_squareds()[2]):
             effective_mass = te130_converter.counts_to_mass(count, n_atoms,
