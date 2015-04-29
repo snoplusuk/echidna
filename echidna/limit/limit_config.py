@@ -86,7 +86,7 @@ class LimitConfig(object):
           float: number of events (result of
             :meth:`echidna.core.spectra.Spectra.sum()`) at limit
         """
-        return self._chi_squareds[2, numpy.where(self._chi_squareds[0] > limit)[0][0]]
+        return self._chi_squareds[2, numpy.where(self._chi_squareds[0] > + limit)[0][0]]
 
     def reset_chi_squareds(self):
         """ Resets :attr:`_chi_squareds` to an empty
