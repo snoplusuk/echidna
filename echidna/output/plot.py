@@ -74,6 +74,18 @@ def plot_surface(spectra, dimension):
         axis.set_xlabel("Time [yr]")
         axis.set_ylabel("Radius [mm]")
     axis.set_zlabel("Count per bin")
+    print len(x), len(y), data.shape
     X, Y = numpy.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
+    print X.shape, Y.shape
     axis.plot_surface(X, Y, data)
     pylab.show()
+
+
+if __name__ == "__main__":
+    import echidna
+    import echidna.output.store as store
+
+
+    filename = "/data/Te130_0n2b_mc_smeared.hdf5"
+    spectre = store.load(echidna.__echidna_home__ + filename)
+    plot_surface(spectre, 2)

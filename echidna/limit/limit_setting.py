@@ -17,7 +17,7 @@ class SystAnalyser(object):
       syst_values (:class:`numpy.ndarray`): Array of values for systematic
 
     Attributes:
-      _name (float): Name of systematic. Ideally should be the same name
+      _name (string): Name of systematic. Ideally should be the same name
         as corresponding :class:`limit_config` key and penalty term.
       _chi_squareds (:class:`numpy.ndarray`): Axes 0: signal counts,
         1: systematic values (e.g. background counts), 2: layer.
@@ -26,25 +26,42 @@ class SystAnalyser(object):
       _preferred_values (:class:`numpy.ndarray`): Axes 0: signal counts,
         1: layer. Stores the prefered value, out of all systematic
         values in the loop, for each iteration (layer) over the values.
+      _penalty_values (:class:`numpy.ndarray`): col-0 = value of
+        systematic, col-1 = value of penalty term.
       _minima (:class:`numpy.ndarray`): Stores x,y coordinates for the
-        position of each minima --> col 0: singnal count, col 1: value
-        of systemaitc.
-      _x_axis (:class:`numpy.ndarray`): Array of signal counts.
-      _y_axis (:class:`numpy.ndarray`): Array of values for systematic
+        position of each minima --> col-0 = signal count, col-1: value
+        of systematic.
+      _signal_counts (:class:`numpy.ndarray`): Array of signal counts.
+      _syst_values (:class:`numpy.ndarray`): Array of values for
+        systematic.
+      _actual_counts (:class:`numpy.ndarray`): Array of actual signal
+        counts. A copy of :obj:`signal_config._chi_squareds[2]` after
+        limit setting is complete.
       _layer (int): current layer/iteration over systematic values.
       """
     def __init__(self, name, signal_counts, syst_values):
         self._name = name  # ideally same name as config and penalty term
-        self._chi_squareds = numpy.zeros(shape=(1, len(signal_counts),
-                                                len(syst_values)))
-        self._preferred_vales = numpy.zeros(shape=(len(signal_counts), 1))
-        self._minima = numpy.zeros(shape=(2, 1))
-        self._x_axis = signal_counts
-        self._y_axis = syst_values
+        self._chi_squareds = numpy.zeros(shape=(len(signal_counts), 1,
+                                                len(syst_values)), dtype=float)
+        self._preferred_values = numpy.zeros(shape=(len(signal_counts), 1),
+                                             dtype=float)
+        self._penalty_values = numpy.zeros(shape=(2, 0), dtype=float)
+        self._minima = numpy.zeros(shape=(2, 0), dtype=float)
+        self._signal_counts = signal_counts
+        self._syst_values = syst_values
+        self._actual_counts = numpy.zeros(shape=(len(signal_counts)),
+                                          dtype=float)
         self._layer = 1
 
+    def get_name(self):
+        """
+        Returns:
+          string: :attr:`_name`
+        """
+        return self._name
+
     def add_chi_squareds(self, signal_bin, chi_squareds):
-        """ Adds to :attr:`_chi_squareds`
+        """ Adds to :attr:`_chi_squareds`.
 
         Args:
           signal_bin (int): Bin corresponding to current value in signal
@@ -60,22 +77,113 @@ class SystAnalyser(object):
         if chi_squareds.shape != required_shape:
             raise CompatibilityError("chi_squareds array does not have "
                                      "required shape - " + str(required_shape))
-        if self._chi_squareds.shape[0] < self._layer:  # layer doesn't exist
+        if self._chi_squareds.shape[1] < self._layer:  # layer doesn't exist
             # Create new layer
-            new_layer = numpy.zeros(shape=self._chi_squareds[0].shape)
-            self._chi_squareds = numpy.append(self._chi_squareds, [new_layer],
-                                              axis=0)
-        self._chi_squareds[self._layer-1][signal_bin] = chi_squareds
+            new_layer = numpy.zeros(shape=self._chi_squareds[:, 0:1, :].shape,
+                                    dtype=float)
+            self._chi_squareds = numpy.append(self._chi_squareds, new_layer,
+                                              axis=1)
+        self._chi_squareds[signal_bin][self._layer-1] = chi_squareds
+
+    def get_chi_squareds(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_chi_squareds` Axes 0: signal
+            counts, 1: systematic values (e.g. background counts), 2:
+            layer. Records the chi squared values for every iteration
+            over the list of systematic values (layer).
+        """
+        return self._chi_squareds
 
     def add_preferred_value(self, signal_bin, preferred_value):
-        """ *** NOT IMPLEMENTED YET ***
+        """ Adds to :attr:`_preferred_values`
+
+        Args:
+          signal_bin (int): Bin corresponding to current value in signal
+            counts.
+          preferred_values (:class:`numpy.ndarray`): 1D array of
+            preferred values to add.
         """
-        pass
+        if self._preferred_values.shape[1] < self._layer:  # doesn't exist
+            new_layer = numpy.zeros(shape=self._preferred_values[:, 0: 1].shape,
+                                    dtype=float)
+            self._preferred_values = numpy.append(self._preferred_values,
+                                                  new_layer, axis=1)
+        self._preferred_values[signal_bin][self._layer-1] = preferred_value
+
+    def get_preferred_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_preferred_values`. Axes 0:
+          signal counts, 1: layer. Stores the prefered value, out of
+          all systematic values in the loop, for each iteration (layer)
+          over the values.
+        """
+        return self._preferred_values
+
+    def add_penalty_value(self, syst_value, penalty_value):
+        """ Adds to :attr:`_penalty_values`
+
+        Args:
+          syst_value (float): value of systematic.
+          penalty_value (float): value of penalty term, corresponding
+            to given systematic value.
+        """
+        entry_to_append = numpy.zeros((2, 1), dtype=float)
+        entry_to_append[0][0] = syst_value
+        entry_to_append[1][0] = penalty_value
+        self._penalty_values = numpy.append(self._penalty_values,
+                                            entry_to_append, axis=1)
+
+    def get_penalty_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_penalty_values`. col-0 =
+            value of systematic, col-1 = value of penalty term.
+        """
+        return self._penalty_values
 
     def add_minima(self, signal_count, syst_value):
-        """ *** NOT IMPLEMENTED YET ***
+        """ Adds to :attr:`_minima`
+
+        Args:
+          signal_count (float): current signal count
+          syst_value (float): current value of systematic at given
+            signal count.
         """
-        pass
+        entry_to_append = numpy.zeros((2, 1), dtype=float)
+        entry_to_append[0][0] = signal_count
+        entry_to_append[1][0] = syst_value
+        self._minima = numpy.append(self._minima, entry_to_append, axis=1)
+
+    def get_minima(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_minima`. col-0 = signal
+            count, col-1 = value of systematic.
+        """
+        return self._minima
+
+    def get_signal_counts(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_signal_counts`.
+        """
+        return self._signal_counts
+
+    def get_syst_values(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_syst_values`.
+        """
+        return self._syst_values
+
+    def get_actual_counts(self):
+        """
+        Returns:
+          :class:`numpy.ndarray`: :attr:`_actual_counts`.
+        """
+        return self._actual_counts
 
 
 class LimitSetting(object):
@@ -185,6 +293,7 @@ class LimitSetting(object):
             raise TypeError("signal configuration not set")
         self._background_configs[name] = background_config
         if kwargs.get("plot_systematic"):
+            print background_config._counts
             self._syst_analysers[name] = SystAnalyser(
                 name+"_counts", self._signal_config._counts,
                 background_config._counts)
@@ -237,10 +346,13 @@ class LimitSetting(object):
                 background.scale(config._prior_count)
                 observed += background.project(0)
             self._observed = observed
+            raw_input("RETURN to continue")
         else:  # _data is not None
             self._observed = self._data
         self._signal_config.reset_chi_squareds()
         for signal_count in self._signal_config.get_count():
+            for syst_analyser in self._syst_analysers.values():
+                syst_analyser._layer = 1  # reset layers
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
                 self._signal_config.add_chi_squared(
@@ -250,6 +362,9 @@ class LimitSetting(object):
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
+        for syst_analyser in self._syst_analysers.values():
+            print syst_analyser._syst_values
+            syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
@@ -298,6 +413,13 @@ class LimitSetting(object):
         for count in config.get_count():  # Generator
             background.scale(count)
             if (current < total_backgrounds-1):
+                # Add penalty terms manually
+                if config._sigma is not None:
+                    penalty_term = {
+                            "parameter_value": count - config._prior_count,
+                            "sigma": config._sigma
+                            }
+                    self._calculator.set_penalty_term(name, penalty_term)
                 config.add_chi_squared(
                     self._get_chi_squared(self._backgrounds,
                                           len(self._backgrounds),
@@ -323,7 +445,7 @@ class LimitSetting(object):
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
                             self._observed, expected,
-                            penalty_term=penalty_term),
+                            penalty_terms=penalty_term),
                         count, background.sum())
                 except ValueError as detail:  # Either histogram has bins with
                                               # zero events
@@ -350,15 +472,20 @@ class LimitSetting(object):
                         config.add_chi_squared(
                             self._calculator.get_chi_squared(
                                 self._observed, expected,
-                                penalty_term=penalty_term),
+                                penalty_terms=penalty_term),
                             count, background.sum())
                     else:
                         raise
-        minimum = config.get_minimum()
+            if syst_analyser is not None:
+                penalty_value = self._calculator._current_values[name]
+                syst_analyser.add_penalty_value(count, penalty_value)
+        minimum, minimum_bin = config.get_minimum(minimum_bin=True)
+        sig_bin = numpy.where(sig_config._counts == sig_config._current_count)[0][0]
+        preferred_value = config._chi_squareds[1][minimum_bin][0]
         if syst_analyser is not None:
-            syst_analyser.add_chi_squareds(
-                numpy.where(sig_config._counts == sig_config._current_count)[0][0],
-                config._chi_squareds[0])
+            syst_analyser.add_chi_squareds(sig_bin, config._chi_squareds[0])
+            syst_analyser.add_preferred_value(sig_bin, preferred_value)
+            syst_analyser.add_minima(self._signal.sum(), preferred_value)
             syst_analyser._layer += 1
         current -= 1
         return minimum
