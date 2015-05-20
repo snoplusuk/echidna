@@ -1,4 +1,4 @@
-''' Helper script to allow --help option to work with ROOT import.
+''' Helper script to allow :option:`--help` option to work with ROOT import.
 
 Add to any module that imports ROOT or rat.
 '''
