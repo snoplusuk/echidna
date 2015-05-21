@@ -40,15 +40,13 @@ class Spectra(object):
         self._energy_low = 0.0  # MeV
         self._energy_high = 10.0  # MeV
         self._energy_bins = 1000
-        self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
         self._radial_low = 0.0  # mm
         self._radial_high = 10000.0  # mm
         self._radial_bins = 1000
-        self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_low = 0.0  # years
         self._time_high = 10.0  # years
         self._time_bins = 10
-        self._time_width = (self._time_high - self._time_low) / self._time_bins
+        self.calc_widths()
         self._num_decays = num_decays
         self._raw_events = 0
         self._data = numpy.zeros(shape=(self._energy_bins,
