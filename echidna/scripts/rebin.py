@@ -4,14 +4,15 @@ This script:
   * Reads in spectrum from hdf5
   * Rebins spectrum with user input number of bins
   * Saves rebinned spectrum to given output or, by default, to the same
-    directory with _rebin added to the filename. 
+    directory with _rebin added to the filename.
 
 Examples:
   To rebin hdf5 file ``example.hdf5`` that has 3 dimensions with 1000 bins in
-  each dimension to 500 bins in the first dimension and save the spectrum to 
+  each dimension to 500 bins in the first dimension and save the spectrum to
   ``example2.hdf5`` then the following command is required::
 
-    $ python rebin.py -i /path/to/example.hdf5 -o /path/to/example2.hdf5 -b 500 1000 1000
+    $ python rebin.py -i /path/to/example.hdf5 -o /path/to/example2.hdf5
+      -b 500 1000 1000
 
   This will create the smeared hdf5 file ``/path/to/example_smeared.hdf5``.
 

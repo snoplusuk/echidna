@@ -24,6 +24,7 @@ import echidna.limit.limit_config as limit_config
 import echidna.limit.limit_setting as limit_setting
 import echidna.limit.chi_squared as chi_squared
 import echidna.output.plot_chi_squared as plot_chi_squared
+from echidna.calc import decay
 
 import argparse
 import os
@@ -56,6 +57,15 @@ if __name__ == "__main__":
 
     # Create signal spectrum
     Te130_0n2b = store.load(args.signal)
+    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+    Te130_0n2b.scale(200.)
+    unshrunk = Te130_0n2b.sum()
+    Te130_0n2b = store.load(args.signal)
+    Te130_0n2b.shrink(2.46, 2.68, 0.0, 3500.0, 0.0, 5.0)
+    Te130_0n2b.scale(200.)
+    shrunk = Te130_0n2b.sum()
+    scaling = shrunk/unshrunk
+    Te130_0n2b = store.load(args.signal)
 
     # Create background spectra
     Te130_2n2b = store.load(args.two_nu)
@@ -70,6 +80,7 @@ if __name__ == "__main__":
     Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+
 
     # 1/ Set limit with no penalty term
     # Create dictionary of backgrounds and priors
@@ -97,10 +108,19 @@ if __name__ == "__main__":
     set_limit.set_calculator(calculator)
 
     # Calculate confidence limit
-    print "90% CL with no penalty at: " + str(set_limit.get_limit()) + \
-        " ROI counts"
+    #print "90% CL with no penalty at: " + str(set_limit.get_limit()) + \
+    #    " ROI counts"
+
+    sig_num_decays = set_limit.get_limit()
+    print sig_num_decays
+    converter = decay.DBIsotope("Te130", 0.003, 129.9062244, 127.603, 0.3408, 3.69e-14, 4.03)
+    half_life = converter.counts_to_half_life(sig_num_decays/scaling)
+    print "90% CL with no peanalty at: " + \
+        str(half_life) + " ROI counts"
+
 
     # 2/ Now try fixing B8_Solar and floating Te130_2n2b
+    Te130_0n2b = store.load(args.signal)
 
     # Reload background spectra
     Te130_2n2b = store.load(args.two_nu)
@@ -108,8 +128,12 @@ if __name__ == "__main__":
 
     # Shrink spectra to 5 years - livetime used by Andy
     # And make 3.5m fiducial volume cut
+    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+
+    #Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+    #B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
     fixed_backgrounds = {B8_Solar: B8_Solar_prior}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
@@ -130,6 +154,7 @@ if __name__ == "__main__":
 
     # Set config for Te130_2n2b
     # Floating range:
+    #Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
     Te130_2n2b_counts = numpy.arange(27.5e6, 47.5e6, 0.5e6, dtype=float)
     # Sigma of rate:
     sigma = 7.6125e6  # Used in penalty term (20.3%, Andy's doc on systematics)
@@ -140,14 +165,27 @@ if __name__ == "__main__":
                                    plot_systematic=True)
     set_limit.set_calculator(calculator)
     # Calculate confidence limit
+    sig_num_decays = set_limit.get_limit()
+    print sig_num_decays
+    half_life = converter.counts_to_half_life(sig_num_decays/scaling)
     print "90% CL with Te130_2n2b floating at: " + \
-        str(set_limit.get_limit()) + " ROI counts"
+        str(half_life) + " ROI counts"
+    #print "90% CL with Te130_2n2b floating at: " + \
+    #    str(set_limit.get_limit()) + " ROI counts"
     plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config,
                                            penalty=Te130_0n2b_penalty_config)
     for syst_analyser in set_limit._syst_analysers.values():
         store.dump_ndarray(syst_analyser._name+"2.hdf5", syst_analyser)
 
-    # 3/ Fix no backgrounds and float all
+    # 3/ Fix no backgrounds and float all#
+    Te130_0n2b = store.load(args.signal)
+    # Reload background spectra
+    Te130_2n2b = store.load(args.two_nu)
+    B8_Solar = store.load(args.b8_solar)
+
+    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+    Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+    B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
     # List of backgrounds to float
     floating = [Te130_2n2b, B8_Solar]
@@ -164,6 +202,7 @@ if __name__ == "__main__":
 
     # Set config for Te130_2n2b
     Te130_2n2b_counts = numpy.arange(27.5e6, 47.5e6, 0.5e6, dtype=float)
+    #Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
     # Sigma of rate:
     sigma = 7.6125e6  # Used in penalty term (20.3%, Andy's doc on systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
@@ -173,6 +212,7 @@ if __name__ == "__main__":
                                    plot_systematic=True)
     # Set config for B8_Solar
     B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.5e3, dtype=float)
+    #B8_Solar_counts = numpy.arange(11.0e3, 14.0e3, 0.5e3, dtype=float)
     sigma = 501.1988  # To use in penalty term
     B8_Solar_penalty_config = limit_config.LimitConfig(B8_Solar_prior,
                                                        B8_Solar_counts, sigma)
@@ -180,8 +220,11 @@ if __name__ == "__main__":
                                    plot_systematic=True)
     set_limit.set_calculator(calculator)
     # Calculate confidence limit
+    sig_num_decays = set_limit.get_limit()
+    print sig_num_decays
+    half_life = converter.counts_to_half_life(sig_num_decays/scaling)
     print "90% CL with all backgrounds floating at: " + \
-        str(set_limit.get_limit()) + " ROI counts"
+        str(half_life) + " ROI counts"
     plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config,
                                            penalty=Te130_0n2b_penalty_config)
 

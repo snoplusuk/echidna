@@ -263,6 +263,6 @@ class Spectra(object):
     def calc_widths(self):
         """ Recalculates bin widths
         """
-        self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins  
-        self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins  
+        self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
+        self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_width = (self._time_high - self._time_low) / self._time_bins
