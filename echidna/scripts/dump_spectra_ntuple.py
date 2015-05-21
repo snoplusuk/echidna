@@ -20,10 +20,11 @@ import numpy
 import argparse
 import csv
 import echidna.output.store as store
+import echidna.core.spectra as spectra
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
-def read_and_dump_ntuple(fname, half_life, spectrum_name, save_path):
+def read_and_dump_ntuple(fname, config_path, half_life, spectrum_name, save_path):
     """ Creates both mc and reco spectra from ntuple files, dumping the results as a
     spectrum object in a hdf5 file
 
@@ -36,8 +37,14 @@ def read_and_dump_ntuple(fname, half_life, spectrum_name, save_path):
     Returns:
       None
     """
-    mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(fname, half_life, spectrumname = "%s_mc" % (spectrum_name) )
-    reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname, half_life, spectrumname = "%s_reco" % (spectrum_name) )
+    mc_config = spectra.SpectraConfig.load_from_file(config_path)
+    reco_config = spectra.SpectraConfig.load_from_file(config_path)
+    mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(fname, half_life,
+                                                    spectrumname = "%s_mc" % (spectrum_name),
+                                                    config = mc_config)
+    reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname, half_life,
+                                                        spectrumname = "%s_reco" % (spectrum_name),
+                                                        config = reco_config)
 
     # Plot
     plot_spectrum(mc_spec)
@@ -88,6 +95,9 @@ if __name__ == "__main__":
                       type=str,
                       default="./",
                       help="Enter destination path for .hdf5 spectra files.")
+    parser.add_argument("config",
+                        type=str,
+                        help="Path to config file")
     parser.add_argument("fname",
                       type=str,
                       help="Path to root file to be read.")
@@ -106,5 +116,5 @@ if __name__ == "__main__":
         path_list, half_life_list = read_tab_delim_file(args.read_text_file)
         for idx, fname in enumerate(path_list):
             spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
-            read_and_dump_ntuple(path, half_life_list[idx], spectrum_name, args.save_path)
+            read_and_dump_ntuple(path, args.config, half_life_list[idx], spectrum_name, args.save_path)
             

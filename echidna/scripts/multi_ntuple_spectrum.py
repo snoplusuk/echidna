@@ -24,10 +24,11 @@ import numpy
 import os
 import optparse
 import echidna.output.store as store
+import echidna.core.spectrum as spectrum
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
-def create_combined_ntuple_spectrum(data_path, half_life, bkgnd_name, save_path):
+def create_combined_ntuple_spectrum(data_path, config_path, half_life, bkgnd_name, save_path):
     """ Creates both mc and reco spectra from directory containing background ntuples, 
     dumping the results as a spectrum object in a hdf5 file.
 
@@ -40,12 +41,14 @@ def create_combined_ntuple_spectrum(data_path, half_life, bkgnd_name, save_path)
     Returns:
       None
     """
+    mc_config = spectra.SpectraConfig.load_from_file(config_path)
+    reco_config = spectra.SpectraConfig.load_from_file(config_path)
     file_list = os.listdir(data_path)
     for idx, fname in enumerate(file_list):
         file_path = "%s/%s" % (data_path, fname)
         if idx == 0:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, spectrumname = "%s_mc" % bkgnd_name)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrumname = "%s_reco" % bkgnd_name)
+            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, "%s_mc" % bkgnd_name, config = mc_config)
+            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, "%s_reco" % bkgnd_name, config = reco_config)
         else: 
             mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, spectrum = mc_spec)
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrum = reco_spec)
@@ -80,6 +83,9 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--bkgnd_name",
                       type=str,
                       help="Name of background (to be used as file and spectrum name)")
+    parser.add_argument("config",
+                        type=str,
+                        help="Path to config file")
     parser.add_argument("path",
                       type=str,
                       help="Path to ntuple directory")
@@ -101,4 +107,5 @@ if __name__ == "__main__":
     # Set path to folder created when grabbing ntuples from grid.
     # All files contained should be read and filled into a single specturm object.
     ############################################################################### 
-    create_combined_ntuple_spectrum(data_path, args.half_life, bkgnd_name, args.save_path)
+    create_combined_ntuple_spectrum(data_path, args.config,
+                                    args.half_life, bkgnd_name, args.save_path)

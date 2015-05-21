@@ -1,10 +1,11 @@
 import numpy
 
-import echidna.core.spectra
+import echidna.core.spectra as spectra
 import echidna.limit.limit_setting as limit_setting
 
 import h5py
 import sys
+import collections
 
 
 def dump(file_path, spectra):
@@ -12,23 +13,16 @@ def dump(file_path, spectra):
 
     Args:
       file_path (string): Location to save to.
-      spectra (:class:`echidna.core.spectra.Spectra`): The spectra to save
+      spectra (:class:`spectra.Spectra`): The spectra to save
     """
 
     with h5py.File(file_path, "w") as file_:
         file_.attrs["name"] = spectra._name
-        file_.attrs["energy_low"] = spectra._energy_low
-        file_.attrs["energy_high"] = spectra._energy_high
-        file_.attrs["energy_bins"] = spectra._energy_bins
-        file_.attrs["energy_width"] = spectra._energy_width
-        file_.attrs["radial_low"] = spectra._radial_low
-        file_.attrs["radial_high"] = spectra._radial_high
-        file_.attrs["radial_bins"] = spectra._radial_bins
-        file_.attrs["radial_width"] = spectra._radial_width
-        file_.attrs["time_low"] = spectra._time_low
-        file_.attrs["time_high"] = spectra._time_high
-        file_.attrs["time_bins"] = spectra._time_bins
-        file_.attrs["time_width"] = spectra._time_width
+        # Store parameters with a key word 'pars'
+        for v in spectra.get_config().getpars():
+            file_.attrs["pars:%s:low" % v]  = spectra.get_config().getpar(v).low  
+            file_.attrs["pars:%s:high" % v]  = spectra.get_config().getpar(v).high
+            file_.attrs["pars:%s:bins" % v]  = spectra.get_config().getpar(v).bins
         file_.attrs["num_decays"] = spectra._num_decays
 
         file_.create_dataset("data", data=spectra._data, compression="gzip")
@@ -66,27 +60,54 @@ def load(file_path):
       file_path (string): Location to save to.
 
     Returns:
-      Loaded spectra (:class:`echidna.core.spectra.Spectra`).
+      Loaded spectra (:class:`spectra.Spectra`).
     """
     with h5py.File(file_path, "r") as file_:
-        spectra = echidna.core.spectra.Spectra(file_.attrs["name"],
-                                               file_.attrs["num_decays"])
-        spectra._energy_low = file_.attrs["energy_low"]
-        spectra._energy_high = file_.attrs["energy_high"]
-        spectra._energy_bins = file_.attrs["energy_bins"]
-        spectra._energy_width = file_.attrs["energy_width"]
-        spectra._radial_low = file_.attrs["radial_low"]
-        spectra._radial_high = file_.attrs["radial_high"]
-        spectra._radial_bins = file_.attrs["radial_bins"]
-        spectra._radial_width = file_.attrs["radial_width"]
-        spectra._time_low = file_.attrs["time_low"]
-        spectra._time_high = file_.attrs["time_high"]
-        spectra._time_bins = file_.attrs["time_bins"]
-        spectra._time_width = file_.attrs["time_width"]
+        parameters = collections.OrderedDict()
+        for v in file_.attrs:
+            print v
+            if v.startswith("pars:"):
+                [_, par, val] = v.split(":")
+                if par not in parameters:
+                    parameters[par] = spectra.SpectraParameter(par, 1, 1, 1)
+                parameters[par].setvar(val, file_.attrs[v])
+                
+        spec = spectra.Spectra(file_.attrs["name"],
+                               file_.attrs["num_decays"],
+                               spectra.SpectraConfig(parameters))
+        spec._data = file_["data"].value
+    print spec.get_config().getpars()
+    return spec
 
-        spectra._data = file_["data"].value
-    return spectra
 
+
+def load_old(file_path):
+    """ Load a spectra from file_path.
+    Args:
+      file_path (string): Location to save to.
+    Returns:
+      Loaded spectra (:class:`spectra.Spectra`).
+    """
+    with h5py.File(file_path, "r") as file_:
+        parameters = collections.OrderedDict()
+        parameters["energy"] = spectra.SpectraParameter("energy",
+                                                        file_.attrs["energy_low"],
+                                                        file_.attrs["energy_high"],
+                                                        file_.attrs["energy_bins"])
+        parameters["radial"] = spectra.SpectraParameter("radial",
+                                                        file_.attrs["radial_low"],
+                                                        file_.attrs["radial_high"],
+                                                        file_.attrs["radial_bins"])
+        parameters["time"] = spectra.SpectraParameter("time",
+                                                      file_.attrs["time_low"],
+                                                      file_.attrs["time_high"],
+                                                      file_.attrs["time_bins"])
+        spectra_config = spectra.SpectraConfig(parameters)
+        spec = spectra.Spectra(file_.attrs["name"],
+                                  file_.attrs["num_decays"],
+                                  spectra_config)
+        spec._data = file_["data"].value
+    return spec
 
 def load_ndarray(file_path, ndarray_object):
     """ Dump any other class, mostly containing numpy arrays.

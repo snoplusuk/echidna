@@ -44,7 +44,7 @@ def _av_weights(times, T):
     return (weights)
 
 
-def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
+def fill_reco_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
@@ -73,10 +73,11 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
     print spectrumname
     dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
         spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
+                                   10.*dsreader.GetEntryCount(),
+                                   config)
     else:
         spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
@@ -93,25 +94,27 @@ def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
     else:
         weights = _scint_weights(times, T)
 
+    extractors = []
+    for var in spectra.get_config().getpars():
+        extractors.append(dsextract.function_factory(var))
+
     for ievent in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
         for ievent in range(0, ds.GetEVCount()):
             ev = ds.GetEV(ievent)
-            if not ev.DefaultFitVertexExists() or not ev.GetDefaultFitVertex().ContainsEnergy() or not ev.GetDefaultFitVertex().ValidEnergy():
+
+            # Check to see if all parameters are valid
+            if False in [e.ev_get_valid(ev) for e in extractors]:
                 continue
-            energy = ev.GetDefaultFitVertex().GetEnergy()
-            position = ev.GetDefaultFitVertex().GetPosition().Mag()
+
+            # All OK, fill the spectrum
+            spectrum.fill(tuple(e.ev_get_value(ev) for e in extractors))
             spectrum._raw_events += 1
-            for time, weight in zip(times, weights):
-                try:
-                    spectrum.fill(energy, position, time, 1.)
-                except ValueError:
-                    pass
 
     return spectrum
 
 
-def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
+def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray of true energies, radii, times
     and weights. It takes the true energies and positions of the events
@@ -140,10 +143,11 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
     print spectrumname
     dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
         spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
+                                   10.*dsreader.GetEntryCount(),
+                                   config)
     else:
         spectrum._num_decays += 10.*dsreader.GetEntryCount()
         spectrumname = spectrum._name
@@ -160,23 +164,25 @@ def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
     else:
         weights = _scint_weights(times, T)
 
+    extractors = []
+    for var in spectra.get_config().getpars():
+        extractors.append(dsextract.function_factory(var))
+
     for ievent in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
         mc = ds.GetMC()
         if mc.GetMCParticleCount() > 0:
-            energy = mc.GetScintQuenchedEnergyDeposit()
-            position = mc.GetMCParticle(0).GetPosition().Mag()
+
+            if False in [e.mc_get_valid() for e in extractors]:
+                continue
+
+            spectrum.fill(e.mc_get_value() for e in extractors)
             spectrum._raw_events += 1
-            for time, weight in zip(times, weights):
-                try:
-                    spectrum.fill(energy, position, time, 1.)
-                except ValueError:
-                    pass
 
     return spectrum
 
 
-def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
+def fill_reco_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
@@ -205,9 +211,9 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     chain = TChain("output")
     chain.Add(filename)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries(), config)
     else:
         spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
@@ -224,23 +230,22 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     else:
         weights = _scint_weights(times, T)
 
+    extractors = []
+    for var in spectra.get_config().getpars():
+        extractors.append(dsextract.function_factory(var))
+
     for event in chain:
-        if event.scintFit == 0:
+
+        if False in [e.ntuple_ev_get_valid() for e in extractors]:
             continue
-        energy = event.energy
-        position = math.fabs(math.sqrt((event.posx)**2 +
-                                       (event.posy)**2 + (event.posz)**2))
+
+        spectrum.fill(e.ntuple_ev_get_value() for e in extractors)
         spectrum._raw_events += 1
-        for time, weight in zip(times, weights):
-            try:
-                spectrum.fill(energy, position, time, 1.)
-            except ValueError:
-                pass
 
     return spectrum
 
 
-def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
+def fill_mc_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray of energies, radii, times
     and weights. It takes the reconstructed energies and positions
@@ -269,9 +274,9 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     chain = TChain("output")
     chain.Add(filename)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries(), config)
     else:
         spectrum._num_decays += 10.*chain.GetEntries()
         spectrumname = spectrum._name
@@ -288,15 +293,16 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
     else:
         weights = _scint_weights(times, T)
 
+    extractors = []
+    for var in spectra.get_config().getpars():
+        extractors.append(dsextract.function_factory(var))
+
     for event in chain:
-        energy = event.mcEdepQuenched
-        position = math.fabs(math.sqrt((event.mcPosx)**2 +
-                                       (event.mcPosy)**2 + (event.mcPosz)**2))
+
+        if False in [e.ntuple_mc_get_valid() for e in extractors]:
+            continue
+
+        spectrum.fill(e.ntuple_mc_get_value() for e in extractors)
         spectrum._raw_events += 1
-        for time, weight in zip(times, weights):
-            try:
-                spectrum.fill(energy, position, time, 1.)
-            except ValueError:
-                pass
 
     return spectrum
