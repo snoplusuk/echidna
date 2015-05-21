@@ -28,7 +28,7 @@ class TestLimitSetting(unittest.TestCase):
         self.assertRaises(CompatibilityError,
                           limit_setting.LimitSetting,
                           self._signal,
-                          self._backgrounds)
+                          floating_backgrounds=self._backgrounds)
         self._backgrounds[0]._energy_width = width_orig
 
         # Test radial compatibility
@@ -37,7 +37,7 @@ class TestLimitSetting(unittest.TestCase):
         self.assertRaises(CompatibilityError,
                           limit_setting.LimitSetting,
                           self._signal,
-                          self._backgrounds)
+                          floating_backgrounds=self._backgrounds)
         self._backgrounds[0]._radial_width = width_orig
 
         # Test time compatibility
@@ -46,7 +46,7 @@ class TestLimitSetting(unittest.TestCase):
         self.assertRaises(CompatibilityError,
                           limit_setting.LimitSetting,
                           self._signal,
-                          self._backgrounds)
+                          floating_backgrounds=self._backgrounds)
         self._backgrounds[0]._time_width = width_orig
 
     def test_get_limit(self):
@@ -84,7 +84,7 @@ class TestLimitSetting(unittest.TestCase):
 
         # Test 1: test Exceptions
         limit_setter_1 = limit_setting.LimitSetting(self._signal,
-                                                    self._backgrounds[:1])
+                                                    floating_backgrounds=self._backgrounds[:1])
         self.assertRaises(TypeError, limit_setter_1.get_limit)
         limit_setter_1.configure_signal(signal_config)
         self.assertRaises(KeyError, limit_setter_1.get_limit)
@@ -97,7 +97,7 @@ class TestLimitSetting(unittest.TestCase):
         roi = (mu - sigma, mu + sigma)
 
         limit_setter_2 = limit_setting.LimitSetting(self._signal,
-                                                    self._backgrounds[:1],
+                                                    floating_backgrounds=self._backgrounds[:1],
                                                     roi=roi, pre_shrink=True)
         limit_setter_2.configure_signal(signal_config)
         limit_setter_2.configure_background("bkg_1", bkg_1_config)
@@ -124,7 +124,7 @@ class TestLimitSetting(unittest.TestCase):
         bkg_2_config = limit_config.LimitConfig(bkg_2_prior, bkg_2_counts)
 
         limit_setter_3 = limit_setting.LimitSetting(self._signal,
-                                                    self._backgrounds,
+                                                    floating_backgrounds=self._backgrounds,
                                                     roi=roi, pre_shrink=True)
         limit_setter_3.configure_signal(signal_config)
         limit_setter_3.configure_background("bkg_1", bkg_1_config)

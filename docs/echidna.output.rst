@@ -28,6 +28,14 @@ echidna.output.plot_root module
     :undoc-members:
     :show-inheritance:
 
+echidna.output.plot_spectra module
+----------------------------------
+
+.. automodule:: echidna.output.plot_spectra
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.output.store module
 ---------------------------
 
