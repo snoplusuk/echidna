@@ -34,12 +34,11 @@ if __name__ == "__main__":
     # strip directory and extension
     filename = args.input[args.input.rfind("/")+1:args.input.rfind(".")]
     spectrum = store.load(args.input)
+    new_bins = args.bins
     print spectrum._data.shape
-    cmd = 'spectrum.rebin('
-    for b in args.bins:
-        cmd += str(b)+', '
-    cmd = cmd[:-2]+')'
-    eval(cmd)
+    print "sum pre bin", spectrum.sum()
+    spectrum.rebin(new_bins)
+    print 'Sum post bin:', spectrum.sum()
     print spectrum._data.shape
     f_out = args.output
     if not f_out:

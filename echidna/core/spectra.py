@@ -230,28 +230,34 @@ class Spectra(object):
         self._raw_events += spectrum._raw_events
         self._num_decays += spectrum._num_decays
 
-    def rebin(self, *args):
-        '''rebin spectra data into a smaller spectra of the same rank whose
+    def rebin(self, new_bins):
+        """ Rebin spectra data into a smaller spectra of the same rank whose
         dimensions are factors of the original dimensions.
-        Adapted from http://wiki.scipy.org/Cookbook/Rebinning
 
         Args:
-          *args (int): comma seperated values for new bin numbers.
+          new_bins (tuple): New bin sizes for spectra. Should be in order of
+            energy, radial, time.
 
         Raises:
-          ValueError: Number of dimensions incorrect for spectra
+          ValueError: Shape mismatch. Number of dimenesions are different.
           ValueError: Old bins/ New bins must be integer
-        '''
-        shape = self._data.shape
-        len_shape = len(shape)
-        if len_shape != len(args):
-            raise ValueError("Number of dimensions incorrect")
-        for i in range(len_shape):
-            if shape[i] % args[i] != 0:
-                raise ValueError("Old bins/ New bins must be integer")
-        factor = numpy.asarray(shape)/numpy.asarray(args)
-        evList = ['self._data.reshape('] + \
-            ['args[ % d],factor[%d],' % (i, i) for i in range(len_shape)] + \
-            [')'] + ['.sum(%d)' % (i+1) for i in range(len_shape)] + \
-            ['/factor[ % d]' % i for i in range(len_shape)]
-        self._data = eval(''.join(evList))
+        """
+        if self._data.ndim != len(new_bins):
+            raise ValueError("Shape mismatch: {}->{}".format(self._data.shape,
+                                                             new_bins))
+        for i in range(len(new_bins)):
+            if self._data.shape[i] % new_bins[i] != 0:
+                raise ValueError("Old bins/New bins must be integer old: %s"
+                                 " new: %s" % (self._data.shape, new_bins))
+        compression_pairs = [(d, c//d) for d, c in zip(new_bins,
+                                                       self._data.shape)]
+        flattened = [l for p in compression_pairs for l in p]
+        self._data = self._data.reshape(flattened)
+        for i in range(len(new_bins)):
+            self._data = self._data.sum(-1*(i+1))
+        self._energy_bins = new_bins[0]
+        self._radial_bins = new_bins[1]
+        self._time_bins = new_bins[2]
+        self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins  
+        self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins  
+        self._time_width = (self._time_high - self._time_low) / self._time_bins
