@@ -22,7 +22,7 @@ Examples:
 """
 import numpy
 import os
-import optparse
+import argparse
 import echidna.output.store as store
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
