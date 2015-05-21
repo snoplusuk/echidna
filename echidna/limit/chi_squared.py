@@ -48,7 +48,7 @@ class ChiSquared(object):
             self._penalty_terms = kwargs.get("penalty_terms")
             self._penalty_terms_set = True
         else:
-            self._penalty_terms = None
+            self._penalty_terms = {}
             self._penalty_terms_set = False
         self._current_values = {}
 
@@ -61,6 +61,7 @@ class ChiSquared(object):
             values in dict.
         """
         self._penalty_terms[name] = penalty_term
+        self._penalty_terms_set = True
 
     def get_chi_squared(self, observed, expected, **kwargs):
         """ Calculate the chi squared comparing observed to expected.

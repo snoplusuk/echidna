@@ -67,8 +67,10 @@ if __name__ == "__main__":
     Te130_0n2b._num_decays = Te130_0n2b.sum()
     Te130_0n2b._raw_events = 200034
     Te130_2n2b._num_decays = Te130_2n2b.sum()
+    print Te130_2n2b._num_decays
     Te130_2n2b._raw_events = 75073953
     B8_Solar._num_decays = B8_Solar.sum()
+    print B8_Solar._num_decays
     B8_Solar._raw_events = 106228
 
     # Shrink spectra to 5 years - livetime used by Andy

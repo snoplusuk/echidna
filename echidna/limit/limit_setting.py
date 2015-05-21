@@ -293,7 +293,6 @@ class LimitSetting(object):
             raise TypeError("signal configuration not set")
         self._background_configs[name] = background_config
         if kwargs.get("plot_systematic"):
-            print background_config._counts
             self._syst_analysers[name] = SystAnalyser(
                 name+"_counts", self._signal_config._counts,
                 background_config._counts)
@@ -346,7 +345,6 @@ class LimitSetting(object):
                 background.scale(config._prior_count)
                 observed += background.project(0)
             self._observed = observed
-            raw_input("RETURN to continue")
         else:  # _data is not None
             self._observed = self._data
         self._signal_config.reset_chi_squareds()
