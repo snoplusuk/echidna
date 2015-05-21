@@ -33,6 +33,7 @@ class LimitConfig(object):
         self._sigma = sigma
         self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)
         self._minimum_bin = None
+        self._limit_count = None
 
     def get_count(self):
         """
@@ -104,8 +105,12 @@ class LimitConfig(object):
               number) in addition to minimum chi squared
         """
         minimum = numpy.min(self._chi_squareds[0])
+        minimum_bin = numpy.where(self._chi_squareds[0] == minimum)
+        # Set counts corresponding to minimum
+        # --> Note scaling counts NOT actual events
+        self._limit_count = self._counts[minimum_bin]
         if kwargs.get("minimum_bin"):
-            return minimum, numpy.where(self._chi_squareds[0] == minimum)
+            return minimum, minimum_bin
         else:
             return minimum
 
@@ -123,7 +128,66 @@ class LimitConfig(object):
           float: number of events (result of
             :meth:`echidna.core.spectra.Spectra.sum()`) at limit
         """
-        return self._chi_squareds[2, numpy.where(self._chi_squareds[0] > limit)[0][0]]
+        first_bin_above = numpy.where(self._chi_squareds[0] > limit)[0][0]
+        # Set counts corresponding to minimum
+        # --> Note scaling counts NOT actual events
+        self._limit_count = self._counts[first_bin_above]
+        return self._chi_squareds[2, first_bin_above]
+
+    def get_last_bin_above(self, limit):
+        """ For signal, determine the count corresponding to limit.
+
+        Method to use if signal counts have been defined in such a way
+        that they count down to zero signal contribution. Produces
+        exactly the same result as :meth:`get_first_bin_above` but
+        where you have this set-up.
+
+        Args:
+          limit (float): chi squared value corresponding to desired
+            confidence limit
+
+        Returns:
+          float: number of events (result of
+            :meth:`echidna.core.spectra.Spectra.sum()`) at limit
+        """
+        last_bin_above = numpy.where(self._chi_squareds[0] > limit)[0][-1]
+        # Set counts corresponding to minimum
+        # --> Note scaling counts NOT actual events
+        self._limit_count = self._counts[last_bin_above]
+        return self._chi_squareds[2, last_bin_above]
+
+    def get_limit_count(self):
+        """ Returns the count for the full spectrum, at the limit.
+
+        Scaling the :class:`Spectra` instance, corresponding to this
+        :class:`LimitConfig` instance, to the value returned by this
+        method provides a representation of the full spectrum at the
+        limit.
+
+        Returns:
+          float: count (from :attr:`_counts`) at limit.
+
+        Raises:
+          AssertionError: if :attr:`_limit_counts` is None
+
+        .. note::
+
+          Requires either :meth:`get_minimum` or :meth:`get_first_bin_above`
+          to be called, before it can be called.
+
+        .. note::
+
+          For backgrounds, where multiple backgrounds have been floated
+          and :meth:`reset_chi_squareds` has been called, this will
+          only give you the limit count for the last iteration. For the
+          preferred value over the full float of systematics use the
+          :class:`SystAnalyser` class.
+        """
+        if self._limit_count is None:
+            raise AssertionError("Limit count not set, call get_minimum or"
+                                 " get_first_bin_above first")
+        else:
+            return self._limit_count
 
     def reset_chi_squareds(self):
         """ Resets :attr:`_chi_squareds` to an empty
