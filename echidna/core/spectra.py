@@ -243,8 +243,8 @@ class Spectra(object):
           ValueError: Old bins/ New bins must be integer
         """
         if self._data.ndim != len(new_bins):
-            raise ValueError("Shape mismatch: {}->{}".format(self._data.shape,
-                                                             new_bins))
+            raise ValueError("Shape mismatch: %s->%s" % (self._data.shape,
+                                                         new_bins))
         for i in range(len(new_bins)):
             if self._data.shape[i] % new_bins[i] != 0:
                 raise ValueError("Old bins/New bins must be integer old: %s"
@@ -258,6 +258,11 @@ class Spectra(object):
         self._energy_bins = new_bins[0]
         self._radial_bins = new_bins[1]
         self._time_bins = new_bins[2]
+        self.calc_widths()
+
+    def calc_widths(self):
+        """ Recalculates bin widths
+        """
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins  
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins  
         self._time_width = (self._time_high - self._time_low) / self._time_bins

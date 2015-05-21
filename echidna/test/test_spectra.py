@@ -118,3 +118,37 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(test_spectra._data.shape == (test_spectra._energy_bins,
                                                      test_spectra._radial_bins,
                                                      test_spectra._time_bins))
+
+    def test_rebin(self):
+        """ Tests that the spectra are being rebinned correctly.
+
+        """
+        test_decays = 10.
+        test_spectra = spectra.Spectrum("Test", test_decays)
+        test_spectra._energy_bins = 1000
+        test_spectra._radial_bins = 1000
+        test_spectra._time_bins = 10
+        test_spectra.calc_widths()
+        old_energy_width = test_spectra._energy_width
+        old_radial_width = test_spectra._radial_width
+        old_time_width = test_spectra._time_width
+        for decay in range(test_decays):
+            energy = random.uniform(test_spectra._energy_low,
+                                    test_spectra._energy_high)
+            radius = random.uniform(test_spectra._radial_low,
+                                    test_spectra._radial_high)
+            time = random.uniform(test_spectra._time_low,
+                                  test_spectra._time_high)
+            test_spectra.fill(energy, radius, time)
+        new_bins = (1, 2, 3, 4)
+        self.assertRaises(ValueError, test_spectra.rebin, new_bins)
+        new_bins = (99999, 99999, 99999)
+        self.assertRaises(ValueError, test_spectra.rebin, new_bins)
+        old_sum = test_spectra.sum()
+        new_bins = (500, 250, 2)
+        test_spectra.rebin(new_bins)
+        self.assertTrue(old_sum == test_spectra.sum())
+        self.assertTrue(test_spectra._data.shape ==  new_bins)
+        self.assertTrue(test_spectra._energy_width == old_energy_width*2.)
+        self.assertTrue(test_spectra._radial_width == old_radial_width*4.)
+        self.assertTrue(test_spectra._time_width == old_time_width*5.)
