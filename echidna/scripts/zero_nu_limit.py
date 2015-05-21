@@ -108,10 +108,7 @@ if __name__ == "__main__":
     set_limit.set_calculator(calculator)
 
     # Calculate confidence limit
-    #print "90% CL with no penalty at: " + str(set_limit.get_limit()) + \
-    #    " ROI counts"
-
-    sig_num_decays = set_limit.get_limit()
+    sig_num_decays = set_limit.get_limit_no_float()
     print sig_num_decays
     converter = decay.DBIsotope("Te130", 0.003, 129.9062244, 127.603, 0.3408, 3.69e-14, 4.03)
     half_life = converter.counts_to_half_life(sig_num_decays/scaling)
@@ -132,9 +129,6 @@ if __name__ == "__main__":
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
-    #Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    #B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-
     fixed_backgrounds = {B8_Solar: B8_Solar_prior}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
                                                 pre_shrink=True,
@@ -154,8 +148,7 @@ if __name__ == "__main__":
 
     # Set config for Te130_2n2b
     # Floating range:
-    #Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
-    Te130_2n2b_counts = numpy.arange(27.5e6, 47.5e6, 0.5e6, dtype=float)
+    Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
     # Sigma of rate:
     sigma = 7.6125e6  # Used in penalty term (20.3%, Andy's doc on systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
@@ -170,8 +163,6 @@ if __name__ == "__main__":
     half_life = converter.counts_to_half_life(sig_num_decays/scaling)
     print "90% CL with Te130_2n2b floating at: " + \
         str(half_life) + " ROI counts"
-    #print "90% CL with Te130_2n2b floating at: " + \
-    #    str(set_limit.get_limit()) + " ROI counts"
     plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config,
                                            penalty=Te130_0n2b_penalty_config)
     for syst_analyser in set_limit._syst_analysers.values():
@@ -201,8 +192,7 @@ if __name__ == "__main__":
     set_limit.configure_signal(Te130_0n2b_penalty_config)
 
     # Set config for Te130_2n2b
-    Te130_2n2b_counts = numpy.arange(27.5e6, 47.5e6, 0.5e6, dtype=float)
-    #Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
+    Te130_2n2b_counts = numpy.arange(14.5e6, 60.5e6, 0.5e6, dtype=float)
     # Sigma of rate:
     sigma = 7.6125e6  # Used in penalty term (20.3%, Andy's doc on systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(Te130_2n2b_prior,
@@ -211,8 +201,7 @@ if __name__ == "__main__":
     set_limit.configure_background(Te130_2n2b._name, Te130_2n2b_penalty_config,
                                    plot_systematic=True)
     # Set config for B8_Solar
-    B8_Solar_counts = numpy.arange(12.0e3, 13.0e3, 0.5e3, dtype=float)
-    #B8_Solar_counts = numpy.arange(11.0e3, 14.0e3, 0.5e3, dtype=float)
+    B8_Solar_counts = numpy.arange(11.0e3, 14.0e3, 0.5e3, dtype=float)
     sigma = 501.1988  # To use in penalty term
     B8_Solar_penalty_config = limit_config.LimitConfig(B8_Solar_prior,
                                                        B8_Solar_counts, sigma)
