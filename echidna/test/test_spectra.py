@@ -27,9 +27,12 @@ class TestSpectra(unittest.TestCase):
         self.assertRaises(ValueError, test_spectra.fill, -1, 0, 0)
         self.assertRaises(ValueError, test_spectra.fill, 0, -1, 0)
         self.assertRaises(ValueError, test_spectra.fill, 0, 0, -1)
-        self.assertRaises(ValueError, test_spectra.fill, test_spectra._energy_high + 1, 0, 0)
-        self.assertRaises(ValueError, test_spectra.fill, 0, test_spectra._radial_high + 1, 0)
-        self.assertRaises(ValueError, test_spectra.fill, 0, 0, test_spectra._time_high + 1)
+        self.assertRaises(ValueError, test_spectra.fill,
+                          test_spectra._energy_high + 1, 0, 0)
+        self.assertRaises(ValueError, test_spectra.fill,
+                          0, test_spectra._radial_high + 1, 0)
+        self.assertRaises(ValueError, test_spectra.fill,
+                          0, 0, test_spectra._time_high + 1)
 
     def test_project(self):
         """ Test the projection method of the spectra.
@@ -38,11 +41,14 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         test_spectra = spectra.Spectra("Test", test_decays)
-        energy_projection = numpy.ndarray(shape=(test_spectra._energy_bins), dtype=float)
+        energy_projection = numpy.ndarray(shape=(test_spectra._energy_bins),
+                                          dtype=float)
         energy_projection.fill(0)
-        radial_projection = numpy.ndarray(shape=(test_spectra._radial_bins), dtype=float)
+        radial_projection = numpy.ndarray(shape=(test_spectra._radial_bins),
+                                          dtype=float)
         radial_projection.fill(0)
-        time_projection = numpy.ndarray(shape=(test_spectra._time_bins), dtype=float)
+        time_projection = numpy.ndarray(shape=(test_spectra._time_bins),
+                                        dtype=float)
         time_projection.fill(0)
         for x in range(0, test_decays):
             energy = random.uniform(0, 10.0)
@@ -55,9 +61,12 @@ class TestSpectra(unittest.TestCase):
             energy_projection[x_bin] += 1.0
             radial_projection[y_bin] += 1.0
             time_projection[z_bin] += 1.0
-        self.assertTrue(numpy.array_equal(energy_projection, test_spectra.project(0)))
-        self.assertTrue(numpy.array_equal(radial_projection, test_spectra.project(1)))
-        self.assertTrue(numpy.array_equal(time_projection, test_spectra.project(2)))
+        self.assertTrue(numpy.array_equal(energy_projection,
+                                          test_spectra.project(0)))
+        self.assertTrue(numpy.array_equal(radial_projection,
+                                          test_spectra.project(1)))
+        self.assertTrue(numpy.array_equal(time_projection,
+                                          test_spectra.project(2)))
 
     def test_scale(self):
         """ Test the scale method of the spectra.
@@ -118,3 +127,37 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(test_spectra._data.shape == (test_spectra._energy_bins,
                                                      test_spectra._radial_bins,
                                                      test_spectra._time_bins))
+
+    def test_rebin(self):
+        """ Tests that the spectra are being rebinned correctly.
+
+        """
+        test_decays = 10
+        test_spectra = spectra.Spectra("Test", test_decays)
+        test_spectra._energy_bins = 1000
+        test_spectra._radial_bins = 1000
+        test_spectra._time_bins = 10
+        test_spectra.calc_widths()
+        old_energy_width = test_spectra._energy_width
+        old_radial_width = test_spectra._radial_width
+        old_time_width = test_spectra._time_width
+        for decay in range(test_decays):
+            energy = random.uniform(test_spectra._energy_low,
+                                    test_spectra._energy_high)
+            radius = random.uniform(test_spectra._radial_low,
+                                    test_spectra._radial_high)
+            time = random.uniform(test_spectra._time_low,
+                                  test_spectra._time_high)
+            test_spectra.fill(energy, radius, time)
+        new_bins = (1, 2, 3, 4)
+        self.assertRaises(ValueError, test_spectra.rebin, new_bins)
+        new_bins = (99999, 99999, 99999)
+        self.assertRaises(ValueError, test_spectra.rebin, new_bins)
+        old_sum = test_spectra.sum()
+        new_bins = (500, 250, 2)
+        test_spectra.rebin(new_bins)
+        self.assertTrue(old_sum == test_spectra.sum())
+        self.assertTrue(test_spectra._data.shape == new_bins)
+        self.assertTrue(test_spectra._energy_width == old_energy_width*2.)
+        self.assertTrue(test_spectra._radial_width == old_radial_width*4.)
+        self.assertTrue(test_spectra._time_width == old_time_width*5.)

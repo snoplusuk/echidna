@@ -31,6 +31,10 @@ def chi_squared_vs_signal(signal_config, **kwargs):
 
         * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config
           for signal with penalty term.
+		* effective_mass (*bool*): if True, plot the x-axis as the
+		  signal contribution effective mass.
+		* half_life (*bool*): if True, plot the x-axis as the signal
+          contribution half life.
     """
     figure = pylab.figure(figsize=(10, 10))
     axis = figure.add_subplot(1, 1, 1)
@@ -45,15 +49,22 @@ def chi_squared_vs_signal(signal_config, **kwargs):
             effective_masses[i_bin] = effective_mass
         x = effective_masses
         pylab.xlabel(r"$m_{\beta\beta}$", **MAIN_FONT)
-    else:
+    elif kwargs.get("half_life"):
+		x = []
+    	converter = decay.DBIsotope("Te130", 0.003, 129.9062244, 127.603, 0.3408, 3.69e-14, 4.03)
+    	for num_decays in signal_config._chi_squareds[1]:
+        	x.append(1./converter.counts_to_half_life(num_decays/0.554))
+    	pylab.xlabel(r"$1/T_{1/2}^{0\nu}$")
+    	pylab.ylabel(r"$\chi^{2}$")
+	else:
         x = signal_config.get_chi_squareds()[2]
         pylab.xlabel("Signal counts", **MAIN_FONT)
     y_1 = signal_config.get_chi_squareds()[0]
     pylab.ylabel(r"$\chi^{2}$", **MAIN_FONT)
     if kwargs.get("penalty") is not None:
-        y_2 = kwargs.get("penalty").get_chi_squareds()[0]
-        axis.plot(x, y_1, "bo-", label="no penalty term")
-        axis.plot(x, y_2, "ro-", label="penalty term")  # lines and dots
+        y_2 = kwargs.get("penalty")._chi_squareds[0]
+        axis.plot(x, y_1, "bo-", label="no systematic uncertainties")
+        axis.plot(x, y_2, "ro-", label="systematic uncertainties")  # lines and dots
         axis.legend(loc="upper left")
     else:
         axis.plot(x, y_1, "o-")  # lines and dots

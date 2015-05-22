@@ -114,9 +114,18 @@ class DBIsotope(object):
         else:
             return activity*livetime
 
-    def counts_to_activty(self, counts, livetime=5., **kwargs):
-        """
-        .. note::
+    def counts_to_activity(self, counts, livetime=5., **kwargs):
+        """ Converts activity to number of counts assuming constant activity.
+
+        Args:
+          activity (float): Initial activity of the isotope in
+            :math:`years^{-1}`.
+          livetime (float): Amount of years of data taking.
+
+        Returns:
+          float: Number of counts.
+
+		.. note::
 
           keyword arguments include:
 
@@ -186,3 +195,23 @@ class DBIsotope(object):
         n_atoms = self.get_n_atoms()
         activity = self.get_activity(half_life, n_atoms)
         return self.activity_to_counts(activity, livetime, **kwargs)
+
+    def counts_to_half_life(self, counts, livetime=5.):
+        """ Converts a double beta decay isotopes half-life
+        and mass into counts in years.
+
+        Args:
+          half_life (float): Isotope's half-life in years.
+          livetime (float): Number of years of data taking.
+
+        Raises:
+          ValueError: If abundance is < 0. or > 1.
+
+        Returns:
+          float: Number of expected counts.
+        """
+        n_atoms = self.get_n_atoms()
+        activity = self.counts_to_activity(counts, livetime)
+        return n_atoms/(numpy.log(2)*activity)
+
+
