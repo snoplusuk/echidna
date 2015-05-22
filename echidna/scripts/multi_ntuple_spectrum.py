@@ -13,7 +13,7 @@ Examples:
   To read all ntuples in a directory and save both individual and summed 
   spectra to file::
 
-    $ python multi_ntuple_spectrum.py /path/to/ntuple/direc/
+    $ python multi_ntuple_spectrum.py /path/to/config.yml /path/to/ntuple/direc/
 
   This will create hdf5 spectra files in diectory structure:
   ./Summed/ ./mc/ ./reco/
@@ -28,13 +28,12 @@ import echidna.core.spectrum as spectrum
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
-def create_combined_ntuple_spectrum(data_path, config_path, half_life, bkgnd_name, save_path):
+def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name, save_path):
     """ Creates both mc and reco spectra from directory containing background ntuples, 
     dumping the results as a spectrum object in a hdf5 file.
 
     Args:
       data_path (str): Path to directory containing the ntuples to be evaluated
-      half_life (float): Half-life of isotope
       bkgnd_name (str): Name of the background being processed
       save_path (str): Path to a directory where the hdf5 files will be dumped      
 
@@ -47,11 +46,11 @@ def create_combined_ntuple_spectrum(data_path, config_path, half_life, bkgnd_nam
     for idx, fname in enumerate(file_list):
         file_path = "%s/%s" % (data_path, fname)
         if idx == 0:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, "%s_mc" % bkgnd_name, config = mc_config)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, "%s_reco" % bkgnd_name, config = reco_config)
+            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, "%s_mc" % bkgnd_name, config = mc_config)
+            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, "%s_reco" % bkgnd_name, config = reco_config)
         else: 
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, spectrum = mc_spec)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrum = reco_spec)
+            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, spectrum = mc_spec)
+            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, spectrum = reco_spec)
 
     # Plot
     plot_spectrum(mc_spec)
@@ -89,9 +88,6 @@ if __name__ == "__main__":
     parser.add_argument("path",
                       type=str,
                       help="Path to ntuple directory")
-    parser.add_argument("half_life",
-                      type=float,
-                      help="Half-life of isotope ntuple files being read")
     args = parser.parse_args()
 
     # Take data_path from arg input
@@ -108,4 +104,4 @@ if __name__ == "__main__":
     # All files contained should be read and filled into a single specturm object.
     ############################################################################### 
     create_combined_ntuple_spectrum(data_path, args.config,
-                                    args.half_life, bkgnd_name, args.save_path)
+                                    bkgnd_name, args.save_path)

@@ -1,0 +1,9 @@
+parameters:
+        energy:
+                low: 0
+                high: 10
+                bins: 1000
+        radial:
+                low: 0
+                high: 15000
+                bins: 1500

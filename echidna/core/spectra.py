@@ -4,31 +4,76 @@ import yaml
 import copy
 
 class SpectraParameter(object):
+    """Simple data container that holds information for a Spectra parameter
+    (i.e. axis of the spectrum).
+
+    Args:
+      name (str): The name of this parameter
+      low (float): The lower limit of this parameter
+      high (float): The upper limit of this parameter
+      bins (int): The number of bins for this parameter
+
+    Attributes:
+      _name (str): The name of this parameter
+      low (float): The lower limit of this parameter
+      high (float): The upper limit of this parameter
+      bins (int): The number of bins for this parameter
+    """
+
     def __init__(self, name, low, high, bins):
+        """Initialise SpectraParameter class
+        """
         self._name = name
         self.high = high
         self.low = low
         self.bins = bins
-    def setvar(self, variable, value):
-        if variable=="low":
-            self.low = value
-        elif variable=="high":
-            self.high = value
-        elif variable=="bins":
-            self.bins = value
-        else:
-            raise TypeError("Unknown parameter name")
+
+    def setvar(self, **kwargs):
+        """Set a limit / binning variable after initialisation.
+        """
+        for kw in kwargs:
+            if kw == "low" and type(kwargs[kw]) is float:
+                self.low = kwargs[kw]
+            elif kw == "high" and type(kwargs[kw]) is float:
+                self.high = kwargs[kw]
+            elif kw == "bins" and type(kwargs[kw]) is int:
+                self.bins = kwargs[kw]
+            else:
+                raise TypeError("Unhandled parameter name / type")
+
     def get_width(self):
+        """Get the width of the binning for the parameter
+
+        Returns:
+          Bin width
+        """
         return (float(self.high - self.low) / self.bins)
 
 
 class SpectraConfig(object):
+    """Configuration container for Spectra objects.  Able to load
+    directly with a set list of SpectraParameters or from yaml 
+    configuration files.
+
+    Args:
+      parameters (:class:`collections.OrderedDict`): List of SpectraParameter objects
+
+    Attributes:
+      _parameters (:class:`collections.OrderedDict`): List of SpectraParameter objects
+    """
 
     def __init__(self, parameters):
+        """Initialise SpectraConfig class
+        """
         self._parameters = parameters
 
     @classmethod
     def load_from_file(cls, filename):
+        """Initialise SpectraConfig class from a config file (classmethod).
+
+        Args:
+          filename (str) path to config file
+        """
         config = yaml.load(open(filename, 'r'))
         parameters = collections.OrderedDict()
         for v in config['parameters']:
@@ -38,12 +83,27 @@ class SpectraConfig(object):
         return cls(parameters)
 
     def getpar(self, name):
+        """Get a named SpectraParameter
+
+        Returns:
+          Named parameter
+        """
         return self._parameters[name]
 
     def getpars(self):
+        """Get list of parameter names
+        
+        Returns:
+          List of parameter names
+        """
         return self._parameters.keys()
 
     def get_index(self, parameter):
+        """Return index of parameter within the existing set
+
+        Returns:
+          Index of parameter
+        """
         for i, p in enumerate(self._parameters.keys()):
             if p == parameter:
                 return i
@@ -60,22 +120,12 @@ class Spectra(object):
       name (str): The name of this spectra
       num_decays (float): The number of decays this spectra is created to
         represent.
+      spectra_config (:class:`SpectraConfig`): The configuration object
 
     Attributes:
       _data (:class:`numpy.ndarray`): The histogram of data
       _name (str): The name of this spectra
-      _energy_low (float): Lowest bin edge in MeV
-      _energy_high (float): Highest bin edge in MeV
-      _energy_bins (int): Number of energy bins
-      _energy_width (float): Width of a single bin in MeV
-      _radial_low (float): Lowest bin edge in mm
-      _radial_high (float): Highest bin edge in mm
-      _radial_bins (int): Number of raidal bins
-      _radial_width (float): Width of a single bin in mm
-      _time_low (float): Lowest bin edge in years
-      _time_high (float): Highest bin edge in years
-      _time_bins (int): Number of time bins
-      _time_width (float): Width of a single bin in yr
+      _config (:class:`SpectraConfig`): The configuration object
       _num_decays (float): The number of decays this spectra currently
         represents.
       _raw_events (int): The number of raw events used to generate the
@@ -99,14 +149,14 @@ class Spectra(object):
         return self._config
 
     def fill(self, weight=1.0, **kwargs):
-        """ Fill the bin for the `energy` `radius` and `time` with weight.
+        """ Fill the bin with weight.  Note that values for all named 
+        parameters in the spectra's config (e.g. energy, radial) must be 
+        passed.
 
         Args:
-          energy (float): Energy value to fill.
-          raidus (float): Radial value to fill.
-          time (float): Time value to fill.
           weight (float, optional): Defaults to 1.0, weight to fill the bin
             with.
+          \**kwargs (float): Named values (e.g. for energy, radial)
 
         Raises:
           ValueError: If the energy, radius or time is beyond the bin limits.
@@ -129,16 +179,18 @@ class Spectra(object):
         # Cross fingers the ordering is the same!
         self._data[tuple(bins)] += weight
         
-    def project(self, parameter):
-        """ Project the histogram along an `axis`.
+    def project(self, dimension):
+        """ Project the histogram along an axis for a given dimension.
+        Note that the dimension must be one of the named parameters in
+        the SpectraConfig.
 
         Args:
-          axis (int): To project onto
+          dimension (str): parameter to project onto
 
         Returns:
           The projection of the histogram onto the given axis
         """
-        axis = self._config.get_index(parameter)
+        axis = self._config.get_index(dimension)
         projection = copy.copy(self._data)
         for i_axis in range(len(self._config.getpars()) - 1):
             if axis < i_axis+1:
@@ -147,17 +199,21 @@ class Spectra(object):
                 projection = projection.sum(0)
         return projection
 
-    def surface(self, parameter1, parameter2):
-        """ Project the histogram along two axis, along the `axis`.
+    def surface(self, dimension1, dimension2):
+        """ Project the histogram along two axes for the given dimensions.
+        Note that the dimensions must be one of the named parameters in
+        the SpectraConfig.
 
         Args:
-          axis (int): To project away
+          dimension1 (str): first parameter to project onto
+          dimension1 (str): second parameter to project onto
+
 
         Returns:
           The 2d surface of the histogram.
         """
-        axis1 = self._config.get_index(parameter1)
-        axis2 = self._config.get_index(parameter2)
+        axis1 = self._config.get_index(dimension1)
+        axis2 = self._config.get_index(dimension2)
         if axis1 < 0 or axis1 > len(self._config.getpars()):
             raise IndexError("Axis index %s out of range" % axis1)
         if axis2 < 0 or axis2 > len(self._config.getpars()):
@@ -192,17 +248,14 @@ class Spectra(object):
         self._num_decays = num_decays
 
     def shrink(self, **kwargs):
-        """ Shrink the data such that it only contains values between energy_low
-        and energy_high (for example) by slicing. This updates the internal bin
+        """ Shrink the data such that it only contains values between low and
+        high for a given dimension by slicing. This updates the internal bin
         information as well as the data.
 
         Args:
-          energy_low (float): Optional new low bound of the energy.
-          energy_low (float): Optional new high bound of the energy.
-          radial_low (float): Optional new low bound of the radius.
-          radial_low (float): Optional new high bound of the radius.
-          time_low (float): Optional new low bound of the time.
-          time_low (float): Optional new high bound of the time.
+          \**kwargs (float): Named parameters to slice on; note that these 
+            must be of the form [name]_low or [name]_high where [name] 
+            is a dimension present in the SpectraConfig.
 
         Notes:
           The logic in this method is the same for each dimension, first

@@ -8,9 +8,9 @@ This script:
   * Saves spectra objects to file in hdf5 format
 
 Examples:
-  To read rat_ds root file "example.ntuple.root", with isotope half-life "half_life"::
+  To read rat_ds root file "example.ntuple.root"::
 
-    $ python dump_spectra_ntuple.py /path/to/example.ntuple.root half_life
+    $ python dump_spectra_ntuple.py /path/to/config.yml /path/to/example.ntuple.root
 
   This will create the smeared hdf5 file ``./example.hdf5``.
   To specify a save directory, include a -s flag followed by path to
@@ -24,13 +24,12 @@ import echidna.core.spectra as spectra
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
-def read_and_dump_ntuple(fname, config_path, half_life, spectrum_name, save_path):
+def read_and_dump_ntuple(fname, config_path, spectrum_name, save_path):
     """ Creates both mc and reco spectra from ntuple files, dumping the results as a
     spectrum object in a hdf5 file
 
     Args:
       fname (str): The file to be evaluated
-      half_life (float): Half-life of isotope
       spectrum_name (str): Name to be applied to the spectrum
       save_path (str): Path to a directory where the hdf5 files will be dumped
 
@@ -39,10 +38,10 @@ def read_and_dump_ntuple(fname, config_path, half_life, spectrum_name, save_path
     """
     mc_config = spectra.SpectraConfig.load_from_file(config_path)
     reco_config = spectra.SpectraConfig.load_from_file(config_path)
-    mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(fname, half_life,
+    mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(fname,
                                                     spectrumname = "%s_mc" % (spectrum_name),
                                                     config = mc_config)
-    reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname, half_life,
+    reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname,
                                                         spectrumname = "%s_reco" % (spectrum_name),
                                                         config = reco_config)
 
@@ -64,33 +63,10 @@ def plot_spectrum(spec, config):
       None
     """
     for v in config.getpars():
-        print "PLOT:", v
         plot.plot_projection(spec, v)
-
-def read_tab_delim_file(fname):
-    """ Read file paths and respective half lives from tab delimited text file.
-
-    Args: 
-      fname (str): Name of file to be read.
-
-    Returns:
-      file_paths (list): List of file paths read from file
-      half_lives (list): List of half lives read from file
-    """
-    file_paths, half_lives = [], []
-    with open(path_to_file, 'r') as f:
-        #next(f) # skip headings
-        reader=csv.reader(f,delimiter='\t')
-        for path, half  in reader:
-            file_paths.append(path)
-            half_lives.append(half) 
-    return file_paths, half_lives
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--read_text_file",
-                      type=str,
-                      help="Pass path to list .txt of tab separated filepaths and half_lives.")
     parser.add_argument("-s", "--save_path",
                       type=str,
                       default="./",
@@ -101,20 +77,9 @@ if __name__ == "__main__":
     parser.add_argument("fname",
                       type=str,
                       help="Path to root file to be read.")
-    parser.add_argument("half_life",
-                      type=float,
-                      help="Half-life of isotope.root file being read")
     args = parser.parse_args()
 
     # If args passed directly, deal with them
     fname = args.fname
     spectrum_name = fname[fname.rfind('/', 0, -1)+1:]  
-    read_and_dump_ntuple(fname, args.config, args.half_life, spectrum_name, args.save_path)
-
-    # If passed text file: read, format and dump 
-    if args.read_text_file:
-        path_list, half_life_list = read_tab_delim_file(args.read_text_file)
-        for idx, fname in enumerate(path_list):
-            spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
-            read_and_dump_ntuple(path, args.config, half_life_list[idx], spectrum_name, args.save_path)
-            
+    read_and_dump_ntuple(fname, args.config, spectrum_name, args.save_path)

@@ -6,58 +6,21 @@ import math
 import echidna.core.spectra as spectra
 import echidna.core.dsextract as dsextract
 
-def _scint_weights(times, T):
-    """**CURRENTLY DISABLED** 
-    This method applies to the scintillator backgrounds.
-    It produces the list of weights relative to each time period.
-    The calculation of weights is based on radioactive decay formula.
-
-    Args:
-      times (*list* of *int*): Time periods
-      T (float): The Half-life of a studied background
-
-    Returns:
-      Weights (*list* of *float*)
-    """
-    weights = []
-    for time in times:
-        weights.append(math.exp(-time/T))
-    return (weights)
-
-
-def _av_weights(times, T):
-    """**UNAVAILABLE**
-    This method applies to the backgrounds due to AV leaching.
-    It produces the list of weights relative to each time period.
-    The calculation of weights is based on radioactive decay formula.
-
-    Args:
-      times (*list* of *int*): Time periods
-      T (float): The Half-life of a studied background
-
-    Returns:
-      Weights (*list* of *float*)
-    """
-    weights = []
-    for time in times:
-        weights.append(1.0)
-    return (weights)
-
-
-def fill_reco_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
+def fill_reco_spectrum(filename, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times
-    and weights. It takes the reconstructed energies and positions
-    of the events from the root file. In order to keep the statistics,
-    the time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
+    This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the reconstructed energies and positions of the 
+    events from the root file. In order to keep the statistics, the time 
+    dependence is performed via adding weights to every event depending on 
+    the time period. Both, studied time and Half-life must be written in the 
+    same units.
 
     Args:
       filename (str): A root file to study
-      T (float): The Half-life of a studied background
       spectrumname (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
+      config (:class:`spectra.SpectrumConfig`, optional): The config for
+        the spectrum
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
@@ -106,10 +69,10 @@ def fill_reco_spectrum(filename, T, spectrumname="", config=None, spectrum=None)
     return spectrum
 
 
-def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
+def fill_mc_spectrum(filename, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
-    This function fills in the ndarray of true energies, radii, times
-    and weights. It takes the true energies and positions of the events
+    This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the true energies and positions of the events
     from the root file. In order to keep the statistics, the time
     dependence is performed via adding weights to every event depending
     on the time period. Both, studied time and Half-life must be
@@ -117,7 +80,6 @@ def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
 
     Args:
       filename (str): A root file to study
-      T (float): The Half-life of a studied background
       spectrumname (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
@@ -166,10 +128,10 @@ def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
     return spectrum
 
 
-def fill_reco_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
+def fill_reco_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times
-    and weights. It takes the reconstructed energies and positions
+    This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the reconstructed energies and positions
     of the events from the ntuple. In order to keep the statistics,
     the time dependence is performed via adding weights to every event
     depending on the time period. Both, studied time and Half-life must
@@ -177,7 +139,6 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", config=None, spectru
 
     Args:
       filename (str): The ntuple to study
-      T (float): The Half-life of a studied background
       spectrumname (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
@@ -221,10 +182,10 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", config=None, spectru
     return spectrum
 
 
-def fill_mc_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
+def fill_mc_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times
-    and weights. It takes the reconstructed energies and positions
+    This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the reconstructed energies and positions
     of the events from ntuple. In order to keep the statistics,
     the time dependence is performed via adding weights to every event
     depending on the time period. Both, studied time and Half-life must
@@ -232,7 +193,6 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=
 
     Args:
       filename (str): The ntuple to study
-      T (float): The Half-life of a studied background
       spectrumname (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
