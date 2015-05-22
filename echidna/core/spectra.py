@@ -19,7 +19,7 @@ class SpectraParameter(object):
         else:
             raise TypeError("Unknown parameter name")
     def get_width(self):
-        return ((self.high - self.low) / self.bins)
+        return (float(self.high - self.low) / self.bins)
 
 
 class SpectraConfig(object):
@@ -120,10 +120,10 @@ class Spectra(object):
                 raise Exception('Missing parameter %s' % var)
         for v in self._config.getpars():
             if not self._config.getpar(v).low <= kwargs[v] < self._config.getpar(v).high:
-                raise ValueError("%s out of range" % v)
+                raise ValueError("%s out of range: %s" % (v, kwargs[v]))
         bins = []
         for v in self._config.getpars():
-            bins.append((kwargs[v] - self.config.getpar(v).low) / \
+            bins.append((kwargs[v] - self._config.getpar(v).low) / \
                         (self._config.getpar(v).high - self._config.getpar(v).low) * \
                         self._config.getpar(v).bins)
         # Cross fingers the ordering is the same!

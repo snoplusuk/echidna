@@ -47,14 +47,14 @@ def read_and_dump_ntuple(fname, config_path, half_life, spectrum_name, save_path
                                                         config = reco_config)
 
     # Plot
-    plot_spectrum(mc_spec)
-    plot_spectrum(reco_spec)
+    plot_spectrum(mc_spec, mc_config)
+    plot_spectrum(reco_spec, reco_config)
 
     # Dump to file
     store.dump("%s/%s_mc.hdf5" % (save_path, spectrum_name), mc_spec)
     store.dump("%s/%s_reco.hdf5" % (save_path, spectrum_name), reco_spec)
 
-def plot_spectrum(spec):
+def plot_spectrum(spec, config):
     """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time 
 
     Args: 
@@ -63,9 +63,9 @@ def plot_spectrum(spec):
     Returns:
       None
     """
-    plot.plot_projection(spec, 0)
-    plot.plot_projection(spec, 1)
-    plot.plot_projection(spec, 2)
+    for v in config.getpars():
+        print "PLOT:", v
+        plot.plot_projection(spec, v)
 
 def read_tab_delim_file(fname):
     """ Read file paths and respective half lives from tab delimited text file.
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # If args passed directly, deal with them
     fname = args.fname
     spectrum_name = fname[fname.rfind('/', 0, -1)+1:]  
-    read_and_dump_ntuple(fname, args.half_life, spectrum_name, args.save_path)
+    read_and_dump_ntuple(fname, args.config, args.half_life, spectrum_name, args.save_path)
 
     # If passed text file: read, format and dump 
     if args.read_text_file:

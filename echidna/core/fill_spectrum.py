@@ -4,7 +4,7 @@ from ROOT import RAT
 from ROOT import TChain
 import math
 import echidna.core.spectra as spectra
-
+import echidna.core.dsextract as dsextract
 
 def _scint_weights(times, T):
     """**CURRENTLY DISABLED** 
@@ -83,19 +83,8 @@ def fill_reco_spectrum(filename, T, spectrumname="", config=None, spectrum=None)
         spectrumname = spectrum._name
     print spectrumname
 
-    times = [0]
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
     extractors = []
-    for var in spectra.get_config().getpars():
+    for var in spectrum.get_config().getpars():
         extractors.append(dsextract.function_factory(var))
 
     for ievent in range(0, dsreader.GetEntryCount()):
@@ -108,7 +97,10 @@ def fill_reco_spectrum(filename, T, spectrumname="", config=None, spectrum=None)
                 continue
 
             # All OK, fill the spectrum
-            spectrum.fill(tuple(e.ev_get_value(ev) for e in extractors))
+            kwargs = {}
+            for e in extractors:
+                kwargs[e.name] = e.ev_get_value(ev)
+            spectrum.fill(**kwargs)
             spectrum._raw_events += 1
 
     return spectrum
@@ -153,19 +145,8 @@ def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
         spectrumname = spectrum._name
     print spectrumname
 
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
     extractors = []
-    for var in spectra.get_config().getpars():
+    for var in spectrum.get_config().getpars():
         extractors.append(dsextract.function_factory(var))
 
     for ievent in range(0, dsreader.GetEntryCount()):
@@ -173,10 +154,13 @@ def fill_mc_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
         mc = ds.GetMC()
         if mc.GetMCParticleCount() > 0:
 
-            if False in [e.mc_get_valid() for e in extractors]:
+            if False in [e.mc_get_valid(mc) for e in extractors]:
                 continue
 
-            spectrum.fill(e.mc_get_value() for e in extractors)
+            kwargs = {}
+            for e in extractors:
+                kwargs[e.name] = e.mc_get_value(mc)
+            spectrum.fill(**kwargs)
             spectrum._raw_events += 1
 
     return spectrum
@@ -219,27 +203,19 @@ def fill_reco_ntuple_spectrum(filename, T, spectrumname="", config=None, spectru
         spectrumname = spectrum._name
     print spectrumname
 
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
     extractors = []
-    for var in spectra.get_config().getpars():
+    for var in spectrum.get_config().getpars():
         extractors.append(dsextract.function_factory(var))
 
     for event in chain:
 
-        if False in [e.ntuple_ev_get_valid() for e in extractors]:
+        if False in [e.ntuple_ev_get_valid(event) for e in extractors]:
             continue
 
-        spectrum.fill(e.ntuple_ev_get_value() for e in extractors)
+        kwargs = {}
+        for e in extractors:
+            kwargs[e.name] = e.ntuple_ev_get_value(event)
+        spectrum.fill(**kwargs)
         spectrum._raw_events += 1
 
     return spectrum
@@ -282,27 +258,19 @@ def fill_mc_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=
         spectrumname = spectrum._name
     print spectrumname
 
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
     extractors = []
-    for var in spectra.get_config().getpars():
+    for var in spectrum.get_config().getpars():
         extractors.append(dsextract.function_factory(var))
 
     for event in chain:
 
-        if False in [e.ntuple_mc_get_valid() for e in extractors]:
+        if False in [e.ntuple_mc_get_valid(event) for e in extractors]:
             continue
 
-        spectrum.fill(e.ntuple_mc_get_value() for e in extractors)
+        kwargs = {}
+        for e in extractors:
+            kwargs[e.name] = e.ntuple_mc_get_value(event)
+        spectrum.fill(**kwargs)
         spectrum._raw_events += 1
 
     return spectrum

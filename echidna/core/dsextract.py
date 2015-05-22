@@ -16,7 +16,11 @@ def function_factory(dimension):
 class EnergyExtract(object):
 
     def __init__(self):
-        pass
+        self.name = "energy"
+        self._debug = False
+
+    def debug(self, debug):
+        self._debug = debug
 
     def ev_get_valid(self, ev):
         if ev.DefaultFitVertexExists() and ev.GetDefaultFitVertex().ContainsEnergy() \
@@ -34,18 +38,26 @@ class EnergyExtract(object):
         return mc.GetScintQuenchedEnergyDeposit()
 
     def ntuple_ev_get_valid(self, entry):
-        if entry.scintFit == 0:
-            return False
-        return True
+        return (entry.scintFit != 0 and entry.energy>0)
 
     def ntuple_ev_get_value(self, entry):
+        return entry.energy
+
+    def ntuple_mc_get_valid(self, entry):
+        return True
+
+    def ntuple_mc_get_value(self, entry):
         return entry.mcEdepQuenched
 
 
 class RadialExtract(object):
 
     def __init__(self):
-        pass
+        self.name = "radial"
+        self._debug = False
+
+    def debug(self, debug):
+        self._debug = debug
 
     def ev_get_valid(self, ev):
         if ev.DefaultFitVertexExists() and ev.GetDefaultFitVertex().ContainsPosition() \
@@ -63,17 +75,17 @@ class RadialExtract(object):
         return mc.GetMCParticle(0).GetPosition().Mag()
 
     def ntuple_ev_get_valid(self, entry):
-        return True
+        return entry.scintFit != 0
 
     def ntuple_ev_get_value(self, entry):
         return math.fabs(math.sqrt((entry.posx)**2 +
                                    (entry.posy)**2 +
-                                   (entry.posz)**2)
+                                   (entry.posz)**2))
 
     def ntuple_mc_get_valid(self, entry):
         return True
 
     def ntuple_mc_get_value(self, entry):
-        return math.fabs(math.sqrt((entry.mcPosx)**2
+        return math.fabs(math.sqrt((entry.mcPosx)**2 +
                                    (entry.mcPosy)**2 +
-                                   (entry.mcPosz)**2)
+                                   (entry.mcPosz)**2))
