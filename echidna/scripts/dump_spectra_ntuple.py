@@ -54,7 +54,7 @@ def read_and_dump_ntuple(fname, config_path, spectrum_name, save_path):
     store.dump("%s/%s_reco.hdf5" % (save_path, spectrum_name), reco_spec)
 
 def plot_spectrum(spec, config):
-    """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time 
+    """ Plot spectra for each of the spectrum dimensions (e.g. energy)
 
     Args: 
       Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to be plotted

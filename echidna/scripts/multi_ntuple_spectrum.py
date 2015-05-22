@@ -22,7 +22,7 @@ Examples:
 """
 import numpy
 import os
-import optparse
+import argparse
 import echidna.output.store as store
 import echidna.core.spectrum as spectrum
 import echidna.core.fill_spectrum as fill_spectrum
@@ -53,15 +53,15 @@ def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name, save_pat
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, spectrum = reco_spec)
 
     # Plot
-    plot_spectrum(mc_spec)
-    plot_spectrum(reco_spec)
+    plot_spectrum(mc_spec, mc_config)
+    plot_spectrum(reco_spec, reco_config)
 
     # Dump to file
     store.dump("%s%s_mc.hdf5" % (save_path, bkgnd_name), mc_spec)
     store.dump("%s%s_reco.hdf5" % (save_path, bkgnd_name), reco_spec)
 
-def plot_spectrum(spec):
-    """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time
+def plot_spectrum(spec, config):
+    """ Plot spectra for each of the spectrum dimensions (e.g energy)
 
     Args:
       Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to be plotted
@@ -69,9 +69,8 @@ def plot_spectrum(spec):
     Returns:
       None
     """
-    plot.plot_projection(spec, 0)
-    plot.plot_projection(spec, 1)
-    plot.plot_projection(spec, 2)
+    for var in config.getpars():
+        plot.plot_projection(spec, var)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

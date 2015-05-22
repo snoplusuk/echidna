@@ -32,11 +32,11 @@ class SpectraParameter(object):
         """Set a limit / binning variable after initialisation.
         """
         for kw in kwargs:
-            if kw == "low" and type(kwargs[kw]) is float:
+            if kw == "low":
                 self.low = kwargs[kw]
-            elif kw == "high" and type(kwargs[kw]) is float:
+            elif kw == "high":
                 self.high = kwargs[kw]
-            elif kw == "bins" and type(kwargs[kw]) is int:
+            elif kw == "bins":
                 self.bins = kwargs[kw]
             else:
                 raise TypeError("Unhandled parameter name / type")
@@ -314,3 +314,34 @@ class Spectra(object):
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
         self._num_decays += spectrum._num_decays
+
+    def rebin(self, new_bins):
+        """ Rebin spectra data into a smaller spectra of the same rank whose
+        dimensions are factors of the original dimensions.
+
+        Args:
+          new_bins (tuple): new binning, this must match both the
+            number and ordering of dimensions in the spectra config.
+
+        Raises:
+          ValueError: Shape mismatch. Number of dimenesions are different.
+          ValueError: Old bins/ New bins must be integer
+        """
+        # Check all keys in kwargs are in the config variables and visa versa
+        print len(new_bins), len(self._config.getpars())
+        if len(new_bins) != len(self._config.getpars()):
+            raise ValueError('Incorrect number of dimensions; need %s' % len(self._config.getpars()))
+
+        # Now do the rebinning
+        for i, v in enumerate(self._config.getpars()):
+            if self._config.getpar(v).bins % new_bins[i] != 0:
+                raise ValueError("Old bins/New bins must be integer old: %s"
+                                 " new: %s" % (self._config.getpar(v).bins, new_bins[i]))
+            self._config.getpar(v).bins = new_bins[i]
+
+        compression_pairs = [(d, c//d) for d, c in zip(new_bins,
+                                                       self._data.shape)]
+        flattened = [l for p in compression_pairs for l in p]
+        self._data = self._data.reshape(flattened)
+        for i in range(len(new_bins)):
+            self._data = self._data.sum(-1*(i+1))

@@ -70,7 +70,7 @@ def load(file_path):
                 [_, par, val] = v.split(":")
                 if par not in parameters:
                     parameters[par] = spectra.SpectraParameter(par, 1, 1, 1)
-                parameters[par].setvar(val, file_.attrs[v])
+                parameters[par].setvar(**{val: file_.attrs[v]})
                 
         spec = spectra.Spectra(file_.attrs["name"],
                                file_.attrs["num_decays"],
