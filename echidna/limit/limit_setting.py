@@ -1,8 +1,11 @@
 import numpy
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
+import echidna
 from echidna.errors.custom_errors import CompatibilityError
 import echidna.utilities as utilities
-
+import echidna.output.plot as plot
 
 class SystAnalyser(object):
     """ Class to analyse the effect of systematics
@@ -338,12 +341,19 @@ class LimitSetting(object):
         """
         self._calculator = calculator
 
-    def get_limit(self, limit_chi_squared=2.71):
+    def get_limit(self, limit_chi_squared=2.71, **kwargs):
         """ Get signal counts at limit.
 
         Args:
           limit_chi_squared (float, optional): chi squared required for
             limit.
+
+        .. note::
+
+          Keyword arguments include:
+
+            * debug (*int*): specify the level of debug information to
+              output.
 
         .. note::
 
@@ -384,7 +394,15 @@ class LimitSetting(object):
             raw_input("RETURN to continue")
         else:  # _data is not None
             self._observed = self._data
+
+        # Set-up debug output
+        if kwargs.get("debug") == 1:
+            path = echidna.__echidna_base__ + "/debug/"
+            filename = self._signal._name + "_debug.pdf"
+            debug_pdf = PdfPages(path + filename)
+            print "DEBUG: Writing debug file to " + path + filename
         self._signal_config.reset_chi_squareds()
+        fig_num = 0
         for signal_count in self._signal_config.get_count():
             for syst_analyser in self._syst_analysers.values():
                 syst_analyser._layer = 1  # reset layers
@@ -448,6 +466,32 @@ class LimitSetting(object):
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
+
+            if kwargs.get("debug") == 1:
+                spectra = {}
+                for background in self._backgrounds:
+                    spectra[background._name] = {"spectra": background,
+                                                 "style": background._style,
+                                                 "type": "background",
+                                                 "label": background._name}
+                spectra[self._signal._name] = {"spectra": self._signal,
+                                               "style": self._signal._style,
+                                               "type": "signal",
+                                               "label": self._signal._name}
+                current_chi_squared = numpy.sum(self._calculator.get_chi_squared_per_bin())
+                plot_text = ["$\chi^2$ = %.2g" % current_chi_squared]
+                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
+                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
+                spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
+                                                   per_bin=self._calculator,
+                                                   title=title,
+                                                   text=plot_text,
+                                                   log_y=True)
+                debug_pdf.savefig(spectral_plot)
+                spectral_plot.clear()
+                fig_num += 1
+        if kwargs.get("debug") == 1:
+            debug_pdf.close()
         for syst_analyser in self._syst_analysers.values():
             print syst_analyser._syst_values
             syst_analyser._actual_counts = self._signal_config._chi_squareds[2]

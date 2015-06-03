@@ -53,6 +53,7 @@ class Spectra(object):
                                         self._radial_bins,
                                         self._time_bins),
                                  dtype=float)
+        self._style = "b-"  # default style for plotting
         self._name = name
 
     def fill(self, energy, radius, time, weight=1.0):
@@ -264,3 +265,14 @@ class Spectra(object):
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_width = (self._time_high - self._time_low) / self._time_bins
+
+    def set_style(self, style):
+        """ Sets plotting style
+
+        Styles should be valid pyplot style strings e.g. "b-", for a
+        blue line.
+
+        Args:
+          style (string): pyplot-style plotting style.
+        """
+        self._style = style
