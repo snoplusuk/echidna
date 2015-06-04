@@ -413,6 +413,35 @@ class LimitSetting(object):
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
+
+            if kwargs.get("debug") == 1:
+                spectra = {}
+                for background in self._backgrounds:
+                    spectra[background._name] = {"spectra": background,
+                                                 "style": background._style,
+                                                 "type": "background",
+                                                 "label": background._name}
+                spectra[self._signal._name] = {"spectra": self._signal,
+                                               "style": self._signal._style,
+                                               "type": "signal",
+                                               "label": self._signal._name}
+                current_chi_squared = numpy.sum(self._calculator.get_chi_squared_per_bin())
+                plot_text = ["$\chi^2$ = %.2g" % current_chi_squared]
+                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
+                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
+                spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
+                                                   per_bin=self._calculator,
+                                                   title=title,
+                                                   text=plot_text,
+                                                   log_y=True)
+                debug_pdf.savefig(spectral_plot)
+                spectral_plot.clear()
+                fig_num += 1
+        if kwargs.get("debug") == 1:
+            debug_pdf.close()
+        for syst_analyser in self._syst_analysers.values():
+            print syst_analyser._syst_values
+            syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
@@ -464,35 +493,6 @@ class LimitSetting(object):
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
-
-            if kwargs.get("debug") == 1:
-                spectra = {}
-                for background in self._backgrounds:
-                    spectra[background._name] = {"spectra": background,
-                                                 "style": background._style,
-                                                 "type": "background",
-                                                 "label": background._name}
-                spectra[self._signal._name] = {"spectra": self._signal,
-                                               "style": self._signal._style,
-                                               "type": "signal",
-                                               "label": self._signal._name}
-                current_chi_squared = numpy.sum(self._calculator.get_chi_squared_per_bin())
-                plot_text = ["$\chi^2$ = %.2g" % current_chi_squared]
-                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
-                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
-                spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
-                                                   per_bin=self._calculator,
-                                                   title=title,
-                                                   text=plot_text,
-                                                   log_y=True)
-                debug_pdf.savefig(spectral_plot)
-                spectral_plot.clear()
-                fig_num += 1
-        if kwargs.get("debug") == 1:
-            debug_pdf.close()
-        for syst_analyser in self._syst_analysers.values():
-            print syst_analyser._syst_values
-            syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
             return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
@@ -620,7 +620,6 @@ class LimitSetting(object):
             syst_analyser._layer += 1
         current -= 1
         return minimum
-
 
 def make_fixed_background(spectra, **kwargs):
     ''' Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the
