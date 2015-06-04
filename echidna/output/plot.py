@@ -121,8 +121,8 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
     summed_total = numpy.zeros(shape=shape)
     for value in spectra_dict.values():
         spectra = value.get("spectra")
-        ax.plot(x, spectra.project(dimension), value.get("style"),
-                label=value.get("label"))
+        ax.hist(x, bins=x.shape[0], weights=spectra.project(dimension),
+                histtype="step", label=value.get("label"))
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
         else:
