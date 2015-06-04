@@ -44,11 +44,11 @@ def plot_projection(spectra, dimension):
     axis.bar(x, data, width=width)
     pylab.show()
 
-def spectral_plot(spectra_dict, dimension=0, **kwargs):
+def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
     """
     """
-    fig = plt.figure(1)
-    ax = fig.add_subplot(1, 1, 1)
+    fig = plt.figure(fig_num)
+    ax = fig.add_subplot(3, 1, (1, 2))
     # All spectra should have same width
     first_spectra = True
     if dimension == 0:
@@ -118,19 +118,44 @@ def spectral_plot(spectra_dict, dimension=0, **kwargs):
         x = _produce_axis(spectra._time_low, spectra._time_high, spectra._time_bins)
         plt.xlabel("Time [yr]")
     summed_background = numpy.zeros(shape=shape)
+    summed_total = numpy.zeros(shape=shape)
     for value in spectra_dict.values():
         spectra = value.get("spectra")
-        ax.plot(x, spectra.project(dimension), value.get("style"),
-                label=value.get("label"))
+        ax.hist(x, bins=x.shape[0], weights=spectra.project(dimension),
+                histtype="step", label=value.get("label"))
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
+        else:
+            summed_total = summed_total + spectra.project(dimension)
     ax.plot(x, summed_background, "k--", label="Summed background")
-    plt.ylabel("Count per %f bin" % width)
-    if kwargs.get("log_y") is True:
-        ax.set_yscale("log")
-    plt.legend(loc="upper right")
+    summed_total = summed_total + summed_background
+    ax.plot(x, summed_total, "k-", label="Sum")
+    kev_width = width * 1.0e3
+    plt.ylabel("Count per %.1f keV bin" % kev_width)
+    # if kwargs.get("log_y") is True:
+        # ax.set_yscale("log")
+
+    # Shrink current axis by 20%
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width, box.height*0.8])
+    plt.legend(loc="upper right", bbox_to_anchor=(1.0, 1.25), fontsize="10")
+
     plt.ylim(ymin=0.1)
-    plt.show()
+
+    # Plot chi squared per bin, if required
+    if kwargs.get("per_bin") is not None:
+        calculator = kwargs.get("per_bin")
+        ax2 = fig.add_subplot(3, 1, 3, sharex=ax)
+        chi_squared_per_bin = calculator.get_chi_squared_per_bin()
+        ax2.scatter(x, chi_squared_per_bin, marker="_")  # same x axis as above
+        plt.ylabel("$\chi^2$")
+
+    if kwargs.get("title") is not None:
+        plt.figtext(0.05, 0.95, kwargs.get("title"))
+    if kwargs.get("text") is not None:
+        for index, entry in enumerate(kwargs.get("text")):
+            plt.figtext(0.05, 0.90-(index*0.05), entry)
+    # plt.show()
     return fig
 
 def plot_surface(spectra, dimension):
