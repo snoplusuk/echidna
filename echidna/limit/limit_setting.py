@@ -416,7 +416,7 @@ class LimitSetting(object):
 
             if kwargs.get("debug") == 1:
                 spectra = {}
-                for background in self._backgrounds:
+                for background in self._floating_backgrounds:
                     spectra[background._name] = {"spectra": background,
                                                  "style": background._style,
                                                  "type": "background",

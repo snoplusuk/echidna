@@ -72,7 +72,7 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect energy upper limit")
         x = _produce_axis(energy_low, energy_high, energy_bins)
-        plt.xlabel("Energy [MeV]")
+        x_label = "Energy [MeV]"
     elif dimension == 1:
         for value in spectra_dict.values:
             spectra = value.get("spectra")
@@ -94,7 +94,7 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect radial upper limit")
         x = _produce_axis(radial_low, radial_high, radial_bins)
-        plt.xlabel("Radius [mm]")
+        x_label = "Radius [mm]"
     elif dimension == 2:
         for value in spectra_dict.values:
             spectra = value.get("spectra")
@@ -116,30 +116,40 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect time upper limit")
         x = _produce_axis(spectra._time_low, spectra._time_high, spectra._time_bins)
-        plt.xlabel("Time [yr]")
+        x_label = "Time [yr]"
     summed_background = numpy.zeros(shape=shape)
     summed_total = numpy.zeros(shape=shape)
+    hist_range = (x[0]-0.5*width, x[-1]+0.5*width)
+    if kwargs.get("log_y") is True:
+        log=True
+    else:
+        log=False
     for value in spectra_dict.values():
         spectra = value.get("spectra")
-        ax.hist(x, bins=x.shape[0], weights=spectra.project(dimension),
-                histtype="step", label=value.get("label"))
+        ax.hist(x, bins=len(x), weights=spectra.project(dimension),
+                range=hist_range, histtype="step", label=value.get("label"),
+                color=spectra.get_style().get("color"), log=log)
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
         else:
             summed_total = summed_total + spectra.project(dimension)
-    ax.plot(x, summed_background, "k--", label="Summed background")
+    ax.hist(x, bins=len(x), weights=summed_background, range=hist_range,
+            histtype="step", color="DarkSlateGray", linestyle="dashed",
+            label="Summed background", log=log)
+    y = summed_background
+    yerr = numpy.sqrt(y)
+    ax.fill_between(x, y-yerr, y+yerr, facecolor="DarkSlateGray", alpha=0.5,
+                    label="Summed background, standard error")
     summed_total = summed_total + summed_background
-    ax.plot(x, summed_total, "k-", label="Sum")
+    ax.hist(x, bins=len(x), weights=summed_total, range=hist_range,
+            histtype="step", color="black", label="Sum", log=log)
     kev_width = width * 1.0e3
-    plt.ylabel("Count per %.1f keV bin" % kev_width)
-    # if kwargs.get("log_y") is True:
-        # ax.set_yscale("log")
 
     # Shrink current axis by 20%
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width, box.height*0.8])
-    plt.legend(loc="upper right", bbox_to_anchor=(1.0, 1.25), fontsize="10")
-
+    plt.legend(loc="upper right", bbox_to_anchor=(1.0, 1.25), fontsize="8")
+    plt.ylabel("Count per %.1f keV bin" % kev_width)
     plt.ylim(ymin=0.1)
 
     # Plot chi squared per bin, if required
@@ -147,9 +157,12 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, **kwargs):
         calculator = kwargs.get("per_bin")
         ax2 = fig.add_subplot(3, 1, 3, sharex=ax)
         chi_squared_per_bin = calculator.get_chi_squared_per_bin()
-        ax2.scatter(x, chi_squared_per_bin, marker="_")  # same x axis as above
-        plt.ylabel("$\chi^2$")
+        ax2.hist(x, bins=len(x), weights=chi_squared_per_bin,
+                 range=hist_range, histtype="step")  # same x axis as above
+        plt.ylabel("$\chi^2$ per %.1f keV bin" % kev_width)
 
+    plt.xlabel(x_label)
+    plt.xlim(xmin=x[0], xmax=x[-1])
     if kwargs.get("title") is not None:
         plt.figtext(0.05, 0.95, kwargs.get("title"))
     if kwargs.get("text") is not None:

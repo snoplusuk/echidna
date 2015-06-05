@@ -53,7 +53,7 @@ class Spectra(object):
                                         self._radial_bins,
                                         self._time_bins),
                                  dtype=float)
-        self._style = "b-"  # default style for plotting
+        self._style = {"color": "blue"}  # default style for plotting
         self._name = name
 
     def fill(self, energy, radius, time, weight=1.0):
@@ -273,6 +273,14 @@ class Spectra(object):
         blue line.
 
         Args:
-          style (string): pyplot-style plotting style.
+          style (string): pyplot-style plotting style. Can be a
+            dictionary of style keywords.
         """
         self._style = style
+
+    def get_style(self):
+        """
+        Returns:
+          string/dict: :attr:`_style` - pyplot-style plotting style.
+        """
+        return self._style
