@@ -14,7 +14,7 @@ class DBIsotope(object):
       over a given experiment livetime.
 
     Args:
-      name (string): Name of the isotope
+      name (string): Name of the isotope.
       atm_weight_iso (float): Atomic weight of isotope in g/mol.
       atm_weight_nat (float): Atomic weight of natural element in g/mol.
       abundance (float): Natural abundance of isotope with 0 to 1
@@ -22,12 +22,23 @@ class DBIsotope(object):
       phase_space (float): Phase space of the isotope.
       matrix_element (float): Matrix element of the isotope.
 
+    Attributes:
+      _name (string): Name of the isotope.
+      _atm_weight_iso (float): Atomic weight of isotope in g/mol.
+      _atm_weight_nat (float): Atomic weight of natural element in g/mol.
+      _abundance (float): Natural abundance of isotope with 0 to 1
+        equivalent to 0% to 100%.
+      _phase_space (float): Phase space of the isotope.
+      _matrix_element (float): Matrix element of the isotope.
+      _roi_efficiency (float): Efficiency factor of ROI. Calculated by
+        dividing the integral of the spectrum, shrunk to the ROI, by
+        the integral of the full spectrum.
+
     Raises:
       ValueError: If abundance is < 0. or > 1.
-      ValueError: If loading is < 0. or > 1.
     """
     def __init__(self, name, atm_weight_iso, atm_weight_nat, abundance,
-                 phase_space, matrix_element):
+                 phase_space, matrix_element, roi_efficiency=0.62465):
         if abundance < 0. or abundance > 1.:
             raise ValueError("Abundance ranges from 0 to 1")
         self._name = name
@@ -36,12 +47,11 @@ class DBIsotope(object):
         self._abundance = abundance
         self._phase_space = phase_space
         self._matrix_element = matrix_element
-        self._roi_factor = 0.62465  # integral of roi/integral of full spectrum
+        self._roi_efficiency = roi_efficiency  # Defaults to standard Gaussian efficiency for -1/2 sigma to +3/2 sigma ROI
 
     def get_n_atoms(self, fv_radius=None, loading=None, scint_density=None,
                     target_mass=None, scint_mass=None, outer_radius=None):
-        """ Calculates the number of atoms of an isotope within the
-          fiducial volume.
+        """ Calculates the number of atoms of the double-beta isotope.
 
           Set up to follow the full (SNO+-specific) calculation as per
           SNO+-doc-1728v2 but can look at other scenarios/detectors by
@@ -59,6 +69,9 @@ class DBIsotope(object):
           scint_mass (float, optional): Mass of scintillator in kg.
           outer_radius (float, optional): Radius of outer container
             containing fiducial volume, e.g. AV, in mm.
+
+        Raises:
+          ValueError: If :arg:`loading` is not between zero and 1.
 
         Returns:
           float: Number of atoms.
@@ -100,146 +113,220 @@ class DBIsotope(object):
 
         Returns:
           float: Activity in decays per year.
-
         """
         return (numpy.log(2)/half_life)*n_atoms
 
     def activity_to_half_life(self, activity, n_atoms):
+        """ Calculates the half-life of an isotope with a given
+        activity and number of atoms.
+
+        Args:
+          activity (float): Activity of the isotope in
+          :math:`years^{-1}`.
+          n_atoms (float): Number of atoms of an isotope.
+
+        Returns:
+          float: Half-life in years.
+        """
         return numpy.log(2)*n_atoms/activity
 
     def eff_mass_to_half_life(self, eff_mass):
-        """ Calculates the 0n2b half-life of an isotope given a
-          phase space, matrix element and an effective Majorana
-          mass.
+        """ Converts from effective majorana mass to :math:`0\nu2\beta`
+        half-life.
 
         Args:
-          eff_mass (float): Effective majorana mass
+          eff_mass (float): Effective majorana mass, in eV.
+
+        Raises:
+          ValueError: If effective mass is not positive and non-zero.
 
         Returns:
-          float: Zero neutrino half-life.
+          float: :math:`0\nu2\beta` half-life, in years.
         """
+        if eff_mass <= 0.:
+            raise ValueError("Effective mass should be positive and non-zero")
         sq_mass_ratio = eff_mass**2/const._electron_mass**2
         return 1/(self._phase_space*self._matrix_element**2*sq_mass_ratio)
 
     def half_life_to_eff_mass(self, half_life):
+        """ Converts from :math:`0\nu2\beta` half-life to effective
+        majorana mass.
+
+        Args:
+          half_life (float): :math:`0\nu2\beta` half-life, in years.
+
+        Returns:
+          float: Effective majorana mass, in eV.
+        """
         return numpy.sqrt(const._electron_mass**2 /
                           (self._phase_space*self._matrix_element**2*half_life))
 
     def activity_to_counts(self, activity, livetime, **kwargs):
-        """ Converts activity to number of counts assuming constant activity.
+        """ Converts activity to number of counts, assuming constant activity.
 
         Args:
           activity (float): Initial activity of the isotope in
             :math:`years^{-1}`.
           livetime (float): Amount of years of data taking.
 
-        Returns:
-          float: Number of counts.
-
         .. note::
 
           keyword arguments include:
 
             * roi_cut (*bool*): if true counts in roi is used
+
+        Raises:
+          ValueError: If :arg:`livetime` is not positive and non-zero.
+
+        Returns:
+          float: Number of counts.
         """
+        if livetime <= 0.:
+            raise ValueError("Livetime should be positive and non zero")
         if kwargs.get("roi_cut"):
-            return activity*livetime*self._roi_factor
+            return activity*livetime*self._roi_efficiency
         else:
             return activity*livetime
 
     def counts_to_activity(self, counts, livetime=5., **kwargs):
-        """ Converts activity to number of counts assuming constant activity.
+        """ Converts counts to activity, assuming constant activity.
 
         Args:
-          activity (float): Initial activity of the isotope in
-            :math:`years^{-1}`.
+          counts (float): Number of counts.
           livetime (float): Amount of years of data taking.
 
-        Returns:
-          float: Number of counts.
-
-            .. note::
+        .. note::
 
           keyword arguments include:
 
-            * roi_cut (*bool*): if true counts in roi is used
+            * roi_cut (*bool*): If True counts in roi is used.
+
+        Raises:
+          ValueError: If :arg:`livetime` is not positive and non-zero.
+
+        Returns:
+          float: Activity of the isotope in :math:`years^{-1}`.
         """
+        if livetime <= 0.:
+            raise ValueError("Livetime should be positive and non zero")
         if kwargs.get("roi_cut"):
-            return counts/(livetime*self._roi_factor)
+            return counts/(livetime*self._roi_efficiency)
         else:
             return counts/livetime
 
     def counts_to_eff_mass(self, counts, n_atoms, livetime=5., **kwargs):
-        """
+        """ Converts from signal counts to effective majorana mass.
+
+        Args:
+          counts (float): Number of signal counts within the livetime
+            specified.
+          n_atoms (float): Number of isotope atoms/nuclei that could
+            potentially decay to produce signal.
+          livetime (float): Number of years of data taking.
+
         .. note::
 
           keyword arguments include:
 
             * roi_cut (*bool*): if true counts in roi is used
-        """
-        activity = self.counts_to_activty(counts, livetime, **kwargs)
-        half_life = self.counts_to_half_life(count, n_atoms)
-        return self.half_life_to_eff_mass(half_life)
 
-    def eff_mass_to_counts(self, eff_mass, livetime=5., **kwargs):
-        """ Calculates the 0n2b counts of an isotope given a
-          phase space, matrix element and an effective Majorana
-          mass.
-
-        Args:
-          eff_mass (float): Effective majorana mass in eV
+        Raises:
+          ValueError: If :arg:`livetime` is not positive and non-zero.
 
         Returns:
-          float: 0 neutrino half-life.
+          float: Effective majorana mass in eV.
+        """
+        if livetime <= 0.:
+            raise ValueError("Livetime should be positive and non zero")
+        half_life = self.counts_to_half_life(counts, n_atoms, livetime,
+                                             **kwargs)
+        return self.half_life_to_eff_mass(half_life)
+
+    def eff_mass_to_counts(self, eff_mass, n_atoms, livetime=5., **kwargs):
+        """ Converts from effective majorana mass to signal counts.
+
+        Args:
+          eff_mass (float): Effective majorana mass in eV.
+          n_atoms (float): Number of isotope atoms/nuclei that could
+            potentially decay to produce signal.
+          livetime (float): Number of years of data taking.
+
+        .. note::
+
+          keyword arguments include:
+
+            * roi_cut (*bool*): if true counts in roi is used
+
+        Raises:
+          ValueError: If effective mass is not positive and non-zero.
+          ValueError: If arg:`livetime` is not positive and non-zero.
+
+        Returns:
+          float: Expected number of signal counts within the livetime
+            specified.
         """
         if eff_mass <= 0.:
-            raise ValueError("Effective mass should be positive and non zero")
+            raise ValueError("Effective mass should be positive and non-zero")
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.eff_mass_to_half_life(eff_mass)
-        return self.half_life_to_counts(half_life, livetime, **kwargs)
+        return self.half_life_to_counts(half_life, n_atoms, livetime, **kwargs)
 
-    def half_life_to_counts(self, half_life, livetime=5., **kwargs):
-        """ Converts a double beta decay isotopes half-life
-        and mass into counts in years.
+    def half_life_to_counts(self, half_life, n_atoms, livetime=5., **kwargs):
+        """ Converts from isotope's half-life to signal counts.
 
         Args:
-          half_life (float): Isotope's half-life in years.
+          half_life (float): Isotope's :math:`0\nu2\beta` half-life in
+            years.
+          n_atoms (float): Number of isotope atoms/nuclei that could
+            potentially decay to produce signal.
           livetime (float): Number of years of data taking.
-
-        Raises:
-          ValueError: If abundance is < 0. or > 1.
-
-        Returns:
-          float: Number of expected counts.
 
         .. note::
 
           keyword arguments include:
 
-            * roi_cut (*bool*): if true counts in roi is used
+            * roi_cut (*bool*): If True, the counts returned will be
+              just signal counts in the ROI.
+
+        Raises:
+          ValueError: If :arg:`livetime` is not positive and non-zero.
+
+        Returns:
+          float: Expected number of counts.
         """
-        n_atoms = self.get_n_atoms()
+        if livetime <= 0.:
+            raise ValueError("Livetime should be positive and non zero")
         activity = self.half_life_to_activity(half_life, n_atoms)
         return self.activity_to_counts(activity, livetime, **kwargs)
 
-    def counts_to_half_life(self, counts, livetime=5.):
-        """ Converts a double beta decay isotopes half-life
-        and mass into counts in years.
+    def counts_to_half_life(self, counts, n_atoms, livetime=5., **kwargs):
+        """ Converts from signal count to isotope's half-life.
 
         Args:
-          half_life (float): Isotope's half-life in years.
+          count (float): Number of signal counts within the livetime
+            specified.
+          n_atoms (float): Number of isotope atoms/nuclei that could
+            potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
+        .. note::
+
+          keyword arguments include:
+
+            * roi_cut (*bool*): If True, the counts supplied is assumed
+              to be just counts in the signal ROI.
+
         Raises:
-          ValueError: If abundance is < 0. or > 1.
+          ValueError: If :arg:`livetime` is not positive and non-zero.
 
         Returns:
-          float: Number of expected counts.
+          float: Isotope's :math:`0\nu2\beta` half-life in years.
         """
-        n_atoms = self.get_n_atoms()
-        activity = self.counts_to_activity(counts, livetime)
-        return n_atoms/(numpy.log(2)*activity)
+        if livetime <= 0.:
+            raise ValueError("Livetime should be positive and non zero")
+        activity = self.counts_to_activity(counts, livetime, **kwargs)
+        return self.activity_to_half_life(activity, n_atoms)
 
 
 def main():
@@ -298,7 +385,86 @@ def main():
                                                         target_mass=target_mass)
     print message, "(KamLAND-Zen)"
 
-    # Check
+    # Check half_life_to_activity
+    expected = 50.4  # /y, SNO+-doc-2593v8
+    half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
+    fv_radius = 5997.  # radius of AV in mm, calculated - A Back 2015-02-25
+    result, message = physics_tests.test_function_float(
+        te130_converter.half_life_to_activity, expected, half_life=half_life,
+        n_atoms=te130_converter.get_n_atoms(fv_radius=fv_radius))
+    print message, "(no FV cut)"
+
+    # Check activity_to_half_life
+    expected = 5.17e25  # y, SNO+-doc-2593v8
+    activity = 50.4  # /y, SNO+-doc-2593v8
+    result, message = physics_tests.test_function_float(
+        te130_converter.activity_to_half_life, expected, activity=activity,
+        n_atoms=te130_converter.get_n_atoms(fv_radius=fv_radius))
+    print message, "(no FV cut)"
+
+    # Check eff_mass_to_half_life
+    expected = 4.37e25  # y, SNO+-doc-2593v8 (90% CL @ 1 y livetime)
+    eff_mass = 0.0999  # eV, SNO+-doc-2593v8
+    result, message = physics_tests.test_function_float(
+        te130_converter.eff_mass_to_half_life, expected, eff_mass=eff_mass)
+    print message
+
+    # Check half_life_to_eff_mass
+    expected = 0.0999  # eV, SNO+-doc-2593v8
+    half_life = 4.37e25  # y, SNO+-doc-2593v8
+    result, message = physics_tests.test_function_float(
+        te130_converter.half_life_to_eff_mass, expected, half_life=half_life)
+    print message
+
+    # Check activity_to_counts
+    livetime = 5.0
+    expected = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
+    activity = 50.4 * (const._fv_radius**3/const._av_radius**3) # /y SNO+-doc-2593v8 - adjusted to FV
+    result, message = physics_tests.test_function_float(
+        te130_converter.activity_to_counts, expected, activity=activity,
+        livetime=livetime, roi_cut=True)
+    print message
+
+    # Check counts_to_activity
+    expected = 50.4 * (const._fv_radius**3/const._av_radius**3) # /y SNO+-doc-2593v8 - adjusted to FV
+    counts = 31.2  # ROI counts, SNO+-doc-2593v8
+    result, message = physics_tests.test_function_float(
+        te130_converter.counts_to_activity, expected, counts=counts,
+        livetime=livetime, roi_cut=True)
+    print message
+
+    # Check counts_to_eff_mass
+    expected = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    counts = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
+    result, message = physics_tests.test_function_float(
+        te130_converter.counts_to_eff_mass, expected, counts=counts,
+        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+    print message
+
+    # Check eff_mass_to_counts
+    expected = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
+    eff_mass = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    result, message = physics_tests.test_function_float(
+        te130_converter.eff_mass_to_counts, expected, eff_mass=eff_mass,
+        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+    print message
+
+    # Check half_life_to_counts
+    expected = 31.2  # ROI counts, SNO+-doc-2593v8
+    half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    result, message = physics_tests.test_function_float(
+        te130_converter.half_life_to_counts, expected, half_life=half_life,
+        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+    print message
+
+    # Check counts_to_half_life
+    expected = 5.17e25  # y, SNO+-doc-2593v8
+    counts = 31.2  # ROI counts, SNO+-doc-2593v8
+    result, message = physics_tests.test_function_float(
+        te130_converter.counts_to_half_life, expected, counts=counts,
+        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+    print message
+
     print "============"
 
 

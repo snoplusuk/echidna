@@ -50,17 +50,26 @@ def chi_squared_vs_signal(signal_config, **kwargs):
         x = effective_masses
         pylab.xlabel(r"$m_{\beta\beta}$", **MAIN_FONT)
     elif kwargs.get("half_life"):
-		x = []
-    	converter = decay.DBIsotope("Te130", 0.003, 129.9062244, 127.603, 0.3408, 3.69e-14, 4.03)
-    	for num_decays in signal_config._chi_squareds[1]:
-        	x.append(1./converter.counts_to_half_life(num_decays/0.554))
-    	pylab.xlabel(r"$1/T_{1/2}^{0\nu}$")
-    	pylab.ylabel(r"$\chi^{2}$")
-	else:
+        x = []
+        # Decay variables
+        Te130_atm_weight = 129.906229  # SNO+-doc-1728v2
+        TeNat_atm_weight = 127.6  # SNO+-doc-1728v2
+        Te130_abundance = 0.3408  # SNO+-doc-1728v2
+        phase_space = 3.69e-14  # PRC 85, 034316 (2012)
+        matrix_element = 4.03  # IBM-2 PRC 87, 014315 (2013)
+
+        converter = decay.DBIsotope("Te130", Te130_atm_weight,
+                                    TeNat_atm_weight, Te130_abundance,
+                                    phase_space, matrix_element)
+        for num_decays in signal_config._chi_squareds[1]:
+            x.append(1./converter.counts_to_half_life(num_decays/0.554))
+        pylab.xlabel(r"$1/T_{1/2}^{0\nu}$")
+        pylab.ylabel(r"$\chi^{2}$")
+    else:
         x = signal_config.get_chi_squareds()[2]
         pylab.xlabel("Signal counts", **MAIN_FONT)
-    y_1 = signal_config.get_chi_squareds()[0]
-    pylab.ylabel(r"$\chi^{2}$", **MAIN_FONT)
+        y_1 = signal_config.get_chi_squareds()[0]
+        pylab.ylabel(r"$\chi^{2}$", **MAIN_FONT)
     if kwargs.get("penalty") is not None:
         y_2 = kwargs.get("penalty")._chi_squareds[0]
         axis.plot(x, y_1, "bo-", label="no systematic uncertainties")

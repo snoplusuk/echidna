@@ -96,7 +96,7 @@ if __name__ == "__main__":
     Te130_2n2b_prior = 37.396e6  # Based on NEMO-3 T_1/2, for 10 years
     # from integrating whole spectrum scaled to Valentina's number
     B8_Solar_prior = 12529.9691
-	fixed_backgrounds = {Te130_2n2b: Te130_2n2b_prior,
+    fixed_backgrounds = {Te130_2n2b: Te130_2n2b_prior,
                          B8_Solar: B8_Solar_prior}
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
     roi = (2.46, 2.68)  # Define ROI - as used by Andy
