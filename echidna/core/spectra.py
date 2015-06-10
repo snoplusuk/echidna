@@ -33,6 +33,10 @@ class Spectra(object):
       _raw_events (int): The number of raw events used to generate the
         spectra. Increments by one with each fill independent of
         weight.
+      _style (string): Pyplot-style plotting style e.g. "b-" or
+        {"color": "blue"}.
+      _rois (dict): Dictionary containing the details of any ROI, along
+        any axis, which has been defined.
     """
     def __init__(self, name, num_decays):
         """ Initialise the spectra data container.
@@ -54,6 +58,7 @@ class Spectra(object):
                                         self._time_bins),
                                  dtype=float)
         self._style = {"color": "blue"}  # default style for plotting
+        self._rois = {}
         self._name = name
 
     def fill(self, energy, radius, time, weight=1.0):
@@ -79,6 +84,59 @@ class Spectra(object):
         radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
         time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
+
+    def shrink_to_roi(self, lower_limit, upper_limit, axis):
+        """ Shrink spectrum to a defined Region of Interest (ROI)
+
+        Shrinks spectrum to given ROI and saves ROI parameters.
+
+        Args:
+          lower_limit (float): Lower bound of ROI, along given axis.
+          upper_limit (float): Upper bound of ROI, along given axis.
+          axis (int): Axis along which to define ROI.
+        """
+        integral_full = self.sum()  # Save integral of full spectrum
+
+        # Shrink to ROI
+        if axis == 0:
+            self.shrink(energy_low=lower_limit, energy_high=upper_limit)
+        elif axis == 1:
+            self.shrink(radial_low=lower_limit, radial_high=upper_limit)
+        elif axis == 2:
+            self.shrink(time_low=lower_limit, time_high=upper_limit)
+
+        # Calculate efficiency
+        integral_roi = self.sum()  # Integral of spectrum over ROI
+        efficiency = float(integral_roi) / float(integral_full)
+        self._rois[axis] = {"low": lower_limit, "high": upper_limit,
+                            "efficiency": efficiency}
+
+    def get_roi(self, axis):
+        """ Access information about a predefined ROI on a given axis
+
+        Returns:
+          dict: Dictionary containing parameters defining the ROI, on
+            the given axis.
+        """
+        return self._rois[axis]
+
+    def set_style(self, style):
+        """ Sets plotting style.
+
+        Styles should be valid pyplot style strings e.g. "b-", for a
+        blue line, or dictionaries of strings e.g. {"color": "red"}.
+
+        Args:
+          style (string): Pyplot-style plotting style.
+        """
+        self._style = style
+
+    def get_style(self):
+        """
+        Returns:
+          string/dict: :attr:`_style` - pyplot-style plotting style.
+        """
+        return self._style
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
@@ -265,22 +323,3 @@ class Spectra(object):
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_width = (self._time_high - self._time_low) / self._time_bins
-
-    def set_style(self, style):
-        """ Sets plotting style
-
-        Styles should be valid pyplot style strings e.g. "b-", for a
-        blue line.
-
-        Args:
-          style (string): pyplot-style plotting style. Can be a
-            dictionary of style keywords.
-        """
-        self._style = style
-
-    def get_style(self):
-        """
-        Returns:
-          string/dict: :attr:`_style` - pyplot-style plotting style.
-        """
-        return self._style

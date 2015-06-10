@@ -252,7 +252,7 @@ class LimitSetting(object):
             self._roi = kwargs.get("roi")
             if kwargs.get("pre_shrink"):
                 energy_low, energy_high = self._roi
-                self._signal.shrink(energy_low, energy_high)
+                self._signal.shrink_to_roi(energy_low, energy_high, 0)
                 if self._fixed_background:
                     if self._fixed_background._energy_low != energy_low:
                         raise CompatibilityError("Fixed background must be "
@@ -264,7 +264,7 @@ class LimitSetting(object):
                                                  "LimitSetting.")
                 if self._floating_backgrounds:
                     for background in self._floating_backgrounds:
-                        background.shrink(energy_low, energy_high)
+                        background.shrink_to_roi(energy_low, energy_high, 0)
         else:
             self._roi = None
         if kwargs.get("verbose"):
