@@ -329,9 +329,14 @@ class DBIsotope(object):
         return self.activity_to_half_life(activity, n_atoms)
 
 
-def main():
+def main(signal):
     """ Test function to show agreement with Andy's numbers.
     """
+    # Cut to 3.5m FV and 5 year livetime
+    signal.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
+    # Shrink to ROI
+    signal.shrink_to_roi(2.46, 2.68, 0)  # ROI used by Andy
+
     print "============"
     print "decay module"
     print "------------"
@@ -344,7 +349,8 @@ def main():
     matrix_element = 4.03  # IBM-2 PRC 87, 014315 (2013)
 
     te130_converter = DBIsotope("Te130", Te130_atm_weight, TeNat_atm_weight,
-                                Te130_abundance, phase_space, matrix_element)
+                                Te130_abundance, phase_space, matrix_element,
+                                signal.get_roi(0).get("efficiency"))
 
     # Check get_n_atoms for 0.3% loading, no FV cut
     fv_radius = 5997.  # radius of AV in mm, calculated - A Back 2015-02-25
@@ -469,4 +475,16 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    from echidna.scripts.zero_nu_limit import ReadableDir
+    import echidna.output.store as store
+
+    parser = argparse.ArgumentParser(description="Example DBIsotpe calculator "
+                                     "script and validation.")
+    parser.add_argument("-s", "--signal", action=ReadableDir,
+                        help="Supply path for signal hdf5 file")
+    args = parser.parse_args()
+
+    signal = store.load(args.signal)
+    main(signal)
