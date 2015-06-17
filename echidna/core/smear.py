@@ -389,3 +389,32 @@ class Smear(object):
                         i += 1
         smeared_spectrum._raw_events = raw_events
         return smeared_spectrum
+
+
+class EResSmear(Smear):
+    """ Allows you to smear directly by energy resolution (e.g. 0.05 * E)
+
+    Inherits from :class:`Smear` to provide exactly the same functionality
+    but overrides :meth:`Smear.get_energy_sigma` to use an energy 
+    resolution to calculate sigma.
+
+    Attributes:
+      _light_yield (float): Number of PMT hits expected for a
+        MeV energy deposit in NHit/MeV
+      _energy_resolution (float): energy resolution e.g. 0.05 for 5%. 
+      _position_resolution (float): Sigma in mm
+    """
+    def __init__(self, energy_resolution):
+        super(EResSmear, self).__init__()
+        self._energy_resolution = energy_resolution
+
+    def get_energy_sigma(self, energy):
+        """ Calculates sigma at a given energy.
+
+        Args:
+          energy (float): Energy value of data point(s)
+
+        Returns:
+          float. Sigma equivalent to energy * energy_resolution
+        """
+        return energy * self._energy_resolution

@@ -30,6 +30,8 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--smear_method", nargs='?', const="weight",
                         type=str, default="weight",
                         help="specify the smearing method to use")
+    parser.add_argument("-r", "--energy_resolution", default=None, type=float,
+                        help="specify energy resolution e.g. 0.05 for 5 percent")
     parser.add_argument("path", type=str,
                         help="specify path to hdf5 file")
     args = parser.parse_args()
@@ -38,7 +40,10 @@ if __name__ == "__main__":
     # strip directory and extension
     filename = args.path[args.path.rfind("/")+1:args.path.rfind(".")]
 
-    smearer = smear.Smear()
+    if args.energy_resolution is not None:
+        smearer = smear.EResSmear(args.energy_resolution)
+    else:  # use light yield
+        smearer = smear.Smear()
     spectrum = store.load(args.path)
 
     if args.smear_method == "weight":  # Use default smear method
