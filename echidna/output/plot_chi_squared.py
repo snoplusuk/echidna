@@ -32,10 +32,11 @@ def chi_squared_vs_signal(signal_config, **kwargs):
 
         * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config
           for signal with penalty term.
+
 		* effective_mass (*bool*): if True, plot the x-axis as the
 		  signal contribution effective mass.
 		* half_life (*bool*): if True, plot the x-axis as the signal
-          contribution half life.
+             contribution half life.
 
     """
     figure = pylab.figure(figsize=(10, 10))
