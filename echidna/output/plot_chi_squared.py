@@ -207,6 +207,15 @@ def chi_squared_map(syst_analyser, **kwargs):
 
 
 def penalty_vs_systematic(syst_analyser):
+    """ Plot penalty_value vs. systematic.
+
+    Args:
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): systematic
+        analyser object, created during limit setting. Can be used
+        during limit setting setting or can load an instance from
+        hdf5
+
+    """
     plt.subplot(1, 1, 1)
     x = syst_analyser._penalty_values[0]
     y = syst_analyser._penalty_values[1]
