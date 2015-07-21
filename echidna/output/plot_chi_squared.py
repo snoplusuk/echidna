@@ -2,6 +2,7 @@
 
 Attributes:
   MAIN_FONT (dict): style properties for the main font to use in plot labels
+
 """
 import pylab
 from mpl_toolkits.mplot3d import Axes3D
@@ -35,6 +36,7 @@ def chi_squared_vs_signal(signal_config, **kwargs):
 		  signal contribution effective mass.
 		* half_life (*bool*): if True, plot the x-axis as the signal
           contribution half life.
+
     """
     figure = pylab.figure(figsize=(10, 10))
     axis = figure.add_subplot(1, 1, 1)
@@ -108,6 +110,7 @@ def chi_squared_map(syst_analyser, **kwargs):
 
       Default is to produce a colour map, with "preferred values" curve
       and "minima" overlayed.
+
     """
     # Set kwargs defaults
     if kwargs.get("preferred_values") is None:
@@ -224,6 +227,7 @@ def main(args):
 
     Args:
       args (dict): command line arguments from argparse.
+
     """
     signal_config = LimitConfig(0, [0])
     signal_config = store.load_ndarray(args.signal_config, signal_config)

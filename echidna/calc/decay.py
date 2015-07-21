@@ -136,7 +136,7 @@ class DBIsotope(object):
         return numpy.log(2)*n_atoms/activity
 
     def eff_mass_to_half_life(self, eff_mass):
-        """ Converts from effective majorana mass to :math:`0\nu2\beta`
+        """ Converts from effective majorana mass to :math:`0\\nu2\\beta`
         half-life.
 
         Args:
@@ -146,7 +146,7 @@ class DBIsotope(object):
           ValueError: If effective mass is not positive and non-zero.
 
         Returns:
-          float: :math:`0\nu2\beta` half-life, in years.
+          float: :math:`0\\nu2\\beta` half-life, in years.
 
         """
         if eff_mass <= 0.:
@@ -155,11 +155,11 @@ class DBIsotope(object):
         return 1/(self._phase_space*self._matrix_element**2*sq_mass_ratio)
 
     def half_life_to_eff_mass(self, half_life):
-        """ Converts from :math:`0\nu2\beta` half-life to effective
+        """ Converts from :math:`0\\nu2\\beta` half-life to effective
           majorana mass.
 
         Args:
-          half_life (float): :math:`0\nu2\beta` half-life, in years.
+          half_life (float): :math:`0\\nu2\\beta` half-life, in years.
 
         Returns:
           float: Effective majorana mass, in eV.
@@ -287,7 +287,7 @@ class DBIsotope(object):
         """ Converts from isotope's half-life to signal counts.
 
         Args:
-          half_life (float): Isotope's :math:`0\nu2\beta` half-life in
+          half_life (float): Isotope's :math:`0\\nu2\\beta` half-life in
             years.
           n_atoms (float): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
@@ -334,7 +334,7 @@ class DBIsotope(object):
           ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
-          float: Isotope's :math:`0\nu2\beta` half-life in years.
+          float: Isotope's :math:`0\\nu2\\beta` half-life in years.
 
         """
         if livetime <= 0.:
