@@ -230,6 +230,8 @@ class LimitSetting(object):
       _roi (tuple): (lower energy, upper energy)
       _verbose (bool): print progress and timing information to terminal
         during limit setting.
+      _target (dict): Dictionary of parameters for the target e.g.
+        `{"spectrum": spectrum, "half_life": 5.17e25}`
 
     Raises:
       CompatibilityError: If fixed_background is not pre-shrunk and
@@ -271,6 +273,7 @@ class LimitSetting(object):
             self._verbose = True
         else:
             self._verbose = False
+        self._target = {}
         # Check backgrounds have been added to class
         if not fixed_background and not floating_backgrounds:
             raise ValueError("Must provide fixed or floating backgrounds")
@@ -331,12 +334,53 @@ class LimitSetting(object):
                 name+"_counts", self._signal_config._counts,
                 background_config._counts)
 
+    def set_target(self, target):
+        """ Sets target limit.
+
+        This may be a current limit from another experiment or an
+        expected limit.
+
+        Args:
+          target (dict): Dictionary of parameters for the target e.g.
+            `{"spectrum": spectrum, "half_life": 5.17e25}`. Dictionary
+            must include "spectrum" entry and one of
+
+        Raises:
+          TypeError: If key "spectrum" is not found, or does not
+            correspond to value of Spectra type.
+          ValueError: If dictionary does not contain one of "counts",
+            "half_life" and "eff_mass".
+        """
+        if not isinstance(target.get("spectrum"),
+                          echidna.core.spectra.Spectra):
+            raise TypeError('No key "spectrum" with corresponding value of '
+                            'type "echidna.core.spectra.Spectra"')
+        if (target.get("counts") is None and
+                target.get("half_life") is None and
+                target.get("eff_mass") is None):
+            raise ValueError('Dictionary must contain at least one of: '
+                             '"counts", "half_life" or "eff_mass"')
+        self._target = target
+
+    def get_target(self):
+        """
+        Returns:
+          dict: :attr:`_target`. Dictionary containing details of
+            target limit.
+
+        Raises:
+          ValueError: If :attr:`_target` has not been set yet.
+        """
+        if self._target == {}:
+            raise ValueError("Dictionary _target has not been set yet.")
+        return self._target
+
     def set_calculator(self, calculator):
         """ Sets the chi squared calculator to use for limit setting
 
         Args:
           calculator (:class:`echidna.limit.chi_squared.ChiSquared`): chi
-            squared calculator to use for limit setting
+            squared calculator to use for limit setting.
         """
         self._calculator = calculator
 
@@ -430,10 +474,12 @@ class LimitSetting(object):
                 plot_text.append("Livetime = %.1f years" % self._signal._time_high)
                 title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
                 spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
+                                                   show_plot=False,
                                                    per_bin=self._calculator,
                                                    title=title,
                                                    text=plot_text,
-                                                   log_y=True)
+                                                   log_y=True,
+                                                   limit=self._target.get("spectrum"))
                 debug_pdf.savefig(spectral_plot)
                 spectral_plot.clear()
                 fig_num += 1
@@ -443,7 +489,10 @@ class LimitSetting(object):
             print syst_analyser._syst_values
             syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
-            return self._signal_config.get_first_bin_above(limit_chi_squared)
+            if self._signal_config.get_counts_down():  # Use get_last_bin_above
+                return self._signal_config.get_last_bin_above(limit_chi_squared)
+            else:
+                return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
             raise IndexError("unable to calculate confidence limit - " +
                              str(detail))
