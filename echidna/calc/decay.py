@@ -90,7 +90,8 @@ class DBIsotope(object):
         if target_mass is None:  # Calculate target mass
             if scint_mass is None:  # Calculate scint_mass
                 # Mass of scintillator
-                scint_mass = (scint_density/const._d2o_density) * const._d2o_mass
+                volume = (4./3.) * numpy.pi * (outer_radius*1.e-3)**3
+                scint_mass = scint_density * volume
             # Mass fraction
             mass_iso = self._atm_weight_iso*const._atomic_mass_unit  # kg/atom
             mass_nat = self._atm_weight_nat*const._atomic_mass_unit  # kg/atom
@@ -373,7 +374,7 @@ def main(signal):
     # We want the atomic weight of the enriched Xenon
     XeEn_atm_weight = 0.9093*Xe136_atm_weight + 0.0889*Xe134_atm_weight
     Xe136_abundance = 0.9093  # PRC 86, 021601 (2012)
-    phase_space = 1433.0e-27  # PRC 85, 034316 (2012)
+    phase_space = 1433.0e-17  # PRC 85, 034316 (2012)
     matrix_element = 3.33  # IBM-2 PRC 87, 014315 (2013)
 
     xe136_converter = DBIsotope("Xe136", Xe136_atm_weight, XeEn_atm_weight,
@@ -381,14 +382,20 @@ def main(signal):
     # Check get_n_atoms with 2.44% loading in KLZ
     fv_radius = 1200.  # mm, PRC 86, 021601 (2012)
     loading = 0.0244  # 2.44%, PRC 86, 021601 (2012)
-    scint_mass = 13.0e3  # kg (13 tonnes), PRC 86, 021601 (2012)
-    outer_radius = 3080.  # mm, PRC 86, 021601 (2012)
+    scint_mass = 11.57e3  # kg (13 tonnes), PRC 86, 021601 (2012)
+    outer_radius = 1540.  # mm, PRC 86, 021601 (2012)
     target_mass = 125.  # kg, PRC 86, 021601 (2012)
 
     expected = 5.5388e26  # Calculated - A Back 2015-06-03
+    # result, message = physics_tests.test_function_float(xe136_converter.get_n_atoms,
+    #                                                    expected,
+    #                                                    target_mass=target_mass)
     result, message = physics_tests.test_function_float(xe136_converter.get_n_atoms,
                                                         expected,
-                                                        target_mass=target_mass)
+                                                        fv_radius=fv_radius,
+                                                        loading=loading,
+                                                        scint_mass=scint_mass,
+                                                        outer_radius=outer_radius)
     print message, "(KamLAND-Zen)"
 
     # Check half_life_to_activity
