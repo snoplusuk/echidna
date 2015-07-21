@@ -1,6 +1,4 @@
 import numpy
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 
 import echidna
 from echidna.errors.custom_errors import CompatibilityError
@@ -397,6 +395,7 @@ class LimitSetting(object):
 
         # Set-up debug output
         if kwargs.get("debug") == 1:
+            from matplotlib.backends.backend_pdf import PdfPages
             path = echidna.__echidna_base__ + "/debug/"
             filename = self._signal._name + "_debug.pdf"
             debug_pdf = PdfPages(path + filename)
