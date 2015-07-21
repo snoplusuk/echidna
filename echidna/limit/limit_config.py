@@ -12,6 +12,9 @@ class LimitConfig(object):
     Attributes:
       _prior_counts (float): prior/expected counts
       _counts (list): list of count rates (*float*) to use for scaling
+      _counts_down (bool): True if :attr:`_counts` is defined such that
+        it counts down from a high count to a low count. Otherwise
+        set as False - countin up.
       _current_count (float): current count (scaling). The value most
         recently returned by :meth:`get_count()`.
       _sigma (float): prior constraint on counts
@@ -29,6 +32,10 @@ class LimitConfig(object):
     def __init__(self, prior_count, counts, sigma=None):
         self._prior_count = prior_count
         self._counts = counts
+        if (counts[-1] - counts[0]) < 0:  # Counts list counts down
+            self._counts_down = True
+        else:
+            self._counts_down = False
         self._current_count = None
         self._sigma = sigma
         self._chi_squareds = numpy.zeros(shape=(3, 0), dtype=float)
@@ -114,6 +121,13 @@ class LimitConfig(object):
         else:
             return minimum
 
+    def get_counts_down(self):
+        """
+        Returns:
+          bool: :attr:`_counts_down`.
+        """
+        return self._counts_down
+
     def get_first_bin_above(self, limit):
         """ For signal, determine the count corresponding to limit.
 
@@ -124,10 +138,17 @@ class LimitConfig(object):
           limit (float): chi squared value corresponding to desired
             confidence limit
 
+        Raises:
+          AttributeError: If :attr:`_counts` is defined to count down.
+
         Returns:
           float: number of events (result of
             :meth:`echidna.core.spectra.Spectra.sum()`) at limit
         """
+        if self._counts_down:  # Don't want to use this method
+            raise AttributeError("Method `get_first_bin_above` will give "
+                                 "incorrect result, use `get_last_bin_above` "
+                                 "instead")
         first_bin_above = numpy.where(self._chi_squareds[0] > limit)[0][0]
         # Set counts corresponding to minimum
         # --> Note scaling counts NOT actual events
@@ -146,10 +167,17 @@ class LimitConfig(object):
           limit (float): chi squared value corresponding to desired
             confidence limit
 
+        Raises:
+          AttributeError: If :attr:`_counts` is defined to count up.
+
         Returns:
           float: number of events (result of
             :meth:`echidna.core.spectra.Spectra.sum()`) at limit
         """
+        if not self._counts_down:  # Don't want to use this method
+            raise AttributeError("Method `get_last_bin_above` will give "
+                                 "incorrect result, use `get_first_bin_above` "
+                                 "instead")
         last_bin_above = numpy.where(self._chi_squareds[0] > limit)[0][-1]
         # Set counts corresponding to minimum
         # --> Note scaling counts NOT actual events
