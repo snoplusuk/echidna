@@ -215,7 +215,7 @@ def penalty_vs_systematic(syst_analyser):
 def main(args):
     """ Script to produce chi squared plots for a given systematic.
 
-    .. Produces::
+    .. note:: Produces
 
       * Plot of chi squared vs. signal counts
       * Plot of systematic vs. signal chi squared surface, either

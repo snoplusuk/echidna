@@ -2,6 +2,7 @@
 
 Provides a useful tool for converting between different double beta
 dacay parameters.
+
 """
 import numpy
 
@@ -36,6 +37,7 @@ class DBIsotope(object):
 
     Raises:
       ValueError: If abundance is < 0. or > 1.
+
     """
     def __init__(self, name, atm_weight_iso, atm_weight_nat, abundance,
                  phase_space, matrix_element, roi_efficiency=0.62465):
@@ -71,10 +73,11 @@ class DBIsotope(object):
             containing fiducial volume, e.g. AV, in mm.
 
         Raises:
-          ValueError: If :arg:`loading` is not between zero and 1.
+          ValueError: If :obj:`loading` is not between zero and 1.
 
         Returns:
           float: Number of atoms.
+
         """
         # Set defaults
         if fv_radius is None:  # use default from constants
@@ -113,6 +116,7 @@ class DBIsotope(object):
 
         Returns:
           float: Activity in decays per year.
+
         """
         return (numpy.log(2)/half_life)*n_atoms
 
@@ -127,6 +131,7 @@ class DBIsotope(object):
 
         Returns:
           float: Half-life in years.
+
         """
         return numpy.log(2)*n_atoms/activity
 
@@ -142,6 +147,7 @@ class DBIsotope(object):
 
         Returns:
           float: :math:`0\nu2\beta` half-life, in years.
+
         """
         if eff_mass <= 0.:
             raise ValueError("Effective mass should be positive and non-zero")
@@ -150,13 +156,14 @@ class DBIsotope(object):
 
     def half_life_to_eff_mass(self, half_life):
         """ Converts from :math:`0\nu2\beta` half-life to effective
-        majorana mass.
+          majorana mass.
 
         Args:
           half_life (float): :math:`0\nu2\beta` half-life, in years.
 
         Returns:
           float: Effective majorana mass, in eV.
+
         """
         return numpy.sqrt(const._electron_mass**2 /
                           (self._phase_space*self._matrix_element**2*half_life))
@@ -176,10 +183,11 @@ class DBIsotope(object):
             * roi_cut (*bool*): if true counts in roi is used
 
         Raises:
-          ValueError: If :arg:`livetime` is not positive and non-zero.
+          ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
           float: Number of counts.
+
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
@@ -202,10 +210,11 @@ class DBIsotope(object):
             * roi_cut (*bool*): If True counts in roi is used.
 
         Raises:
-          ValueError: If :arg:`livetime` is not positive and non-zero.
+          ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
           float: Activity of the isotope in :math:`years^{-1}`.
+
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
@@ -231,10 +240,11 @@ class DBIsotope(object):
             * roi_cut (*bool*): if true counts in roi is used
 
         Raises:
-          ValueError: If :arg:`livetime` is not positive and non-zero.
+          ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
           float: Effective majorana mass in eV.
+
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
@@ -264,6 +274,7 @@ class DBIsotope(object):
         Returns:
           float: Expected number of signal counts within the livetime
             specified.
+
         """
         if eff_mass <= 0.:
             raise ValueError("Effective mass should be positive and non-zero")
@@ -290,10 +301,11 @@ class DBIsotope(object):
               just signal counts in the ROI.
 
         Raises:
-          ValueError: If :arg:`livetime` is not positive and non-zero.
+          ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
           float: Expected number of counts.
+
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
@@ -310,6 +322,7 @@ class DBIsotope(object):
             potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
+
         .. note::
 
           keyword arguments include:
@@ -318,10 +331,11 @@ class DBIsotope(object):
               to be just counts in the signal ROI.
 
         Raises:
-          ValueError: If :arg:`livetime` is not positive and non-zero.
+          ValueError: If :obj:`livetime` is not positive and non-zero.
 
         Returns:
           float: Isotope's :math:`0\nu2\beta` half-life in years.
+
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
