@@ -253,6 +253,39 @@ class Spectra(object):
                                 radial_low_bin:radial_high_bin,
                                 time_low_bin:time_high_bin]
 
+    def cut(self, energy_low=None, energy_high=None, radial_low=None,
+            radial_high=None, time_low=None, time_high=None):
+        """ Similar to :meth:`shrink`, but updates scaling information.
+
+        If a spectrum is cut using :meth:`shrink`, subsequent calls to
+        :meth:`scale` the spectrum must still scale the *full* spectrum
+        i.e. before any cuts. The user supplies the number of decays
+        the full spectrum should now represent.
+
+        However, sometimes it is more useful to be able specify the
+        number of events the revised spectrum should represent. This
+        method updates the scaling information, so that it becomes the
+        new *full* spectrum.
+
+        Args:
+          energy_low (float, optional): New low bound of the energy.
+          energy_low (float, optional): New high bound of the energy.
+          radial_low (float, optional): New low bound of the radius.
+          radial_low (float, optional): New high bound of the radius.
+          time_low (float, optional): New low bound of the time.
+          time_low (float, optional): New high bound of the time.
+        """
+        initial_count = self.sum()  # Store initial count
+        self.shrink(energy_low, energy_high, radial_low, radial_high,
+                    time_low, time_high)
+        new_count = self.sum()
+        reduction_factor = float(new_count) / float(initial_count)
+        # This reduction factor tells us how much the number of detected events
+        # has been reduced by shrinking the spectrum. We want the number of
+        # decays that the spectrum should now represent to be reduced by the
+        # same factor
+        self._num_decays *= reduction_factor
+
     def add(self, spectrum):
         """ Adds a spectrum to current spectra object.
 
