@@ -38,15 +38,21 @@ class ReadableDir(argparse.Action):
     Checks that hdf5 files supplied via command line exist and can be read
     """
     def __call__(self, parser, namespace, values, option_string=None):
-        prospective_dir = values
-        if not os.path.isfile(prospective_dir):
-            raise argparse.ArgumentTypeError("ReadableDir:{0} is not a valid "
-                                             "path".format(prospective_dir))
-        if os.access(prospective_dir, os.R_OK):
-            setattr(namespace, self.dest, prospective_dir)
+        prospective_dirs = []
+        if type(values) is str:
+            prospective_dirs.append(values)
+        elif type(values) is list:
+            prospective_dirs = values
         else:
-            raise argparse.ArgumentTypeError("ReadableDir:{0} is not readable"
-                                             .format(prospective_dir))
+            raise TypeError("Invalid type for arg.")
+        for prospective_dir in prospective_dirs:
+            if not os.path.isfile(prospective_dir):
+                raise argparse.ArgumentTypeError("ReadableDir:{0} not a valid "
+                                                 "path".format(prospective_dir))
+            if not os.access(prospective_dir, os.R_OK):
+                raise argparse.ArgumentTypeError("ReadableDir:{0} is not readable"
+                                                 .format(prospective_dir))
+        setattr(namespace, self.dest, values)  # keeps original format
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Example limit setting "

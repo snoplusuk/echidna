@@ -128,8 +128,8 @@ class ChiSquared(object):
         # Add penalty term(s)
         if self._penalty_terms_set:
             for name, penalty_term in self._penalty_terms.iteritems():
-                value = numpy.power(penalty_term.get("parameter_value")/
-                                           penalty_term.get("sigma"), 2.0)
+                value = numpy.power(penalty_term.get("parameter_value") /
+                                    penalty_term.get("sigma"), 2.0)
                 self._current_values[name] = value
                 chi_squared += value
         return chi_squared
@@ -158,7 +158,7 @@ def pearson_chi_squared(observed, expected):
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
     # Chosen due to backgrounds with low rates in ROI
-    epsilon = 1e-34 # Limit of zero
+    epsilon = 1e-34  # Limit of zero
     total = 0
     for i in range(len(observed)):
         if expected[i] < epsilon:

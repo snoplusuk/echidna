@@ -50,6 +50,8 @@ class DBIsotope(object):
         self._phase_space = phase_space
         self._matrix_element = matrix_element
         self._roi_efficiency = roi_efficiency  # Defaults to standard Gaussian efficiency for -1/2 sigma to +3/2 sigma ROI
+        if roi_efficiency != 0.62465:
+            print "Warning: using calculated ROI efficiency %.4f not default (0.62465)" % roi_efficiency
 
     def get_n_atoms(self, fv_radius=None, loading=None, scint_density=None,
                     target_mass=None, scint_mass=None, outer_radius=None):
@@ -93,7 +95,7 @@ class DBIsotope(object):
         if target_mass is None:  # Calculate target mass
             if scint_mass is None:  # Calculate scint_mass
                 # Mass of scintillator
-                volume = (4./3.) * numpy.pi * (outer_radius*1.e-3)**3
+                volume = (4./3.) * numpy.pi * outer_radius**3  # mm^3
                 scint_mass = scint_density * volume
             # Mass fraction
             mass_iso = self._atm_weight_iso*const._atomic_mass_unit  # kg/atom
@@ -363,9 +365,11 @@ def main(signal):
     phase_space = 3.69e-14  # PRC 85, 034316 (2012)
     matrix_element = 4.03  # IBM-2 PRC 87, 014315 (2013)
 
+    #te130_converter = DBIsotope("Te130", Te130_atm_weight, TeNat_atm_weight,
+    #                            Te130_abundance, phase_space, matrix_element,
+    #                            signal.get_roi(0).get("efficiency"))
     te130_converter = DBIsotope("Te130", Te130_atm_weight, TeNat_atm_weight,
-                                Te130_abundance, phase_space, matrix_element,
-                                signal.get_roi(0).get("efficiency"))
+                                Te130_abundance, phase_space, matrix_element)
 
     # Check get_n_atoms for 0.3% loading, no FV cut
     fv_radius = 5997.  # radius of AV in mm, calculated - A Back 2015-02-25
@@ -397,10 +401,11 @@ def main(signal):
     fv_radius = 1200.  # mm, PRC 86, 021601 (2012)
     loading = 0.0244  # 2.44%, PRC 86, 021601 (2012)
     scint_mass = 11.57e3  # kg (13 tonnes), PRC 86, 021601 (2012)
+    scint_density = 756.28e-9  # kg/mm^3 calculated A Back 2015-07-22
     outer_radius = 1540.  # mm, PRC 86, 021601 (2012)
-    target_mass = 125.  # kg, PRC 86, 021601 (2012)
+    target_mass = 122.  # kg, PRC 86, 021601 (2012)
 
-    expected = 5.5388e26  # Calculated - A Back 2015-06-03
+    expected = 5.3985e+26  # Calculated - A Back 2015-06-30
     # result, message = physics_tests.test_function_float(xe136_converter.get_n_atoms,
     #                                                    expected,
     #                                                    target_mass=target_mass)
@@ -408,7 +413,7 @@ def main(signal):
                                                         expected,
                                                         fv_radius=fv_radius,
                                                         loading=loading,
-                                                        scint_mass=scint_mass,
+                                                        scint_density=scint_density,
                                                         outer_radius=outer_radius)
     print message, "(KamLAND-Zen)"
 
