@@ -2,6 +2,7 @@
 
 Attributes:
   MAIN_FONT (dict): style properties for the main font to use in plot labels
+
 """
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -62,8 +63,7 @@ def chi_squared_vs_signal(signal_config, fig=1, **kwargs):
                                     phase_space, matrix_element)
         for num_decays in signal_config._chi_squareds[1]:
             x.append(1./converter.counts_to_half_life(num_decays/0.554))
-        pylab.xlabel(r"$1/T_{1/2}^{0\nu}$")
-        pylab.ylabel(r"$\chi^{2}$")
+        plt.xlabel(r"$1/T_{1/2}^{0\nu}$", **BOLD_FONT)
     else:
         x = signal_config.get_chi_squareds()[2]
         plt.xlabel("Signal counts", **BOLD_FONT)
@@ -111,6 +111,7 @@ def chi_squared_map(syst_analyser, fig=1, **kwargs):
 
       Default is to produce a colour map, with "preferred values" curve
       and "minima" overlayed.
+
     """
     # Set kwargs defaults
     if kwargs.get("preferred_values") is None:
@@ -392,7 +393,7 @@ def push_pull(syst_analyser, fig=1, **kwargs):
 def main(args):
     """ Script to produce chi squared plots for a given systematic.
 
-    .. Produces::
+    .. note:: Produces
 
       * Plot of chi squared vs. signal counts
       * Plot of systematic vs. signal chi squared surface, either
@@ -401,6 +402,7 @@ def main(args):
 
     Args:
       args (dict): command line arguments from argparse.
+
     """
     signal_config = LimitConfig(0, [0])
     signal_config = store.load_ndarray(args.signal_config, signal_config)
