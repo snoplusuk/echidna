@@ -3,7 +3,7 @@ import numpy
 import echidna
 from echidna.errors.custom_errors import CompatibilityError
 import echidna.utilities as utilities
-import echidna.output.plot as plot
+import echidna.output.plot_root as plot
 
 class SystAnalyser(object):
     """ Class to analyse the effect of systematics
