@@ -292,29 +292,29 @@ class Spectra(object):
         Args:
           spectrum (:class:`core.spectra`): Spectrum to add.
         """
-        if self._energy_low != spectrum._energy_low:
+        if not numpy.allclose(self._energy_low, spectrum._energy_low):
             raise ValueError("Lower energy bounds in spectra are not equal.")
-        if self._energy_high != spectrum._energy_high:
+        if not numpy.allclose(self._energy_high, spectrum._energy_high):
             raise ValueError("Upper energy bounds in spectra are not equal.")
-        if self._energy_bins != spectrum._energy_bins:
+        if not numpy.allclose(self._energy_bins, spectrum._energy_bins):
             raise ValueError("Number of energy bins in spectra are not equal.")
-        if self._energy_width != spectrum._energy_width:
+        if not numpy.allclose(self._energy_width, spectrum._energy_width):
             raise ValueError("Width of energy bins in spectra are not equal.")
-        if self._radial_low != spectrum._radial_low:
+        if not numpy.allclose(self._radial_low, spectrum._radial_low):
             raise ValueError("Lower radial bounds in spectra are not equal.")
-        if self._radial_high != spectrum._radial_high:
+        if not numpy.allclose(self._radial_high, spectrum._radial_high):
             raise ValueError("Upper radial bounds in spectra are not equal.")
-        if self._radial_bins != spectrum._radial_bins:
+        if not numpy.allclose(self._radial_bins, spectrum._radial_bins):
             raise ValueError("Number of radial bins in spectra are not equal.")
-        if self._radial_width != spectrum._radial_width:
+        if not numpy.allclose(self._radial_width, spectrum._radial_width):
             raise ValueError("Width of radial bins in spectra are not equal.")
-        if self._time_low != spectrum._time_low:
+        if not numpy.allclose(self._time_low, spectrum._time_low):
             raise ValueError("Lower time bounds in spectra are not equal.")
-        if self._time_high != spectrum._time_high:
+        if not numpy.allclose(self._time_high, spectrum._time_high):
             raise ValueError("Upper time bounds in spectra are not equal.")
-        if self._time_bins != spectrum._time_bins:
+        if not numpy.allclose(self._time_bins, spectrum._time_bins):
             raise ValueError("Number of time bins in spectra are not equal.")
-        if self._time_width != spectrum._time_width:
+        if not numpy.allclose(self._time_width, spectrum._time_width):
             raise ValueError("Width of time bins in spectra are not equal.")
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
