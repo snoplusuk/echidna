@@ -674,8 +674,9 @@ def make_fixed_background(spectra, **kwargs):
       ROI in the LimitSetting class you *must* also pre-shrink here.
 
     Args:
-      spectra (dictionary): Dictionary containing spectra as keys and priors as
-        values.
+      spectra (dictionary): Dictionary containing spectra name as keys and
+        a list containing the spectra object as index 0 and prior counts as
+        index 1 as values.
 
     Keyword arguments include:
 
@@ -687,7 +688,9 @@ def make_fixed_background(spectra, **kwargs):
     Returns: Spectrum containing all fixed backgrounds.
     '''
     first = True
-    for spectrum, scaling in spectra.iteritems():
+    for spectra_name, spectra_list in spectra.iteritems():
+        spectrum = spectra_list[0]
+        scaling = spectra_list[1]
         if first:
             first = False
             if kwargs.get("roi") is not None:
@@ -696,7 +699,13 @@ def make_fixed_background(spectra, **kwargs):
                     energy_low, energy_high = roi
                     spectrum.shrink(energy_low, energy_high)
             spectrum.scale(scaling)
-            total_spectrum = spectrum
+            total_spectrum = spectra.Spectra("fixed_background", 0.)
+            total_spectrum.shrink(spectrum._energy_low, spectrum._energy_high,
+                                  spectrum._radial_low, spectrum._radial_high,
+                                  spectrum._time_low, spectrum._time_high)
+            total_spectrum.rebin(numpy.shape(spectrum._data))
+            total_spectrum.calc_widths()
+            total_spectrum.add(spectrum)
         else:
             if kwargs.get("roi") is not None:
                 roi = kwargs.get("roi")
