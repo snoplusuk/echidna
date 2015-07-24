@@ -18,8 +18,8 @@ import echidna.output.store as store
 import echidna.limit.limit_config as limit_config
 import echidna.limit.limit_setting as limit_setting
 import echidna.limit.chi_squared as chi_squared
-import echidna.output.plot_chi_squared as plot_chi_squared
 import echidna.calc.decay as decay
+import echidna.calc.constants as constants
 
 
 def main():
@@ -165,4 +165,18 @@ def main():
     store.dump_ndarray("B8_Solar_config.hdf5", B8_Solar_config)
 
 if __name__ == "__main__":
+    import argparse
+    from echidna.scripts.zero_nu_limit import ReadableDir
+
+    parser = argparse.ArgumentParser(description="Example limit setting "
+                                     "script for SNO+ Majoron limits")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print progress and timing information")
+    parser.add_argument("-s", "--signals", action=ReadableDir, nargs="+",
+                        help="Supply path for signal hdf5 file")
+    parser.add_argument("-t", "--two_nu", action=ReadableDir,
+                        help="Supply paths for Te130_2n2b hdf5 files")
+    parser.add_argument("-b", "--b8_solar", action=ReadableDir,
+                        help="Supply paths for B8_Solar hdf5 files")
+    args = parser.parse_args()
     main()

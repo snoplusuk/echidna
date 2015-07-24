@@ -28,7 +28,7 @@ def main(args):
     # Load signal spectra
     signals = []
     for signal_hdf5 in args.signals:
-        spectrum = store.load(echidna.__echidna_base__+"/"+signal_hdf5)
+        spectrum = store.load(signal_hdf5)
         print spectrum._name
         print "Num decays:", spectrum._num_decays
         print "events:", spectrum.sum()
@@ -36,13 +36,13 @@ def main(args):
 
     # Load background spectra
     floating_backgrounds = []
-    Te130_2n2b = store.load(echidna.__echidna_base__ + "/" + args.two_nu)
+    Te130_2n2b = store.load(args.two_nu)
     print Te130_2n2b._name
     Te130_2n2b._num_decays = Te130_2n2b.sum()  # Sum not raw events
     print "Num decays:", Te130_2n2b._num_decays
     print "events:", Te130_2n2b.sum()
     floating_backgrounds.append(Te130_2n2b)
-    B8_Solar = store.load(echidna.__echidna_base__ + "/" + args.b8_solar)
+    B8_Solar = store.load(args.b8_solar)
     print B8_Solar._name
     B8_Solar._num_decays = B8_Solar.sum()  # Sum not raw events
     print "Num decays:", B8_Solar._num_decays
