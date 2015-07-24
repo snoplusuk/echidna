@@ -534,7 +534,6 @@ class LimitSetting(object):
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
                 expected = self._observed + self._signal.project(0)
-                print 'observed', self._observed.sum(), 'expected', expected.sum()
                 self._signal_config.add_chi_squared(
                     self._calculator.get_chi_squared(self._observed, expected),
                     signal_count, self._signal.sum())
