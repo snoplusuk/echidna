@@ -109,33 +109,37 @@ class DBIsotope(object):
         n_atoms = (target_mass*const._n_avagadro) / (self._atm_weight_iso*1.e-3)
         return n_atoms
 
-    def half_life_to_activity(self, half_life, n_atoms):
+    def half_life_to_activity(self, half_life, n_atoms=None):
         """ Calculates the activity for an isotope with a given half-life
           and number of atoms.
 
         Args:
           half_life (float): Half-life of an isotope in years.
-          n_atoms (float): Number of atoms of an isotope.
+          n_atoms (float, optional): Number of atoms of an isotope.
 
         Returns:
           float: Activity in decays per year.
 
         """
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         return (numpy.log(2)/half_life)*n_atoms
 
-    def activity_to_half_life(self, activity, n_atoms):
+    def activity_to_half_life(self, activity, n_atoms=None):
         """ Calculates the half-life of an isotope with a given
         activity and number of atoms.
 
         Args:
           activity (float): Activity of the isotope in
           :math:`years^{-1}`.
-          n_atoms (float): Number of atoms of an isotope.
+          n_atoms (float, optional): Number of atoms of an isotope.
 
         Returns:
           float: Half-life in years.
 
         """
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         return numpy.log(2)*n_atoms/activity
 
     def eff_mass_to_half_life(self, eff_mass):
@@ -226,13 +230,13 @@ class DBIsotope(object):
         else:
             return counts/livetime
 
-    def counts_to_eff_mass(self, counts, n_atoms, livetime=5., **kwargs):
+    def counts_to_eff_mass(self, counts, n_atoms=None, livetime=5., **kwargs):
         """ Converts from signal counts to effective majorana mass.
 
         Args:
           counts (float): Number of signal counts within the livetime
             specified.
-          n_atoms (float): Number of isotope atoms/nuclei that could
+          n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
@@ -249,18 +253,20 @@ class DBIsotope(object):
           float: Effective majorana mass in eV.
 
         """
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.counts_to_half_life(counts, n_atoms, livetime,
                                              **kwargs)
         return self.half_life_to_eff_mass(half_life)
 
-    def eff_mass_to_counts(self, eff_mass, n_atoms, livetime=5., **kwargs):
+    def eff_mass_to_counts(self, eff_mass, n_atoms=None, livetime=5., **kwargs):
         """ Converts from effective majorana mass to signal counts.
 
         Args:
           eff_mass (float): Effective majorana mass in eV.
-          n_atoms (float): Number of isotope atoms/nuclei that could
+          n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
@@ -281,18 +287,20 @@ class DBIsotope(object):
         """
         if eff_mass <= 0.:
             raise ValueError("Effective mass should be positive and non-zero")
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.eff_mass_to_half_life(eff_mass)
         return self.half_life_to_counts(half_life, n_atoms, livetime, **kwargs)
 
-    def half_life_to_counts(self, half_life, n_atoms, livetime=5., **kwargs):
+    def half_life_to_counts(self, half_life, n_atoms=None, livetime=5., **kwargs):
         """ Converts from isotope's half-life to signal counts.
 
         Args:
           half_life (float): Isotope's :math:`0\\nu2\\beta` half-life in
             years.
-          n_atoms (float): Number of isotope atoms/nuclei that could
+          n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
@@ -310,18 +318,20 @@ class DBIsotope(object):
           float: Expected number of counts.
 
         """
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         activity = self.half_life_to_activity(half_life, n_atoms)
         return self.activity_to_counts(activity, livetime, **kwargs)
 
-    def counts_to_half_life(self, counts, n_atoms, livetime=5., **kwargs):
+    def counts_to_half_life(self, counts, n_atoms=None, livetime=5., **kwargs):
         """ Converts from signal count to isotope's half-life.
 
         Args:
           count (float): Number of signal counts within the livetime
             specified.
-          n_atoms (float): Number of isotope atoms/nuclei that could
+          n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
           livetime (float): Number of years of data taking.
 
@@ -340,15 +350,22 @@ class DBIsotope(object):
           float: Isotope's :math:`0\\nu2\\beta` half-life in years.
 
         """
+        if n_atoms is None:  # use SNO+ defaults
+            n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         activity = self.counts_to_activity(counts, livetime, **kwargs)
         return self.activity_to_half_life(activity, n_atoms)
 
 
-def main(signal):
+def test(args):
     """ Test function to show agreement with Andy's numbers.
+
+    Args:
+      args (dict): Command line arguments from :mod:`argparse`
     """
+    # Load signal
+    signal = store.load(args.signal)
     # Cut to 3.5m FV and 5 year livetime
     signal.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     # Shrink to ROI
@@ -365,25 +382,26 @@ def main(signal):
     phase_space = 3.69e-14  # PRC 85, 034316 (2012)
     matrix_element = 4.03  # IBM-2 PRC 87, 014315 (2013)
 
-    #te130_converter = DBIsotope("Te130", Te130_atm_weight, TeNat_atm_weight,
-    #                            Te130_abundance, phase_space, matrix_element,
-    #                            signal.get_roi(0).get("efficiency"))
-    te130_converter = DBIsotope("Te130", Te130_atm_weight, TeNat_atm_weight,
-                                Te130_abundance, phase_space, matrix_element)
+    if args.roi_efficiency:
+        te130_converter = DBIsotope("Te130", Te130_atm_weight,
+                                    TeNat_atm_weight, Te130_abundance,
+                                    phase_space, matrix_element,
+                                    signal.get_roi(0).get("efficiency"))
+    else:
+        te130_converter = DBIsotope("Te130", Te130_atm_weight,
+                                    TeNat_atm_weight, Te130_abundance,
+                                    phase_space, matrix_element)
 
     # Check get_n_atoms for 0.3% loading, no FV cut
-    fv_radius = 5997.  # radius of AV in mm, calculated - A Back 2015-02-25
-
     expected = 3.7573e27  # SNO+-doc-1728v2
-    result, message = physics_tests.test_function_float(te130_converter.get_n_atoms,
-                                                        expected,
-                                                        fv_radius=fv_radius)
+    result, message = physics_tests.test_function_float(
+        te130_converter.get_n_atoms, expected, fv_radius=const._av_radius)
     print message, "(no FV cut)"
 
     # Check get_n_atoms with SNO+ defaults
     expected = 7.4694e26  # calculated - A Back 2015-02-25, based on SNO+-doc-1728v2
-    result, message = physics_tests.test_function_float(te130_converter.get_n_atoms,
-                                                        expected)
+    result, message = physics_tests.test_function_float(
+        te130_converter.get_n_atoms, expected)
     print message
 
     # Create a DBIsotope instance for KLZ
@@ -397,33 +415,26 @@ def main(signal):
 
     xe136_converter = DBIsotope("Xe136", Xe136_atm_weight, XeEn_atm_weight,
                                 Xe136_abundance, phase_space, matrix_element)
+
     # Check get_n_atoms with 2.44% loading in KLZ
     fv_radius = 1200.  # mm, PRC 86, 021601 (2012)
     loading = 0.0244  # 2.44%, PRC 86, 021601 (2012)
-    scint_mass = 11.57e3  # kg (13 tonnes), PRC 86, 021601 (2012)
     scint_density = 756.28e-9  # kg/mm^3 calculated A Back 2015-07-22
     outer_radius = 1540.  # mm, PRC 86, 021601 (2012)
-    target_mass = 122.  # kg, PRC 86, 021601 (2012)
 
     expected = 5.3985e+26  # Calculated - A Back 2015-06-30
-    # result, message = physics_tests.test_function_float(xe136_converter.get_n_atoms,
-    #                                                    expected,
-    #                                                    target_mass=target_mass)
-    result, message = physics_tests.test_function_float(xe136_converter.get_n_atoms,
-                                                        expected,
-                                                        fv_radius=fv_radius,
-                                                        loading=loading,
-                                                        scint_density=scint_density,
-                                                        outer_radius=outer_radius)
+    result, message = physics_tests.test_function_float(
+        xe136_converter.get_n_atoms, expected,
+        fv_radius=fv_radius, loading=loading,
+        scint_density=scint_density, outer_radius=outer_radius)
     print message, "(KamLAND-Zen)"
 
     # Check half_life_to_activity
     expected = 50.4  # /y, SNO+-doc-2593v8
     half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
-    fv_radius = 5997.  # radius of AV in mm, calculated - A Back 2015-02-25
     result, message = physics_tests.test_function_float(
         te130_converter.half_life_to_activity, expected, half_life=half_life,
-        n_atoms=te130_converter.get_n_atoms(fv_radius=fv_radius))
+        n_atoms=te130_converter.get_n_atoms(fv_radius=const._av_radius))
     print message, "(no FV cut)"
 
     # Check activity_to_half_life
@@ -431,7 +442,7 @@ def main(signal):
     activity = 50.4  # /y, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_half_life, expected, activity=activity,
-        n_atoms=te130_converter.get_n_atoms(fv_radius=fv_radius))
+        n_atoms=te130_converter.get_n_atoms(fv_radius=const._av_radius))
     print message, "(no FV cut)"
 
     # Check eff_mass_to_half_life
@@ -469,32 +480,32 @@ def main(signal):
     expected = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
     counts = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
     result, message = physics_tests.test_function_float(
-        te130_converter.counts_to_eff_mass, expected, counts=counts,
-        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+        te130_converter.counts_to_eff_mass,
+        expected, counts=counts, roi_cut=True)
     print message
 
     # Check eff_mass_to_counts
     expected = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
     eff_mass = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
     result, message = physics_tests.test_function_float(
-        te130_converter.eff_mass_to_counts, expected, eff_mass=eff_mass,
-        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+        te130_converter.eff_mass_to_counts,
+        expected, eff_mass=eff_mass, roi_cut=True)
     print message
 
     # Check half_life_to_counts
     expected = 31.2  # ROI counts, SNO+-doc-2593v8
     half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
     result, message = physics_tests.test_function_float(
-        te130_converter.half_life_to_counts, expected, half_life=half_life,
-        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+        te130_converter.half_life_to_counts,
+        expected, half_life=half_life, roi_cut=True)
     print message
 
     # Check counts_to_half_life
     expected = 5.17e25  # y, SNO+-doc-2593v8
     counts = 31.2  # ROI counts, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
-        te130_converter.counts_to_half_life, expected, counts=counts,
-        n_atoms=te130_converter.get_n_atoms(), roi_cut=True)
+        te130_converter.counts_to_half_life,
+        expected, counts=counts, roi_cut=True)
     print message
 
     print "============"
@@ -510,7 +521,9 @@ if __name__ == "__main__":
                                      "script and validation.")
     parser.add_argument("-s", "--signal", action=ReadableDir,
                         help="Supply path for signal hdf5 file")
+    parser.add_argument("-e", "--roi_efficiency", action="store_true",
+                        help="If ROI efficiency should be calculated to "
+                        "override default value")
     args = parser.parse_args()
 
-    signal = store.load(args.signal)
-    main(signal)
+    test(args)
