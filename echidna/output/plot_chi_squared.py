@@ -469,7 +469,7 @@ def main(args):
     # Currently not possible to produce chi squared vs signal plot with half
     # life or effective mass on x-axis, from outside of limit setting code.
     # Just produce with signal counts on x-axis here.
-    fig_1 = chi_squared_vs_signal(signal_config,
+    fig_1 = chi_squared_vs_signal(signal_config, fig_num=1,
                                   penalty=penalty_config,
                                   save_as=args.image_name)
     fig_2 = penalty_vs_systematic(syst_analyser, 2)

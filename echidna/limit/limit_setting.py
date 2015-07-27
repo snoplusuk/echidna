@@ -469,6 +469,12 @@ class LimitSetting(object):
             if kwargs.get("debug") == 1:
                 spectra = {}
                 for background in self._floating_backgrounds:
+                    config = self._background_configs.get(background._name)
+                    try:
+                        count = config.get_limit_count()
+                        background.scale(count)
+                    except AssertionError:  # _limit_count is None
+                        pass
                     spectra[background._name] = {"spectra": background,
                                                  "style": background._style,
                                                  "type": "background",
@@ -713,7 +719,6 @@ def make_fixed_background(spectra_dict, **kwargs):
                                   spectrum._time_low, spectrum._time_high)
             total_spectrum.rebin(numpy.shape(spectrum._data))
             total_spectrum.calc_widths()
-            print total_spectrum._energy_width, spectrum._energy_width
             total_spectrum.add(spectrum)
         else:
             if kwargs.get("roi") is not None:

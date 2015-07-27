@@ -143,8 +143,8 @@ if __name__ == "__main__":
                                 Te130_0n2b.get_roi(0).get("efficiency"))
 
     half_life = converter.counts_to_half_life(sig_num_decays, roi_cut=True)
-    print "90% CL with no peanalty at: " + str(sig_num_decays) + " ROI counts"
-    print "90% CL with no peanalty at: " + str(half_life) + " y"
+    print "90% CL with no penalty at: " + str(sig_num_decays) + " ROI counts"
+    print "90% CL with no penalty at: " + str(half_life) + " y"
 
 
     # 2/ Now try fixing B8_Solar and floating Te130_2n2b
@@ -153,6 +153,16 @@ if __name__ == "__main__":
     # Reload background spectra
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
+
+    # Need to reset all of these for correct scaling
+    Te130_0n2b._num_decays = Te130_0n2b.sum()
+    Te130_0n2b._raw_events = 200034
+    Te130_2n2b._num_decays = Te130_2n2b.sum()
+    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
+    Te130_2n2b._raw_events = 75073953
+    B8_Solar._num_decays = B8_Solar.sum()
+    print "B8_Solar._num_decays:", B8_Solar._num_decays
+    B8_Solar._raw_events = 106228
 
     # Shrink spectra to 5 years - livetime used by Andy
     # And make 3.5m fiducial volume cut
@@ -179,13 +189,10 @@ if __name__ == "__main__":
 
     # Set config for Te130_2n2b
     # Floating range:
-    Te130_2n2b_counts = numpy.linspace(0.9*Te130_2n2b_prior,
-                                       1.1*Te130_2n2b_prior, 101)
-    print Te130_2n2b_counts
-    raw_input("RETURN to continue")
-
+    Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
+                                       1.203*Te130_2n2b_prior, 51)
     # Sigma of rate:
-    sigma = 0.05 * Te130_2n2b_prior  # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.203 * Te130_2n2b_prior # Used in penalty term (20.3%, Andy's doc on systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,
@@ -213,6 +220,16 @@ if __name__ == "__main__":
     # Reload background spectra
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
+
+    # Need to reset all of these for correct scaling
+    Te130_0n2b._num_decays = Te130_0n2b.sum()
+    Te130_0n2b._raw_events = 200034
+    Te130_2n2b._num_decays = Te130_2n2b.sum()
+    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
+    Te130_2n2b._raw_events = 75073953
+    B8_Solar._num_decays = B8_Solar.sum()
+    print "B8_Solar._num_decays:", B8_Solar._num_decays
+    B8_Solar._raw_events = 106228
 
     Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
