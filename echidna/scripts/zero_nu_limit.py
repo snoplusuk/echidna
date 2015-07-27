@@ -23,7 +23,7 @@ import echidna.output.store as store
 import echidna.limit.limit_config as limit_config
 import echidna.limit.limit_setting as limit_setting
 import echidna.limit.chi_squared as chi_squared
-import echidna.output.plot_chi_squared as plot_chi_squared
+import echidna.output.plot_chi_squared_root as plot_chi_squared
 from echidna.calc import decay
 
 import argparse
@@ -201,10 +201,9 @@ if __name__ == "__main__":
     print ("90% CL with Te130_2n2b floating at: " +
            str(sig_num_decays) + " ROI counts")
     print "90% CL with Te130_2n2b floating at: " + str(half_life) + " y"
-    fig1 = plot_chi_squared.chi_squared_vs_signal(
-        Te130_0n2b_config, converter, fig_num=1,
-        penalty=Te130_0n2b_penalty_config,
-        show=True, roi_cut=True)
+    fig1 = plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config)
+    fig1.Draw("AP")
+    raw_input("RETURN to continue")
     for syst_analyser in set_limit._syst_analysers.values():
         store.dump_ndarray(syst_analyser._name+"_2.hdf5", syst_analyser)
 
@@ -259,11 +258,9 @@ if __name__ == "__main__":
     print ("90% CL, with all backgrounds floating, at: " +
            str(sig_num_decays) + " ROI counts")
     print "90% CL, with all backgrounds floating, at: " + str(half_life) + " y"
-    fig2 = plot_chi_squared.chi_squared_vs_signal(
-        Te130_0n2b_config, converter, fig_num=2,
-        penalty=Te130_0n2b_penalty_config,
-        show=True, roi_cut=True)
-
+    fig2 = plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config)
+    fig2.Draw("AP")
+    raw_input("RETURN to continue")
     for syst_analyser in set_limit._syst_analysers.values():
         store.dump_ndarray(syst_analyser._name+"_3.hdf5", syst_analyser)
     store.dump_ndarray("Te130_0n2b_config.hdf5", Te130_0n2b_config)
