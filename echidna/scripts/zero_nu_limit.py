@@ -87,10 +87,10 @@ if __name__ == "__main__":
     Te130_0n2b._num_decays = Te130_0n2b.sum()
     Te130_0n2b._raw_events = 200034
     Te130_2n2b._num_decays = Te130_2n2b.sum()
-    print Te130_2n2b._num_decays
+    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
     Te130_2n2b._raw_events = 75073953
     B8_Solar._num_decays = B8_Solar.sum()
-    print B8_Solar._num_decays
+    print "B8_Solar._num_decays:", B8_Solar._num_decays
     B8_Solar._raw_events = 106228
 
     # Shrink spectra to 5 years - livetime used by Andy
@@ -104,8 +104,8 @@ if __name__ == "__main__":
     Te130_2n2b_prior = 37.396e6  # Based on NEMO-3 T_1/2, for 10 years
     # from integrating whole spectrum scaled to Valentina's number
     B8_Solar_prior = 12529.9691
-    fixed_backgrounds = {Te130_2n2b: Te130_2n2b_prior,
-                         B8_Solar: B8_Solar_prior}
+    fixed_backgrounds = {Te130_2n2b._name: [Te130_2n2b, Te130_2n2b_prior],
+                         B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
     roi = (2.46, 2.68)  # Define ROI - as used by Andy
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
-    fixed_backgrounds = {B8_Solar: B8_Solar_prior}
+    fixed_backgrounds = {B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
                                                 pre_shrink=True,
                                                 roi=roi)
@@ -179,10 +179,13 @@ if __name__ == "__main__":
 
     # Set config for Te130_2n2b
     # Floating range:
-    Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
-                                       1.203*Te130_2n2b_prior, 51)
+    Te130_2n2b_counts = numpy.linspace(0.9*Te130_2n2b_prior,
+                                       1.1*Te130_2n2b_prior, 101)
+    print Te130_2n2b_counts
+    raw_input("RETURN to continue")
+
     # Sigma of rate:
-    sigma = 0.203 * Te130_2n2b_prior  # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.05 * Te130_2n2b_prior  # Used in penalty term (20.3%, Andy's doc on systematics)
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,
