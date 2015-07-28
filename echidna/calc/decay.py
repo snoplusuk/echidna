@@ -61,6 +61,9 @@ class DBIsotope(object):
 
     Raises:
       ValueError: If abundance is < 0. or > 1.
+      ValueError: If :obj:`outer_radius` is negative or zero.
+      ValueError: If :obj:`fv_radius` is not between zero and
+        :obj:`outer_radius`.
 
     """
     def __init__(self, name, atm_weight_iso, atm_weight_nat, abundance,

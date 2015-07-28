@@ -24,7 +24,7 @@ def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
     Args:
       signal_config (:class:`echidna.limit.limit_config.LimitConfig`): Signal
         config class, where chi squareds have been stored.
-      converter (:calss:`echidna.calc.decay.DBIsotope`, optional): Converter
+      converter (:class:`echidna.calc.decay.DBIsotope`, optional): Converter
         used to convert between counts and half-life/effective mass.
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
@@ -60,7 +60,8 @@ def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
     if kwargs.get("effective_mass"):
         x = numpy.zeros(shape=(signal_config.get_chi_squareds()[2].shape))
         for i_bin, count in enumerate(signal_config.get_chi_squareds()[2]):
-            effective_mass = converter.counts_to_eff_mass(count, *args, **kwargs)
+            effective_mass = converter.counts_to_eff_mass(count, *args,
+                                                          **kwargs)
             x[i_bin] = effective_mass
         plt.xlabel(r"$m_{\beta\beta}$", **BOLD_FONT)
     elif kwargs.get("half_life"):
@@ -99,7 +100,7 @@ def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
     """ Plot chi squared surface for systematic vs. signal counts
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): systematic
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
         analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from
         hdf5
@@ -227,7 +228,7 @@ def penalty_vs_systematic(syst_analyser, fig_num=1, **kwargs):
     """ Plot penalty_value vs. systematic
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): systematic
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
         analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from
         hdf5
@@ -264,7 +265,7 @@ def turn_on(syst_analyser, signal_config, fig=1, **kwargs):
     When does the effect of floating the systematic "turn on"?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): systematic
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
         analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from
         hdf5
@@ -355,7 +356,7 @@ def push_pull(syst_analyser, fig=1, **kwargs):
     dominate?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): systematic
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
         analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from
         hdf5

@@ -46,14 +46,14 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
         plt.show()
     return fig
 
-def spectral_plot(spectra_dict, dimension=0, fig_num=1, show_plot=True,
-                  **kwargs):
+def spectral_plot(spectra_dict, dimension=0, fig_num=1,
+                  show_plot=True, **kwargs):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
     backgrounds. Backgrounds are automatically summed to create the
-    spectrum "Summed background" and all spectra passed in
-    :arg:`spectra_dict` will be summed to produce the "Sum" spectrum.
+    spectrum 'Summed background' and all spectra passed in
+    :obj:`spectra_dict` will be summed to produce the "Sum" spectrum.
 
     Args:
       spectra_dict (dict): Dictionary containing each spectrum you wish
@@ -66,20 +66,23 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1, show_plot=True,
         Default is 1.
 
     Example:
-      An example :arg:`spectra_dict` is as follows:
-        {Te130_0n2b._name: {"spectra": Te130_0n2b, "label": "signal",
-                            "style": {"color": "blue"}, "type": "signal"},
-         Te130_2n2b._name: {"spectra": Te130_2n2b, "label": "$2\nu2\beta",
-                            "style": {"color": "red"}, "type": "background"},
-         B8_Solar._name: {"spectra": B8_Solar, "label": "solar",
-                          "style": {"color": "green"}, "type": "background"}}
+
+      An example :obj:`spectra_dict` is as follows::
+
+        {Te130_0n2b._name: {'spectra': Te130_0n2b, 'label': 'signal',
+                            'style': {'color': 'blue'}, 'type': 'signal'},
+         Te130_2n2b._name: {'spectra': Te130_2n2b, 'label': r'$2\\nu2\\beta',
+                            'style': {'color': 'red'}, 'type': 'background'},
+         B8_Solar._name: {'spectra': B8_Solar, 'label': 'solar',
+                          'style': {'color': 'green'}, 'type': 'background'}}
 
     .. note::
+
       Keyword arguments include:
 
-        log_y (*bool*): Use log scale on y-axis.
-        per_bin (*bool*): Include chi-squared per bin histogram.
-        limit (*:class:`spectra.Spectra`*): Include a spectrum showing
+        * log_y (*bool*): Use log scale on y-axis.
+        * per_bin (*bool*): Include chi-squared per bin histogram.
+        * limit (:class:`spectra.Spectra`): Include a spectrum showing
           a current or target limit.
     """
     fig = plt.figure(fig_num)

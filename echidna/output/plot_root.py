@@ -13,7 +13,7 @@ def plot_projection(spectra, dimension, graphical=True):
       graphical (bool): Shows plot and waits for user input when true.
 
     Returns:
-      (:class`ROOT.TH1D`:) plot.
+      (:class:`ROOT.TH1D`): plot.
     """
     if dimension == 0:
         plot = TH1D("Energy", ";Energy[MeV];Count per bin",
@@ -50,7 +50,7 @@ def plot_surface(spectra, dimension, graphical=True):
       graphical (bool): Shows plot and waits for user input when true.
 
     Returns:
-      (:class`ROOT.TH2D`:) plot.
+      (:class:`ROOT.TH2D`): plot.
     """
     if dimension == 0:
         plot = TH2D("EnergyRadial", ";Energy[MeV];Radius[mm];Count per bin",
@@ -87,29 +87,35 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     For a given signal, produce a plot showing the signal and relevant
     backgrounds. Backgrounds are automatically summed to create the
     spectrum "Summed background" and all spectra passed in
-    :arg:`spectra_dict` will be summed to produce the "Sum" spectra
+    :obj:`spectra_dict` will be summed to produce the "Sum" spectra
 
-    Args: 
+    Args:
       spectra_dict (dict): Dictionary containing each spectrum you wish
         to plot, and the relevant parameters required to plot them.
       dimension (int, optional): The dimension or axis along which the
         spectra should be plotted. Default is energy axis.
 
     Example:
-      An example :arg:`spectra_dict` is as follows:
-        {Te130_0n2b._name: {"spectra": Te130_0n2b, "label": "signal",
-                            "style": {"color": ROOT.kBlue}, "type": "signal"},
-         Te130_2n2b._name: {"spectra": Te130_2n2b, "label": "$2\nu2\beta",
-                            "style": {"color": ROOT.kRed}, "type": "background"},
-         B8_Solar._name: {"spectra": B8_Solar, "label": "solar"
-                          "style": {"color": ROOT.kGreen}, "type": "background"}}
+
+      An example :obj:`spectra_dict` is as follows::
+
+        {Te130_0n2b._name: {'spectra': Te130_0n2b, 'label': 'signal',
+                            'style': {'color': ROOT.kBlue}, 'type': 'signal'},
+         Te130_2n2b._name: {'spectra': Te130_2n2b, 'label': r'$2\\nu2\\beta',
+                            'style': {'color': ROOT.kRed}, 'type': 'background'},
+         B8_Solar._name: {'spectra': B8_Solar, 'label': 'solar',
+                          'style': {'color': ROOT.kGreen}, 'type': 'background'}}
 
     .. note::
+
       Keyword arguments include:
 
-        log_y (*bool*): Use log scale on y-axis.
-        limit (*:class:`spectra.Spectra`*): Include a spectrum showing
-          a current or target limit.          
+        * log_y (*bool*): Use log scale on y-axis.
+        * limit (:class:`spectra.Spectra`): Include a spectrum showing
+          a current or target limit.
+
+    Returns:
+      :class:`ROOT.TCanvas`: Canvas containing spectral plot.
     """
     first_spectra = True
     if dimension == 0:
@@ -120,7 +126,7 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
                 energy_high = spectra._energy_high
                 energy_bins = spectra._energy_bins
                 width = spectra._energy_width
-                shape = (energy_bins)  # Shape for summed arrays               
+                shape = (energy_bins)  # Shape for summed arrays
                 first_spectra = False
             else:
                 if spectra._energy_low != energy_low:
@@ -205,7 +211,7 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     for hist in hists:
         hist.Draw("same")
 
-    # Plot limit 
+    # Plot limit
     if kwargs.get("limit") is not None:
         limit = kwargs.get("limit")
         hist = limit.project(dimension, graphical=False)
@@ -215,18 +221,21 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     return can
 
 
-def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high, 
+def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
                              x_title=None, graphical=False):
-    """ Produces a histogram of chi-squared per bin
+    """ Produces a histogram of chi-squared per bin.
 
     Args:
-      calculator (:class:`echidna.limit.chi_squared.ChiSquared`): 
-        Calculator containing the chi-squared values to plot.
+      calculator (:class:`echidna.limit.chi_squared.ChiSquared`): Calculator
+        containing the chi-squared values to plot.
       x_bins (int): Number of bins.
       x_low (float): Lower edge of first bin to plot.
       x_high (float): Upper edge of last bin to plot.
       x_title (string, optional): X Axis title.
       graphical (bool): Plots hist to screen if true.
+
+    Returns:
+      :class:`ROOT.TH1D`: Histogram of chi-squared per bin.
     """
     if x_title:
         hist_title = "; "+x_title+"; #chi^{2}"
