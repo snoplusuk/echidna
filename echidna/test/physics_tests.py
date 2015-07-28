@@ -39,7 +39,7 @@ def test_function_float(function, expected, *args, **kwargs):
     # Evaluate function
     observed = function(*args, **kwargs)
 
-    result = numpy.isclose(observed, expected, atol=tolerance*expected)
+    result = numpy.allclose(observed, expected, atol=tolerance*expected)
     if result:
         message = function.__name__ + ": OK"
     else:
