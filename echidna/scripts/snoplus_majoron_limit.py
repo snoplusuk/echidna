@@ -7,7 +7,7 @@ and 7), with SNO+.
 Examples:
   To use simply run the script::
 
-    $ python zero_nu_limit.py -s /path/to/signal.hdf5 -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
+    $ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 
 .. note:: Use the -v option to print out progress and timing information
 """
@@ -66,8 +66,8 @@ def main(args):
     signal_configs = []
     prior = 0.0
 
-    Te130_0n2b_n1_counts = numpy.linspace(signals[0]._num_decays, 0.0, 100,
-                                          False)
+    Te130_0n2b_n1_counts = numpy.linspace(signals[0]._num_decays,
+                                          0.0, 100, False)
     # endpoint=False in linspace arrays
     Te130_0n2b_n1_config_np = limit_config.LimitConfig(prior,
                                                        Te130_0n2b_n1_counts)
@@ -76,8 +76,8 @@ def main(args):
     signal_configs_np.append(Te130_0n2b_n1_config_np)
     signal_configs.append(Te130_0n2b_n1_config)
 
-    Te130_0n2b_n2_counts = numpy.linspace(signals[1]._num_decays, 0.0, 100,
-                                          False)
+    Te130_0n2b_n2_counts = numpy.linspace(signals[1]._num_decays,
+                                          0.0, 100, False)
     Te130_0n2b_n2_config_np = limit_config.LimitConfig(prior,
                                                        Te130_0n2b_n2_counts)
     Te130_0n2b_n2_config = limit_config.LimitConfig(prior,
@@ -85,8 +85,8 @@ def main(args):
     signal_configs_np.append(Te130_0n2b_n2_config_np)
     signal_configs.append(Te130_0n2b_n2_config)
 
-    Te130_0n2b_n3_counts = numpy.linspace(signals[2]._num_decays, 0.0, 100,
-                                          False)
+    Te130_0n2b_n3_counts = numpy.linspace(signals[2]._num_decays,
+                                          0.0, 100, False)
     Te130_0n2b_n3_config_np = limit_config.LimitConfig(prior,
                                                        Te130_0n2b_n3_counts)
     Te130_0n2b_n3_config = limit_config.LimitConfig(prior,
@@ -94,8 +94,8 @@ def main(args):
     signal_configs_np.append(Te130_0n2b_n3_config_np)
     signal_configs.append(Te130_0n2b_n3_config)
 
-    Te130_0n2b_n7_counts = numpy.linspace(signals[3]._num_decays, 0.0, 100,
-                                          False)
+    Te130_0n2b_n7_counts = numpy.linspace(signals[3]._num_decays,
+                                          0.0, 100, False)
     Te130_0n2b_n7_config_np = limit_config.LimitConfig(prior,
                                                        Te130_0n2b_n7_counts)
     Te130_0n2b_n7_config = limit_config.LimitConfig(prior,
@@ -171,8 +171,8 @@ def main(args):
                                                        nuclear_params):
         print signal._name
         # Create no penalty limit setter
-        set_limit_np = limit_setting.LimitSetting(signal,
-                                                  floating_backgrounds=floating_backgrounds)
+        set_limit_np = limit_setting.LimitSetting(
+            signal, floating_backgrounds=floating_backgrounds)
         # Configure signal
         set_limit_np.configure_signal(signal_config_np)
         # Configure 2n2b
@@ -184,9 +184,9 @@ def main(args):
         # Set converter
         phase_space, matrix_element = nuclear_param
         roi_efficiency = signal.get_roi(0).get("efficiency")
-        converter = decay.DBIsotope(isotope_name, atm_weight_iso,
-                                    atm_weight_nat, abundance, phase_space,
-                                    matrix_element, roi_efficiency)
+        converter = decay.DBIsotope(
+            isotope_name, atm_weight_iso, atm_weight_nat, abundance,
+            phase_space, matrix_element, roi_efficiency=roi_efficiency)
 
         # Set chi squared calculator
         set_limit_np.set_calculator(calculator)
@@ -196,10 +196,7 @@ def main(args):
             limit = set_limit_np.get_limit()
             print "-----------------------------------"
             print "90% CL at " + str(limit) + " counts"
-            n_atoms = converter.get_n_atoms()  # SNO+ defaults
-            print n_atoms
-            half_life = converter.counts_to_half_life(limit, n_atoms, livetime,
-                                                      roi_cut=True)
+            half_life = converter.counts_to_half_life(limit, livetime=livetime)
             print "90% CL at " + str(half_life) + " yr"
             print "-----------------------------------"
         except IndexError as detail:
@@ -217,8 +214,8 @@ def main(args):
                                                     nuclear_params):
         print signal._name
         # Create limit setter
-        set_limit = limit_setting.LimitSetting(signal,
-                                               floating_backgrounds=floating_backgrounds)
+        set_limit = limit_setting.LimitSetting(
+            signal, floating_backgrounds=floating_backgrounds)
         # Configure signal
         set_limit.configure_signal(signal_config)
         # Configure 2n2b
@@ -231,9 +228,9 @@ def main(args):
         # Set converter
         phase_space, matrix_element = nuclear_param
         roi_efficiency = signal.get_roi(0).get("efficiency")
-        converter = decay.DBIsotope(isotope_name, atm_weight_iso,
-                                    atm_weight_nat, abundance, phase_space,
-                                    matrix_element, roi_efficiency)
+        converter = decay.DBIsotope(
+            isotope_name, atm_weight_iso, atm_weight_nat, abundance,
+            phase_space, matrix_element, roi_efficiency=roi_efficiency)
 
         # Set chi squared calculator
         set_limit.set_calculator(calculator)
@@ -243,9 +240,7 @@ def main(args):
             limit = set_limit.get_limit()
             print "-----------------------------------"
             print "90% CL at " + str(limit) + " counts"
-            n_atoms = converter.get_n_atoms()  # SNO+ defaults
-            half_life = converter.counts_to_half_life(limit, n_atoms, livetime,
-                                                      roi_cut=True)
+            half_life = converter.counts_to_half_life(limit, livetime=livetime)
             print "90% CL at " + str(half_life) + " yr"
             print "-----------------------------------"
         except IndexError as detail:
@@ -274,7 +269,7 @@ if __name__ == "__main__":
                                      "script for SNO+ Majoron limits")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print progress and timing information")
-    parser.add_argument("-s", "--signals", action=ReadableDir, nargs="+",
+    parser.add_argument("-s", "--signals", action=ReadableDir, nargs=4,
                         help="Supply path for signal hdf5 file")
     parser.add_argument("-t", "--two_nu", action=ReadableDir,
                         help="Supply paths for Te130_2n2b hdf5 files")

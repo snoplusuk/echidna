@@ -138,11 +138,11 @@ if __name__ == "__main__":
     phase_space = 3.69e-14
     matrix_element = 4.03
 
-    converter = decay.DBIsotope("Te130", atm_weight_iso, atm_weight_nat,
-                                abundance, phase_space, matrix_element,
-                                Te130_0n2b.get_roi(0).get("efficiency"))
+    converter = decay.DBIsotope(
+        "Te130", atm_weight_iso, atm_weight_nat, abundance, phase_space,
+        matrix_element, roi_efficiency=Te130_0n2b.get_roi(0).get("efficiency"))
 
-    half_life = converter.counts_to_half_life(sig_num_decays, roi_cut=True)
+    half_life = converter.counts_to_half_life(sig_num_decays)
     print "90% CL with no penalty at: " + str(sig_num_decays) + " ROI counts"
     print "90% CL with no penalty at: " + str(half_life) + " y"
 
@@ -208,9 +208,11 @@ if __name__ == "__main__":
     print ("90% CL with Te130_2n2b floating at: " +
            str(sig_num_decays) + " ROI counts")
     print "90% CL with Te130_2n2b floating at: " + str(half_life) + " y"
+
     fig1 = plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config)
     fig1.Draw("AP")
     raw_input("RETURN to continue")
+
     for syst_analyser in set_limit._syst_analysers.values():
         store.dump_ndarray(syst_analyser._name+"_2.hdf5", syst_analyser)
 
@@ -275,9 +277,11 @@ if __name__ == "__main__":
     print ("90% CL, with all backgrounds floating, at: " +
            str(sig_num_decays) + " ROI counts")
     print "90% CL, with all backgrounds floating, at: " + str(half_life) + " y"
+
     fig2 = plot_chi_squared.chi_squared_vs_signal(Te130_0n2b_config)
     fig2.Draw("AP")
     raw_input("RETURN to continue")
+
     for syst_analyser in set_limit._syst_analysers.values():
         store.dump_ndarray(syst_analyser._name+"_3.hdf5", syst_analyser)
     store.dump_ndarray("Te130_0n2b_config.hdf5", Te130_0n2b_config)
