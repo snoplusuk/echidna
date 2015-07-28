@@ -22,6 +22,20 @@ class DBIsotope(object):
         equivalent to 0% to 100%.
       phase_space (float): Phase space of the isotope.
       matrix_element (float): Matrix element of the isotope.
+      loading (float, optional): Loading of isotope with 0 to 1
+        equivalent to 0% to 100%. Default is stored in
+        :class:`echidna.calc.constants`
+      fv_radius (float, optional): Radius of fiducial volume in mm.
+        Default is stored in :class:`echidna.calc.constants`
+      scint_density (float, optional): Density of liquid scintillator in
+        kg/mm^3. Default is stored in :class:`echidna.calc.constants`
+      outer_radius (float, optional): Radius of outer container
+        containing fiducial volume, e.g. AV, in mm. Default is stored in
+        :class:`echidna.calc.constants`
+      roi_efficiency (float, optional): Efficiency factor of ROI.
+        Calculated by dividing the integral of the spectrum, shrunk to
+        the ROI, by the integral of the full spectrum. Default is
+        0.62465 (-0.5 to 1.5 sigma integral of a standard gaussian)
 
     Attributes:
       _name (string): Name of the isotope.
@@ -31,20 +45,19 @@ class DBIsotope(object):
         equivalent to 0% to 100%.
       _phase_space (float): Phase space of the isotope.
       _matrix_element (float): Matrix element of the isotope.
-      _loading (float, optional): Loading of isotope with 0 to 1
-        equivalent to 0% to 100%. Default is stored in
-        :class:`echidna.calc.constants`
-      _fv_radius (float, optional): Radius of fiducial volume in mm.
-        Default is stored in :class:`echidna.calc.constants`
-      _scint_density (float, optional): Density of liquid scintillator in
+      _loading (float): Loading of isotope with 0 to 1 equivalent to 0%
+        to 100%. Default is stored in :class:`echidna.calc.constants`
+      _fv_radius (float): Radius of fiducial volume in mm. Default is
+        stored in :class:`echidna.calc.constants`
+      _scint_density (float): Density of liquid scintillator in
         kg/mm^3. Default is stored in :class:`echidna.calc.constants`
-      _outer_radius (float, optional): Radius of outer container
-        containing fiducial volume, e.g. AV, in mm. Default is stored in
+      _outer_radius (float): Radius of outer container containing
+        fiducial volume, e.g. AV, in mm. Default is stored in
         :class:`echidna.calc.constants`
-      _roi_efficiency (float, optional): Efficiency factor of ROI. Calculated
-        by dividing the integral of the spectrum, shrunk to the ROI, by
-        the integral of the full spectrum. Default is 0.62465 (-0.5 to 1.5
-        sigma of a gaussian)
+      _roi_efficiency (float): Efficiency factor of ROI. Calculated by
+        dividing the integral of the spectrum, shrunk to the ROI, by
+        the integral of the full spectrum. Default is 0.62465 (-0.5 to
+        1.5 sigma integral of a standard gaussian)
 
     Raises:
       ValueError: If abundance is < 0. or > 1.
@@ -121,6 +134,9 @@ class DBIsotope(object):
 
         Raises:
           ValueError: If :obj:`loading` is not between zero and 1.
+          ValueError: If :obj:`outer_radius` is negative or zero.
+          ValueError: If :obj:`fv_radius` is not between zero and
+            :obj:`outer_radius`.
 
         Returns:
           float: Number of atoms.

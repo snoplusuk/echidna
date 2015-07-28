@@ -121,8 +121,8 @@ class ChiSquared(object):
         elif (self._form == "neyman"):
             chi_squared = neyman_chi_squared(observed, expected)
         else:  # (self._form == "poisson_likelihood")
-            ll, chi_squared_per_bin = log_likelihood(observed, expected)
-            self._chi_squared_per_bin = 2.0 * chi_squared_per_bin
+            ll, ll_per_bin = log_likelihood(observed, expected, per_bin=True)
+            self._chi_squared_per_bin = 2.0 * ll_per_bin
             chi_squared = 2.0 * ll
 
         # Add penalty term(s)
@@ -205,7 +205,7 @@ def neyman_chi_squared(observed, expected):
     return total
 
 
-def log_likelihood(observed, expected):
+def log_likelihood(observed, expected, per_bin=False):
     """ Calculates the (Baker-Cousins) log likelihood.
 
     .. note::
@@ -222,6 +222,9 @@ def log_likelihood(observed, expected):
         events
       expected (:class:`numpy.array`, *float*): Number of expected
         events
+      per_bin (bool, optional): If True returns
+        (:obj:`total`, :obj:`ll_per_bin`), otherwise just returns
+        :obj:`total`.
 
     Raises:
       ValueError: If arrays are different lengths.
@@ -230,7 +233,7 @@ def log_likelihood(observed, expected):
       float: Calculated Neyman's chi squared
     """
     # Create chi-squared per bin array
-    chi_squared_per_bin = numpy.zeros((0))
+    ll_per_bin = numpy.zeros((0))
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
     # Chosen due to backgrounds with low rates in ROI
@@ -244,5 +247,8 @@ def log_likelihood(observed, expected):
         else:
             ll = expected[i]-observed[i]+observed[i]*numpy.log(observed[i]/expected[i])
         total += ll
-        chi_squared_per_bin = numpy.append(chi_squared_per_bin, [ll], axis=0)
-    return total, chi_squared_per_bin
+        ll_per_bin = numpy.append(ll_per_bin, [ll], axis=0)
+    if per_bin:
+        return total, ll_per_bin
+    else:
+        return total
