@@ -69,14 +69,19 @@ class DBIsotope(object):
         else:
             # Default SNO+ Loading
             self._loading = const._loading
+        if outer_radius:
+            if outer_radius <= 0.:
+                raise ValueError("Outer radius must be positive and non-zero")
+            self._outer_radius = outer_radius
+        else:
+            self._outer_radius = const._av_radius
         if fv_radius:
+            if fv_radius <= 0. or fv_radius > self._outer_radius:
+                raise ValueError("FV radius must be between zero and outer "
+                                 "radius")
             self._fv_radius = fv_radius
         else:
             self._fv_radius = const._fv_radius
-        if outer_radius:
-            self._av_radius = outer_radius
-        else:
-            self._outer_radius = const._av_radius
         if scint_density:
             self._scint_density = scint_density
         else:
@@ -85,7 +90,8 @@ class DBIsotope(object):
         # -1/2 sigma to +3/2 sigma ROI
         self._roi_efficiency = roi_efficiency
         if roi_efficiency != 0.62465:
-            print "Warning: using calculated ROI efficiency %.4f not default (0.62465)" % roi_efficiency
+            print ("Warning: using calculated ROI efficiency %.4f "
+                   "not default (0.62465)" % roi_efficiency)
 
     def get_n_atoms(self, fv_radius=None, loading=None, scint_density=None,
                     target_mass=None, scint_mass=None, outer_radius=None):
@@ -121,16 +127,20 @@ class DBIsotope(object):
 
         """
         # Set defaults
+        if outer_radius is None:  # use class variable
+            outer_radius = self._outer_radius
+        if outer_radius <= 0.:
+            raise ValueError("Outer radius must be positive and non-zero")
         if fv_radius is None:  # use class variable
             fv_radius = self._fv_radius
+        if fv_radius <= 0. or fv_radius > outer_radius:
+            raise ValueError("FV radius must be between zero and outer radius")
         if loading is None:  # use class variable
             loading = self._loading
         if loading < 0. or loading > 1.:
             raise ValueError("Loading ranges from 0 to 1")
         if scint_density is None:  # use class variable
             scint_density = self._scint_density
-        if outer_radius is None:  # use class variable
-            outer_radius = self._outer_radius
         if target_mass is None:  # Calculate target mass
             if scint_mass is None:  # Calculate scint_mass
                 # Mass of scintillator
@@ -214,20 +224,16 @@ class DBIsotope(object):
         return numpy.sqrt(const._electron_mass**2 /
                           (self._phase_space*self._matrix_element**2*half_life))
 
-    def activity_to_counts(self, activity, livetime=5., **kwargs):
+    def activity_to_counts(self, activity, roi_cut=True, livetime=5.):
         """ Converts activity to number of counts, assuming constant activity.
 
         Args:
           activity (float): Initial activity of the isotope in
             :math:`years^{-1}`.
-          livetime (float): Amount of years of data taking. Default is 5
-            years.
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): if true counts in roi is used
+          roi_cut (bool, optional): If True (default) calculates counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If :obj:`livetime` is not positive and non-zero.
@@ -238,24 +244,20 @@ class DBIsotope(object):
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        if kwargs.get("roi_cut"):
+        if roi_cut:
             return activity*livetime*self._roi_efficiency
         else:
             return activity*livetime
 
-    def counts_to_activity(self, counts, livetime=5., **kwargs):
+    def counts_to_activity(self, counts, roi_cut=True, livetime=5.):
         """ Converts counts to activity, assuming constant activity.
 
         Args:
           counts (float): Number of counts.
-          livetime (float): Amount of years of data taking. Default is
-            5 years
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): If True counts in roi is used.
+          roi_cut (bool, optional): If True (default) assumes counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If :obj:`livetime` is not positive and non-zero.
@@ -266,12 +268,13 @@ class DBIsotope(object):
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        if kwargs.get("roi_cut"):
+        if roi_cut:
             return counts/(livetime*self._roi_efficiency)
         else:
             return counts/livetime
 
-    def counts_to_eff_mass(self, counts, n_atoms=None, livetime=5., **kwargs):
+    def counts_to_eff_mass(self, counts, n_atoms=None,
+                           roi_cut=True, livetime=5.):
         """ Converts from signal counts to effective majorana mass.
 
         Args:
@@ -279,14 +282,10 @@ class DBIsotope(object):
             specified.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          livetime (float): Number of years of data taking. Default is
-            5 years. 
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): if true counts in roi is used
+          roi_cut (bool, optional): If True (default) assumes counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If :obj:`livetime` is not positive and non-zero.
@@ -299,25 +298,22 @@ class DBIsotope(object):
             n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        half_life = self.counts_to_half_life(counts, n_atoms, livetime,
-                                             **kwargs)
+        half_life = self.counts_to_half_life(counts, n_atoms,
+                                             roi_cut, livetime)
         return self.half_life_to_eff_mass(half_life)
 
-    def eff_mass_to_counts(self, eff_mass, n_atoms=None, livetime=5., **kwargs):
+    def eff_mass_to_counts(self, eff_mass, n_atoms=None,
+                           roi_cut=True, livetime=5.):
         """ Converts from effective majorana mass to signal counts.
 
         Args:
           eff_mass (float): Effective majorana mass in eV.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          livetime (float): Number of years of data taking. Default is
-            5 years.
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): if true counts in roi is used
+          roi_cut (bool, optional): If True (default) calculates counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If effective mass is not positive and non-zero.
@@ -335,9 +331,10 @@ class DBIsotope(object):
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.eff_mass_to_half_life(eff_mass)
-        return self.half_life_to_counts(half_life, n_atoms, livetime, **kwargs)
+        return self.half_life_to_counts(half_life, n_atoms, roi_cut, livetime)
 
-    def half_life_to_counts(self, half_life, n_atoms=None, livetime=5., **kwargs):
+    def half_life_to_counts(self, half_life, n_atoms=None,
+                            roi_cut=True, livetime=5.):
         """ Converts from isotope's half-life to signal counts.
 
         Args:
@@ -345,15 +342,10 @@ class DBIsotope(object):
             years.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          livetime (float): Number of years of data taking. Default is
-            5 years.
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): If True, the counts returned will be
-              just signal counts in the ROI.
+          roi_cut (bool, optional): If True (default) calculates counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If :obj:`livetime` is not positive and non-zero.
@@ -367,9 +359,10 @@ class DBIsotope(object):
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         activity = self.half_life_to_activity(half_life, n_atoms)
-        return self.activity_to_counts(activity, livetime, **kwargs)
+        return self.activity_to_counts(activity, roi_cut, livetime)
 
-    def counts_to_half_life(self, counts, n_atoms=None, livetime=5., **kwargs):
+    def counts_to_half_life(self, counts, n_atoms=None,
+                            roi_cut=True, livetime=5.):
         """ Converts from signal count to isotope's half-life.
 
         Args:
@@ -377,16 +370,10 @@ class DBIsotope(object):
             specified.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          livetime (float): Number of years of data taking. Default is
-            5 years.
-
-
-        .. note::
-
-          keyword arguments include:
-
-            * roi_cut (*bool*): If True, the counts supplied is assumed
-              to be just counts in the signal ROI.
+          roi_cut (bool, optional): If True (default) assumes counts
+            in the ROI, not counts in the full spectrum.
+          livetime (float, optional): Amount of years of data taking.
+            Default is 5 years.
 
         Raises:
           ValueError: If :obj:`livetime` is not positive and non-zero.
@@ -399,7 +386,7 @@ class DBIsotope(object):
             n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        activity = self.counts_to_activity(counts, livetime, **kwargs)
+        activity = self.counts_to_activity(counts, roi_cut, livetime)
         return self.activity_to_half_life(activity, n_atoms)
 
 
@@ -457,15 +444,15 @@ def test(args):
     Xe136_abundance = 0.9093  # PRC 86, 021601 (2012)
     phase_space = 1433.0e-17  # PRC 85, 034316 (2012)
     matrix_element = 3.33  # IBM-2 PRC 87, 014315 (2013)
-
-    xe136_converter = DBIsotope("Xe136", Xe136_atm_weight, XeEn_atm_weight,
-                                Xe136_abundance, phase_space, matrix_element)
-
-    # Check get_n_atoms with 2.44% loading in KLZ
     fv_radius = 1200.  # mm, PRC 86, 021601 (2012)
     loading = 0.0244  # 2.44%, PRC 86, 021601 (2012)
     scint_density = 756.28e-9  # kg/mm^3 calculated A Back 2015-07-22
     outer_radius = 1540.  # mm, PRC 86, 021601 (2012)
+
+    xe136_converter = DBIsotope("Xe136", Xe136_atm_weight, XeEn_atm_weight,
+                                Xe136_abundance, phase_space, matrix_element,
+                                loading, fv_radius, outer_radius,
+                                scint_density)
 
     expected = 5.3985e+26  # Calculated - A Back 2015-06-30
     result, message = physics_tests.test_function_float(
