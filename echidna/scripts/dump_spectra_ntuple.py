@@ -38,14 +38,17 @@ def read_and_dump_ntuple(fname, half_life, spectrum_name, save_path):
     """
     mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(fname, half_life, spectrumname = "%s_mc" % (spectrum_name) )
     reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname, half_life, spectrumname = "%s_reco" % (spectrum_name) )
+    truth_spec = fill_spectrum.fill_reco_ntuple_spectrum(fname, half_life, spectrumname = "%s_truth" % (spectrum_name) )
 
     # Plot
     plot_spectrum(mc_spec)
     plot_spectrum(reco_spec)
+    plot_spectrum(truth_spec)
 
     # Dump to file
     store.dump("%s/%s_mc.hdf5" % (save_path, spectrum_name), mc_spec)
     store.dump("%s/%s_reco.hdf5" % (save_path, spectrum_name), reco_spec)
+    store.dump("%s/%s_truth.hdf5" % (save_path, spectrum_name), truth_spec)
 
 def plot_spectrum(spec):
     """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time 

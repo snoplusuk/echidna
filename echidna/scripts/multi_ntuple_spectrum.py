@@ -46,17 +46,21 @@ def create_combined_ntuple_spectrum(data_path, half_life, bkgnd_name, save_path)
         if idx == 0:
             mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, spectrumname = "%s_mc" % bkgnd_name)
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrumname = "%s_reco" % bkgnd_name)
+            truth_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrumname = "%s_truth" % bkgnd_name)
         else: 
             mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(file_path, half_life, spectrum = mc_spec)
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrum = reco_spec)
+            truth_spec = fill_spectrum.fill_reco_ntuple_spectrum(file_path, half_life, spectrum = truth_spec)
 
     # Plot
     plot_spectrum(mc_spec)
     plot_spectrum(reco_spec)
+    plot_spectrum(truth_spec)
 
     # Dump to file
     store.dump("%s%s_mc.hdf5" % (save_path, bkgnd_name), mc_spec)
     store.dump("%s%s_reco.hdf5" % (save_path, bkgnd_name), reco_spec)
+    store.dump("%s%s_truth.hdf5" % (save_path, bkgnd_name), truth_spec)
 
 def plot_spectrum(spec):
     """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time
