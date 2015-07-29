@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     # Define name for spectrum
     if args.bkgnd_name:
-        bkgnd_name = options.bkgnd_name
+        bkgnd_name = args.bkgnd_name
     else:
         bkgnd_name = data_path[data_path.rfind('/', 0, -2)+1:-1]
 
