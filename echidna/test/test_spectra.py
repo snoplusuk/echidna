@@ -177,7 +177,7 @@ class TestSpectra(unittest.TestCase):
         test_spectra._radial_low = 100.
         test_spectra._radial_high = 10100.
         test_spectra._time_low = 1.
-        test_specta._time_high = 11.
+        test_spectra._time_high = 11.
         test_spectra._raw_events = 9.
         test_spectra.calc_widths()
         for decay in range(test_decays):
