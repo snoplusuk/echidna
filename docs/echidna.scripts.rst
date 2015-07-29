@@ -52,10 +52,34 @@ echidna.scripts.rebin module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.penalty_term module
+-----------------------------------
+
+.. automodule:: echidna.scripts.penalty_term
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.scripts.snoplus_majoron_limit module
+--------------------------------------------
+
+.. automodule:: echidna.scripts.snoplus_majoron_limit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.scripts.zero_nu_limit module
 ------------------------------------
 
 .. automodule:: echidna.scripts.zero_nu_limit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.scripts.zero_nu_limit_iop module
+----------------------------------------
+
+.. automodule:: echidna.scripts.zero_nu_limit_iop
     :members:
     :undoc-members:
     :show-inheritance:
