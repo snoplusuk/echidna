@@ -356,3 +356,25 @@ class Spectra(object):
         self._energy_width = (self._energy_high - self._energy_low) / self._energy_bins
         self._radial_width = (self._radial_high - self._radial_low) / self._radial_bins
         self._time_width = (self._time_high - self._time_low) / self._time_bins
+
+    def copy(self, name=None):
+        """ Copies the current spectra and returns a new identical one.
+
+        Args:
+          name (string, optional): Name of the new copied spectrum.
+            Default is the name of the current spectrum.
+
+        Returns:
+          A :class:`echidna.core.spectra` object which is identical to
+            the current spectra apart from possibly its name.
+        """
+        if not name:
+            name = self._name
+        new_spectrum = Spectra(name, 0.)
+        new_spectrum.shrink(self._energy_low, self._energy_high,
+                            self._radial_low, self._radial_high,
+                            self._time_low, self._time_high)
+        new_spectrum.rebin(numpy.shape(self._data))
+        new_spectrum.calc_widths()
+        new_spectrum.add(self)
+        return new_spectrum
