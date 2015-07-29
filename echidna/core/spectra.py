@@ -371,10 +371,19 @@ class Spectra(object):
         if not name:
             name = self._name
         new_spectrum = Spectra(name, 0.)
-        new_spectrum.shrink(self._energy_low, self._energy_high,
-                            self._radial_low, self._radial_high,
-                            self._time_low, self._time_high)
-        new_spectrum.rebin(numpy.shape(self._data))
+        new_spectrum._energy_low = self._energy_low
+        new_spectrum._energy_high = self._energy_high
+        new_spectrum._energy_bins = self._energy_bins
+        new_spectrum._radial_low = self._radial_low
+        new_spectrum._radial_high = self._radial_high
+        new_spectrum._radial_bins = self._radial_bins
+        new_spectrum._time_low = self._time_low
+        new_spectrum._time_high = self._time_high
+        new_spectrum._time_bins = self._time_bins
         new_spectrum.calc_widths()
+        new_spectrum._data = numpy.zeros(shape=numpy.shape(self._data),
+                                         dtype=float)
         new_spectrum.add(self)
+        new_spectrum._style = self._style
+        new_spectrum._rois = self._rois
         return new_spectrum
