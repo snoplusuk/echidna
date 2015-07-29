@@ -33,6 +33,10 @@ class Spectra(object):
       _raw_events (int): The number of raw events used to generate the
         spectra. Increments by one with each fill independent of
         weight.
+      _style (string): Pyplot-style plotting style e.g. "b-" or
+        {"color": "blue"}.
+      _rois (dict): Dictionary containing the details of any ROI, along
+        any axis, which has been defined.
     """
     def __init__(self, name, num_decays):
         """ Initialise the spectra data container.
@@ -53,6 +57,8 @@ class Spectra(object):
                                         self._radial_bins,
                                         self._time_bins),
                                  dtype=float)
+        self._style = {"color": "blue"}  # default style for plotting
+        self._rois = {}
         self._name = name
 
     def fill(self, energy, radius, time, weight=1.0):
@@ -78,6 +84,59 @@ class Spectra(object):
         radial_bin = (radius - self._radial_low) / (self._radial_high - self._radial_low) * self._radial_bins
         time_bin = (time - self._time_low) / (self._time_high - self._time_low) * self._time_bins
         self._data[energy_bin, radial_bin, time_bin] += weight
+
+    def shrink_to_roi(self, lower_limit, upper_limit, axis):
+        """ Shrink spectrum to a defined Region of Interest (ROI)
+
+        Shrinks spectrum to given ROI and saves ROI parameters.
+
+        Args:
+          lower_limit (float): Lower bound of ROI, along given axis.
+          upper_limit (float): Upper bound of ROI, along given axis.
+          axis (int): Axis along which to define ROI.
+        """
+        integral_full = self.sum()  # Save integral of full spectrum
+
+        # Shrink to ROI
+        if axis == 0:
+            self.shrink(energy_low=lower_limit, energy_high=upper_limit)
+        elif axis == 1:
+            self.shrink(radial_low=lower_limit, radial_high=upper_limit)
+        elif axis == 2:
+            self.shrink(time_low=lower_limit, time_high=upper_limit)
+
+        # Calculate efficiency
+        integral_roi = self.sum()  # Integral of spectrum over ROI
+        efficiency = float(integral_roi) / float(integral_full)
+        self._rois[axis] = {"low": lower_limit, "high": upper_limit,
+                            "efficiency": efficiency}
+
+    def get_roi(self, axis):
+        """ Access information about a predefined ROI on a given axis
+
+        Returns:
+          dict: Dictionary containing parameters defining the ROI, on
+            the given axis.
+        """
+        return self._rois[axis]
+
+    def set_style(self, style):
+        """ Sets plotting style.
+
+        Styles should be valid pyplot style strings e.g. "b-", for a
+        blue line, or dictionaries of strings e.g. {"color": "red"}.
+
+        Args:
+          style (string): Pyplot-style plotting style.
+        """
+        self._style = style
+
+    def get_style(self):
+        """
+        Returns:
+          string/dict: :attr:`_style` - pyplot-style plotting style.
+        """
+        return self._style
 
     def project(self, axis):
         """ Project the histogram along an `axis`.
@@ -194,35 +253,68 @@ class Spectra(object):
                                 radial_low_bin:radial_high_bin,
                                 time_low_bin:time_high_bin]
 
+    def cut(self, energy_low=None, energy_high=None, radial_low=None,
+            radial_high=None, time_low=None, time_high=None):
+        """ Similar to :meth:`shrink`, but updates scaling information.
+
+        If a spectrum is cut using :meth:`shrink`, subsequent calls to
+        :meth:`scale` the spectrum must still scale the *full* spectrum
+        i.e. before any cuts. The user supplies the number of decays
+        the full spectrum should now represent.
+
+        However, sometimes it is more useful to be able specify the
+        number of events the revised spectrum should represent. This
+        method updates the scaling information, so that it becomes the
+        new *full* spectrum.
+
+        Args:
+          energy_low (float, optional): New low bound of the energy.
+          energy_low (float, optional): New high bound of the energy.
+          radial_low (float, optional): New low bound of the radius.
+          radial_low (float, optional): New high bound of the radius.
+          time_low (float, optional): New low bound of the time.
+          time_low (float, optional): New high bound of the time.
+        """
+        initial_count = self.sum()  # Store initial count
+        self.shrink(energy_low, energy_high, radial_low, radial_high,
+                    time_low, time_high)
+        new_count = self.sum()
+        reduction_factor = float(new_count) / float(initial_count)
+        # This reduction factor tells us how much the number of detected events
+        # has been reduced by shrinking the spectrum. We want the number of
+        # decays that the spectrum should now represent to be reduced by the
+        # same factor
+        self._num_decays *= reduction_factor
+
     def add(self, spectrum):
         """ Adds a spectrum to current spectra object.
 
         Args:
           spectrum (:class:`core.spectra`): Spectrum to add.
         """
-        if self._energy_low != spectrum._energy_low:
+        if not numpy.allclose(self._energy_low, spectrum._energy_low):
             raise ValueError("Lower energy bounds in spectra are not equal.")
-        if self._energy_high != spectrum._energy_high:
+        if not numpy.allclose(self._energy_high, spectrum._energy_high):
             raise ValueError("Upper energy bounds in spectra are not equal.")
-        if self._energy_bins != spectrum._energy_bins:
+        if not numpy.allclose(self._energy_bins, spectrum._energy_bins):
             raise ValueError("Number of energy bins in spectra are not equal.")
-        if self._energy_width != spectrum._energy_width:
+        if not numpy.allclose(self._energy_width, spectrum._energy_width):
             raise ValueError("Width of energy bins in spectra are not equal.")
-        if self._radial_low != spectrum._radial_low:
+        if not numpy.allclose(self._radial_low, spectrum._radial_low):
             raise ValueError("Lower radial bounds in spectra are not equal.")
-        if self._radial_high != spectrum._radial_high:
+        if not numpy.allclose(self._radial_high, spectrum._radial_high):
             raise ValueError("Upper radial bounds in spectra are not equal.")
-        if self._radial_bins != spectrum._radial_bins:
+        if not numpy.allclose(self._radial_bins, spectrum._radial_bins):
             raise ValueError("Number of radial bins in spectra are not equal.")
-        if self._radial_width != spectrum._radial_width:
+        if not numpy.allclose(self._radial_width, spectrum._radial_width):
             raise ValueError("Width of radial bins in spectra are not equal.")
-        if self._time_low != spectrum._time_low:
+        if not numpy.allclose(self._time_low, spectrum._time_low):
             raise ValueError("Lower time bounds in spectra are not equal.")
-        if self._time_high != spectrum._time_high:
+        if not numpy.allclose(self._time_high, spectrum._time_high):
             raise ValueError("Upper time bounds in spectra are not equal.")
-        if self._time_bins != spectrum._time_bins:
+        if not numpy.allclose(self._time_bins, spectrum._time_bins):
             raise ValueError("Number of time bins in spectra are not equal.")
-        if self._time_width != spectrum._time_width:
+        if not numpy.allclose(self._time_width, spectrum._time_width):
             raise ValueError("Width of time bins in spectra are not equal.")
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events

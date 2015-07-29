@@ -51,9 +51,9 @@ def read_and_dump_root(fname, half_life, spectrum_name, save_path):
     store.dump("%s/%s_truth.hdf5" % (save_path, spectrum_name), truth_spec)
 
 def plot_spectrum(spec):
-    """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time 
+    """ Plot spectra for each of the three spectrum dimensions: Energy, radius and time
 
-    Args: 
+    Args:
       Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to be plotted
 
     Returns:
@@ -66,7 +66,7 @@ def plot_spectrum(spec):
 def read_tab_delim_file(fname):
     """ Read file paths and respective half lives from tab delimited text file.
 
-    Args: 
+    Args:
       fname (str): Name of file to be read.
 
     Returns:
@@ -79,7 +79,7 @@ def read_tab_delim_file(fname):
         reader=csv.reader(f,delimiter='\t')
         for path, half  in reader:
             file_paths.append(path)
-            half_lives.append(half) 
+            half_lives.append(half)
     return file_paths, half_lives
 
 if __name__ == "__main__":
@@ -101,13 +101,13 @@ if __name__ == "__main__":
 
     # If args passed directly, deal with them
     fname = args.fname
-    spectrum_name = fname[fname.rfind('/', 0, -1)+1:]  
+    spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
     read_and_dump_root(fname, args.half_life, spectrum_name, args.save_path)
 
-    # If passed text file: read, format and dump 
+    # If passed text file: read, format and dump
     if args.read_text_file:
         path_list, half_life_list = read_tab_delim_file(args.read_text_file)
         for idx, fname in enumerate(path_list):
             spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
             read_and_dump_root(path, half_life_list[idx], spectrum_name, args.save_path)
-            
+

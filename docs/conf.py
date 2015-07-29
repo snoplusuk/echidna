@@ -35,8 +35,16 @@ extensions = [
     'sphinx.ext.mathjax',
 ]
 
+# Add any autodoc variables here
+
+# Add any viewcode variables here
+
+# Add any Napoleon variables here 
 napoleon_include_private_with_doc = True
 napoleon_use_ivar = True
+
+# Add any MathJax variables here
+mathjax_path="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -148,7 +156,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
