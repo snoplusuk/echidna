@@ -365,7 +365,7 @@ class Spectra(object):
             Default is the name of the current spectrum.
 
         Returns:
-          A :class:`echidna.core.spectra` object which is identical to
+          A :class:`echidna.core.spectra.Spectra` object which is identical to
             the current spectra apart from possibly its name.
         """
         if not name:
