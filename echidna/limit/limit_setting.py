@@ -6,6 +6,7 @@ import echidna.utilities as utilities
 import echidna.output.plot_root as plot
 import echidna.core.spectra as spectra
 
+
 class SystAnalyser(object):
     """ Class to analyse the effect of systematics
 
@@ -606,9 +607,9 @@ class LimitSetting(object):
                 # Add penalty terms manually
                 if config._sigma is not None:
                     penalty_term = {
-                            "parameter_value": count - config._prior_count,
-                            "sigma": config._sigma
-                            }
+                        "parameter_value": count - config._prior_count,
+                        "sigma": config._sigma
+                        }
                     self._calculator.set_penalty_term(name, penalty_term)
                 config.add_chi_squared(
                     self._get_chi_squared(self._floating_backgrounds,
@@ -682,6 +683,7 @@ class LimitSetting(object):
             syst_analyser._layer += 1
         current -= 1
         return minimum
+
 
 def make_fixed_background(spectra_dict, **kwargs):
     ''' Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the

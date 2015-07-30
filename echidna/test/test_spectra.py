@@ -208,4 +208,3 @@ class TestSpectra(unittest.TestCase):
         new_spectra2 = test_spectra.copy(name="Copy")
         self.assertTrue(new_spectra2._name != test_spectra._name)
         self.assertTrue(new_spectra2._name == "Copy")
-
