@@ -189,7 +189,7 @@ class TestSpectra(unittest.TestCase):
                                   test_spectra._time_high)
             test_spectra.fill(energy, radius, time)
         new_spectra = test_spectra.copy()
-        self.assertTrue(new_spectra._data == test_spectra._data)
+        self.assertTrue(new_spectra._data.all() == test_spectra._data.all())
         self.assertTrue(new_spectra._name == test_spectra._name)
         self.assertTrue(new_spectra._energy_low == test_spectra._energy_low)
         self.assertTrue(new_spectra._energy_high == test_spectra._energy_high)
@@ -206,6 +206,6 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(new_spectra._num_decays == test_spectra._num_decays)
         self.assertTrue(new_spectra._raw_events == test_spectra._raw_events)
         new_spectra2 = test_spectra.copy(name="Copy")
-        self.assertTrue(new_spectra._name != test_spectra._name)
-        self.assertTrue(new_spectra._name == "Copy")
+        self.assertTrue(new_spectra2._name != test_spectra._name)
+        self.assertTrue(new_spectra2._name == "Copy")
 
