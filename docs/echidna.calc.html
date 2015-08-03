@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="up" title="echidna package" href="echidna.html" />
     <link rel="next" title="echidna.core package" href="echidna.core.html" />
@@ -65,9 +65,12 @@
 </div>
 <div class="section" id="module-echidna.calc.decay">
 <span id="echidna-calc-decay-module"></span><h2>echidna.calc.decay module<a class="headerlink" href="#module-echidna.calc.decay" title="Permalink to this headline">¶</a></h2>
+<p>Double beta decay utility converter</p>
+<p>Provides a useful tool for converting between different double beta
+dacay parameters.</p>
 <dl class="class">
 <dt id="echidna.calc.decay.DBIsotope">
-<em class="property">class </em><code class="descclassname">echidna.calc.decay.</code><code class="descname">DBIsotope</code><span class="sig-paren">(</span><em>name</em>, <em>loading</em>, <em>atm_weight_iso</em>, <em>atm_weight_nat</em>, <em>abundance</em>, <em>phase_space</em>, <em>matrix_element</em>, <em>fv_radius=None</em>, <em>scint_density=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.calc.decay.</code><code class="descname">DBIsotope</code><span class="sig-paren">(</span><em>name</em>, <em>atm_weight_iso</em>, <em>atm_weight_nat</em>, <em>abundance</em>, <em>phase_space</em>, <em>matrix_element</em>, <em>loading=None</em>, <em>fv_radius=None</em>, <em>outer_radius=None</em>, <em>scint_density=None</em>, <em>roi_efficiency=0.62465</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="docutils">
 <dt>Class which calculates expected counts for a DBD isotope</dt>
@@ -78,26 +81,62 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<em>string</em>) &#8211; Name of the isotope</li>
-<li><strong>loading</strong> (<em>float</em>) &#8211; Loading of isotope with 0 to 1 equivalent
-to 0% to 100%.</li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of the isotope.</li>
 <li><strong>atm_weight_iso</strong> (<em>float</em>) &#8211; Atomic weight of isotope in g/mol.</li>
 <li><strong>atm_weight_nat</strong> (<em>float</em>) &#8211; Atomic weight of natural element in g/mol.</li>
 <li><strong>abundance</strong> (<em>float</em>) &#8211; Natural abundance of isotope with 0 to 1
 equivalent to 0% to 100%.</li>
 <li><strong>phase_space</strong> (<em>float</em>) &#8211; Phase space of the isotope.</li>
 <li><strong>matrix_element</strong> (<em>float</em>) &#8211; Matrix element of the isotope.</li>
-<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Fiducial volume radius. Defaults to SNO+ values.</li>
-<li><strong>scint_density</strong> (<em>float</em>) &#8211; Density of liquid scintillator. Defaults to
-SNO+ values.</li>
+<li><strong>loading</strong> (<em>float, optional</em>) &#8211; Loading of isotope with 0 to 1
+equivalent to 0% to 100%. Default is stored in
+<a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Radius of fiducial volume in mm.
+Default is stored in <a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>scint_density</strong> (<em>float, optional</em>) &#8211; Density of liquid scintillator in
+kg/mm^3. Default is stored in <a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; Radius of outer container
+containing fiducial volume, e.g. AV, in mm. Default is stored in
+<a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>roi_efficiency</strong> (<em>float, optional</em>) &#8211; Efficiency factor of ROI.
+Calculated by dividing the integral of the spectrum, shrunk to
+the ROI, by the integral of the full spectrum. Default is
+0.62465 (-0.5 to 1.5 sigma integral of a standard gaussian)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of the isotope.</li>
+<li><strong>_atm_weight_iso</strong> (<em>float</em>) &#8211; Atomic weight of isotope in g/mol.</li>
+<li><strong>_atm_weight_nat</strong> (<em>float</em>) &#8211; Atomic weight of natural element in g/mol.</li>
+<li><strong>_abundance</strong> (<em>float</em>) &#8211; Natural abundance of isotope with 0 to 1
+equivalent to 0% to 100%.</li>
+<li><strong>_phase_space</strong> (<em>float</em>) &#8211; Phase space of the isotope.</li>
+<li><strong>_matrix_element</strong> (<em>float</em>) &#8211; Matrix element of the isotope.</li>
+<li><strong>_loading</strong> (<em>float</em>) &#8211; Loading of isotope with 0 to 1 equivalent to 0%
+to 100%. Default is stored in <a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>_fv_radius</strong> (<em>float</em>) &#8211; Radius of fiducial volume in mm. Default is
+stored in <a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>_scint_density</strong> (<em>float</em>) &#8211; Density of liquid scintillator in
+kg/mm^3. Default is stored in <a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>_outer_radius</strong> (<em>float</em>) &#8211; Radius of outer container containing
+fiducial volume, e.g. AV, in mm. Default is stored in
+<a class="reference internal" href="#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a></li>
+<li><strong>_roi_efficiency</strong> (<em>float</em>) &#8211; Efficiency factor of ROI. Calculated by
+dividing the integral of the spectrum, shrunk to the ROI, by
+the integral of the full spectrum. Default is 0.62465 (-0.5 to
+1.5 sigma integral of a standard gaussian)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
 If abundance is &lt; 0. or &gt; 1.</li>
 <li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If loading is &lt; 0. or &gt; 1.</li>
+If <code class="xref py py-obj docutils literal"><span class="pre">outer_radius</span></code> is negative or zero.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">fv_radius</span></code> is not between zero and
+<code class="xref py py-obj docutils literal"><span class="pre">outer_radius</span></code>.</li>
 </ul>
 </td>
 </tr>
@@ -105,8 +144,8 @@ If loading is &lt; 0. or &gt; 1.</li>
 </table>
 <dl class="method">
 <dt id="echidna.calc.decay.DBIsotope.activity_to_counts">
-<code class="descname">activity_to_counts</code><span class="sig-paren">(</span><em>activity</em>, <em>livetime</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.activity_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.activity_to_counts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts activity to number of counts assuming constant activity.</p>
+<code class="descname">activity_to_counts</code><span class="sig-paren">(</span><em>activity</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.activity_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.activity_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts activity to number of counts, assuming constant activity.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -114,11 +153,43 @@ If loading is &lt; 0. or &gt; 1.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>activity</strong> (<em>float</em>) &#8211; Initial activity of the isotope in
 <span class="math">\(years^{-1}\)</span>.</li>
-<li><strong>livetime</strong> (<em>float</em>) &#8211; Amount of years of data taking.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) calculates counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of counts.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">livetime</span></code> is not positive and non-zero.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of counts.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.activity_to_half_life">
+<code class="descname">activity_to_half_life</code><span class="sig-paren">(</span><em>activity</em>, <em>n_atoms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.activity_to_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.activity_to_half_life" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the half-life of an isotope with a given
+activity and number of atoms.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>activity</strong> (<em>float</em>) &#8211; Activity of the isotope in</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of atoms of an isotope.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Half-life in years.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
@@ -129,52 +200,222 @@ If loading is &lt; 0. or &gt; 1.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.counts_to_activity">
+<code class="descname">counts_to_activity</code><span class="sig-paren">(</span><em>counts</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.counts_to_activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.counts_to_activity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts counts to activity, assuming constant activity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>counts</strong> (<em>float</em>) &#8211; Number of counts.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) assumes counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">livetime</span></code> is not positive and non-zero.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Activity of the isotope in <span class="math">\(years^{-1}\)</span>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.counts_to_eff_mass">
+<code class="descname">counts_to_eff_mass</code><span class="sig-paren">(</span><em>counts</em>, <em>n_atoms=None</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.counts_to_eff_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.counts_to_eff_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from signal counts to effective majorana mass.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>counts</strong> (<em>float</em>) &#8211; Number of signal counts within the livetime
+specified.</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of isotope atoms/nuclei that could
+potentially decay to produce signal.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) assumes counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">livetime</span></code> is not positive and non-zero.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Effective majorana mass in eV.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.counts_to_half_life">
+<code class="descname">counts_to_half_life</code><span class="sig-paren">(</span><em>counts</em>, <em>n_atoms=None</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.counts_to_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.counts_to_half_life" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from signal count to isotope&#8217;s half-life.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>count</strong> (<em>float</em>) &#8211; Number of signal counts within the livetime
+specified.</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of isotope atoms/nuclei that could
+potentially decay to produce signal.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) assumes counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">livetime</span></code> is not positive and non-zero.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Isotope&#8217;s <span class="math">\(0\nu2\beta\)</span> half-life in years.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="echidna.calc.decay.DBIsotope.eff_mass_to_counts">
-<code class="descname">eff_mass_to_counts</code><span class="sig-paren">(</span><em>eff_mass</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.eff_mass_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.eff_mass_to_counts" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Calculates the 0n2b counts of an isotope given a</dt>
-<dd>phase space, matrix element and an effective Majorana
-mass.</dd>
-</dl>
+<code class="descname">eff_mass_to_counts</code><span class="sig-paren">(</span><em>eff_mass</em>, <em>n_atoms=None</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.eff_mass_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.eff_mass_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from effective majorana mass to signal counts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass in eV</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass in eV.</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of isotope atoms/nuclei that could
+potentially decay to produce signal.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) calculates counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">0 neutrino half-life.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If effective mass is not positive and non-zero.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If arg:<cite>livetime</cite> is not positive and non-zero.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Expected number of signal counts within the livetime
+specified.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.calc.decay.DBIsotope.get_0n2b_half_life">
-<code class="descname">get_0n2b_half_life</code><span class="sig-paren">(</span><em>eff_mass</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_0n2b_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_0n2b_half_life" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Calculates the 0n2b half-life of an isotope given a</dt>
-<dd>phase space, matrix element and an effective Majorana
-mass.</dd>
-</dl>
+<dt id="echidna.calc.decay.DBIsotope.eff_mass_to_half_life">
+<code class="descname">eff_mass_to_half_life</code><span class="sig-paren">(</span><em>eff_mass</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.eff_mass_to_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.eff_mass_to_half_life" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from effective majorana mass to <span class="math">\(0\nu2\beta\)</span>
+half-life.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eff_mass</strong> (<em>float</em>) &#8211; Effective majorana mass, in eV.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Zero neutrino half-life.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If effective mass is not positive and non-zero.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><span class="math">\(0\nu2\beta\)</span> half-life, in years.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.calc.decay.DBIsotope.get_activity">
-<code class="descname">get_activity</code><span class="sig-paren">(</span><em>half_life</em>, <em>n_atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_activity" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.calc.decay.DBIsotope.get_n_atoms">
+<code class="descname">get_n_atoms</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>loading=None</em>, <em>scint_density=None</em>, <em>target_mass=None</em>, <em>scint_mass=None</em>, <em>outer_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_n_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the number of atoms of the double-beta isotope.</p>
+<blockquote>
+<div>Set up to follow the full (SNO+-specific) calculation as per
+SNO+-doc-1728v2 but can look at other scenarios/detectors by
+overriding the default args.</div></blockquote>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">All args default to SNO+ specific values!</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Radius of fiducial volume in mm.
+Default is stored as a class variable.</li>
+<li><strong>loading</strong> (<em>float, optional</em>) &#8211; Loading of isotope with 0 to 1
+equivalent to 0% to 100%. Default is stored as a class
+variable.</li>
+<li><strong>scint_density</strong> (<em>float, optional</em>) &#8211; Density of liquid scintillator in
+kg/mm^3. Default is stored as a class variable.</li>
+<li><strong>target_mass</strong> (<em>float, optional</em>) &#8211; Target mass in kg. Calculates a
+value by default.</li>
+<li><strong>scint_mass</strong> (<em>float, optional</em>) &#8211; Mass of scintillator in kg.
+Calculates a value by default.</li>
+<li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; Radius of outer container
+containing fiducial volume, e.g. AV, in mm. Default is stored
+as a class variable.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">loading</span></code> is not between zero and 1.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">outer_radius</span></code> is negative or zero.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-obj docutils literal"><span class="pre">fv_radius</span></code> is not between zero and
+<code class="xref py py-obj docutils literal"><span class="pre">outer_radius</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of atoms.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.half_life_to_activity">
+<code class="descname">half_life_to_activity</code><span class="sig-paren">(</span><em>half_life</em>, <em>n_atoms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.half_life_to_activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.half_life_to_activity" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Calculates the activity for an isotope with a given half-life</dt>
 <dd>and number of atoms.</dd>
@@ -185,7 +426,7 @@ mass.</dd>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>half_life</strong> (<em>float</em>) &#8211; Half-life of an isotope in years.</li>
-<li><strong>n_atoms</strong> (<em>float</em>) &#8211; Number of atoms of an isotope.</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of atoms of an isotope.</li>
 </ul>
 </td>
 </tr>
@@ -200,44 +441,30 @@ mass.</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.calc.decay.DBIsotope.get_n_atoms">
-<code class="descname">get_n_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.get_n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.get_n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Calculates the number of atoms of an isotope within the</dt>
-<dd>fiducial volume.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Number of atoms.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="echidna.calc.decay.DBIsotope.half_life_to_counts">
-<code class="descname">half_life_to_counts</code><span class="sig-paren">(</span><em>half_life</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.half_life_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.half_life_to_counts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a double beta decay isotopes half-life
-and mass into counts in years.</p>
+<code class="descname">half_life_to_counts</code><span class="sig-paren">(</span><em>half_life</em>, <em>n_atoms=None</em>, <em>roi_cut=True</em>, <em>livetime=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.half_life_to_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.half_life_to_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from isotope&#8217;s half-life to signal counts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>half_life</strong> (<em>float</em>) &#8211; Isotope&#8217;s half-life in years.</li>
-<li><strong>livetime</strong> (<em>float</em>) &#8211; Number of years of data taking.</li>
+<li><strong>half_life</strong> (<em>float</em>) &#8211; Isotope&#8217;s <span class="math">\(0\nu2\beta\)</span> half-life in
+years.</li>
+<li><strong>n_atoms</strong> (<em>float, optional</em>) &#8211; Number of isotope atoms/nuclei that could
+potentially decay to produce signal.</li>
+<li><strong>roi_cut</strong> (<em>bool, optional</em>) &#8211; If True (default) calculates counts
+in the ROI, not counts in the full spectrum.</li>
+<li><strong>livetime</strong> (<em>float, optional</em>) &#8211; Amount of years of data taking.
+Default is 5 years.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If abundance is &lt; 0. or &gt; 1.</p>
+If <code class="xref py py-obj docutils literal"><span class="pre">livetime</span></code> is not positive and non-zero.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of expected counts.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Expected number of counts.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
@@ -247,6 +474,41 @@ If abundance is &lt; 0. or &gt; 1.</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="echidna.calc.decay.DBIsotope.half_life_to_eff_mass">
+<code class="descname">half_life_to_eff_mass</code><span class="sig-paren">(</span><em>half_life</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#DBIsotope.half_life_to_eff_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.DBIsotope.half_life_to_eff_mass" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Converts from <span class="math">\(0\nu2\beta\)</span> half-life to effective</dt>
+<dd>majorana mass.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>half_life</strong> (<em>float</em>) &#8211; <span class="math">\(0\nu2\beta\)</span> half-life, in years.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Effective majorana mass, in eV.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.calc.decay.test">
+<code class="descclassname">echidna.calc.decay.</code><code class="descname">test</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/calc/decay.html#test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.calc.decay.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test function to show agreement with Andy&#8217;s numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>dict</em>) &#8211; Command line arguments from <code class="xref py py-mod docutils literal"><span class="pre">argparse</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -61,7 +61,8 @@
 <span class="sd">Examples:</span>
 <span class="sd">  To use simply run the script::</span>
 
-<span class="sd">    $ python zero_nu_limit.py -s /path/to/signal.hdf5 -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5</span>
+<span class="sd">    $ python zero_nu_limit.py -s /path/to/signal.hdf5 -t /path/to/2n2b.hdf5</span>
+<span class="sd">      -b /path/to/B8_Solar.hdf5</span>
 
 <span class="sd">.. note:: Use the -v option to print out progress and timing information</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -72,26 +73,40 @@
 <span class="kn">import</span> <span class="nn">echidna.limit.limit_config</span> <span class="kn">as</span> <span class="nn">limit_config</span>
 <span class="kn">import</span> <span class="nn">echidna.limit.limit_setting</span> <span class="kn">as</span> <span class="nn">limit_setting</span>
 <span class="kn">import</span> <span class="nn">echidna.limit.chi_squared</span> <span class="kn">as</span> <span class="nn">chi_squared</span>
-<span class="kn">import</span> <span class="nn">echidna.output.plot_chi_squared</span> <span class="kn">as</span> <span class="nn">plot_chi_squared</span>
+<span class="kn">import</span> <span class="nn">echidna.output.plot_chi_squared_root</span> <span class="kn">as</span> <span class="nn">plot_chi_squared</span>
+<span class="kn">from</span> <span class="nn">echidna.calc</span> <span class="kn">import</span> <span class="n">decay</span>
 
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 
 <div class="viewcode-block" id="ReadableDir"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.zero_nu_limit.ReadableDir">[docs]</a><span class="k">class</span> <span class="nc">ReadableDir</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Custom argparse action</span>
+
+<span class="sd">    Adapted from http://stackoverflow.com/a/11415816</span>
+
+<span class="sd">    Checks that hdf5 files supplied via command line exist and can be read</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">prospective_dir</span> <span class="o">=</span> <span class="n">values</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s">&quot;ReadableDir:{0} is not a valid &quot;</span>
-                                             <span class="s">&quot;path&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span><span class="p">):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">prospective_dir</span><span class="p">)</span>
+        <span class="n">prospective_dirs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">prospective_dirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">prospective_dirs</span> <span class="o">=</span> <span class="n">values</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s">&quot;ReadableDir:{0} is not readable&quot;</span>
-                                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Invalid type for arg.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prospective_dir</span> <span class="ow">in</span> <span class="n">prospective_dirs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                    <span class="s">&quot;ReadableDir:{0} not a valid path&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                    <span class="s">&quot;ReadableDir:{0} is not readable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>  <span class="c"># keeps original format</span>
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">&quot;Example limit setting script&quot;</span><span class="p">)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">&quot;Example limit setting &quot;</span>
+                                     <span class="s">&quot;script.&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-v&quot;</span><span class="p">,</span> <span class="s">&quot;--verbose&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Print progress and timing information&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span> <span class="s">&quot;--signal&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">ReadableDir</span><span class="p">,</span>
@@ -104,10 +119,29 @@
 
     <span class="c"># Create signal spectrum</span>
     <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">200.</span><span class="p">)</span>
+    <span class="n">unshrunk</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">2.46</span><span class="p">,</span> <span class="mf">2.68</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">200.</span><span class="p">)</span>
+    <span class="n">shrunk</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">scaling</span> <span class="o">=</span> <span class="n">shrunk</span><span class="o">/</span><span class="n">unshrunk</span>
+
+    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
 
     <span class="c"># Create background spectra</span>
     <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
     <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
+
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">200034</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;Te130_2n2b._num_decays:&quot;</span><span class="p">,</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">75073953</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;B8_Solar._num_decays:&quot;</span><span class="p">,</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">106228</span>
 
     <span class="c"># Shrink spectra to 5 years - livetime used by Andy</span>
     <span class="c"># And make 3.5m fiducial volume cut</span>
@@ -115,85 +149,194 @@
     <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
     <span class="n">B8_Solar</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
 
-    <span class="c"># Create list of backgrounds</span>
-    <span class="n">backgrounds</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">backgrounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="p">)</span>
-    <span class="n">backgrounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B8_Solar</span><span class="p">)</span>
+    <span class="c"># 1/ Set limit with no penalty term</span>
+    <span class="c"># Create dictionary of backgrounds and priors</span>
+    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="mf">37.396e6</span>  <span class="c"># Based on NEMO-3 T_1/2, for 10 years</span>
+    <span class="c"># from integrating whole spectrum scaled to Valentina&#39;s number</span>
+    <span class="n">B8_Solar_prior</span> <span class="o">=</span> <span class="mf">12529.9691</span>
+    <span class="n">fixed_backgrounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">Te130_2n2b</span><span class="p">,</span> <span class="n">Te130_2n2b_prior</span><span class="p">],</span>
+                         <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">B8_Solar</span><span class="p">,</span> <span class="n">B8_Solar_prior</span><span class="p">]}</span>
+    <span class="c"># Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting</span>
+    <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.46</span><span class="p">,</span> <span class="mf">2.68</span><span class="p">)</span>  <span class="c"># Define ROI - as used by Andy</span>
+    <span class="n">fixed</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">make_fixed_background</span><span class="p">(</span><span class="n">fixed_backgrounds</span><span class="p">,</span>
+                                                <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                                <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">)</span>
 
     <span class="c"># Initialise limit setting class</span>
-    <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.46</span><span class="p">,</span> <span class="mf">2.68</span><span class="p">)</span>  <span class="c"># Define ROI - as used by Andy</span>
-    <span class="n">set_limit</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="n">Te130_0n2b</span><span class="p">,</span> <span class="n">backgrounds</span><span class="p">,</span> <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span>
-                                           <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">set_limit</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="n">Te130_0n2b</span><span class="p">,</span> <span class="n">fixed_background</span><span class="o">=</span><span class="n">fixed</span><span class="p">,</span>
+                                           <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                                            <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
     <span class="c"># Configure Te130_0n2b</span>
-    <span class="n">Te130_0n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">Te130_0n2b_prior</span> <span class="o">=</span> <span class="mf">262.0143</span>  <span class="c"># Based on T_1/2 = 9.94e25 y @ 90% CL</span>
-                                 <span class="c"># (SNO+-doc-2593-v8) for 5 year livetime</span>
-                                 <span class="c"># Note extrapolating here to 10 years</span>
+    <span class="n">Te130_0n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">Te130_0n2b_prior</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c"># Setting a 90% CL so no signal in observed</span>
     <span class="n">Te130_0n2b_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_0n2b_prior</span><span class="p">,</span>
                                                  <span class="n">Te130_0n2b_counts</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">Te130_0n2b_config</span><span class="p">)</span>
-
-    <span class="c"># Configure Te130_2n2b</span>
-    <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">11.323579e6</span><span class="p">,</span> <span class="mf">11.323580e6</span><span class="p">,</span>
-                                     <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="c"># no penalty term to start with so just an array containing one value</span>
-    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="mf">11.323579e6</span>  <span class="c"># Based on T_1/2 = 2.3e21 y for 10 years</span>
-    <span class="n">Te130_2n2b_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
-                                                 <span class="n">Te130_2n2b_counts</span><span class="p">)</span>
-    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">Te130_2n2b_config</span><span class="p">)</span>
-    <span class="c"># configs should have same name as background</span>
-
-    <span class="c"># Configure B8_Solar</span>
-    <span class="n">B8_Solar_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">12529.9691</span><span class="p">,</span> <span class="mf">12530.9691</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="c"># again, no penalty term for now</span>
-    <span class="n">B8_Solar_prior</span> <span class="o">=</span> <span class="mf">12529.9691</span>  <span class="c"># from integrating whole spectrum scaled to</span>
-                                 <span class="c"># Valentina&#39;s number</span>
-    <span class="n">B8_Solar_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">B8_Solar_prior</span><span class="p">,</span> <span class="n">B8_Solar_counts</span><span class="p">)</span>
-    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">B8_Solar_config</span><span class="p">)</span>
 
     <span class="c"># Set chi squared calculator</span>
     <span class="n">calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">()</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
 
     <span class="c"># Calculate confidence limit</span>
-    <span class="k">print</span> <span class="s">&quot;90% CL at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit</span><span class="p">())</span> <span class="o">+</span> <span class="s">&quot; counts&quot;</span>
+    <span class="n">sig_num_decays</span> <span class="o">=</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit_no_float</span><span class="p">()</span>
 
-    <span class="c"># Now try with a penalty term</span>
+    <span class="c"># Set decay converter</span>
+    <span class="n">atm_weight_iso</span> <span class="o">=</span> <span class="mf">129.9062244</span>
+    <span class="n">atm_weight_nat</span> <span class="o">=</span> <span class="mf">127.603</span>
+    <span class="n">abundance</span> <span class="o">=</span> <span class="mf">0.3408</span>
+    <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">3.69e-14</span>
+    <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">4.03</span>
+
+    <span class="n">converter</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">DBIsotope</span><span class="p">(</span>
+        <span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">atm_weight_iso</span><span class="p">,</span> <span class="n">atm_weight_nat</span><span class="p">,</span> <span class="n">abundance</span><span class="p">,</span> <span class="n">phase_space</span><span class="p">,</span>
+        <span class="n">matrix_element</span><span class="p">,</span> <span class="n">roi_efficiency</span><span class="o">=</span><span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">get_roi</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;efficiency&quot;</span><span class="p">))</span>
+
+    <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;90% CL with no penalty at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; ROI counts&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;90% CL with no penalty at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">half_life</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; y&quot;</span>
+
+
+    <span class="c"># 2/ Now try fixing B8_Solar and floating Te130_2n2b</span>
+    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+
+    <span class="c"># Reload background spectra</span>
+    <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
+    <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
+
+    <span class="c"># Need to reset all of these for correct scaling</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">200034</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;Te130_2n2b._num_decays:&quot;</span><span class="p">,</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">75073953</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;B8_Solar._num_decays:&quot;</span><span class="p">,</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">106228</span>
+
+    <span class="c"># Shrink spectra to 5 years - livetime used by Andy</span>
+    <span class="c"># And make 3.5m fiducial volume cut</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+
+    <span class="n">fixed_backgrounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">B8_Solar</span><span class="p">,</span> <span class="n">B8_Solar_prior</span><span class="p">]}</span>
+    <span class="n">fixed</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">make_fixed_background</span><span class="p">(</span><span class="n">fixed_backgrounds</span><span class="p">,</span>
+                                                <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                                <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">)</span>
+
+    <span class="c"># List of backgrounds to float</span>
+    <span class="n">floating</span> <span class="o">=</span> <span class="p">[</span><span class="n">Te130_2n2b</span><span class="p">]</span>
+    <span class="c"># Reinitialise limit setting</span>
+    <span class="n">set_limit</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="n">Te130_0n2b</span><span class="p">,</span> <span class="n">fixed_background</span><span class="o">=</span><span class="n">fixed</span><span class="p">,</span>
+                                           <span class="n">floating_backgrounds</span><span class="o">=</span><span class="n">floating</span><span class="p">,</span>
+                                           <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                           <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
     <span class="c"># Configure Te130_0n2b</span>
-    <span class="n">Te130_0n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">Te130_0n2b_prior</span> <span class="o">=</span> <span class="mf">262.0143</span>  <span class="c"># Based on T_1/2 = 9.94e25 y @ 90% CL</span>
-                                 <span class="c"># (SNO+-doc-2593-v8) for 5 year livetime</span>
-                                 <span class="c"># Note extrapolating here to 10 years</span>
     <span class="n">Te130_0n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_0n2b_prior</span><span class="p">,</span>
                                                          <span class="n">Te130_0n2b_counts</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
 
-    <span class="c"># Set new configs this time with more counts</span>
-    <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">8.7e6</span><span class="p">,</span> <span class="mf">13.3e6</span><span class="p">,</span> <span class="mf">0.1e6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.2647e6</span>  <span class="c"># To use in penalty term (20%, Andy&#39;s document on</span>
-                      <span class="c"># systematics)</span>
-    <span class="n">Te130_2n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
-                                                         <span class="n">Te130_2n2b_counts</span><span class="p">,</span>
-                                                         <span class="n">sigma</span><span class="p">)</span>
-    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">Te130_2n2b_penalty_config</span><span class="p">,</span>
+    <span class="c"># Set config for Te130_2n2b</span>
+    <span class="c"># Floating range:</span>
+    <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.797</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
+                                       <span class="mf">1.203</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+    <span class="c"># Sigma of rate:</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.203</span> <span class="o">*</span> <span class="n">Te130_2n2b_prior</span> <span class="c"># Used in penalty term (20.3%, Andy&#39;s doc on systematics)</span>
+    <span class="n">Te130_2n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span>
+        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
+                                   <span class="n">Te130_2n2b_penalty_config</span><span class="p">,</span>
                                    <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-    <span class="n">B8_Solar_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">12.0e3</span><span class="p">,</span> <span class="mf">13.0e3</span><span class="p">,</span> <span class="mf">0.1e3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">501.1988</span>  <span class="c"># To use in penalty term</span>
+    <span class="c"># Set chi squared calculator</span>
+    <span class="n">set_limit</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
+
+    <span class="c"># Calculate confidence limit</span>
+    <span class="n">sig_num_decays</span> <span class="o">=</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
+    <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;90% CL with Te130_2n2b floating at: &quot;</span> <span class="o">+</span>
+           <span class="nb">str</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; ROI counts&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;90% CL with Te130_2n2b floating at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">half_life</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; y&quot;</span>
+
+    <span class="n">fig1</span> <span class="o">=</span> <span class="n">plot_chi_squared</span><span class="o">.</span><span class="n">chi_squared_vs_signal</span><span class="p">(</span><span class="n">Te130_0n2b_config</span><span class="p">)</span>
+    <span class="n">fig1</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s">&quot;AP&quot;</span><span class="p">)</span>
+    <span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;RETURN to continue&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">syst_analyser</span> <span class="ow">in</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_2.hdf5&quot;</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="p">)</span>
+
+    <span class="c"># 3/ Fix no backgrounds and float all#</span>
+    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="c"># Reload background spectra</span>
+    <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
+    <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
+
+    <span class="c"># Need to reset all of these for correct scaling</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">200034</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;Te130_2n2b._num_decays:&quot;</span><span class="p">,</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">75073953</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;B8_Solar._num_decays:&quot;</span><span class="p">,</span> <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_num_decays</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">106228</span>
+
+    <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">B8_Solar</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3500.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+
+    <span class="c"># List of backgrounds to float</span>
+    <span class="n">floating</span> <span class="o">=</span> <span class="p">[</span><span class="n">Te130_2n2b</span><span class="p">,</span> <span class="n">B8_Solar</span><span class="p">]</span>
+
+    <span class="c"># Reinitialise limit setting</span>
+    <span class="n">set_limit</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="n">Te130_0n2b</span><span class="p">,</span>
+                                           <span class="n">floating_backgrounds</span><span class="o">=</span><span class="n">floating</span><span class="p">,</span>
+                                           <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                           <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="c"># Configure Te130_0n2b</span>
+    <span class="n">Te130_0n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_0n2b_prior</span><span class="p">,</span>
+                                                         <span class="n">Te130_0n2b_counts</span><span class="p">)</span>
+    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
+
+    <span class="c"># Set config for Te130_2n2b</span>
+    <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.797</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
+                                       <span class="mf">1.203</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+    <span class="c"># Sigma of rate:</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.203</span> <span class="o">*</span> <span class="n">Te130_2n2b_prior</span> <span class="c"># Used in penalty term (20.3%, Andy&#39;s doc on systematics)</span>
+    <span class="n">Te130_2n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span>
+        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+    <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
+                                   <span class="n">Te130_2n2b_penalty_config</span><span class="p">,</span>
+                                   <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c"># Set config for B8_Solar</span>
+    <span class="n">B8_Solar_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.96</span><span class="o">*</span><span class="n">B8_Solar_prior</span><span class="p">,</span>
+                                     <span class="mf">1.04</span><span class="o">*</span><span class="n">B8_Solar_prior</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
+    <span class="c"># 11 bins to make sure midpoint (no variation from prior) is included</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">B8_Solar_prior</span>  <span class="c"># 4% To use in penalty term</span>
     <span class="n">B8_Solar_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">B8_Solar_prior</span><span class="p">,</span>
                                                        <span class="n">B8_Solar_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">B8_Solar_penalty_config</span><span class="p">,</span>
                                    <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c"># Set chi squared calculator</span>
+    <span class="n">set_limit</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
 
     <span class="c"># Calculate confidence limit</span>
-    <span class="k">print</span> <span class="s">&quot;90% CL at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit</span><span class="p">())</span> <span class="o">+</span> <span class="s">&quot; counts&quot;</span>
-    <span class="n">plot_chi_squared</span><span class="o">.</span><span class="n">chi_squared_vs_signal</span><span class="p">(</span><span class="n">Te130_0n2b_config</span><span class="p">,</span>
-                                           <span class="n">penalty</span><span class="o">=</span><span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
+    <span class="n">sig_num_decays</span> <span class="o">=</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
+    <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;90% CL, with all backgrounds floating, at: &quot;</span> <span class="o">+</span>
+           <span class="nb">str</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; ROI counts&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;90% CL, with all backgrounds floating, at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">half_life</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; y&quot;</span>
+
+    <span class="n">fig2</span> <span class="o">=</span> <span class="n">plot_chi_squared</span><span class="o">.</span><span class="n">chi_squared_vs_signal</span><span class="p">(</span><span class="n">Te130_0n2b_config</span><span class="p">)</span>
+    <span class="n">fig2</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s">&quot;AP&quot;</span><span class="p">)</span>
+    <span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;RETURN to continue&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">syst_analyser</span> <span class="ow">in</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;.hdf5&quot;</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="p">)</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_3.hdf5&quot;</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="p">)</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="s">&quot;Te130_0n2b_config.hdf5&quot;</span><span class="p">,</span> <span class="n">Te130_0n2b_config</span><span class="p">)</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="s">&quot;Te130_0n2b_penalty_config.hdf5&quot;</span><span class="p">,</span>
+                       <span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
 </pre></div>
 
           </div>

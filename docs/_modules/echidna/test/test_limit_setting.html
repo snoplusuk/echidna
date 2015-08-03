@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -78,7 +78,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
                           <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+                          <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="n">width_orig</span>
 
         <span class="c"># Test radial compatibility</span>
@@ -87,7 +87,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
                           <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+                          <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="n">width_orig</span>
 
         <span class="c"># Test time compatibility</span>
@@ -96,7 +96,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
                           <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
+                          <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="n">width_orig</span>
 </div>
 <div class="viewcode-block" id="TestLimitSetting.test_get_limit"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -134,7 +134,7 @@
 
         <span class="c"># Test 1: test Exceptions</span>
         <span class="n">limit_setter_1</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
+                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
         <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
@@ -147,7 +147,7 @@
         <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">sigma</span><span class="p">)</span>
 
         <span class="n">limit_setter_2</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
+                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
                                                     <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
@@ -174,7 +174,7 @@
         <span class="n">bkg_2_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">bkg_2_prior</span><span class="p">,</span> <span class="n">bkg_2_counts</span><span class="p">)</span>
 
         <span class="n">limit_setter_3</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
+                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
                                                     <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>

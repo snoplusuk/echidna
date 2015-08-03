@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -83,6 +83,10 @@
 <span class="sd">      _raw_events (int): The number of raw events used to generate the</span>
 <span class="sd">        spectra. Increments by one with each fill independent of</span>
 <span class="sd">        weight.</span>
+<span class="sd">      _style (string): Pyplot-style plotting style e.g. &quot;b-&quot; or</span>
+<span class="sd">        {&quot;color&quot;: &quot;blue&quot;}.</span>
+<span class="sd">      _rois (dict): Dictionary containing the details of any ROI, along</span>
+<span class="sd">        any axis, which has been defined.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialise the spectra data container.</span>
@@ -90,21 +94,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c"># MeV</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c"># MeV</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c"># mm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">=</span> <span class="mf">10000.0</span>  <span class="c"># mm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c"># years</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c"># years</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">=</span> <span class="mi">10</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_widths</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">num_decays</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">,</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">,</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">),</span>
                                  <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;color&quot;</span><span class="p">:</span> <span class="s">&quot;blue&quot;</span><span class="p">}</span>  <span class="c"># default style for plotting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
 
 <div class="viewcode-block" id="Spectra.fill"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
@@ -130,6 +134,59 @@
         <span class="n">radial_bin</span> <span class="o">=</span> <span class="p">(</span><span class="n">radius</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span>
         <span class="n">time_bin</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">,</span> <span class="n">radial_bin</span><span class="p">,</span> <span class="n">time_bin</span><span class="p">]</span> <span class="o">+=</span> <span class="n">weight</span>
+</div>
+<div class="viewcode-block" id="Spectra.shrink_to_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink_to_roi">[docs]</a>    <span class="k">def</span> <span class="nf">shrink_to_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower_limit</span><span class="p">,</span> <span class="n">upper_limit</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shrink spectrum to a defined Region of Interest (ROI)</span>
+
+<span class="sd">        Shrinks spectrum to given ROI and saves ROI parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          lower_limit (float): Lower bound of ROI, along given axis.</span>
+<span class="sd">          upper_limit (float): Upper bound of ROI, along given axis.</span>
+<span class="sd">          axis (int): Axis along which to define ROI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">integral_full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Save integral of full spectrum</span>
+
+        <span class="c"># Shrink to ROI</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="o">=</span><span class="n">lower_limit</span><span class="p">,</span> <span class="n">energy_high</span><span class="o">=</span><span class="n">upper_limit</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">radial_low</span><span class="o">=</span><span class="n">lower_limit</span><span class="p">,</span> <span class="n">radial_high</span><span class="o">=</span><span class="n">upper_limit</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">time_low</span><span class="o">=</span><span class="n">lower_limit</span><span class="p">,</span> <span class="n">time_high</span><span class="o">=</span><span class="n">upper_limit</span><span class="p">)</span>
+
+        <span class="c"># Calculate efficiency</span>
+        <span class="n">integral_roi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Integral of spectrum over ROI</span>
+        <span class="n">efficiency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_roi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_full</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;low&quot;</span><span class="p">:</span> <span class="n">lower_limit</span><span class="p">,</span> <span class="s">&quot;high&quot;</span><span class="p">:</span> <span class="n">upper_limit</span><span class="p">,</span>
+                            <span class="s">&quot;efficiency&quot;</span><span class="p">:</span> <span class="n">efficiency</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Access information about a predefined ROI on a given axis</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing parameters defining the ROI, on</span>
+<span class="sd">            the given axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Spectra.set_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.set_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets plotting style.</span>
+
+<span class="sd">        Styles should be valid pyplot style strings e.g. &quot;b-&quot;, for a</span>
+<span class="sd">        blue line, or dictionaries of strings e.g. {&quot;color&quot;: &quot;red&quot;}.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          style (string): Pyplot-style plotting style.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="n">style</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_style">[docs]</a>    <span class="k">def</span> <span class="nf">get_style</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string/dict: :attr:`_style` - pyplot-style plotting style.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style</span>
 </div>
 <div class="viewcode-block" id="Spectra.project"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Project the histogram along an `axis`.</span>
@@ -246,39 +303,140 @@
                                 <span class="n">radial_low_bin</span><span class="p">:</span><span class="n">radial_high_bin</span><span class="p">,</span>
                                 <span class="n">time_low_bin</span><span class="p">:</span><span class="n">time_high_bin</span><span class="p">]</span>
 </div>
+<div class="viewcode-block" id="Spectra.cut"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.cut">[docs]</a>    <span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_low</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">energy_high</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radial_low</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">radial_high</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">time_low</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">time_high</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Similar to :meth:`shrink`, but updates scaling information.</span>
+
+<span class="sd">        If a spectrum is cut using :meth:`shrink`, subsequent calls to</span>
+<span class="sd">        :meth:`scale` the spectrum must still scale the *full* spectrum</span>
+<span class="sd">        i.e. before any cuts. The user supplies the number of decays</span>
+<span class="sd">        the full spectrum should now represent.</span>
+
+<span class="sd">        However, sometimes it is more useful to be able specify the</span>
+<span class="sd">        number of events the revised spectrum should represent. This</span>
+<span class="sd">        method updates the scaling information, so that it becomes the</span>
+<span class="sd">        new *full* spectrum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          energy_low (float, optional): New low bound of the energy.</span>
+<span class="sd">          energy_low (float, optional): New high bound of the energy.</span>
+<span class="sd">          radial_low (float, optional): New low bound of the radius.</span>
+<span class="sd">          radial_low (float, optional): New high bound of the radius.</span>
+<span class="sd">          time_low (float, optional): New low bound of the time.</span>
+<span class="sd">          time_low (float, optional): New high bound of the time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Store initial count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="n">radial_low</span><span class="p">,</span> <span class="n">radial_high</span><span class="p">,</span>
+                    <span class="n">time_low</span><span class="p">,</span> <span class="n">time_high</span><span class="p">)</span>
+        <span class="n">new_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">reduction_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">initial_count</span><span class="p">)</span>
+        <span class="c"># This reduction factor tells us how much the number of detected events</span>
+        <span class="c"># has been reduced by shrinking the spectrum. We want the number of</span>
+        <span class="c"># decays that the spectrum should now represent to be reduced by the</span>
+        <span class="c"># same factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">*=</span> <span class="n">reduction_factor</span>
+</div>
 <div class="viewcode-block" id="Spectra.add"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds a spectrum to current spectra object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          spectrum (:class:`core.spectra`): Spectrum to add.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Lower energy bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Upper energy bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Number of energy bins in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Width of energy bins in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Lower radial bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Upper radial bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Number of radial bins in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Width of radial bins in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Lower time bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Upper time bounds in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Number of time bins in spectra are not equal.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">!=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_width</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Width of time bins in spectra are not equal.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span>
+</div>
+<div class="viewcode-block" id="Spectra.rebin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.rebin">[docs]</a>    <span class="k">def</span> <span class="nf">rebin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_bins</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Rebin spectra data into a smaller spectra of the same rank whose</span>
+<span class="sd">        dimensions are factors of the original dimensions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          new_bins (tuple): New bin sizes for spectra. Should be in order of</span>
+<span class="sd">            energy, radial, time.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: Shape mismatch. Number of dimenesions are different.</span>
+<span class="sd">          ValueError: Old bins/ New bins must be integer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Shape mismatch: </span><span class="si">%s</span><span class="s">-&gt;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                                         <span class="n">new_bins</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">%</span> <span class="n">new_bins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Old bins/New bins must be integer old: </span><span class="si">%s</span><span class="s">&quot;</span>
+                                 <span class="s">&quot; new: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_bins</span><span class="p">))</span>
+        <span class="n">compression_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="o">//</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">new_bins</span><span class="p">,</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)]</span>
+        <span class="n">flattened</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">compression_pairs</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">p</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">flattened</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">=</span> <span class="n">new_bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">=</span> <span class="n">new_bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">=</span> <span class="n">new_bins</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_widths</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Spectra.calc_widths"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.calc_widths">[docs]</a>    <span class="k">def</span> <span class="nf">calc_widths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Recalculates bin widths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span>
+</div>
+<div class="viewcode-block" id="Spectra.copy"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Copies the current spectra and returns a new identical one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          name (string, optional): Name of the new copied spectrum.</span>
+<span class="sd">            Default is the name of the current spectrum.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra` object which is identical to</span>
+<span class="sd">            the current spectra apart from possibly its name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+        <span class="n">new_spectrum</span> <span class="o">=</span> <span class="n">Spectra</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_low</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_high</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_bins</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_low</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_high</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radial_bins</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_low</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_high</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_bins</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">calc_widths</span><span class="p">()</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">),</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style</span>
+        <span class="n">new_spectrum</span><span class="o">.</span><span class="n">_rois</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span>
+        <span class="k">return</span> <span class="n">new_spectrum</span></div></div>
 </pre></div>
 
           </div>

@@ -13,6 +13,7 @@ Subpackages
     echidna.output
     echidna.scripts
     echidna.test
+    echidna.util
 
 Submodules
 ----------

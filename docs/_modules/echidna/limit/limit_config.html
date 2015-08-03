@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -62,10 +62,17 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">      _prior_counts (float): prior/expected counts</span>
 <span class="sd">      _counts (list): list of count rates (*float*) to use for scaling</span>
+<span class="sd">      _counts_down (bool): True if :attr:`_counts` is defined such that</span>
+<span class="sd">        it counts down from a high count to a low count. Otherwise</span>
+<span class="sd">        set as False - countin up.</span>
+<span class="sd">      _current_count (float): current count (scaling). The value most</span>
+<span class="sd">        recently returned by :meth:`get_count()`.</span>
 <span class="sd">      _sigma (float): prior constraint on counts</span>
-<span class="sd">      _chi_squareds (:class:`numpy.array`): Array col-0:</span>
-<span class="sd">        :obj:`chi_squared`, col-1: :obj:`get_counts`, col-2:</span>
+<span class="sd">      _chi_squareds (:class:`numpy.array`): Array col-0 =</span>
+<span class="sd">        :obj:`chi_squared`, col-1 = :obj:`get_counts`, col-2 =</span>
 <span class="sd">        :meth:`spectra.sum()`.</span>
+<span class="sd">      _minium_bin (float): Used to save position (bin number) of minimum</span>
+<span class="sd">        of :attr:`_chi_squareds`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      prior_counts (float): prior/expected counts</span>
@@ -75,8 +82,15 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_count</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prior_count</span> <span class="o">=</span> <span class="n">prior_count</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">counts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># Counts list counts down</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_counts_down</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_counts_down</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_count</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_bin</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="o">=</span> <span class="bp">None</span>
 
 <div class="viewcode-block" id="LimitConfig.get_count"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -91,14 +105,25 @@
 <span class="sd">          &gt;&gt;&gt; for count in bkg_config.get_count():</span>
 <span class="sd">          ...     spectrum.scale(count)</span>
 <span class="sd">          ...     # spectrum scaled to each value of count</span>
-
-<span class="sd">        Attributes:</span>
-<span class="sd">          _current_count (float): current count (scaling). The value</span>
-<span class="sd">            most recently returned by :meth:`get_count()`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_current_count</span> <span class="o">=</span> <span class="n">count</span>
             <span class="k">yield</span> <span class="n">count</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_current_count"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_current_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_current_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: current count (scaling). The value most recently</span>
+<span class="sd">            returned by :meth:`get_count()`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_count</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_sigma"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: :attr:`_sigma`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span>
 </div>
 <div class="viewcode-block" id="LimitConfig.add_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.add_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">add_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chi_squared</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add chi squared to config chi squared array.</span>
@@ -106,7 +131,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">          chi_squared (float): chi squared value to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">entry_to_append</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">entry_to_append</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi_squared</span>
         <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaling</span>
         <span class="n">entry_to_append</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">events</span>
@@ -114,13 +139,44 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">,</span>
                                           <span class="n">entry_to_append</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="LimitConfig.get_minimum"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LimitConfig.get_chi_squareds"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_chi_squareds">[docs]</a>    <span class="k">def</span> <span class="nf">get_chi_squareds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Array col-0 = :obj:`chi_squared`s,</span>
+<span class="sd">            col-1 = :obj:`get_counts`, col-2 = :meth:`spectra.sum()`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_minimum"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get minimum value from chi_squared array.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Minimum of :attr:`_chi_squareds`</span>
+<span class="sd">          tuple: (Minimum of :attr:`_chi_squareds`, bin number of minimum)</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Keyword arguments include:</span>
+
+<span class="sd">            * minimum_bin (*bool*): If True, returns the position (bin</span>
+<span class="sd">              number) in addition to minimum chi squared</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">minimum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">minimum_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">minimum</span><span class="p">)</span>
+        <span class="c"># Set counts corresponding to minimum</span>
+        <span class="c"># --&gt; Note scaling counts NOT actual events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">minimum_bin</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;minimum_bin&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">minimum_bin</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">minimum</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_counts_down"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_counts_down">[docs]</a>    <span class="k">def</span> <span class="nf">get_counts_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: :attr:`_counts_down`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts_down</span>
 </div>
 <div class="viewcode-block" id="LimitConfig.get_first_bin_above"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_first_bin_above">[docs]</a>    <span class="k">def</span> <span class="nf">get_first_bin_above</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; For signal, determine the count corresponding to limit.</span>
@@ -132,11 +188,84 @@
 <span class="sd">          limit (float): chi squared value corresponding to desired</span>
 <span class="sd">            confidence limit</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">          AttributeError: If :attr:`_counts` is defined to count down.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">          float: number of events (result of</span>
 <span class="sd">            :meth:`echidna.core.spectra.Spectra.sum()`) at limit</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts_down</span><span class="p">:</span>  <span class="c"># Don&#39;t want to use this method</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Method `get_first_bin_above` will give &quot;</span>
+                                 <span class="s">&quot;incorrect result, use `get_last_bin_above` &quot;</span>
+                                 <span class="s">&quot;instead&quot;</span><span class="p">)</span>
+        <span class="n">first_bin_above</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c"># Set counts corresponding to minimum</span>
+        <span class="c"># --&gt; Note scaling counts NOT actual events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">first_bin_above</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">first_bin_above</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_last_bin_above"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_last_bin_above">[docs]</a>    <span class="k">def</span> <span class="nf">get_last_bin_above</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; For signal, determine the count corresponding to limit.</span>
+
+<span class="sd">        Method to use if signal counts have been defined in such a way</span>
+<span class="sd">        that they count down to zero signal contribution. Produces</span>
+<span class="sd">        exactly the same result as :meth:`get_first_bin_above` but</span>
+<span class="sd">        where you have this set-up.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit (float): chi squared value corresponding to desired</span>
+<span class="sd">            confidence limit</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          AttributeError: If :attr:`_counts` is defined to count up.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: number of events (result of</span>
+<span class="sd">            :meth:`echidna.core.spectra.Spectra.sum()`) at limit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts_down</span><span class="p">:</span>  <span class="c"># Don&#39;t want to use this method</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Method `get_last_bin_above` will give &quot;</span>
+                                 <span class="s">&quot;incorrect result, use `get_first_bin_above` &quot;</span>
+                                 <span class="s">&quot;instead&quot;</span><span class="p">)</span>
+        <span class="n">last_bin_above</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c"># Set counts corresponding to minimum</span>
+        <span class="c"># --&gt; Note scaling counts NOT actual events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">last_bin_above</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">last_bin_above</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="LimitConfig.get_limit_count"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_limit_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the count for the full spectrum, at the limit.</span>
+
+<span class="sd">        Scaling the :class:`Spectra` instance, corresponding to this</span>
+<span class="sd">        :class:`LimitConfig` instance, to the value returned by this</span>
+<span class="sd">        method provides a representation of the full spectrum at the</span>
+<span class="sd">        limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: count (from :attr:`_counts`) at limit.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          AssertionError: if :attr:`_limit_counts` is None</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Requires either :meth:`get_minimum` or :meth:`get_first_bin_above`</span>
+<span class="sd">          to be called, before it can be called.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          For backgrounds, where multiple backgrounds have been floated</span>
+<span class="sd">          and :meth:`reset_chi_squareds` has been called, this will</span>
+<span class="sd">          only give you the limit count for the last iteration. For the</span>
+<span class="sd">          preferred value over the full float of systematics use the</span>
+<span class="sd">          :class:`SystAnalyser` class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Limit count not set, call get_minimum or&quot;</span>
+                                 <span class="s">&quot; get_first_bin_above first&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span>
 </div>
 <div class="viewcode-block" id="LimitConfig.reset_chi_squareds"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.reset_chi_squareds">[docs]</a>    <span class="k">def</span> <span class="nf">reset_chi_squareds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Resets :attr:`_chi_squareds` to an empty</span>

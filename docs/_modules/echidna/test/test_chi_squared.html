@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -104,12 +104,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">110.0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
-                               <span class="mf">0.9379640391350215</span><span class="p">)</span>
+        <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
+            <span class="c"># Just total, not ll per bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="mf">0.9379640391350215</span><span class="p">)</span>
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span>
-                               <span class="mf">1.072103131565271</span><span class="p">)</span>
+        <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
+            <span class="c"># Just total, not ll per bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="mf">1.072103131565271</span><span class="p">)</span>
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>

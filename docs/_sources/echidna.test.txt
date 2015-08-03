@@ -4,6 +4,14 @@ echidna.test package
 Submodules
 ----------
 
+echidna.test.physics_tests module
+---------------------------------
+
+.. automodule:: echidna.test.physics_tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.test.test_chi_squared module
 ------------------------------------
 

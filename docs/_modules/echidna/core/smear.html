@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -50,7 +50,8 @@
   <h1>Source code for echidna.core.smear</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">decimal</span>
-<span class="kn">import</span> <span class="nn">spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+
 
 <div class="viewcode-block" id="Smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear">[docs]</a><span class="k">class</span> <span class="nc">Smear</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; This class smears the energy and radius of a spectra.</span>
@@ -219,7 +220,8 @@
         <span class="n">smeared_radii</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">radii</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">radius</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="n">radius_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">radius</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bin_size</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">bin_size</span>
+                <span class="n">radius_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">radius</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">bin_size</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bin_size</span>
                 <span class="n">num_entries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
                 <span class="n">smeared_radii</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smear_radius_bin</span><span class="p">(</span><span class="n">radius_bin</span><span class="p">,</span> <span class="n">num_entries</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smeared_radii</span><span class="p">)</span>
@@ -236,8 +238,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">smeared_radii</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-            <span class="n">smeared_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span>
-                                                          <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)))</span>
+            <span class="n">smeared_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">smeared_radii</span>
 </div>
 <div class="viewcode-block" id="Smear.random_gaussian_energy_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.random_gaussian_energy_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">random_gaussian_energy_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">):</span>
@@ -256,8 +258,9 @@
         <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
         <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
         <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
-                                           <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
+        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
             <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
             <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
@@ -270,10 +273,9 @@
                                                   <span class="n">time_bin</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">)):</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span>
-                                                                           <span class="n">sigma</span><span class="p">)),</span>
-                                                  <span class="n">mean_radius</span><span class="p">,</span>
-                                                  <span class="n">mean_time</span><span class="p">)</span>
+                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)),</span>
+                                <span class="n">mean_radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                             <span class="c"># Occurs when smeared energy is outside bin range</span>
                             <span class="k">print</span> <span class="s">&quot;Warning: Smeared energy out of bounds. Skipping.&quot;</span>
@@ -282,9 +284,9 @@
         <span class="k">return</span> <span class="n">smeared_spectrum</span>
 </div>
 <div class="viewcode-block" id="Smear.weight_gaussian_energy_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.weight_gaussian_energy_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">weight_gaussian_energy_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a spectra object by calculating a Gaussian pdf</span>
-<span class="sd">          for each bin and applying a weight to the bin and corresponding bins</span>
-<span class="sd">          a default 5 sigma apart.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a spectra object by calculating a</span>
+<span class="sd">          Gaussian pdf for each bin and applying a weight to the bin</span>
+<span class="sd">          and corresponding bins a default 5 sigma apart.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
@@ -298,8 +300,9 @@
         <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
         <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
         <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
-                                           <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
+        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
             <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
             <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
@@ -329,10 +332,9 @@
                     <span class="n">tot_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
                     <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">):</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
-                                                  <span class="n">mean_radius</span><span class="p">,</span>
-                                                  <span class="n">mean_time</span><span class="p">,</span>
-                                                  <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tot_weight</span><span class="p">)</span>
+                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+                                <span class="n">energy</span><span class="p">,</span> <span class="n">mean_radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">,</span>
+                                <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tot_weight</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                             <span class="c"># Occurs when smeared energy is outside bin range</span>
                             <span class="k">print</span> <span class="s">&quot;Warning: Smeared energy out of bounds. Skipping.&quot;</span>
@@ -344,8 +346,8 @@
 <div class="viewcode-block" id="Smear.random_gaussian_radius_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.random_gaussian_radius_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">random_gaussian_radius_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Smears the radius of a spectra object by generating a</span>
 <span class="sd">          number of random points from a Gaussian pdf generated for</span>
-<span class="sd">          that bin. The number of points generated is equivalent</span>
-<span class="sd">          to the number of entries in that bin.</span>
+<span class="sd">          that bin. The number of points generated is equivalent to the</span>
+<span class="sd">          number of entries in that bin.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
@@ -357,8 +359,9 @@
         <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
         <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
         <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
-                                           <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
+        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
             <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
             <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
@@ -370,10 +373,11 @@
                                                   <span class="n">time_bin</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">)):</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span>
-                                                  <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_radius</span><span class="p">,</span>
-                                                                           <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)),</span>
-                                                  <span class="n">mean_time</span><span class="p">)</span>
+                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+                                <span class="n">mean_energy</span><span class="p">,</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                                    <span class="n">mean_radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)),</span>
+                                <span class="n">mean_time</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                             <span class="c"># Occurs when smeared radius is outside bin range</span>
                             <span class="k">print</span> <span class="s">&quot;Warning: Smeared radius out of bounds. Skipping.&quot;</span>
@@ -382,9 +386,9 @@
         <span class="k">return</span> <span class="n">smeared_spectrum</span>
 </div>
 <div class="viewcode-block" id="Smear.weight_gaussian_radius_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.weight_gaussian_radius_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">weight_gaussian_radius_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the radius of a spectra object by calculating a Gaussian pdf</span>
-<span class="sd">          for each bin and applies a weight to the bin and corresponding bins a</span>
-<span class="sd">          default 5 sigma apart.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the radius of a spectra object by calculating a</span>
+<span class="sd">          Gaussian pdf for each bin and applies a weight to the bin and</span>
+<span class="sd">          corresponding bins a default 5 sigma apart.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
@@ -398,8 +402,9 @@
         <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
         <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
         <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
-                                           <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
+        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
+            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
             <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
             <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
@@ -421,24 +426,59 @@
                         <span class="n">lower_bin</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
                     <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
                     <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">radial_step</span><span class="p">):</span>
-                        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span>
-                                                          <span class="n">mean_radius</span><span class="p">,</span>
-                                                          <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">))</span>
+                        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">mean_radius</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">))</span>
                     <span class="n">weight_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
                     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">radial_step</span><span class="p">):</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span>
-                                                  <span class="n">radius</span><span class="p">,</span>
-                                                  <span class="n">mean_time</span><span class="p">,</span>
-                                                  <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">weight_tot</span><span class="p">)</span>
+                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+                                <span class="n">mean_energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">,</span>
+                                <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">weight_tot</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                             <span class="c"># Occurs when smeared radius is outside bin range</span>
                             <span class="k">print</span> <span class="s">&quot;Warning: Smeared radius out of bounds. Skipping.&quot;</span>
                             <span class="k">continue</span>
                         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">raw_events</span>
-        <span class="k">return</span> <span class="n">smeared_spectrum</span></div></div>
+        <span class="k">return</span> <span class="n">smeared_spectrum</span>
+
+</div></div>
+<div class="viewcode-block" id="EResSmear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EResSmear">[docs]</a><span class="k">class</span> <span class="nc">EResSmear</span><span class="p">(</span><span class="n">Smear</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Allows you to smear directly by supplied energy resolution</span>
+<span class="sd">      (in :math:`\sqrt{MeV}`).</span>
+
+<span class="sd">    Inherits from :class:`Smear` to provide exactly the same</span>
+<span class="sd">    functionality but overrides :meth:`Smear.get_energy_sigma` to use</span>
+<span class="sd">    a given energy resolution to calculate sigma.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
+<span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _light_yield (float): Number of PMT hits expected for a</span>
+<span class="sd">        MeV energy deposit in NHit/MeV.</span>
+<span class="sd">      _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
+<span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+<span class="sd">      _position_resolution (float): Sigma in mm.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_resolution</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EResSmear</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_resolution</span> <span class="o">=</span> <span class="n">energy_resolution</span>
+
+<div class="viewcode-block" id="EResSmear.get_energy_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EResSmear.get_energy_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_energy_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates sigma at a given energy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          energy (float): Energy value of data point(s)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Sigma (MeV) equivalent to energy_resolution *</span>
+<span class="sd">            :math:`\sqrt{energy}`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_resolution</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">2.</span><span class="p">))</span></div></div>
 </pre></div>
 
           </div>

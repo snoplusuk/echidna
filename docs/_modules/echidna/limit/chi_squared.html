@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -89,6 +89,8 @@
 <span class="sd">      _penalty_terms (dict): information about each penalty term</span>
 <span class="sd">      _penalty_terms_set (bool): True if one or more penalty terms have</span>
 <span class="sd">        been set</span>
+<span class="sd">      _current_values (dict): Stores the current value of each named</span>
+<span class="sd">        penalty term</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&quot;poisson_likelihood&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_form</span> <span class="o">=</span> <span class="n">form</span>
@@ -96,9 +98,29 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_values</span> <span class="o">=</span> <span class="p">{}</span>
 
+<div class="viewcode-block" id="ChiSquared.set_penalty_term"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.ChiSquared.set_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">penalty_term</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the value of a named penlty term</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          name (string): Name of penalty term to set</span>
+<span class="sd">          penalty_term (dict): Specify &quot;parameter_value&quot; and &quot;sigma&quot;</span>
+<span class="sd">            values in dict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_term</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="ChiSquared.get_chi_squared_per_bin"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared_per_bin">[docs]</a>    <span class="k">def</span> <span class="nf">get_chi_squared_per_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: _chi_squared_per_bin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squared_per_bin</span>
+</div>
 <div class="viewcode-block" id="ChiSquared.get_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculate the chi squared comparing observed to expected.</span>
 
@@ -149,13 +171,17 @@
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_form</span> <span class="o">==</span> <span class="s">&quot;neyman&quot;</span><span class="p">):</span>
             <span class="n">chi_squared</span> <span class="o">=</span> <span class="n">neyman_chi_squared</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c"># (self._form == &quot;poisson_likelihood&quot;)</span>
-            <span class="n">chi_squared</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+            <span class="n">ll</span><span class="p">,</span> <span class="n">ll_per_bin</span> <span class="o">=</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squared_per_bin</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">ll_per_bin</span>
+            <span class="n">chi_squared</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">ll</span>
 
         <span class="c"># Add penalty term(s)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">penalty_term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-                <span class="n">chi_squared</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">penalty_term</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;parameter_value&quot;</span><span class="p">)</span><span class="o">/</span>
-                                           <span class="n">penalty_term</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;sigma&quot;</span><span class="p">),</span> <span class="mf">2.0</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">penalty_term</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;parameter_value&quot;</span><span class="p">)</span> <span class="o">/</span>
+                                    <span class="n">penalty_term</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;sigma&quot;</span><span class="p">),</span> <span class="mf">2.0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">chi_squared</span> <span class="o">+=</span> <span class="n">value</span>
         <span class="k">return</span> <span class="n">chi_squared</span>
 
 </div></div>
@@ -182,7 +208,7 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Arrays are different lengths&quot;</span><span class="p">)</span>
     <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
-    <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span> <span class="c"># Limit of zero</span>
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># Limit of zero</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
@@ -229,7 +255,7 @@
     <span class="k">return</span> <span class="n">total</span>
 
 </div>
-<div class="viewcode-block" id="log_likelihood"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.log_likelihood">[docs]</a><span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+<div class="viewcode-block" id="log_likelihood"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.log_likelihood">[docs]</a><span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Calculates the (Baker-Cousins) log likelihood.</span>
 
 <span class="sd">    .. note::</span>
@@ -246,6 +272,9 @@
 <span class="sd">        events</span>
 <span class="sd">      expected (:class:`numpy.array`, *float*): Number of expected</span>
 <span class="sd">        events</span>
+<span class="sd">      per_bin (bool, optional): If True returns</span>
+<span class="sd">        (:obj:`total`, :obj:`ll_per_bin`), otherwise just returns</span>
+<span class="sd">        :obj:`total`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">      ValueError: If arrays are different lengths.</span>
@@ -253,6 +282,8 @@
 <span class="sd">    Returns:</span>
 <span class="sd">      float: Calculated Neyman&#39;s chi squared</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Create chi-squared per bin array</span>
+    <span class="n">ll_per_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Arrays are different lengths&quot;</span><span class="p">)</span>
     <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
@@ -262,10 +293,15 @@
         <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
             <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
         <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
-            <span class="n">total</span> <span class="o">+=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">ll</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">total</span> <span class="o">+=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">total</span></div>
+            <span class="n">ll</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">ll</span>
+        <span class="n">ll_per_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll_per_bin</span><span class="p">,</span> <span class="p">[</span><span class="n">ll</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">per_bin</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="n">ll_per_bin</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">total</span></div>
 </pre></div>
 
           </div>

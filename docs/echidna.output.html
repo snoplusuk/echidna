@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="up" title="echidna package" href="echidna.html" />
     <link rel="next" title="echidna.scripts package" href="echidna.scripts.html" />
@@ -84,9 +84,9 @@ high with bins.</p>
 
 <dl class="function">
 <dt id="echidna.output.plot.plot_projection">
-<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_projection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the spectra as projected onto the dimension.
-For example dimension == 0 will plot the spectra as projected onto the
+<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em>, <em>fig_num=1</em>, <em>show_plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the spectra as projected onto the dimension.</p>
+<p>For example dimension == 0 will plot the spectra as projected onto the
 energy dimension.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -122,12 +122,339 @@ radial and time dimensions i.e. not energy.</p>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="echidna.output.plot.spectral_plot">
+<code class="descclassname">echidna.output.plot.</code><code class="descname">spectral_plot</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>dimension=0</em>, <em>fig_num=1</em>, <em>show_plot=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#spectral_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.spectral_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce spectral plot.</p>
+<p>For a given signal, produce a plot showing the signal and relevant
+backgrounds. Backgrounds are automatically summed to create the
+spectrum &#8216;Summed background&#8217; and all spectra passed in
+<code class="xref py py-obj docutils literal"><span class="pre">spectra_dict</span></code> will be summed to produce the &#8220;Sum&#8221; spectrum.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra_dict</strong> (<em>dict</em>) &#8211; Dictionary containing each spectrum you wish
+to plot, and the relevant parameters required to plot them.</li>
+<li><strong>dimension</strong> (<em>int, optional</em>) &#8211; The dimension or axis along which the
+spectra should be plotted. Default is energy axis.</li>
+<li><strong>fig_num</strong> (<em>int, optional</em>) &#8211; The number of the figure. If you are
+producing multiple spectral plots automatically, this can be
+useful to ensure pyplot treats each plot as a separate figure.
+Default is 1.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<p>An example <code class="xref py py-obj docutils literal"><span class="pre">spectra_dict</span></code> is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">Te130_0n2b</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">&#39;signal&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;blue&#39;</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;signal&#39;</span><span class="p">},</span>
+ <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">Te130_2n2b</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">r&#39;$2\nu2\beta&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;red&#39;</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;background&#39;</span><span class="p">},</span>
+ <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">B8_Solar</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">&#39;solar&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;green&#39;</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;background&#39;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>log_y (<em>bool</em>): Use log scale on y-axis.</li>
+<li>per_bin (<em>bool</em>): Include chi-squared per bin histogram.</li>
+<li>limit (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>): Include a spectrum showing
+a current or target limit.</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
 </div>
 <div class="section" id="module-echidna.output.plot_chi_squared">
 <span id="echidna-output-plot-chi-squared-module"></span><h2>echidna.output.plot_chi_squared module<a class="headerlink" href="#module-echidna.output.plot_chi_squared" title="Permalink to this headline">¶</a></h2>
+<p>Contains functions to view and interrogate chi-squared minimisation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">ivar MAIN_FONT:</th><td class="field-body">style properties for the main font to use in plot labels</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">vartype MAIN_FONT:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.chi_squared_map">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_map</code><span class="sig-paren">(</span><em>syst_analyser</em>, <em>fig_num=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot chi squared surface for systematic vs. signal counts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>syst_analyser</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser" title="echidna.limit.limit_setting.SystAnalyser"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_setting.SystAnalyser</span></code></a>) &#8211; Systematic
+analyser object, created during limit setting. Can be used
+during limit setting setting or can load an instance from
+hdf5</li>
+<li><strong>fig_num</strong> (<em>int</em>) &#8211; Fig number. When creating multiple plots in the
+same script, ensures matplotlib doesn&#8217;t overwrite them.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>contours (<em>bool</em>): if True produces a contour plot of chi
+squared surface. Default (<em>False</em>).</li>
+<li>preferred_values (<em>bool</em>): if False &#8220;preferred values&#8221; curve
+is not overlayed on colour map. Default (<em>True</em>)</li>
+<li>minima (<em>bool</em>): if False &#8220;minima&#8221; are not overlayed on
+colour map. Default (<em>True</em>)</li>
+<li>save_as (<em>string</em>): supply file name to save image</li>
+</ul>
+</div></blockquote>
+<p class="last">Default is to produce a colour map, with &#8220;preferred values&#8221; curve
+and &#8220;minima&#8221; overlayed.</p>
+</div>
+</dd></dl>
+
 <dl class="function">
 <dt id="echidna.output.plot_chi_squared.chi_squared_vs_signal">
-<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em>, <em>converter=None</em>, <em>fig_num=1</em>, <em>n_atoms=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the chi squared as a function of signal counts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal_config</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>) &#8211; Signal
+config class, where chi squareds have been stored.</li>
+<li><strong>converter</strong> (<a class="reference internal" href="echidna.calc.html#echidna.calc.decay.DBIsotope" title="echidna.calc.decay.DBIsotope"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.decay.DBIsotope</span></code></a>, optional) &#8211; Converter
+used to convert between counts and half-life/effective mass.</li>
+<li><strong>fig_num</strong> (<em>int</em>) &#8211; Fig number. When creating multiple plots in the
+same script, ensures matplotlib doesn&#8217;t overwrite them.</li>
+<li><strong>n_atoms</strong> (<em>float</em>) &#8211; Number of atoms for converter to use in
+calculations of half life or effective mass.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>penalty (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>): config
+for signal with penalty term.</li>
+<li>effective_mass (<em>bool</em>): if True, plot the x-axis as the
+signal contribution effective mass.</li>
+<li>half_life (<em>bool</em>): if True, plot the x-axis as the signal
+contribution half life.</li>
+</ul>
+</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If &#8216;half_life&#8217; or &#8216;effective_mass&#8217; keyword arguments
+are used without <a class="reference internal" href="echidna.calc.html#echidna.calc.decay.DBIsotope" title="echidna.calc.decay.DBIsotope"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.decay.DBIsotope</span></code></a> object
+to use as converter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.main">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">main</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Script to produce chi squared plots for a given systematic.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Produces</p>
+<ul class="last simple">
+<li>Plot of chi squared vs. signal counts</li>
+<li>Plot of systematic vs. signal chi squared surface, either
+contour plot or color map</li>
+<li>Plot of systematic value vs. penalty term value</li>
+</ul>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>dict</em>) &#8211; command line arguments from argparse.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.penalty_vs_systematic">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">penalty_vs_systematic</code><span class="sig-paren">(</span><em>syst_analyser</em>, <em>fig_num=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#penalty_vs_systematic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.penalty_vs_systematic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot penalty_value vs. systematic</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>syst_analyser</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser" title="echidna.limit.limit_setting.SystAnalyser"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_setting.SystAnalyser</span></code></a>) &#8211; Systematic
+analyser object, created during limit setting. Can be used
+during limit setting setting or can load an instance from
+hdf5</li>
+<li><strong>fig_num</strong> (<em>int</em>) &#8211; Fig number. When creating multiple plots in the
+same script, ensures matplotlib doesn&#8217;t overwrite them.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>save_as (<em>string</em>): supply file name to save image</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.push_pull">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">push_pull</code><span class="sig-paren">(</span><em>syst_analyser</em>, <em>fig=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#push_pull"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.push_pull" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot penalty value - poisson likelihood chi squared.</p>
+<p>When does minimising chi squared, which wants to &#8220;pull&#8221; the away
+from the data/prior value dominate and when does the penalty term,
+which wants to &#8220;pull&#8221; towards the data/prior, constraining the fit
+dominate?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>syst_analyser</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser" title="echidna.limit.limit_setting.SystAnalyser"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_setting.SystAnalyser</span></code></a>) &#8211; Systematic
+analyser object, created during limit setting. Can be used
+during limit setting setting or can load an instance from
+hdf5</li>
+<li><strong>fig_num</strong> (<em>int</em>) &#8211; Fig number. When creating multiple plots in the
+same script, ensures matplotlib doesn&#8217;t overwrite them.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>save_as (<em>string</em>): supply file name to save image</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared.turn_on">
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">turn_on</code><span class="sig-paren">(</span><em>syst_analyser</em>, <em>signal_config</em>, <em>fig=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#turn_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.turn_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot deviation from chi-squared with no floated systematics.</p>
+<p>When does the effect of floating the systematic &#8220;turn on&#8221;?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>syst_analyser</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser" title="echidna.limit.limit_setting.SystAnalyser"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_setting.SystAnalyser</span></code></a>) &#8211; Systematic
+analyser object, created during limit setting. Can be used
+during limit setting setting or can load an instance from
+hdf5</li>
+<li><strong>signal_config</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>) &#8211; Signal
+config class, where chi squareds have been stored.</li>
+<li><strong>fig_num</strong> (<em>int</em>) &#8211; Fig number. When creating multiple plots in the
+same script, ensures matplotlib doesn&#8217;t overwrite them.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>save_as (<em>string</em>): supply file name to save image</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.output.plot_chi_squared_root">
+<span id="echidna-output-plot-chi-squared-root-module"></span><h2>echidna.output.plot_chi_squared_root module<a class="headerlink" href="#module-echidna.output.plot_chi_squared_root" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared_root.chi_squared_vs_half_life">
+<code class="descclassname">echidna.output.plot_chi_squared_root.</code><code class="descname">chi_squared_vs_half_life</code><span class="sig-paren">(</span><em>signal_config</em>, <em>converter</em>, <em>scaling</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared_root.html#chi_squared_vs_half_life"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared_root.chi_squared_vs_half_life" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the chi squared as a function of signal counts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>signal_config</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>) &#8211; signal
+config class, where chi squareds have been stored.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>penalty (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>): config
+for signal with penalty term.</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared_root.chi_squared_vs_mass">
+<code class="descclassname">echidna.output.plot_chi_squared_root.</code><code class="descname">chi_squared_vs_mass</code><span class="sig-paren">(</span><em>signal_config</em>, <em>converter</em>, <em>scaling</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared_root.html#chi_squared_vs_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared_root.chi_squared_vs_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the chi squared as a function of signal counts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>signal_config</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>) &#8211; signal
+config class, where chi squareds have been stored.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>penalty (<a class="reference internal" href="echidna.limit.html#echidna.limit.limit_config.LimitConfig" title="echidna.limit.limit_config.LimitConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.limit_config.LimitConfig</span></code></a>): config
+for signal with penalty term.</li>
+</ul>
+</div></blockquote>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_chi_squared_root.chi_squared_vs_signal">
+<code class="descclassname">echidna.output.plot_chi_squared_root.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared_root.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared_root.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the chi squared as a function of signal counts</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -154,8 +481,34 @@ for signal with penalty term.</li>
 <div class="section" id="module-echidna.output.plot_root">
 <span id="echidna-output-plot-root-module"></span><h2>echidna.output.plot_root module<a class="headerlink" href="#module-echidna.output.plot_root" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="echidna.output.plot_root.plot_chi_squared_per_bin">
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_chi_squared_per_bin</code><span class="sig-paren">(</span><em>calculator</em>, <em>x_bins</em>, <em>x_low</em>, <em>x_high</em>, <em>x_title=None</em>, <em>graphical=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_chi_squared_per_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_chi_squared_per_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a histogram of chi-squared per bin.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>calculator</strong> (<a class="reference internal" href="echidna.limit.html#echidna.limit.chi_squared.ChiSquared" title="echidna.limit.chi_squared.ChiSquared"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.chi_squared.ChiSquared</span></code></a>) &#8211; Calculator
+containing the chi-squared values to plot.</li>
+<li><strong>x_bins</strong> (<em>int</em>) &#8211; Number of bins.</li>
+<li><strong>x_low</strong> (<em>float</em>) &#8211; Lower edge of first bin to plot.</li>
+<li><strong>x_high</strong> (<em>float</em>) &#8211; Upper edge of last bin to plot.</li>
+<li><strong>x_title</strong> (<em>string, optional</em>) &#8211; X Axis title.</li>
+<li><strong>graphical</strong> (<em>bool</em>) &#8211; Plots hist to screen if true.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">ROOT.TH1D</span></code>: Histogram of chi-squared per bin.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="echidna.output.plot_root.plot_projection">
-<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_projection" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em>, <em>graphical=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_projection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the spectra as projected onto the dimension.
 For example dimension == 0 will plot the spectra as projected onto the
 energy dimension.</p>
@@ -166,10 +519,11 @@ energy dimension.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
 <li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project the spectra onto.</li>
+<li><strong>graphical</strong> (<em>bool</em>) &#8211; Shows plot and waits for user input when true.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(:class`ROOT.TH1D`:) plot.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TH1D</span></code>): plot.</p>
 </td>
 </tr>
 </tbody>
@@ -178,7 +532,7 @@ energy dimension.</p>
 
 <dl class="function">
 <dt id="echidna.output.plot_root.plot_surface">
-<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_surface" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em>, <em>graphical=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the spectra with the dimension projected out.
 For example dimension == 0 will plot the spectra as projected onto the
 radial and time dimensions i.e. not energy.</p>
@@ -189,11 +543,65 @@ radial and time dimensions i.e. not energy.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra</span></code></a>) &#8211; The spectra to plot.</li>
 <li><strong>dimension</strong> (<em>int</em>) &#8211; The dimension to project out.</li>
+<li><strong>graphical</strong> (<em>bool</em>) &#8211; Shows plot and waits for user input when true.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(:class`ROOT.TH2D`:) plot.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TH2D</span></code>): plot.</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot_root.spectral_plot">
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">spectral_plot</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>dimension=0</em>, <em>show_plot=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#spectral_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.spectral_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce spectral plot.</p>
+<p>For a given signal, produce a plot showing the signal and relevant
+backgrounds. Backgrounds are automatically summed to create the
+spectrum &#8220;Summed background&#8221; and all spectra passed in
+<code class="xref py py-obj docutils literal"><span class="pre">spectra_dict</span></code> will be summed to produce the &#8220;Sum&#8221; spectra</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra_dict</strong> (<em>dict</em>) &#8211; Dictionary containing each spectrum you wish
+to plot, and the relevant parameters required to plot them.</li>
+<li><strong>dimension</strong> (<em>int, optional</em>) &#8211; The dimension or axis along which the
+spectra should be plotted. Default is energy axis.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<p>An example <code class="xref py py-obj docutils literal"><span class="pre">spectra_dict</span></code> is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">Te130_0n2b</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">&#39;signal&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">kBlue</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;signal&#39;</span><span class="p">},</span>
+ <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">Te130_2n2b</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">r&#39;$2\nu2\beta&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">kRed</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;background&#39;</span><span class="p">},</span>
+ <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;spectra&#39;</span><span class="p">:</span> <span class="n">B8_Solar</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="s">&#39;solar&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">kGreen</span><span class="p">},</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;background&#39;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>log_y (<em>bool</em>): Use log scale on y-axis.</li>
+<li>limit (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>): Include a spectrum showing
+a current or target limit.</li>
+</ul>
+</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">ROOT.TCanvas</span></code>: Canvas containing spectral plot.</td>
 </tr>
 </tbody>
 </table>
@@ -297,6 +705,7 @@ numpy array(s).</li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-echidna.output.plot">echidna.output.plot module</a></li>
 <li><a class="reference internal" href="#module-echidna.output.plot_chi_squared">echidna.output.plot_chi_squared module</a></li>
+<li><a class="reference internal" href="#module-echidna.output.plot_chi_squared_root">echidna.output.plot_chi_squared_root module</a></li>
 <li><a class="reference internal" href="#module-echidna.output.plot_root">echidna.output.plot_root module</a></li>
 <li><a class="reference internal" href="#module-echidna.output.store">echidna.output.store module</a></li>
 <li><a class="reference internal" href="#module-echidna.output">Module contents</a></li>
