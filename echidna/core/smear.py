@@ -396,19 +396,23 @@ class Smear(object):
 
 
 class EResSmear(Smear):
-    """ Allows you to smear directly by energy resolution
-      (e.g. 0.05 * :math:`\sqrt(energy)`
+    """ Allows you to smear directly by supplied energy resolution
+      (in :math:`\sqrt{MeV}`).
 
     Inherits from :class:`Smear` to provide exactly the same
     functionality but overrides :meth:`Smear.get_energy_sigma` to use
     a given energy resolution to calculate sigma.
 
+    Args:
+      energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
+        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+
     Attributes:
       _light_yield (float): Number of PMT hits expected for a
-        MeV energy deposit in NHit/MeV
-      _energy_resolution (float): Energy resolution / :math:`\sqrt(MeV)`
-        e.g. 0.05 for 5% / :math:`\sqrt(MeV)`.
-      _position_resolution (float): Sigma in mm
+        MeV energy deposit in NHit/MeV.
+      _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
+        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+      _position_resolution (float): Sigma in mm.
     """
     def __init__(self, energy_resolution):
         super(EResSmear, self).__init__()
@@ -421,7 +425,7 @@ class EResSmear(Smear):
           energy (float): Energy value of data point(s)
 
         Returns:
-          float. Sigma (MeV) equivalent to energy_resolution *
-            :math:`\sqrt(energy)`
+          float: Sigma (MeV) equivalent to energy_resolution *
+            :math:`\sqrt{energy}`
         """
         return self._energy_resolution * np.power(energy, (1./2.))
