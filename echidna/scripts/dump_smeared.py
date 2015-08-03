@@ -24,14 +24,14 @@ import echidna.output.store as store
 import echidna.core.smear as smear
 
 if __name__ == "__main__":
-
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--smear_method", nargs='?', const="weight",
                         type=str, default="weight",
                         help="specify the smearing method to use")
     parser.add_argument("-r", "--energy_resolution", default=None, type=float,
-                        help="specify energy resolution e.g. 0.05 for 5 percent")
+                        help="specify energy resolution "
+                        "e.g. 0.05 for 5 percent")
     parser.add_argument("path", type=str,
                         help="specify path to hdf5 file")
     args = parser.parse_args()
