@@ -131,6 +131,10 @@ class Spectra(object):
       _raw_events (int): The number of raw events used to generate the
         spectra. Increments by one with each fill independent of
         weight.
+      _style (string): Pyplot-style plotting style e.g. "b-" or
+        {"color": "blue"}.
+      _rois (dict): Dictionary containing the details of any ROI, along
+        any axis, which has been defined.
     """
     def __init__(self, name, num_decays, spectra_config):
         """ Initialise the spectra data container.
@@ -142,6 +146,8 @@ class Spectra(object):
             bins.append(self._config.getpar(v).bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
+        self._style = {"color": "blue"}  # default style for plotting
+        self._rois = {}
         self._name = name
         self._num_decays = num_decays
 
@@ -179,6 +185,54 @@ class Spectra(object):
         # Cross fingers the ordering is the same!
         self._data[tuple(bins)] += weight
         
+    def shrink_to_roi(self, lower_limit, upper_limit, dimension):
+        """ Shrink spectrum to a defined Region of Interest (ROI)
+
+        Shrinks spectrum to given ROI and saves ROI parameters.
+
+        Args:
+          lower_limit (float): Lower bound of ROI, along given axis.
+          upper_limit (float): Upper bound of ROI, along given axis.
+          dimension (str): Name of the dimension to shrink.
+        """
+        integral_full = self.sum()  # Save integral of full spectrum
+
+        # Shrink to ROI
+        self.shrink(dimension+"_low"=lower_limit, dimension+"_high"=upper_limit)
+
+        # Calculate efficiency
+        integral_roi = self.sum()  # Integral of spectrum over ROI
+        efficiency = float(integral_roi) / float(integral_full)
+        self._rois[dimension] = {"low": lower_limit, "high": upper_limit,
+                                 "efficiency": efficiency}
+
+    def get_roi(self, dimension):
+        """ Access information about a predefined ROI for a given dimension
+
+        Returns:
+          dict: Dictionary containing parameters defining the ROI, on
+            the given dimension.
+        """
+        return self._rois[dimension]
+
+    def set_style(self, style):
+        """ Sets plotting style.
+
+        Styles should be valid pyplot style strings e.g. "b-", for a
+        blue line, or dictionaries of strings e.g. {"color": "red"}.
+
+        Args:
+          style (string): Pyplot-style plotting style.
+        """
+        self._style = style
+
+    def get_style(self):
+        """
+        Returns:
+          string/dict: :attr:`_style` - pyplot-style plotting style.
+        """
+        return self._style
+
     def project(self, dimension):
         """ Project the histogram along an axis for a given dimension.
         Note that the dimension must be one of the named parameters in
@@ -292,6 +346,34 @@ class Spectra(object):
         # Internal bookeeping complete, now slice the data
         self._data = self._data[slices]
 
+    def cut(self, **kwargs):
+        """ Similar to :meth:`shrink`, but updates scaling information.
+
+        If a spectrum is cut using :meth:`shrink`, subsequent calls to
+        :meth:`scale` the spectrum must still scale the *full* spectrum
+        i.e. before any cuts. The user supplies the number of decays
+        the full spectrum should now represent.
+
+        However, sometimes it is more useful to be able specify the
+        number of events the revised spectrum should represent. This
+        method updates the scaling information, so that it becomes the
+        new *full* spectrum.
+
+        Args:
+          \**kwargs (float): Named parameters to slice on; note that these 
+            must be of the form [name]_low or [name]_high where [name] 
+            is a dimension present in the SpectraConfig.
+        """
+        initial_count = self.sum()  # Store initial count
+        self.shrink(**kwargs)
+        new_count = self.sum()
+        reduction_factor = float(new_count) / float(initial_count)
+        # This reduction factor tells us how much the number of detected events
+        # has been reduced by shrinking the spectrum. We want the number of
+        # decays that the spectrum should now represent to be reduced by the
+        # same factor
+        self._num_decays *= reduction_factor
+
     def add(self, spectrum):
         """ Adds a spectrum to current spectra object.
 
@@ -345,3 +427,26 @@ class Spectra(object):
         self._data = self._data.reshape(flattened)
         for i in range(len(new_bins)):
             self._data = self._data.sum(-1*(i+1))
+
+    def copy(self, name=None):
+        # why not just to new_spectra = copy.copy(spectra)?
+        """ Copies the current spectra and returns a new identical one.
+
+        Args:
+          name (string, optional): Name of the new copied spectrum.
+            Default is the name of the current spectrum.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra` object which is identical to
+            the current spectra apart from possibly its name.
+        """
+        # What about style and raw_events?
+        if not name:
+            name = self._name
+        new_spectrum = Spectra(name, 0., self._config)
+        new_spectrum._data = numpy.zeros(shape=numpy.shape(self._data),
+                                         dtype=float)
+        new_spectrum.add(self)
+        new_spectrum._style = self._style
+        new_spectrum._rois = self._rois
+        return new_spectrum

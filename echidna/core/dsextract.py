@@ -90,9 +90,31 @@ class EnergyExtract(Extractor):
           mc (:class:`RAT.DS.MC`) entry
 
         Returns:
-          True energy
+          True quenched energy
         '''
         return mc.GetScintQuenchedEnergyDeposit()
+
+    def truth_get_valid(self, mc):
+        '''Check whether energy of a DS::MC is valid
+
+        Args:
+          mc (:class:`RAT.DS.MC`) entry
+
+        Returns:
+          Validity boolean
+        '''
+        return True
+
+    def truth_get_value(self, mc):
+        '''Get energy value from a DS::MC
+
+        Args:
+          mc (:class:`RAT.DS.MC`) entry
+
+        Returns:
+          True energy
+        '''
+        return mc.GetScintEnergyDeposit()
 
     def ntuple_ev_get_valid(self, entry):
         '''Check whether energy of an ntuple EV is valid
@@ -134,7 +156,29 @@ class EnergyExtract(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          True energy
+          True quenched energy
+        '''
+        return entry.mcEdepQuenched
+
+    def ntuple_truth_get_valid(self, entry):
+        '''Check whether energy of an ntuple MC is valid
+
+        Args:
+          entry (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          Validity boolean
+        '''
+        return True
+
+    def ntuple_truth_get_value(self, entry):
+        '''Get energy value from an ntuple MC
+
+        Args:
+          entry (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          True quenched energy
         '''
         return entry.mcEdepQuenched
 
