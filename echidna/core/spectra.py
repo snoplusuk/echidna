@@ -3,6 +3,7 @@ import numpy
 import yaml
 import copy
 
+
 class SpectraParameter(object):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).
@@ -52,14 +53,16 @@ class SpectraParameter(object):
 
 class SpectraConfig(object):
     """Configuration container for Spectra objects.  Able to load
-    directly with a set list of SpectraParameters or from yaml 
+    directly with a set list of SpectraParameters or from yaml
     configuration files.
 
     Args:
-      parameters (:class:`collections.OrderedDict`): List of SpectraParameter objects
+      parameters (:class:`collections.OrderedDict`): List of
+        SpectraParameter objects
 
     Attributes:
-      _parameters (:class:`collections.OrderedDict`): List of SpectraParameter objects
+      _parameters (:class:`collections.OrderedDict`): List of
+        SpectraParameter objects
     """
 
     def __init__(self, parameters):
@@ -92,7 +95,7 @@ class SpectraConfig(object):
 
     def getpars(self):
         """Get list of parameter names
-        
+
         Returns:
           List of parameter names
         """
@@ -108,6 +111,7 @@ class SpectraConfig(object):
             if p == parameter:
                 return i
         raise IndexError("Unknown parameter %s" % parameter)
+
 
 class Spectra(object):
     """ This class contains a spectra as a function of energy, radius and time.
@@ -155,8 +159,8 @@ class Spectra(object):
         return self._config
 
     def fill(self, weight=1.0, **kwargs):
-        """ Fill the bin with weight.  Note that values for all named 
-        parameters in the spectra's config (e.g. energy, radial) must be 
+        """ Fill the bin with weight.  Note that values for all named
+        parameters in the spectra's config (e.g. energy, radial) must be
         passed.
 
         Args:
@@ -175,16 +179,18 @@ class Spectra(object):
             if var not in kwargs:
                 raise Exception('Missing parameter %s' % var)
         for v in self._config.getpars():
-            if not self._config.getpar(v).low <= kwargs[v] < self._config.getpar(v).high:
+            if not self._config.getpar(v).low <= kwargs[v] < \
+                    self._config.getpar(v).high:
                 raise ValueError("%s out of range: %s" % (v, kwargs[v]))
         bins = []
         for v in self._config.getpars():
-            bins.append((kwargs[v] - self._config.getpar(v).low) / \
-                        (self._config.getpar(v).high - self._config.getpar(v).low) * \
+            bins.append((kwargs[v] - self._config.getpar(v).low) /
+                        (self._config.getpar(v).high -
+                         self._config.getpar(v).low) *
                         self._config.getpar(v).bins)
         # Cross fingers the ordering is the same!
         self._data[tuple(bins)] += weight
-        
+
     def shrink_to_roi(self, lower_limit, upper_limit, dimension):
         """ Shrink spectrum to a defined Region of Interest (ROI)
 
@@ -198,7 +204,8 @@ class Spectra(object):
         integral_full = self.sum()  # Save integral of full spectrum
 
         # Shrink to ROI
-        self.shrink(dimension+"_low"=lower_limit, dimension+"_high"=upper_limit)
+        self.shrink(dimension+"_low"=lower_limit,
+                    dimension+"_high"=upper_limit)
 
         # Calculate efficiency
         integral_roi = self.sum()  # Integral of spectrum over ROI
@@ -307,8 +314,8 @@ class Spectra(object):
         information as well as the data.
 
         Args:
-          \**kwargs (float): Named parameters to slice on; note that these 
-            must be of the form [name]_low or [name]_high where [name] 
+          \**kwargs (float): Named parameters to slice on; note that these
+            must be of the form [name]_low or [name]_high where [name]
             is a dimension present in the SpectraConfig.
 
         Notes:
@@ -337,10 +344,13 @@ class Spectra(object):
                 kwargs["%s_low" % var] = self._config.getpar(var).low
             if "%s_high" % var not in kwargs:
                 kwargs["%s_high" % var] = self._config.getpar(var).high
-            low_bin = (kwargs["%s_low"] - self._config.getpar(var).low) / self._config.getpar(var).get_width()
-            high_bin = (kwargs["%s_high"] - self._config.getpar(var).high) / self._config.getpar(var).get_width()
+            low_bin = (kwargs["%s_low"] - self._config.getpar(var).low) / \
+                self._config.getpar(var).get_width()
+            high_bin = (kwargs["%s_high"] - self._config.getpar(var).high) / \
+                self._config.getpar(var).get_width()
             bins = int(high_bin - low_bin)
-            self._config.setpar(var, kwargs["%s_low" % var], kwargs["%s_high" % var], bins=bins)
+            self._config.setpar(var, kwargs["%s_low" % var],
+                                kwargs["%s_high" % var], bins=bins)
             slices.append(low_bin, high_bin)
 
         # Internal bookeeping complete, now slice the data
@@ -360,8 +370,8 @@ class Spectra(object):
         new *full* spectrum.
 
         Args:
-          \**kwargs (float): Named parameters to slice on; note that these 
-            must be of the form [name]_low or [name]_high where [name] 
+          \**kwargs (float): Named parameters to slice on; note that these
+            must be of the form [name]_low or [name]_high where [name]
             is a dimension present in the SpectraConfig.
         """
         initial_count = self.sum()  # Store initial count
@@ -387,12 +397,18 @@ class Spectra(object):
             if v not in self._config.getpars():
                 raise IndexError("%s not present in this spectrum" % v)
         for v in self._config.getpars():
-            if self._config.getpar(v).high != spectrum.get_config().getpar(v).high:
-                raise ValueError("Upper %s bounds in spectra are not equal." % v)
-            if self._config.getpar(v).low != spectrum.get_config().getpar(v).low:
-                raise ValueError("Lower %s bounds in spectra are not equal." % v)
-            if self._config.getpar(v).bins != spctrum.get_config().getpar(v).bins:
-                raise ValueError("Number of %s bins in spectra are not equal." % v)
+            if self._config.getpar(v).high != \
+                    spectrum.get_config().getpar(v).high:
+                raise ValueError("Upper %s bounds in spectra are not equal."
+                                 % v)
+            if self._config.getpar(v).low != \
+                    spectrum.get_config().getpar(v).low:
+                raise ValueError("Lower %s bounds in spectra are not equal."
+                                 % v)
+            if self._config.getpar(v).bins != \
+                    spectrum.get_config().getpar(v).bins:
+                raise ValueError("Number of %s bins in spectra are not equal."
+                                 % v)
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
         self._num_decays += spectrum._num_decays
@@ -412,13 +428,15 @@ class Spectra(object):
         # Check all keys in kwargs are in the config variables and visa versa
         print len(new_bins), len(self._config.getpars())
         if len(new_bins) != len(self._config.getpars()):
-            raise ValueError('Incorrect number of dimensions; need %s' % len(self._config.getpars()))
+            raise ValueError('Incorrect number of dimensions; need %s'
+                             % len(self._config.getpars()))
 
         # Now do the rebinning
         for i, v in enumerate(self._config.getpars()):
             if self._config.getpar(v).bins % new_bins[i] != 0:
                 raise ValueError("Old bins/New bins must be integer old: %s"
-                                 " new: %s" % (self._config.getpar(v).bins, new_bins[i]))
+                                 " new: %s"
+                                 % (self._config.getpar(v).bins, new_bins[i]))
             self._config.getpar(v).bins = new_bins[i]
 
         compression_pairs = [(d, c//d) for d, c in zip(new_bins,

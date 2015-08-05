@@ -23,13 +23,14 @@ import echidna.core.spectra as spectra
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
+
 def read_and_dump_root(fname, config_path, spectrum_name, save_path):
-    """ Creates both mc and reco spectra from ROOT files, dumping the 
+    """ Creates both mc and reco spectra from ROOT files, dumping the
     results as a spectrum object in a hdf5 file
 
     Args:
       fname (str): The file to be evaluated
-      config_path (str): Path to the config file    
+      config_path (str): Path to the config file
       spectrum_name (str): Name to be applied to the spectrum
       save_path (str): Path to a directory where the hdf5 files will be dumped
 
@@ -40,12 +41,11 @@ def read_and_dump_root(fname, config_path, spectrum_name, save_path):
     reco_config = spectra.SpectraConfig.load_from_file(config_path)
     truth_config = spectra.SpectraConfig.load_from_file(config_path)
     mc_spec = fill_spectrum.fill_mc_spectrum(
-        fname, spectrumname = "%s_mc" % (spectrum_name), config = mc_config )
+        fname, spectrumname="%s_mc" % (spectrum_name), config=mc_config)
     reco_spec = fill_spectrum.fill_reco_spectrum(
-        fname, spectrumname = "%s_reco" % (spectrum_name), config = reco_config )
+        fname, spectrumname="%s_reco" % (spectrum_name), config=reco_config)
     truth_spec = fill_spectrum.fill_truth_spectrum(
-        fname, spectrumname = "%s_truth" % (spectrum_name), config = truth_config )
-
+        fname, spectrumname="%s_truth" % (spectrum_name), config=truth_config)
     # Plot
     plot_spectrum(mc_spec, mc_config)
     plot_spectrum(reco_spec, reco_config)
@@ -103,7 +103,8 @@ if __name__ == "__main__":
         path_list = read_tab_delim_file(args.read_text_file)
         for fname in path_list:
             spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
-            read_and_dump_root(fname, args.config, spectrum_name, args.save_path)
+            read_and_dump_root(fname, args.config, spectrum_name,
+                               args.save_path)
     else:  # If args passed directly, deal with them
         fname = args.fname
         spectrum_name = fname[fname.rfind('/', 0, -1)+1:]

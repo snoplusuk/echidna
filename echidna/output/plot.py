@@ -13,7 +13,8 @@ def _produce_axis(spectra, dimension):
       bins (int): Number of bins
     """
     parameter = spectra.get_config().getpar(dimension)
-    return [parameter.low + x * (parameter.high - parameter.low) / parameter.bins 
+    return [parameter.low + x * (parameter.high - parameter.low) /
+            parameter.bins
             for x in range(parameter.bins)]
 
 
@@ -38,6 +39,7 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     if show_plot:
         plt.show()
     return fig
+
 
 def spectral_plot(spectra_dict, dimension, fig_num=1,
                   show_plot=True, **kwargs):
@@ -94,25 +96,25 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
         else:
             if spectra.get_config().getpar(dimension).low != low:
                 raise AssertionError("Spectra " + spectra._name + " has "
-                                     "incorrect dimension %s lower limit" % 
-                                     dimension)
+                                     "incorrect dimension %s lower limit"
+                                     % dimension)
             if spectra.get_config().getpar(dimension).high != high:
                 raise AssertionError("Spectra " + spectra._name + " has "
-                                     "incorrect dimension %s higher limit" % 
-                                     dimension)
+                                     "incorrect dimension %s higher limit"
+                                     % dimension)
             if spectra.get_config().getpar(dimension).bins != bins:
                 raise AssertionError("Spectra " + spectra._name + " has "
-                                     "incorrect dimension %s bins" % 
-                                     dimension)
+                                     "incorrect dimension %s bins"
+                                     % dimension)
         x = _produce_axis(spectra, dimension)
         x_label = "FIXME: add helper function to get labels"
     summed_background = numpy.zeros(shape=shape)
     summed_total = numpy.zeros(shape=shape)
     hist_range = (x[0]-0.5*width, x[-1]+0.5*width)
     if kwargs.get("log_y") is True:
-        log=True
+        log = True
     else:
-        log=False
+        log = False
     for value in spectra_dict.values():
         spectra = value.get("spectra")
         ax.hist(x, bins=len(x), weights=spectra.project(dimension),
@@ -145,7 +147,8 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width, box.height*0.8])
     plt.legend(loc="upper right", bbox_to_anchor=(1.0, 1.25), fontsize="8")
-    plt.ylabel("Count per %.1f keV bin" % kev_width) # FIXME: why keV by default
+    # FIXME: why keV by default
+    plt.ylabel("Count per %.1f keV bin" % kev_width)
     plt.ylim(ymin=0.1)
 
     # Plot chi squared per bin, if required
@@ -168,6 +171,7 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
         plt.show()
     return fig
 
+
 def plot_surface(spectra, dimension1, dimension2):
     """ Plot the spectra with the dimension projected out.
     For example dimension == 0 will plot the spectra as projected onto the
@@ -181,13 +185,15 @@ def plot_surface(spectra, dimension1, dimension2):
     axis = fig.add_subplot(111, projection='3d')
     x = _produce_axis(spectra, dimension1)
     y = _produce_axis(spectra, dimension2)
-    # FIXME: if the index of x is higher than y then the surface may be returned the wrong way around
+    # FIXME: if the index of x is higher than y then the surface may be
+    # returned the wrong way around
     data = spectra.surface(dimension1, dimension2)
     axis.set_xlabel("FIXME: add helper function to get labels")
     axis.set_ylabel("FIXME: add helper function to get labels")
     axis.set_zlabel("Count per bin")
     print len(x), len(y), data.shape
-    X, Y = numpy.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
+    # `plot_surface` expects `x` and `y` data to be 2D
+    X, Y = numpy.meshgrid(x, y)
     print X.shape, Y.shape
     axis.plot_surface(X, Y, data)
     if show_plot:
@@ -198,7 +204,6 @@ def plot_surface(spectra, dimension1, dimension2):
 if __name__ == "__main__":
     import echidna
     import echidna.output.store as store
-
 
     filename = "/data/Te130_0n2b_mc_smeared.hdf5"
     spectre = store.load(echidna.__echidna_home__ + filename)

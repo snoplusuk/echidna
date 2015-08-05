@@ -14,9 +14,9 @@ def function_factory(dimension):
       Extractor object.
     '''
 
-    if dimension=="energy":
+    if dimension == "energy":
         return EnergyExtract()
-    elif dimension=="radial":
+    elif dimension == "radial":
         return RadialExtract()
     else:
         raise IndexError("Unknown parameter: %s" % dimension)
@@ -31,7 +31,7 @@ class Extractor(object):
     Attributes:
       _name (str): of the dimension
     '''
-    
+
     def __init__(self, name):
         '''Initialise the class
         '''
@@ -56,11 +56,12 @@ class EnergyExtract(Extractor):
         Returns:
           Validity boolean
         '''
-        if ev.DefaultFitVertexExists() and ev.GetDefaultFitVertex().ContainsEnergy() \
-           and ev.GetDefaultFitVertex().ValidEnergy():
+        if ev.DefaultFitVertexExists() and \
+                ev.GetDefaultFitVertex().ContainsEnergy() \
+                and ev.GetDefaultFitVertex().ValidEnergy():
             return True
         return False
-    
+
     def ev_get_value(self, ev):
         '''Get energy value from a DS::EV
 
@@ -125,7 +126,7 @@ class EnergyExtract(Extractor):
         Returns:
           Validity boolean
         '''
-        return (entry.scintFit != 0 and entry.energy>0)
+        return (entry.scintFit != 0 and entry.energy > 0)
 
     def ntuple_ev_get_value(self, entry):
         '''Get energy value from an ntuple EV
@@ -201,11 +202,12 @@ class RadialExtract(Extractor):
         Returns:
           Validity boolean
         '''
-        if ev.DefaultFitVertexExists() and ev.GetDefaultFitVertex().ContainsPosition() \
-           and ev.GetDefaultFitVertex().ValidPosition():
+        if ev.DefaultFitVertexExists() and \
+                ev.GetDefaultFitVertex().ContainsPosition() \
+                and ev.GetDefaultFitVertex().ValidPosition():
             return True
         return False
-    
+
     def ev_get_value(self, ev):
         '''Get radius value from a DS::EV
 

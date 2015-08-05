@@ -20,11 +20,13 @@ def dump(file_path, spectra):
         file_.attrs["name"] = spectra._name
         # Store parameters with a key word 'pars'
         for v in spectra.get_config().getpars():
-            file_.attrs["pars:%s:low" % v]  = spectra.get_config().getpar(v).low  
-            file_.attrs["pars:%s:high" % v]  = spectra.get_config().getpar(v).high
-            file_.attrs["pars:%s:bins" % v]  = spectra.get_config().getpar(v).bins
+            file_.attrs["pars:%s:low" % v] = \
+                spectra.get_config().getpar(v).low
+            file_.attrs["pars:%s:high" % v] = \
+                spectra.get_config().getpar(v).high
+            file_.attrs["pars:%s:bins" % v] = \
+                spectra.get_config().getpar(v).bins
         file_.attrs["num_decays"] = spectra._num_decays
-
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
 
@@ -74,14 +76,12 @@ def load(file_path):
                 if par not in parameters:
                     parameters[par] = spectra.SpectraParameter(par, 1, 1, 1)
                 parameters[par].setvar(**{val: file_.attrs[v]})
-                
         spec = spectra.Spectra(file_.attrs["name"],
                                file_.attrs["num_decays"],
                                spectra.SpectraConfig(parameters))
         spec._data = file_["data"].value
     print spec.get_config().getpars()
     return spec
-
 
 
 def load_old(file_path):
@@ -93,24 +93,27 @@ def load_old(file_path):
     """
     with h5py.File(file_path, "r") as file_:
         parameters = collections.OrderedDict()
-        parameters["energy"] = spectra.SpectraParameter("energy",
-                                                        file_.attrs["energy_low"],
-                                                        file_.attrs["energy_high"],
-                                                        file_.attrs["energy_bins"])
-        parameters["radial"] = spectra.SpectraParameter("radial",
-                                                        file_.attrs["radial_low"],
-                                                        file_.attrs["radial_high"],
-                                                        file_.attrs["radial_bins"])
+        parameters["energy"] = \
+            spectra.SpectraParameter("energy",
+                                     file_.attrs["energy_low"],
+                                     file_.attrs["energy_high"],
+                                     file_.attrs["energy_bins"])
+        parameters["radial"] = \
+            spectra.SpectraParameter("radial",
+                                     file_.attrs["radial_low"],
+                                     file_.attrs["radial_high"],
+                                     file_.attrs["radial_bins"])
         parameters["time"] = spectra.SpectraParameter("time",
                                                       file_.attrs["time_low"],
                                                       file_.attrs["time_high"],
                                                       file_.attrs["time_bins"])
         spectra_config = spectra.SpectraConfig(parameters)
         spec = spectra.Spectra(file_.attrs["name"],
-                                  file_.attrs["num_decays"],
-                                  spectra_config)
+                               file_.attrs["num_decays"],
+                               spectra_config)
         spec._data = file_["data"].value
     return spec
+
 
 def load_ndarray(file_path, ndarray_object):
     """ Dump any other class, mostly containing numpy arrays.

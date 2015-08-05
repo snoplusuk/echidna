@@ -10,13 +10,14 @@ import math
 import echidna.core.spectra as spectra
 import echidna.core.dsextract as dsextract
 
+
 def fill_reco_spectrum(filename, spectrumname="", config=None, spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
-    with weights. It takes the reconstructed energies and positions of the 
-    events from the root file. In order to keep the statistics, the time 
-    dependence is performed via adding weights to every event depending on 
-    the time period. Both, studied time and Half-life must be written in the 
+    with weights. It takes the reconstructed energies and positions of the
+    events from the root file. In order to keep the statistics, the time
+    dependence is performed via adding weights to every event depending on
+    the time period. Both, studied time and Half-life must be written in the
     same units.
 
     Args:
@@ -43,10 +44,10 @@ def fill_reco_spectrum(filename, spectrumname="", config=None, spectrum=None):
         if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
         spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount(),
+                                   dsreader.GetEntryCount(),
                                    config)
     else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
+        spectrum._num_decays += dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -105,9 +106,9 @@ def fill_mc_spectrum(filename, spectrumname="", config=None, spectrum=None):
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
         spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
+                                   dsreader.GetEntryCount())
     else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
+        spectrum._num_decays += dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -165,10 +166,10 @@ def fill_truth_spectrum(filename, spectrumname="", config=None, spectrum=None):
         if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
         spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount(),
+                                   dsreader.GetEntryCount(),
                                    config)
     else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
+        spectrum._num_decays += dsreader.GetEntryCount()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -193,7 +194,8 @@ def fill_truth_spectrum(filename, spectrumname="", config=None, spectrum=None):
     return spectrum
 
 
-def fill_reco_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=None):
+def fill_reco_ntuple_spectrum(filename, spectrumname="", config=None,
+                              spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the reconstructed energies and positions
@@ -225,9 +227,10 @@ def fill_reco_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=N
     if spectrum is None:
         if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries(), config)
+        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries(),
+                                   config)
     else:
-        spectrum._num_decays += 10.*chain.GetEntries()
+        spectrum._num_decays += chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -249,7 +252,8 @@ def fill_reco_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=N
     return spectrum
 
 
-def fill_mc_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=None):
+def fill_mc_ntuple_spectrum(filename, spectrumname="", config=None,
+                            spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the reconstructed energies and positions
@@ -280,9 +284,9 @@ def fill_mc_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=Non
     if spectrum is None:
         if spectrumname == "":
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries())
     else:
-        spectrum._num_decays += 10.*chain.GetEntries()
+        spectrum._num_decays += chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 
@@ -304,7 +308,8 @@ def fill_mc_ntuple_spectrum(filename, spectrumname="", config=None, spectrum=Non
     return spectrum
 
 
-def fill_truth_ntuple_spectrum(filename, T, spectrumname="", config=None, spectrum=None):
+def fill_truth_ntuple_spectrum(filename, T, spectrumname="", config=None,
+                               spectrum=None):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the reconstructed energies and positions
@@ -335,9 +340,10 @@ def fill_truth_ntuple_spectrum(filename, T, spectrumname="", config=None, spectr
     if spectrum is None:
         if spectrumname == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries(), config)
+        spectrum = spectra.Spectra(str(spectrumname), chain.GetEntries(),
+                                   config)
     else:
-        spectrum._num_decays += 10.*chain.GetEntries()
+        spectrum._num_decays += chain.GetEntries()
         spectrumname = spectrum._name
     print spectrumname
 

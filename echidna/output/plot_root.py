@@ -58,6 +58,7 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
         raw_input("Return to quit")
     return plot
 
+
 def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     """ Produce spectral plot.
 
@@ -76,12 +77,18 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
 
       An example :obj:`spectra_dict` is as follows::
 
-        {Te130_0n2b._name: {'spectra': Te130_0n2b, 'label': 'signal',
-                            'style': {'color': ROOT.kBlue}, 'type': 'signal'},
-         Te130_2n2b._name: {'spectra': Te130_2n2b, 'label': r'$2\\nu2\\beta',
-                            'style': {'color': ROOT.kRed}, 'type': 'background'},
-         B8_Solar._name: {'spectra': B8_Solar, 'label': 'solar',
-                          'style': {'color': ROOT.kGreen}, 'type': 'background'}}
+        {Te130_0n2b._name: {'spectra': Te130_0n2b,
+                            'label': 'signal',
+                            'style': {'color': ROOT.kBlue},
+                            'type': 'signal'},
+         Te130_2n2b._name: {'spectra': Te130_2n2b,
+                            'label': r'$2\\nu2\\beta',
+                            'style': {'color': ROOT.kRed},
+                            'type': 'background'},
+         B8_Solar._name: {'spectra': B8_Solar,
+                          'label': 'solar',
+                          'style': {'color': ROOT.kGreen},
+                          'type': 'background'}}
 
     .. note::
 
@@ -115,8 +122,16 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
                 if spectra._energy_bins != energy_bins:
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect energy upper limit")
-        summed_background = ROOT.TH1F("summed_background","; Energy (MeV); Counts", spectra._energy_bins, spectra._energy_low, spectra._energy_high)
-        summed_total = ROOT.TH1F("summed_total","; Energy (MeV); Counts", spectra._energy_bins, spectra._energy_low, spectra._energy_high)
+        summed_background = ROOT.TH1F("summed_background",
+                                      "; Energy (MeV); Counts",
+                                      spectra._energy_bins,
+                                      spectra._energy_low,
+                                      spectra._energy_high)
+        summed_total = ROOT.TH1F("summed_total",
+                                 "; Energy (MeV); Counts",
+                                 spectra._energy_bins,
+                                 spectra._energy_low,
+                                 spectra._energy_high)
     elif dimension == 1:
         for value in spectra_dict.values:
             spectra = value.get("spectra")
@@ -137,8 +152,16 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
                 if spectra._radial_bins != radial_bins:
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect time upper limit")
-        summed_background = ROOT.TH1F("summed_background","; Radius (mm); Counts", spectra._radial_bins, spectra._radial_low, spectra._radial_high)
-        summed_total = ROOT.TH1F("summed_total","; Radius (mm); Counts", spectra._radial_bins, spectra._radial_low, spectra._radial_high)
+        summed_background = ROOT.TH1F("summed_background",
+                                      "; Radius (mm); Counts",
+                                      spectra._radial_bins,
+                                      spectra._radial_low,
+                                      spectra._radial_high)
+        summed_total = ROOT.TH1F("summed_total",
+                                 "; Radius (mm); Counts",
+                                 spectra._radial_bins,
+                                 spectra._radial_low,
+                                 spectra._radial_high)
     elif dimension == 2:
         for value in spectra_dict.values:
             spectra = value.get("spectra")
@@ -159,11 +182,19 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
                 if spectra._time_bins != time_bins:
                     raise AssertionError("Spectra " + spectra._name + " has "
                                          "incorrect time upper limit")
-        summed_background = ROOT.TH1F("summed_background","; Time (Yr); Counts", spectra._time_bins, spectra._time_low, spectra._time_high)
-        summed_total = ROOT.TH1F("summed_total","; Time (Yr); Counts", spectra._time_bins, spectra._time_low, spectra._time_high)
+        summed_background = ROOT.TH1F("summed_background",
+                                      "; Time (Yr); Counts",
+                                      spectra._time_bins,
+                                      spectra._time_low,
+                                      spectra._time_high)
+        summed_total = ROOT.TH1F("summed_total",
+                                 "; Time (Yr); Counts",
+                                 spectra._time_bins,
+                                 spectra._time_low,
+                                 spectra._time_high)
     summed_total = numpy.zeros(shape=shape)
     can = ROOT.TCanvas()
-    leg = ROOT.TLegend(0.7,0.7,0.9,0.9)
+    leg = ROOT.TLegend(0.7, 0.7, 0.9, 0.9)
     summed_background.SetLineStyle(7)
     summed_background.SetLineColor(ROOT.kRed)
     summed_total.SetLineStyle(7)
@@ -177,7 +208,7 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
         spectra = value.get("spectra")
         hist = spectra.project(dimension, graphical=False)
         hist.SetLineColor(value.get("style")["color"])
-        leg.AddEntry(hist, value.get("label"),'l')
+        leg.AddEntry(hist, value.get("label"), 'l')
         hists.append(hist)
         if value.get("type") is "background":
             summed_background.Add(hist)
@@ -219,7 +250,7 @@ def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
     else:
         hist_title = "; Energy (MeV); #chi^{2}"
     hist = ROOT.TH1F("chi_sq_per_bin", hist_title, x_bins, x_low, x_high)
-    bin = 1 # 0 is underflow
+    bin = 1  # 0 is underflow
     for chi_sq in calculator.get_chi_squared_per_bin():
         hist.SetBinContent(bin, chi_sq)
         bin += 1

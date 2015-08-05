@@ -11,9 +11,9 @@ This script:
 
 Examples:
   To read all ntuples in a directory and save both individual and summed
-  spectra to file::
+  spectra to file with config cnfg.yml::
 
-    $ python multi_ntuple_spectrum.py /path/to/config.yml /path/to/ntuple/direc/
+    $ python multi_ntuple_spectrum.py /path/to/cnfg.yml /path/to/ntuple/direc/
 
   To specify a save directory, include a -s flag followed by path to
   the required save destination.
@@ -25,6 +25,7 @@ import echidna.core.spectrum as spectrum
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
+
 def create_combined_ntuple_spectrum(data_path, config_path,
                                     bkgnd_name, save_path):
     """ Creates both mc, truth and reco spectra from directory containing
@@ -35,7 +36,7 @@ def create_combined_ntuple_spectrum(data_path, config_path,
       data_path (str): Path to directory containing the ntuples to be evaluated
       config_path (str): Path to config file
       bkgnd_name (str): Name of the background being processed
-      save_path (str): Path to a directory where the hdf5 files will be dumped      
+      save_path (str): Path to a directory where the hdf5 files will be dumped
     """
     mc_config = spectra.SpectraConfig.load_from_file(config_path)
     reco_config = spectra.SpectraConfig.load_from_file(config_path)
@@ -47,10 +48,12 @@ def create_combined_ntuple_spectrum(data_path, config_path,
             mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
                 file_path, spectrumname="%s_mc" % bkgnd_name, config=mc_config)
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, spectrumname="%s_reco" % bkgnd_name, config=reco_config)
+                file_path, spectrumname="%s_reco" % bkgnd_name,
+                config=reco_config)
             truth_spec = fill_spectrum.fill_truth_ntuple_spectrum(
-                file_path, spectrumname="%s_truth" % bknd_name, config=truth_config)
-        else: 
+                file_path, spectrumname="%s_truth" % bknd_name,
+                config=truth_config)
+        else:
             mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
                 file_path, spectrum=mc_spec)
             reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
@@ -87,7 +90,8 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--save_path", type=str, default="./",
                         help="Enter destination path for .hdf5 spectra files.")
     parser.add_argument("-n", "--bkgnd_name", type=str,
-                        help="Name of background (to be used as file and spectrum name)")
+                        help="Name of background (to be used as file and "
+                        "spectrum name)")
     parser.add_argument("config", type=str,
                         help="Path to config file")
     parser.add_argument("path", type=str,
