@@ -37,25 +37,15 @@ def read_and_dump_ntuple(fname, config_path, spectrum_name, save_path):
     Returns:
       None
     """
-    mc_config = spectra.SpectraConfig.load_from_file(config_path)
-    reco_config = spectra.SpectraConfig.load_from_file(config_path)
-    truth_config = spectra.SpectraConfig.load_from_file(config_path)
-    mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
-        fname, spectrumname="%s_mc" % (spectrum_name), config=mc_config)
-    reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-        fname, spectrumname="%s_reco" % (spectrum_name), config=reco_config)
-    truth_spec = fill_spectrum.fill_truth_ntuple_spectrum(
-        fname, spectrumname="%s_truth" % (spectrum_name), config=truth_config)
+    config = spectra.SpectraConfig.load_from_file(config_path)
+    spectrum = fill_spectrum.fill_from_ntuple(
+        fname, spectrumname="%s_mc" % (spectrum_name), config=config)
 
     # Plot
-    plot_spectrum(mc_spec, mc_config)
-    plot_spectrum(reco_spec, reco_config)
-    plot_spectrum(truth_spec, truth_config)
+    plot_spectrum(spectrum, config)
 
     # Dump to file
-    store.dump("%s/%s_mc.hdf5" % (save_path, spectrum_name), mc_spec)
-    store.dump("%s/%s_reco.hdf5" % (save_path, spectrum_name), reco_spec)
-    store.dump("%s/%s_truth.hdf5" % (save_path, spectrum_name), truth_spec)
+    store.dump("%s/%s.hdf5" % (save_path, spectrum_name), spectrum)
 
 
 def plot_spectrum(spec, config):

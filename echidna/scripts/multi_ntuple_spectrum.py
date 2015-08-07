@@ -38,38 +38,21 @@ def create_combined_ntuple_spectrum(data_path, config_path,
       bkgnd_name (str): Name of the background being processed
       save_path (str): Path to a directory where the hdf5 files will be dumped
     """
-    mc_config = spectra.SpectraConfig.load_from_file(config_path)
-    reco_config = spectra.SpectraConfig.load_from_file(config_path)
-    truth_config = spectra.SpectraConfig.load_from_file(config_path)
+    config = spectra.SpectraConfig.load_from_file(config_path)
     file_list = os.listdir(data_path)
     for idx, fname in enumerate(file_list):
         file_path = "%s/%s" % (data_path, fname)
         if idx == 0:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
-                file_path, spectrumname="%s_mc" % bkgnd_name, config=mc_config)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, spectrumname="%s_reco" % bkgnd_name,
-                config=reco_config)
-            truth_spec = fill_spectrum.fill_truth_ntuple_spectrum(
-                file_path, spectrumname="%s_truth" % bknd_name,
-                config=truth_config)
+            spec = fill_spectrum.fill_from_ntuple(
+                file_path, spectrumname="%s" % bkgnd_name, config=config)
         else:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
-                file_path, spectrum=mc_spec)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, spectrum=reco_spec)
-            truth_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, spectrum=truth_spec)
-
+            spec = fill_spectrum.fill_from_ntuple(file_path, spectrum=spec)
     # Plot
-    plot_spectrum(mc_spec, mc_config)
-    plot_spectrum(reco_spec, reco_config)
-    plot_spectrum(truth_spec, truth_config)
-
+    plot_spectrum(spec, config)
     # Dump to file
-    store.dump("%s%s_mc.hdf5" % (save_path, bkgnd_name), mc_spec)
-    store.dump("%s%s_reco.hdf5" % (save_path, bkgnd_name), reco_spec)
-    store.dump("%s%s_truth.hdf5" % (save_path, bkgnd_name), truth_spec)
+    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), mc_spec)
+    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), reco_spec)
+    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), truth_spec)
 
 
 def plot_spectrum(spec, config):

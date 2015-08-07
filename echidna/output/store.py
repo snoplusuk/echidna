@@ -15,17 +15,16 @@ def dump(file_path, spectra):
       file_path (string): Location to save to.
       spectra (:class:`spectra.Spectra`): The spectra to save
     """
-
     with h5py.File(file_path, "w") as file_:
         file_.attrs["name"] = spectra._name
         # Store parameters with a key word 'pars'
         for v in spectra.get_config().getpars():
             file_.attrs["pars:%s:low" % v] = \
-                spectra.get_config().getpar(v).low
+                spectra.get_config().getpar(v)._low
             file_.attrs["pars:%s:high" % v] = \
-                spectra.get_config().getpar(v).high
+                spectra.get_config().getpar(v)._high
             file_.attrs["pars:%s:bins" % v] = \
-                spectra.get_config().getpar(v).bins
+                spectra.get_config().getpar(v)._bins
         file_.attrs["num_decays"] = spectra._num_decays
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 

@@ -16,9 +16,9 @@ def plot_projection(spectra, dimension, graphical=True):
       (:class:`ROOT.TH1D`): plot.
     """
     plot = TH1D(dimension, "%s;Count per bin" % dimension,
-                int(spectra.get_config().getpar(dimension).bins),
-                spectra.get_config().getpar(dimension).low,
-                spectra.get_config().getpar(dimension).high)
+                int(spectra.get_config().get_par(dimension)._bins),
+                spectra.get_config().get_par(dimension)._low,
+                spectra.get_config().get_par(dimension)._high)
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index, datum)
@@ -43,12 +43,12 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     """
     plot = TH2D("%s:%s" % (dimension1, dimension2),
                 "%s;%s;Count per bin" % (dimension1, dimension2),
-                spectra.get_config().getpar(dimension1).bins,
-                spectra.get_config().getpar(dimension1).low,
-                spectra.get_config().getpar(dimension1).high,
-                spectra.get_config().getpar(dimension2).bins,
-                spectra.get_config().getpar(dimension2).low,
-                spectra.get_config().getpar(dimension2).high)
+                spectra.get_config().get_par(dimension1)._bins,
+                spectra.get_config().get_par(dimension1)._low,
+                spectra.get_config().get_par(dimension1)._high,
+                spectra.get_config().get_par(dimension2)._bins,
+                spectra.get_config().get_par(dimension2)._low,
+                spectra.get_config().get_par(dimension2)._high)
     data = spectra.surface(dimension1, dimension2)
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
@@ -59,6 +59,7 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     return plot
 
 
+# TO DO: Convert the rest of the functions below
 def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     """ Produce spectral plot.
 
