@@ -50,7 +50,7 @@ class EnergyExtractMC(Extractor):
     def __init__(self):
         '''Initialise the class
         '''
-        super(EnergyExtract, self).__init__("energy_mc")
+        super(EnergyExtractMC, self).__init__("energy_mc")
 
     def get_valid_root(self, mc):
         '''Check whether energy of a DS::MC is valid
@@ -108,7 +108,7 @@ class EnergyExtractReco(Extractor):
     def __init__(self):
         '''Initialise the class
         '''
-        super(EnergyExtract, self).__init__("energy_reco")
+        super(EnergyExtractReco, self).__init__("energy_reco")
 
     def get_valid_root(self, ev):
         '''Check whether energy of a DS::EV is valid
@@ -166,7 +166,7 @@ class EnergyExtractTruth(Extractor):
     def __init__(self):
         '''Initialise the class
         '''
-        super(EnergyExtract, self).__init__("energy_truth")
+        super(EnergyExtractTruth, self).__init__("energy_truth")
 
     def get_valid_root(self, mc):
         '''Check whether energy of a DS::MC is valid
@@ -224,7 +224,7 @@ class RadialExtractMC(Extractor):
     def __init__(self):
         '''Initialise the class
         '''
-        super(RadialExtract, self).__init__("radial_mc")
+        super(RadialExtractMC, self).__init__("radial_mc")
 
     def get_valid_root(self, mc):
         '''Check whether radius of a DS::MC is valid
@@ -284,7 +284,7 @@ class RadialExtractReco(Extractor):
     def __init__(self):
         '''Initialise the class
         '''
-        super(RadialExtract, self).__init__("radial_reco")
+        super(RadialExtractReco, self).__init__("radial_reco")
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid

@@ -21,9 +21,9 @@ Examples:
 import os
 import argparse
 import echidna.output.store as store
-import echidna.core.spectrum as spectrum
+import echidna.core.spectra as spectra
 import echidna.core.fill_spectrum as fill_spectrum
-import echidna.output.plot as plot
+import echidna.output.plot_root as plot
 
 
 def create_combined_ntuple_spectrum(data_path, config_path,
@@ -44,15 +44,13 @@ def create_combined_ntuple_spectrum(data_path, config_path,
         file_path = "%s/%s" % (data_path, fname)
         if idx == 0:
             spec = fill_spectrum.fill_from_ntuple(
-                file_path, spectrumname="%s" % bkgnd_name, config=config)
+                file_path, spectrum_name="%s" % bkgnd_name, config=config)
         else:
             spec = fill_spectrum.fill_from_ntuple(file_path, spectrum=spec)
     # Plot
     plot_spectrum(spec, config)
     # Dump to file
-    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), mc_spec)
-    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), reco_spec)
-    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), truth_spec)
+    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), spec)
 
 
 def plot_spectrum(spec, config):
@@ -65,7 +63,7 @@ def plot_spectrum(spec, config):
     Returns:
       None
     """
-    for var in config.getpars():
+    for var in config.get_pars():
         plot.plot_projection(spec, var)
 
 if __name__ == "__main__":
@@ -75,9 +73,9 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--bkgnd_name", type=str,
                         help="Name of background (to be used as file and "
                         "spectrum name)")
-    parser.add_argument("config", type=str,
+    parser.add_argument("-c", "--config", type=str,
                         help="Path to config file")
-    parser.add_argument("path", type=str,
+    parser.add_argument("-p", "--path", type=str,
                         help="Path to ntuple directory")
     args = parser.parse_args()
 

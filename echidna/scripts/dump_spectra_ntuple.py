@@ -21,7 +21,7 @@ import csv
 import echidna.output.store as store
 import echidna.core.spectra as spectra
 import echidna.core.fill_spectrum as fill_spectrum
-import echidna.output.plot as plot
+import echidna.output.plot_root as plot
 
 
 def read_and_dump_ntuple(fname, config_path, spectrum_name, save_path):
@@ -39,7 +39,7 @@ def read_and_dump_ntuple(fname, config_path, spectrum_name, save_path):
     """
     config = spectra.SpectraConfig.load_from_file(config_path)
     spectrum = fill_spectrum.fill_from_ntuple(
-        fname, spectrumname="%s_mc" % (spectrum_name), config=config)
+        fname, spectrum_name="%s_mc" % (spectrum_name), config=config)
 
     # Plot
     plot_spectrum(spectrum, config)
@@ -56,7 +56,7 @@ def plot_spectrum(spec, config):
         to be plotted
       config (:class:`echidna.core.spectra.Config`): configuration object
     """
-    for v in config.getpars():
+    for v in config.get_pars():
         plot.plot_projection(spec, v)
 
 
@@ -84,10 +84,9 @@ if __name__ == "__main__":
                         help="Pass path to list .txt of filepaths.")
     parser.add_argument("-s", "--save_path", type=str, default="./",
                         help="Enter destination path for .hdf5 spectra files.")
-    parser.add_argument("config",
-                        type=str,
+    parser.add_argument("-c", "--config", type=str,
                         help="Path to config file")
-    parser.add_argument("fname", type=str,
+    parser.add_argument("-f", "--fname", type=str,
                         help="Path to root file to be read.")
     args = parser.parse_args()
 

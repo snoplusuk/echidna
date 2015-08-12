@@ -63,7 +63,7 @@ class TestSmear(unittest.TestCase):
         coeff, var_mtrx = curve_fit(self.gaussian, radii, entries, p0=pars0)
         return coeff[1], coeff[2], numpy.array(entries).sum()
 
-    def test_weight_energy(self):
+    def test_weight_energy_ly(self):
         """ Tests the weighted gaussian smearing method for energy.
 
         Creates a delta function and fits the mean and sigma after smearing.

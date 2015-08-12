@@ -51,7 +51,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None):
     extractors = {}
     mc_fill = False
     ev_fill = False
-    for var in spectrum.get_config().getpars():
+    for var in spectrum.get_config().get_pars():
         var_type = var.split("_")[-1]
         if var_type == "mc" or var_type == "truth":
             mc_fill = True
@@ -87,8 +87,11 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None):
                         break
             # If all OK, fill the spectrum
             if fill:
-                spectrum.fill(**kwargs)
-                spectrum._raw_events += 1
+                try:
+                    spectrum.fill(**kwargs)
+                    spectrum._raw_events += 1
+                except ValueError:
+                    pass
     return spectrum
 
 
@@ -130,7 +133,7 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None):
         spectrum_name = spectrum._name
     print "Filling", spectrum_name, "with", filename
     extractors = []
-    for var in spectrum.get_config().getpars():
+    for var in spectrum.get_config().get_pars():
         extractors.append(dsextract.function_factory(var))
     for event in chain:
         fill = True
@@ -144,6 +147,9 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None):
                 break
         # If all OK, fill the spectrum
         if fill:
-            spectrum.fill(**kwargs)
-            spectrum._raw_events += 1
+            try:
+                spectrum.fill(**kwargs)
+                spectrum._raw_events += 1
+            except ValueError:
+                pass
     return spectrum

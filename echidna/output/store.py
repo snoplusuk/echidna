@@ -7,6 +7,42 @@ import h5py
 import sys
 import collections
 
+def dict_to_string(in_dict):
+    """
+    """
+    out_string = ""
+    for key, value in in_dict.iteritems():
+        out_string += key+":"+str(value)+";"
+        if type(value) is str:
+            out_string += "str,"
+        elif type(value) is float:
+            out_string += "float,"
+        elif type(value) is int:
+            out_string += "int,"
+        else:
+            raise TypeError("%s has the unsupported type %s" % (value,
+                                                                type(value)))
+    return out_string[:-1]
+
+def string_to_dict(in_string):
+    """
+    """
+    out_dict = {}
+    keys_values = in_string.split(',')
+    for entry in keys_values:
+        key = entry.split(":")[0]
+        value = entry.split(":")[1].split(";")[0]
+        typ = entry.split(";")[1]
+        if typ == "str":
+            out_dict[key] = value
+        elif typ == "int":
+            out_dict[key] = int(value)
+        elif typ == "float":
+            out_dict[key] = float(value)
+        else:
+            raise TypeError("%s has the unsupported type %s" % (value, typ))
+    return out_dict
+
 
 def dump(file_path, spectra):
     """ Dump the spectra to the file_path.
@@ -18,14 +54,23 @@ def dump(file_path, spectra):
     with h5py.File(file_path, "w") as file_:
         file_.attrs["name"] = spectra._name
         # Store parameters with a key word 'pars'
-        for v in spectra.get_config().getpars():
+        for v in spectra.get_config().get_pars():
             file_.attrs["pars:%s:low" % v] = \
-                spectra.get_config().getpar(v)._low
+                spectra.get_config().get_par(v)._low
             file_.attrs["pars:%s:high" % v] = \
-                spectra.get_config().getpar(v)._high
+                spectra.get_config().get_par(v)._high
             file_.attrs["pars:%s:bins" % v] = \
-                spectra.get_config().getpar(v)._bins
+                spectra.get_config().get_par(v)._bins
         file_.attrs["num_decays"] = spectra._num_decays
+        file_.attrs["raw_events"] = spectra._raw_events
+        if len(spectra._style) == 0:
+            file_.attrs["style"] = ""
+        else:
+            file_.attrs["style"] = dict_to_string(spectra._style)
+        if len(spectra._rois) == 0:
+            file_.attrs["rois"] = ""
+        else:
+            file_.attrs["rois"] = dict_to_string(spectra._rois)
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
 
@@ -74,12 +119,20 @@ def load(file_path):
                 [_, par, val] = v.split(":")
                 if par not in parameters:
                     parameters[par] = spectra.SpectraParameter(par, 1, 1, 1)
-                parameters[par].setvar(**{val: file_.attrs[v]})
+                parameters[par].set_par(**{val: file_.attrs[v]})
         spec = spectra.Spectra(file_.attrs["name"],
                                file_.attrs["num_decays"],
                                spectra.SpectraConfig(parameters))
+        spec._raw_events = file_.attrs["raw_events"]
+        style_dict = file_.attrs["style"]
+        if len(style_dict) > 0:
+            spec._style = string_to_dict(style_dict)
+        rois_dict = file_.attrs["rois"]
+        if len(rois_dict) > 0:
+            spec._rois = string_to_dict(rois_dict)
+        # else the default values of Spectra __init__ are kept
         spec._data = file_["data"].value
-    print spec.get_config().getpars()
+    print spec.get_config().get_pars()
     return spec
 
 
@@ -110,6 +163,13 @@ def load_old(file_path):
         spec = spectra.Spectra(file_.attrs["name"],
                                file_.attrs["num_decays"],
                                spectra_config)
+        # The following may not be present in old, old hdf5s
+        if file_.attrs["raw_events"]:
+            spec._raw_events = file_.attrs["raw_events"]
+        if file_.attrs["style"]:
+            spec._style = file_.attrs["style"]
+        if file_.attrs["rois"]:
+            spec._rois = file_.attrs["rois"]
         spec._data = file_["data"].value
     return spec
 

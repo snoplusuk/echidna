@@ -49,20 +49,25 @@ class SpectraParameter(object):
         Returns:
           Bin width
         """
-        return (float(self._high - self._low) / self._bins)
+        return (self._high - self._low) / float(self._bins)
 
     def get_unit(self):
         """Get the default unit for a given parameter
         """
-        if self._name.split['_'][0] = "energy":
+        if self._name.split['_'][0] == "energy":
             return "MeV"
-        if self._name.split['_'][0] = "radial":
+        if self._name.split['_'][0] == "radial":
             return "mm"
-        if self._name.split['_'][0] = "time":
+        if self._name.split['_'][0] == "time":
             return "years"
         else:
             raise ValueError("%s is an unknown parameter"
                              % self._name.split('_')[0])
+
+    def round(self, x):
+        """ Round the value to nearest bin edge
+        """
+        return round(x/self.get_width())*self.get_width()
 
 
 class SpectraConfig(object):
@@ -121,10 +126,52 @@ class SpectraConfig(object):
         Returns:
           Index of parameter
         """
-        for i, p in self.get_pars():
+        for i, p in enumerate(self.get_pars()):
             if p == parameter:
                 return i
         raise IndexError("Unknown parameter %s" % parameter)
+
+    def get_dims(self):
+        """Get list of dimension names.
+        The _mc, _reco and _truth suffixes are removed.
+
+        Returns:
+          List of dimensions names
+        """
+        dims = []
+        for par in sorted(self._parameters.keys()):
+            par = par.split('_')[:-1]
+            dim = ""
+            for entry in par:
+                dim += entry+"_"
+            dims.append(dim[:-1])
+        return dims
+
+    def get_dim(self, par):
+        """Get the dimension of par
+
+        Returns:
+          The dimension of par
+        """
+        dim = ""
+        for entry in par.split('_')[:-1]:
+            dim += entry+"_"
+        return dim[:-1]
+
+    def get_dim_type(self, dim):
+        """Returns the type of the dimension i.e. mc, reco or truth.
+
+        Returns:
+          String of the type of the dimension (mc, reco or truth)
+        """
+        for par in sorted(self._parameters.keys()):
+            par_split = par.split('_')[:-1]
+            cur_dim = ""
+            for entry in par_split:
+                cur_dim += entry+"_"
+            if cur_dim[:-1] == dim:
+                return par.split('_')[-1]
+        raise IndexError("No %s dimension in spectra" % dim)
 
 
 class Spectra(object):
@@ -218,8 +265,10 @@ class Spectra(object):
         integral_full = self.sum()  # Save integral of full spectrum
 
         # Shrink to ROI
-        self.shrink(dimension+"_low"=lower_limit,
-                    dimension+"_high"=upper_limit)
+        kw_low = dimension+"_low"
+        kw_high = dimension+"_high"
+        self.shrink(kw_low=lower_limit,
+                    kw_high=upper_limit)
 
         # Calculate efficiency
         integral_roi = self.sum()  # Integral of spectrum over ROI
@@ -355,36 +404,64 @@ class Spectra(object):
                 raise IndexError("%s index invalid. Index must be of the form"
                                  "[dimension name]_high or"
                                  "[dimension name]_low" % arg)
-        slice_low = []
-        slice_high = []
-        for par in self._config.get_pars():
-            if "%s_low" % par not in kwargs:
-                kwargs["%s_low" % par] = self._config.get_par(par)._low
-            if "%s_high" % par not in kwargs:
-                kwargs["%s_high" % par] = self._config.get_par(par)._high
+        slices_low = []
+        slices_high = []
+        for par_name in self._config.get_pars():
+            par = self._config.get_par(par_name)
+            kw_low = "%s_low" % par_name
+            kw_high = "%s_high" % par_name
+            if "%s_low" % par_name not in kwargs:
+                kwargs[kw_low] = par._low
+            if "%s_high" % par_name not in kwargs:
+                kwargs[kw_high] = par._high
             # Round down the low bin
-            low_bin = int((kwargs["%s_low"] -
-                           self._config.get_par(par)._low) /
-                          self._config.get_par(par).get_width())
+            low_bin = int((kwargs[kw_low] - par._low) / par.get_width())
             # Round up the high bin
-            high_bin = numpy.ceil((kwargs["%s_high"] -
-                                   self._config.get_par(par)._low) /
-                                  self._config.get_par(par).get_width())
-            new_bins = high_bin - low_bin
+            high_bin = numpy.ceil((kwargs[kw_high] - par._low) /
+                                  par.get_width())
             # new_low is the new lower first bin edge
-            new_low = self._config.get_par(par)._low + \
-                low_bin * self._config.get_par(par).get_width()
+            new_low = par.round(par._low + low_bin * par.get_width())
             # new_high is the new upper last bin edge
-            new_high = self._config.get_par(par)._low + \
-                (high_bin + 1) * self._cofig.get_par(par).get_width()
-            self._config.get_par(par).set_par(low=new_low, high=new_high,
-                                              bins=new_bins)
+            new_high = par.round(par._low + high_bin * par.get_width())
+            # Correct floating point errors: If the difference between
+            # input high/low and calculated new high/low is approximately
+            # equal (<1%) to a bin width then assume user requested the bin
+            # above/below to be cut.
+            if numpy.fabs(new_high - kwargs[kw_high]) > (0.99 *
+                                                         par.get_width()):
+                print ("WARNING: Correcting possible floating point error in "
+                       "spectra.Spectra.shrink\n%s was the input. %s is the "
+                       "calculated value for %s" % (kwargs[kw_low],
+                                                    new_low, kw_low))
+                if (new_high - kwargs[kw_high]) > 0.0:
+                    high_bin -= 1
+                    new_high = par.round(par._low + high_bin * par.get_width())
+                else:
+                    high_bin += 1
+                    new_high = par.round(par._low + high_bin * par.get_width())
+                print "Corrected %s to %s" % (kw_low, new_low)
+            if numpy.fabs(new_low - kwargs[kw_low]) > (0.99 * par.get_width()):
+                print ("WARNING: Correcting possible floating point error in "
+                       "spectra.Spectra.shrink\n%s was the input. %s is the "
+                       "calculated value for %s" % (kwargs[kw_low],
+                                                    new_low, kw_low))
+                if (new_low - kwargs[kw_low]) > 0.0:
+                    low_bin -= 1
+                    new_low = par._low + low_bin * par.get_width()
+                else:
+                    low_bin += 1
+                    new_low = par._low + low_bin * par.get_width()
+                print "Corrected %s to %s" % (kw_low, new_low)
+            slices_high.append(high_bin)
+            slices_low.append(low_bin)
+            new_bins = high_bin - low_bin
+            par.set_par(low=new_low, high=new_high, bins=new_bins)
         # First set up the command then evaluate. Hacky but hey ho.
         cmd = "self._data["
         for i in range(len(slices_low)):
             low = str(slices_low[i])
-            high = str(slice_high[i])
-            cmd += low+":"high+","
+            high = str(slices_high[i])
+            cmd += low+":"+high+","
         cmd = cmd[:-1]+"]"
         self._data = eval(cmd)
 
@@ -422,23 +499,40 @@ class Spectra(object):
         Args:
           spectrum (:class:`core.spectra`): Spectrum to add.
         """
-        for v in self._config.get_pars():
-            if v not in spectrum.get_config().get_pars():
+        if self._data.shape != spectrum._data.shape:
+            raise ValueError("The spectra have different dimensions.\n"
+                             "Dimension of self: %s. Dimension of spectrum %s"
+                             % (self._data.shape, spectrum._data.shape))
+        for v in self._config.get_dims():
+            if v not in spectrum.get_config().get_dims():
                 raise IndexError("%s not present in new spectrum" % v)
+        for v in spectrum.get_config().get_dims():
+            if v not in self._config.get_dims():
+                raise IndexError("%s not present in this spectrum" % v)
+        # Dictionary containing dimensions which have different types in the
+        # two spectra. The type of the dimension of spectrum is the value
+        types = {}
         for v in spectrum.get_config().get_pars():
             if v not in self._config.get_pars():
-                raise IndexError("%s not present in this spectrum" % v)
+                dim = spectrum.get_config().get_dim(v)
+                dim_type = spectrum._config.get_dim_type(dim)
+                types[dim] = dim_type
         for v in self._config.get_pars():
+            dim = self._config.get_dim(v)
+            if dim in types:
+                v_spec = dim+'_'+types[dim]
+            else:
+                v_spec = v
             if self._config.get_par(v)._high != \
-                    spectrum.get_config().get_par(v)._high:
+                    spectrum.get_config().get_par(v_spec)._high:
                 raise ValueError("Upper %s bounds in spectra are not equal."
                                  % v)
             if self._config.get_par(v)._low != \
-                    spectrum.get_config().get_par(v)._low:
+                    spectrum.get_config().get_par(v_spec)._low:
                 raise ValueError("Lower %s bounds in spectra are not equal."
                                  % v)
             if self._config.get_par(v)._bins != \
-                    spectrum.get_config().get_par(v)._bins:
+                    spectrum.get_config().get_par(v_spec)._bins:
                 raise ValueError("Number of %s bins in spectra are not equal."
                                  % v)
         self._data += spectrum._data
