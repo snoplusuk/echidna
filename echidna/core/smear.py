@@ -50,7 +50,11 @@ class Smear(object):
     def set_num_sigma(self, num_sigma):
         """
         """
-        self._num_sigma = num_sigma
+        if (num_sigma > 0.):
+            self._num_sigma = float(num_sigma)
+        else:
+            raise ValueError("%s is an invalid num_sigma. Value must be "
+                             "greater than zero." % num_sigma)
 
     def get_bounds(self, mean, sigma):
         """
@@ -89,36 +93,42 @@ class EnergySmearLY(Smear):
     def set_resolution(self, light_yield):
         """
         """
-        self._light_yield = light_yield
+        if light_yield > 0.:
+            self._light_yield = float(light_yield)
+        else:
+            raise ValueError("%s is an invalid light yield. Light yield "
+                             "must be greater than zero.")
 
     def weighted_smear(self, spectrum, par="energy_mc"):
         """
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name+"_ly"+self._light_yield,
+        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
+                                       str(self._light_yield),
                                        spectrum._num_decays,
                                        spectrum.get_config())
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
-                data_dict = {}
-                low, high = None
+                data = {}
+                low = None
+                high = None
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
                         sigma = self.get_sigma(mean)
-                        low, high = Smear.get_bounds(mean, sigma)
+                        low, high = self.get_bounds(mean, sigma)
                         low = spectrum.get_config().get_par(
                             par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
                         high = spectrum.get_config().get_par(
@@ -131,15 +141,15 @@ class EnergySmearLY(Smear):
                             high = spectrum.get_config().get_par(par)._high - \
                                 0.5 * widths[i]
                         weights = []
-                        for energy in np.arrange(low, high, widths[i]):
-                            weights.append(Smear.calc_gaussian(energy,
+                        for energy in np.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(energy,
                                                                mean,
                                                                sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
                 i = 0
-                for energy in np.arrange(low, high, widths[idx]):
+                for energy in np.arange(low, high, widths[idx]):
                     data[par] = energy
                     smeared_spec.fill(weight=entries*weights[i]/total_weight,
                                       **data)
@@ -152,32 +162,33 @@ class EnergySmearLY(Smear):
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name+"_ly"+self._light_yield,
+        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
+                                       str(self._light_yield),
                                        spectrum._num_decays,
                                        spectrum.get_config())
         for bin in itertools.product(*bins):
-            entries = spectrum._data[bin]
+            entries = int(spectrum._data[bin])
             if entries:
-                data_dict = {}
+                data = {}
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
-                        data[par] = mean
+                        mean_e = mean
                         sigma = self.get_sigma(mean)
                     else:
                         data[par_names[i]] = mean
-                for i in range(entires):
-                    data[par] = np.fabs(np.random.normal(data[par], sigma))
+                for i in range(entries):
+                    data[par] = np.fabs(np.random.normal(mean_e, sigma))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -232,20 +243,24 @@ class EnergySmearRes(Smear):
           resolution (float): Energy resolution in :math:`\sqrt{MeV}`
             e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
         """
-        self._resolution = resolution
+        if (resolution > 0. and resolution < 1.):
+            self._resolution = resolution
+        else:
+            raise ValueError("%s is an invalid energy resolution. Value "
+                             "must be between 0. and 1." % resolution)
 
     def weighted_smear(self, spectrum, par="energy_mc"):
         """
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
@@ -256,13 +271,14 @@ class EnergySmearRes(Smear):
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
-                data_dict = {}
-                low, high = None
+                data = {}
+                low = None
+                high = None
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
                         sigma = self.get_sigma(mean)
-                        low, high = Smear.get_bounds(mean, sigma)
+                        low, high = self.get_bounds(mean, sigma)
                         low = spectrum.get_config().get_par(
                             par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
                         high = spectrum.get_config().get_par(
@@ -275,15 +291,15 @@ class EnergySmearRes(Smear):
                             high = spectrum.get_config().get_par(par)._high - \
                                 0.5 * widths[i]
                         weights = []
-                        for energy in np.arrange(low, high, widths[i]):
-                            weights.append(Smear.calc_gaussian(energy,
+                        for energy in np.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(energy,
                                                                mean,
                                                                sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
                 i = 0
-                for energy in np.arrange(low, high, widths[idx]):
+                for energy in np.arange(low, high, widths[idx]):
                     data[par] = energy
                     smeared_spec.fill(weight=entries*weights[i]/total_weight,
                                       **data)
@@ -296,13 +312,13 @@ class EnergySmearRes(Smear):
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
@@ -311,18 +327,18 @@ class EnergySmearRes(Smear):
                                        spectrum._num_decays,
                                        spectrum.get_config())
         for bin in itertools.product(*bins):
-            entries = spectrum._data[bin]
+            entries = int(spectrum._data[bin])
             if entries:
-                data_dict = {}
+                data = {}
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
-                        data[par] = mean
+                        mean_e = mean
                         sigma = self.get_sigma(mean)
                     else:
                         data[par_names[i]] = mean
-                for i in range(entires):
-                    data[par] = np.fabs(np.random.normal(data[par], sigma))
+                for i in range(entries):
+                    data[par] = np.fabs(np.random.normal(mean_e, sigma))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -331,14 +347,14 @@ class EnergySmearRes(Smear):
         return smeared_spec
 
 
-class RadiusSmear(Smear):
+class RadialSmear(Smear):
     """
     """
 
     def __init__(self):
         """
         """
-        super(EnergySmearRes, self).__init__()
+        super(RadialSmear, self).__init__()
         self._resolution = 100.  # mm
 
     def get_resolution(self):
@@ -355,7 +371,11 @@ class RadiusSmear(Smear):
         Args:
           resolution (float): Position resolution in mm.
         """
-        self._resolution = resolution
+        if resolution > 0:
+            self._resolution = resolution
+        else:
+            raise ValueError("%s is an incorrect position resolutioin. Value "
+                             "must be greater than zero." % resolution)
 
     def get_sigma(self):
         """Sigma and resolution are equivalent for radial dimensions
@@ -371,30 +391,31 @@ class RadiusSmear(Smear):
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
         smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       self._resolution + "mm",
+                                       str(self._resolution) + "mm",
                                        spectrum._num_decays,
                                        spectrum.get_config())
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
-                data_dict = {}
-                low, high = None
+                data = {}
+                low = None
+                high = None
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
-                        sigma = self.get_sigma(mean)
-                        low, high = Smear.get_bounds(mean, sigma)
+                        sigma = self.get_sigma()
+                        low, high = self.get_bounds(mean, sigma)
                         low = spectrum.get_config().get_par(
                             par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
                         high = spectrum.get_config().get_par(
@@ -407,15 +428,15 @@ class RadiusSmear(Smear):
                             high = spectrum.get_config().get_par(par)._high - \
                                 0.5 * widths[i]
                         weights = []
-                        for radius in np.arrange(low, high, widths[i]):
-                            weights.append(Smear.calc_gaussian(radius,
+                        for radius in np.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(radius,
                                                                mean,
                                                                sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
                 i = 0
-                for radius in np.arrange(low, high, widths[idx]):
+                for radius in np.arange(low, high, widths[idx]):
                     data[par] = radius
                     smeared_spec.fill(weight=entries*weights[i]/total_weight,
                                       **data)
@@ -428,33 +449,33 @@ class RadiusSmear(Smear):
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
-        idx = spectrum.get_config().get_par(par).get_index()
+        idx = spectrum.get_config().get_index(par)
         bins = []
         lows = []
         widths = []
         par_names = []
         for par_name in spectrum.get_config().get_pars():
-            bins.append(spectrum.get_config().get_par(par_name)._bins)
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
         smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       self._resolution + "mm",
+                                       str(self._resolution) + "mm",
                                        spectrum._num_decays,
                                        spectrum.get_config())
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
-                data_dict = {}
+                data = {}
                 for i in range(len(bin)):
-                    mean = Smear.get_bin_mean(lows[i], bin[i], widths[i])
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
                     if i == idx:
-                        data[par] = mean
-                        sigma = self.get_sigma(mean)
+                        mean_r = mean
+                        sigma = self.get_sigma()
                     else:
                         data[par_names[i]] = mean
-                for i in range(entires):
-                    data[par] = np.fabs(np.random.normal(data[par], sigma))
+                for i in range(entries):
+                    data[par] = np.fabs(np.random.normal(mean_r, sigma))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:

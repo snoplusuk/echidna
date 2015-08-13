@@ -1,8 +1,9 @@
 import math
 import rat
+import echidna.calc.constants as const
 
 
-def function_factory(dimension):
+def function_factory(dimension, **kwargs):
     '''Factory function that returns a dsextract class
     corresponding to the dimension (i.e. DS parameter)
     that is being extracted.
@@ -23,6 +24,10 @@ def function_factory(dimension):
         return RadialExtractMC()
     elif dimension == "radial_reco":
         return RadialExtractReco()
+    elif dimension == "radial3_mc":
+        return Radial3ExtractMC(**kwargs)
+    elif dimension == "radial3_reco":
+        return Radial3ExtractReco(**kwargs)
     else:
         raise IndexError("Unknown parameter: %s" % dimension)
 
@@ -335,3 +340,128 @@ class RadialExtractReco(Extractor):
         return math.fabs(math.sqrt((entry.posx)**2 +
                                    (entry.posy)**2 +
                                    (entry.posz)**2))
+
+
+class Radial3ExtractMC(Extractor):
+    '''True radial extraction methods.
+    '''
+
+    def __init__(self, av_radius=None):
+        '''Initialise the class
+        '''
+        super(Radial3ExtractMC, self).__init__("radial3_mc")
+        if av_radius:
+            self._av_radius = av_radius
+        else:
+            self._av_radius = const._av_radius
+
+    def get_valid_root(self, mc):
+        '''Check whether radius of a DS::MC is valid
+
+        Args:
+          ev (:class:`RAT.DS.MC`) event
+
+        Returns:
+          Validity boolean
+        '''
+        if mc.GetMCParticleCount > 0:
+            return True
+        return False
+
+    def get_value_root(self, mc):
+        '''Get radius value from a DS::MC
+
+        Args:
+          ev (:class:`RAT.DS.MC`) event
+
+        Returns:
+          True radius
+        '''
+        return (mc.GetMCParticle(0).GetPosition().Mag() / self._av_radius) ** 3
+
+    def get_valid_ntuple(self, entry):
+        '''Check whether energy of an ntuple MC is valid
+
+        Args:
+          ev (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          Validity boolean
+        '''
+        if entry.mc == 1:
+            return True
+        return False
+
+    def get_value_ntuple(self, entry):
+        '''Get radius value from an ntuple MC
+
+        Args:
+          ev (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          True radius
+        '''
+        return (math.fabs(math.sqrt((entry.mcPosx)**2 +
+                                    (entry.mcPosy)**2 +
+                                    (entry.mcPosz)**2)) / self._av_radius) ** 3
+
+
+class Radial3ExtractReco(Extractor):
+    '''Reconstructed radial extraction methods.
+    '''
+
+    def __init__(self):
+        '''Initialise the class
+        '''
+        super(Radial3ExtractReco, self).__init__("radial3_reco")
+
+    def get_valid_root(self, ev):
+        '''Check whether radius of a DS::EV is valid
+
+        Args:
+          ev (:class:`RAT.DS.EV`) event
+
+        Returns:
+          Validity boolean
+        '''
+        if ev.DefaultFitVertexExists() and \
+                ev.GetDefaultFitVertex().ContainsPosition() \
+                and ev.GetDefaultFitVertex().ValidPosition():
+            return True
+        return False
+
+    def get_value_root(self, ev):
+        '''Get radius value from a DS::EV
+
+        Args:
+          ev (:class:`RAT.DS.EV`) event
+
+        Returns:
+          Reconstructed radius
+        '''
+        return (ev.GetDefaultFitVertex().GetPosition().Mag() /
+                self._av_radius()) ** 3
+
+    def get_valid_ntuple(self, entry):
+        '''Check whether radius of an ntuple EV is valid
+
+        Args:
+          ev (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          Validity boolean
+        '''
+        return entry.scintFit != 0
+
+    def get_value_ntuple(self, entry):
+        '''Get radius value from an ntuple EV
+
+        Args:
+          ev (:class:`ROOT.TChain`) chain entry
+
+        Returns:
+          Reconstructed radius
+        '''
+        return (math.fabs(math.sqrt((entry.posx)**2 +
+                                    (entry.posy)**2 +
+                                    (entry.posz)**2)) / self._av.radius) ** 3

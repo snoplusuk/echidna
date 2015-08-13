@@ -1,4 +1,5 @@
 import numpy
+import copy
 
 import echidna
 from echidna.errors.custom_errors import CompatibilityError
@@ -108,7 +109,8 @@ class SystAnalyser(object):
             preferred values to add.
         """
         if self._preferred_values.shape[1] < self._layer:  # doesn't exist
-            new_layer = numpy.zeros(shape=self._preferred_values[:, 0: 1].shape,
+            new_layer = numpy.zeros(shape=self._preferred_values[:, 0: 1].
+                                    shape,
                                     dtype=float)
             self._preferred_values = numpy.append(self._preferred_values,
                                                   new_layer, axis=1)
@@ -254,21 +256,30 @@ class LimitSetting(object):
             self._roi = kwargs.get("roi")
             if kwargs.get("pre_shrink"):
                 energy_low, energy_high = self._roi
-                self._signal.shrink_to_roi(energy_low, energy_high, 0)
+                par = "energy_" + \
+                    self._signal.get_config().get_dim_type("energy")
+                self._signal.shrink_to_roi(energy_low, energy_high, par)
                 if self._fixed_background:
-                    if not numpy.allclose(self._fixed_background._energy_low,
+                    par = "energy_" + \
+                        self._fixed_background.get_config()\
+                        .get_dim_type("energy")
+                    if not numpy.allclose(self._fixed_background.get_config().
+                                          get_par(par)._low,
                                           energy_low):
                         raise CompatibilityError("Fixed background must be "
                                                  "pre-shrunk before"
                                                  "LimitSetting.")
-                    if not numpy.allclose(self._fixed_background._energy_high,
+                    if not numpy.allclose(self._fixed_background.get_config().
+                                          get_par(par)._high,
                                           energy_high):
                         raise CompatibilityError("Fixed background must be "
                                                  "pre-shrunk before"
                                                  "LimitSetting.")
                 if self._floating_backgrounds:
                     for background in self._floating_backgrounds:
-                        background.shrink_to_roi(energy_low, energy_high, 0)
+                        par = "energy_" + \
+                            background.get_config().get_dim_type("energy")
+                        background.shrink_to_roi(energy_low, energy_high, par)
         else:
             self._roi = None
         if kwargs.get("verbose"):
@@ -281,32 +292,27 @@ class LimitSetting(object):
             raise ValueError("Must provide fixed or floating backgrounds")
         # Check spectra are compatible
         if fixed_background:
-            if not numpy.allclose(fixed_background._energy_width,
-                                  signal._energy_width):
+            for par in fixed_background.get_config().get_pars():
+                dim = fixed_background.get_config().get_dim(par)
+                par_sig = dim + "_" + signal.get_config().get_dim_type(dim)
+            if not numpy.allclose(fixed_background.get_config().get_par(par).
+                                  get_width(),
+                                  signal.get_config().get_par(par_sig).
+                                  get_width()):
                 raise CompatibilityError("cannot compare histograms with "
-                                         "different energy bin widths")
-            if not numpy.allclose(fixed_background._radial_width,
-                                  signal._radial_width):
-                raise CompatibilityError("cannot compare histograms with "
-                                         "different radial bin widths")
-            if not numpy.allclose(fixed_background._time_width,
-                                  signal._time_width):
-                raise CompatibilityError("cannot compare histograms with "
-                                         "different time bin width")
+                                         "different %s bin widths" % dim)
         if self._floating_backgrounds:
             for background in floating_backgrounds:
-                if not numpy.allclose(background._energy_width,
-                                      signal._energy_width):
-                    raise CompatibilityError("cannot compare histograms with "
-                                             "different energy bin widths")
-                if not numpy.allclose(background._radial_width,
-                                      signal._radial_width):
-                    raise CompatibilityError("cannot compare histograms with "
-                                             "different radial bin widths")
-                if not numpy.allclose(background._time_width,
-                                      signal._time_width):
-                    raise CompatibilityError("cannot compare histograms with "
-                                             "different time bin width")
+                for par in background.get_config().get_pars():
+                    dim = background.get_config().get_dim(par)
+                    par_sig = dim + "_" + signal.get_config().get_dim_type(dim)
+                    if not numpy.allclose(background.get_config().get_par(par).
+                                          get_width(),
+                                          signal.get_config().get_par(par_sig).
+                                          get_width()):
+                        raise CompatibilityError("cannot compare histograms"
+                                                 "with different %s bin"
+                                                 "widths" % dim)
 
     def configure_signal(self, signal_config):
         """ Supply a configuration object associated with the signal.
@@ -433,14 +439,19 @@ class LimitSetting(object):
         if self._calculator is None:
             raise TypeError("chi squared calculator not set")
         if self._data is None:
-            observed = numpy.zeros(shape=[self._signal._energy_bins],
+            sig_par = "energy_" + \
+                self._signal.get_config().get_dim_type("energy")
+            observed = numpy.zeros(shape=[self._signal.get_config().
+                                          get_par(sig_par)._bins],
                                    dtype=float)
             if self._fixed_background:
-                observed += self._fixed_background.project(0)
+                observed += self._fixed_background.project(sig_par)
             for background in self._floating_backgrounds:
+                bkgnd_par = "energy_" + \
+                    background.get_config().get_dim_type("energy")
                 config = self._background_configs.get(background._name)
                 background.scale(config._prior_count)
-                observed += background.project(0)
+                observed += background.project(bkgnd_par)
             self._observed = observed
         else:  # _data is not None
             self._observed = self._data
@@ -484,17 +495,21 @@ class LimitSetting(object):
                                                "style": self._signal._style,
                                                "type": "signal",
                                                "label": self._signal._name}
-                current_chi_squared = numpy.sum(self._calculator.get_chi_squared_per_bin())
+                current_chi_squared = numpy.sum(self._calculator.
+                                                get_chi_squared_per_bin())
                 plot_text = ["$\chi^2$ = %.2g" % current_chi_squared]
-                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
-                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
+                plot_text.append("Livetime = %.1f years"
+                                 % self._signal._time_high)
+                title = self._signal._name + \
+                    " @ %.2g counts" % self._signal._data.sum()
                 spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
                                                    show_plot=False,
                                                    per_bin=self._calculator,
                                                    title=title,
                                                    text=plot_text,
                                                    log_y=True,
-                                                   limit=self._target.get("spectrum"))
+                                                   limit=self._target.
+                                                   get("spectrum"))
                 debug_pdf.savefig(spectral_plot)
                 spectral_plot.clear()
                 fig_num += 1
@@ -505,9 +520,11 @@ class LimitSetting(object):
             syst_analyser._actual_counts = self._signal_config._chi_squareds[2]
         try:
             if self._signal_config.get_counts_down():  # Use get_last_bin_above
-                return self._signal_config.get_last_bin_above(limit_chi_squared)
+                return self._signal_config.get_last_bin_above(
+                    limit_chi_squared)
             else:
-                return self._signal_config.get_first_bin_above(limit_chi_squared)
+                return self._signal_config.get_first_bin_above(
+                    limit_chi_squared)
         except IndexError as detail:
             raise IndexError("unable to calculate confidence limit - " +
                              str(detail))
@@ -542,14 +559,18 @@ class LimitSetting(object):
         if self._calculator is None:
             raise TypeError("chi squared calculator not set")
         if self._data is None:
-            self._observed = self._fixed_background.project(0)
+            par = "energy_" + \
+                self._fixed_background.get_config().get_dim_type("energy")
+            self._observed = self._fixed_background.project(par)
         else:
             self._observed = self._data
         self._signal_config.reset_chi_squareds()
         for signal_count in self._signal_config.get_count():
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
-                expected = self._observed + self._signal.project(0)
+                par = "energy_" + \
+                    self._signal.get_config().get_dim_type("energy")
+                expected = self._observed + self._signal.project(par)
                 self._signal_config.add_chi_squared(
                     self._calculator.get_chi_squared(self._observed, expected),
                     signal_count, self._signal.sum())
@@ -618,14 +639,23 @@ class LimitSetting(object):
                     count, background.sum())  # function recursion
             else:
                 if self._fixed_background:
-                    total_background = self._fixed_background.project(0)
+                    par = "energy_" + \
+                        self._fixed_background.get_config().\
+                        get_dim_type("energy")
+                    total_background = self._fixed_background.project(par)
                 else:
+                    par = "energy_" + \
+                        self._signal.get_config().get_dim_type("energy")
                     total_background = numpy.zeros(
-                        shape=[self._signal._energy_bins],
+                        shape=[self._signal.get_config().get_par(par)._bins],
                         dtype=float)
                 for background in self._floating_backgrounds:
-                    total_background += background.project(0)
-                expected = total_background + self._signal.project(0)
+                    par = "energy_" + \
+                        background.get_config().get_dim_type("energy")
+                    total_background += background.project(par)
+                par = "energy_" + \
+                    self._signal.get_config().get_dim_type("energy")
+                expected = total_background + self._signal.project(par)
                 if config._sigma is not None:
                     penalty_term = {
                         name: {
@@ -649,18 +679,31 @@ class LimitSetting(object):
                         energy_low, energy_high = self._roi
 
                         # Shrink signal to ROI
-                        self._signal.shrink(energy_low, energy_high)
-
+                        par = "energy_" + \
+                            self._signal.get_config().get_dim_type("energy")
+                        par_low = par + "_low"
+                        par_high = par + "_high"
+                        self._signal.shrink(par_low=energy_low,
+                                            par_high=energy_high)
                         # Create new total background with shrunk spectra
+                        par = "energy_" + \
+                            self._signal.get_config().get_dim_type("energy")
                         total_background = numpy.zeros(
-                            shape=[self._signal._energy_bins],
+                            shape=[self._signal.get_config().get_par(par).
+                                   _bins],
                             dtype=float)
                         for background in self._floating_backgrounds:
-                            background.shrink(energy_low, energy_high)
-                            total_background += background.project(0)
-
+                            par = "energy_" + \
+                                background.get_config().get_dim_type("energy")
+                            par_low = par + "_low"
+                            par_low = par + "_high"
+                            background.shrink(par_low=energy_low,
+                                              par_high=energy_high)
+                            total_background += background.project(par)
                         # Set make new expected and _observed (if required)
-                        expected = total_background + self._signal.project(0)
+                        par = "energy_" + \
+                            self._signal.get_config().get_dim_type("energy")
+                        expected = total_background + self._signal.project(par)
                         if self._data is None:
                             self._observed = total_background
                         config.add_chi_squared(
@@ -674,7 +717,8 @@ class LimitSetting(object):
                 penalty_value = self._calculator._current_values[name]
                 syst_analyser.add_penalty_value(count, penalty_value)
         minimum, minimum_bin = config.get_minimum(minimum_bin=True)
-        sig_bin = numpy.where(sig_config._counts == sig_config._current_count)[0][0]
+        sig_bin = numpy.where(sig_config._counts ==
+                              sig_config._current_count)[0][0]
         preferred_value = config._chi_squareds[1][minimum_bin][0]
         if syst_analyser is not None:
             syst_analyser.add_chi_squareds(sig_bin, config._chi_squareds[0])
@@ -713,15 +757,24 @@ def make_fixed_background(spectra_dict, **kwargs):
                 roi = kwargs.get("roi")
                 if kwargs.get("pre_shrink"):
                     energy_low, energy_high = roi
-                    spectrum.shrink(energy_low, energy_high)
+                    par = "energy_" + \
+                        spectrum.get_config().get_dim_type("energy")
+                    par_low = par + "_low"
+                    par_high = par + "_high"
+                    spectrum.shrink(par_low=energy_low, par_high=energy_high)
             spectrum.scale(scaling)
-            total_spectrum = spectrum.copy(name="fixed_background")
+            total_spectrum = copy.deepcopy(spectrum)
+            spectrum._name = "Fixed Background"
         else:
             if kwargs.get("roi") is not None:
                 roi = kwargs.get("roi")
                 if kwargs.get("pre_shrink"):
                     energy_low, energy_high = roi
-                    spectrum.shrink(energy_low, energy_high)
+                    par = "energy_" + \
+                        spectrum.get_config().get_dim_type("energy")
+                    par_low = par + "_low"
+                    par_high = par + "_high"
+                    spectrum.shrink(par_low=energy_low, par_high=energy_high)
             spectrum.scale(scaling)
             total_spectrum.add(spectrum)
     return total_spectrum

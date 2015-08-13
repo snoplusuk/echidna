@@ -11,7 +11,8 @@ import echidna.core.spectra as spectra
 import echidna.core.dsextract as dsextract
 
 
-def fill_from_root(filename, spectrum_name="", config=None, spectrum=None):
+def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
+                   **kwargs):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the reconstructed energies and positions of the
@@ -60,7 +61,8 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None):
         else:
             raise IndexError("Unknown paramer type %s" % var_type)
         extractors[var] = {"type": var_type,
-                           "extractor": dsextract.function_factory(var)}
+                           "extractor": dsextract.function_factory(var,
+                                                                   **kwargs)}
     for ievent in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
         for ievent in range(0, ds.GetEVCount()):
@@ -70,32 +72,35 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None):
                 mc = ds.GetMC()
             # Check to see if all parameters are valid and extract values
             fill = True
-            kwargs = {}
+            fill_kwargs = {}
             for var in extractors:
                 extractor = extractors[var]["extractor"]
                 if extractors[var]["type"] == "reco":
                     if extractor.get_valid_root(ev):
-                        kwargs[extractor._name] = extractor.get_value_root(ev)
+                        fill_kwargs[extractor._name] = \
+                            extractor.get_value_root(ev)
                     else:
                         fill = False
                         break
                 else:  # mc or truth
                     if extractor.get_valid_root(mc):
-                        kwargs[extractor._name] = extractor.get_value_root(mc)
+                        fill_kwargs[extractor._name] = \
+                            extractor.get_value_root(mc)
                     else:
                         fill = False
                         break
             # If all OK, fill the spectrum
             if fill:
                 try:
-                    spectrum.fill(**kwargs)
+                    spectrum.fill(**fill_kwargs)
                     spectrum._raw_events += 1
                 except ValueError:
                     pass
     return spectrum
 
 
-def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None):
+def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
+                     **kwargs):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the reconstructed energies and positions
@@ -134,21 +139,21 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None):
     print "Filling", spectrum_name, "with", filename
     extractors = []
     for var in spectrum.get_config().get_pars():
-        extractors.append(dsextract.function_factory(var))
+        extractors.append(dsextract.function_factory(var, **kwargs))
     for event in chain:
         fill = True
-        kwargs = {}
+        fill_kwargs = {}
         # Check to see if all parameters are valid and extract values
         for e in extractors:
             if e.get_valid_ntuple(event):
-                kwargs[e.name] = e.get_value_ntuple(event)
+                fill_kwargs[e.name] = e.get_value_ntuple(event)
             else:
                 fill = False
                 break
         # If all OK, fill the spectrum
         if fill:
             try:
-                spectrum.fill(**kwargs)
+                spectrum.fill(**fill_kwargs)
                 spectrum._raw_events += 1
             except ValueError:
                 pass

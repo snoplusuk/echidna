@@ -267,8 +267,9 @@ class Spectra(object):
         # Shrink to ROI
         kw_low = dimension+"_low"
         kw_high = dimension+"_high"
-        self.shrink(kw_low=lower_limit,
-                    kw_high=upper_limit)
+        kw_args = {kw_low: lower_limit,
+                   kw_high: upper_limit}
+        self.shrink(**kw_args)
 
         # Calculate efficiency
         integral_roi = self.sum()  # Integral of spectrum over ROI
@@ -570,28 +571,3 @@ class Spectra(object):
         self._data = self._data.reshape(flattened)
         for i in range(len(new_bins)):
             self._data = self._data.sum(-1*(i+1))
-
-    def copy(self, name=None):
-        # why not just to new_spectra = copy.copy(spectra)?
-        # copy.copy / copy.deepcopy will be checked and function removed if
-        # successful.
-        """ Copies the current spectra and returns a new identical one.
-
-        Args:
-          name (string, optional): Name of the new copied spectrum.
-            Default is the name of the current spectrum.
-
-        Returns:
-          :class:`echidna.core.spectra.Spectra` object which is identical to
-            the current spectra apart from possibly its name.
-        """
-        # What about style and raw_events?
-        if not name:
-            name = self._name
-        new_spectrum = Spectra(name, 0., self._config)
-        new_spectrum._data = numpy.zeros(shape=numpy.shape(self._data),
-                                         dtype=float)
-        new_spectrum.add(self)
-        new_spectrum._style = self._style
-        new_spectrum._rois = self._rois
-        return new_spectrum

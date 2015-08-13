@@ -29,7 +29,9 @@ class TestSpectra(unittest.TestCase):
             y_bin = radius / radial_high * radial_bins
             self.assertTrue(test_spectra._data[x_bin, y_bin] > 0)
         # Also test the sum method at the same time
-        self.assertTrue(test_spectra.sum() == test_decays)
+        self.assertTrue(test_spectra.sum() == test_decays,
+                        msg="Input decays %s, spectra sum %s"
+                        % (test_decays, test_spectra.sum()))
         self.assertRaises(ValueError, test_spectra.fill,
                           energy_mc=energy_low - 1, radial_mc=0)
         self.assertRaises(ValueError, test_spectra.fill, energy_mc=0,
@@ -91,7 +93,9 @@ class TestSpectra(unittest.TestCase):
         self.assertTrue(test_spectra.sum() == test_decays)
         count = 150
         test_spectra.scale(count)
-        self.assertTrue(test_spectra.sum() == count)
+        self.assertTrue(test_spectra.sum() == count,
+                        msg="Spectra sum: %s, scaling %s"
+                        % (test_spectra.sum(), count))
 
     def test_slicing(self):
         """ Test the slicing shirnks the spectra in the correct way.
@@ -123,7 +127,9 @@ class TestSpectra(unittest.TestCase):
                             radial_mc_high=radial_high / 2)
         energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
         radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
-        self.assertTrue(test_spectra._data.shape == (energy_bins, radial_bins))
+        self.assertTrue(test_spectra._data.shape == (energy_bins, radial_bins),
+                        msg="Spectra shape %s, energy bins %s, radial bins %s"
+                        % (test_spectra._data.shape, energy_bins, radial_bins))
 
     def test_rebin(self):
         """ Tests that the spectra are being rebinned correctly.
@@ -155,11 +161,19 @@ class TestSpectra(unittest.TestCase):
             bins = test_spectra.get_config().get_par(par)._bins / 2.
             new_bins += (bins,)
         test_spectra.rebin(new_bins)
-        self.assertTrue(old_sum == test_spectra.sum())
+        self.assertTrue(old_sum == test_spectra.sum(),
+                        msg="Sum pre rebin %s, post bin %s"
+                        % (old_sum, test_spectra.sum()))
         new_energy_width = test_spectra.get_config().get_par("energy_mc")\
             .get_width()
         new_radial_width = test_spectra.get_config().get_par("radial_mc")\
             .get_width()
-        self.assertTrue(test_spectra._data.shape == new_bins)
-        self.assertTrue(new_energy_width == old_energy_width*2.)
-        self.assertTrue(new_radial_width == old_radial_width*2.)
+        self.assertTrue(test_spectra._data.shape == new_bins,
+                        msg="Spectra shape %s, expected shape %s"
+                        % (test_spectra._data.shape, new_bins))
+        self.assertTrue(new_energy_width == old_energy_width*2.,
+                        msg="New width %s, Expected width %s"
+                        % (new_energy_width, old_energy_width))
+        self.assertTrue(new_radial_width == old_radial_width*2.,
+                        msg="New width %s, Expected width %s"
+                        % (new_radial_width, old_radial_width))

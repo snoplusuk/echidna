@@ -88,7 +88,6 @@ def dump_ndarray(file_path, ndarray_object):
     """
     with h5py.File(file_path, "w") as file_:
         for attr_name, attribute in ndarray_object.__dict__.iteritems():
-            print attr_name
             if attribute is None:  # Can't save to hdf5, skip --> continue
                 continue
             elif type(attribute).__name__ == "ndarray":
@@ -114,7 +113,6 @@ def load(file_path):
     with h5py.File(file_path, "r") as file_:
         parameters = collections.OrderedDict()
         for v in file_.attrs:
-            print v
             if v.startswith("pars:"):
                 [_, par, val] = v.split(":")
                 if par not in parameters:
@@ -132,7 +130,6 @@ def load(file_path):
             spec._rois = string_to_dict(rois_dict)
         # else the default values of Spectra __init__ are kept
         spec._data = file_["data"].value
-    print spec.get_config().get_pars()
     return spec
 
 
@@ -184,7 +181,6 @@ def load_ndarray(file_path, ndarray_object):
     """
     with h5py.File(file_path, "r") as file_:
         for attr_name, attribute in ndarray_object.__dict__.iteritems():
-            print attr_name
             try:
                 if type(attribute).__name__ == "ndarray":
                     setattr(ndarray_object, attr_name, file_[attr_name].value)
