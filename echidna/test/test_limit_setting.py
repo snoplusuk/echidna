@@ -13,6 +13,8 @@ from echidna.errors.custom_errors import CompatibilityError
 class TestLimitSetting(unittest.TestCase):
 
     def setUp(self):
+        """ Sets up the signal and background for limit setting.
+        """
         self._n_events = 1e5
         config_path = "echidna/config/example.yml"
         config1 = spectra.SpectraConfig.load_from_file(config_path)

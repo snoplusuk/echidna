@@ -33,9 +33,6 @@ def read_and_dump_root(fname, config_path, spectrum_name, save_path):
       config_path (str): Path to the config file
       spectrum_name (str): Name to be applied to the spectrum
       save_path (str): Path to a directory where the hdf5 files will be dumped
-
-    Returns:
-      None
     """
     config = spectra.SpectraConfig.load_from_file(config_path)
     spectrum = fill_spectrum.fill_from_root(
@@ -65,7 +62,7 @@ def read_tab_delim_file(fname):
       fname (str): Name of file to be read.
 
     Returns:
-      file_paths (list): List of file paths read from file
+      list: List of file paths read from file
     """
     file_paths = []
     with open(fname, 'r') as f:

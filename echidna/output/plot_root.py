@@ -56,7 +56,7 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     return plot
 
 
-def spectral_plot(spectra_dict, dimension, show_plot=False, **kwargs):
+def spectral_plot(spectra_dict, dimension="energy", show_plot=False, **kwargs):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -67,8 +67,10 @@ def spectral_plot(spectra_dict, dimension, show_plot=False, **kwargs):
     Args:
       spectra_dict (dict): Dictionary containing each spectrum you wish
         to plot, and the relevant parameters required to plot them.
-      dimension (string): The dimension or axis along which the
-        spectra should be plotted. Default is energy axis.
+      dimension (string, optional): The dimension or axis along which the
+        spectra should be plotted. Default is energy.
+      show_plot (bool, optional): Displays plot if True. Default is False.
+      \**kwargs (dict, optional): keyword arguements.
 
     Example:
 
@@ -180,7 +182,8 @@ def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
       x_low (float): Lower edge of first bin to plot.
       x_high (float): Upper edge of last bin to plot.
       x_title (string, optional): X Axis title.
-      graphical (bool): Plots hist to screen if true.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
 
     Returns:
       :class:`ROOT.TH1D`: Histogram of chi-squared per bin.

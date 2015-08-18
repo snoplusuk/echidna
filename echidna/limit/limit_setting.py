@@ -240,6 +240,7 @@ class LimitSetting(object):
         pre-shrinking is activated for floating backgrounds.
       CompatibilityError: If any background spectrum is incompatible
         with the signal spectrum
+      ValueError: No backgrounds provided.
     """
     def __init__(self, signal, fixed_background=None,
                  floating_backgrounds=None, data=None, **kwargs):
@@ -546,6 +547,7 @@ class LimitSetting(object):
 
         Raises:
           TypeError: If config has not been set for signal.
+          TypeError: If chi squared calculator not set.
           KeyError: If config has not been set for one or more
             backgrounds.
           IndexError: If no limit can be calculated. Relies on finding

@@ -7,8 +7,19 @@ import h5py
 import sys
 import collections
 
+
 def dict_to_string(in_dict):
-    """
+    """ Converts a dicionary to a string so it can be saved in a hdf5 file.
+
+    Args:
+      in_dict (dict): Dictionary to convert.
+
+    Raises:
+      TypeError: If the type of a value of in_dict is not supported currently.
+        Supported types are string, float and int.
+
+    Returns:
+      string: The converted dictionary.
     """
     out_string = ""
     for key, value in in_dict.iteritems():
@@ -24,8 +35,20 @@ def dict_to_string(in_dict):
                                                                 type(value)))
     return out_string[:-1]
 
+
 def string_to_dict(in_string):
-    """
+    """ Converts a string to a dictionary so it can
+      be loaded from the hdf5 file.
+
+    Args:
+      in_string (string): The string to convert into a dictionary.
+
+    Raises:
+      TypeError: If the type of a value of in_dict is not supported currently.
+        Supported types are string, float and int.
+
+    Returns:
+      dict: The converted string.
     """
     out_dict = {}
     keys_values = in_string.split(',')

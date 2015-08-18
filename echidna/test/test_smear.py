@@ -15,7 +15,7 @@ class TestSmear(unittest.TestCase):
           *p (list): List of parameters to fit
 
         Returns:
-          Value of gaussian at x for given parameters (float)
+          float: Value of gaussian at x for given parameters (float)
         """
         A, mean, sigma = p
         A = numpy.fabs(A)
@@ -30,7 +30,8 @@ class TestSmear(unittest.TestCase):
           spectra (core.spectra): Spectrum to be smeared
 
         Returns:
-          mean (float), sigma (float) and integral (float) of the spectrum.
+          tuple: mean (float), sigma (float) and
+            integral (float) of the spectrum.
         """
         entries = []
         energies = []
@@ -51,7 +52,7 @@ class TestSmear(unittest.TestCase):
           spectra (core.spectra): Spectrum to be smeared
 
         Returns:
-          mean (float), sigma (float) and integral (float)
+          tuple: mean (float), sigma (float) and integral (float)
         """
         entries = []
         radii = []
@@ -66,7 +67,8 @@ class TestSmear(unittest.TestCase):
         return coeff[1], numpy.fabs(coeff[2]), numpy.array(entries).sum()
 
     def test_weight_energy_ly(self):
-        """ Tests the weighted gaussian smearing method for energy.
+        """ Tests the weighted gaussian smearing method for energy
+        by light yield.
 
         Creates a delta function and fits the mean and sigma after smearing.
         Mean and sigma are checked against set values within 1 %.
@@ -109,7 +111,7 @@ class TestSmear(unittest.TestCase):
                                % (test_decays, integral))
 
     def test_random_energy_ly(self):
-        """ Tests the random gaussian smearing method for energy.
+        """ Tests the random gaussian smearing method for energy light yield.
 
         Creates a delta function and fits the mean and sigma after smearing.
         Mean and sigma are checked against set values within 1 %.
@@ -152,7 +154,7 @@ class TestSmear(unittest.TestCase):
                                % (test_decays, integral))
 
     def test_weight_energy_res(self):
-        """ Tests the weighted gaussian smearing method for energy.
+        """ Tests the weighted gaussian smearing method for energy resolution.
 
         Creates a delta function and fits the mean and sigma after smearing.
         Mean and sigma are checked against set values within 1 %.
@@ -195,7 +197,7 @@ class TestSmear(unittest.TestCase):
                                % (test_decays, integral))
 
     def test_random_energy_res(self):
-        """ Tests the random gaussian smearing method for energy.
+        """ Tests the random gaussian smearing method for energy resolution.
 
         Creates a delta function and fits the mean and sigma after smearing.
         Mean and sigma are checked against set values within 1 %.
