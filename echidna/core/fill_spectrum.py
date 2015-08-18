@@ -15,18 +15,15 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
                    **kwargs):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
-    with weights. It takes the reconstructed energies and positions of the
-    events from the root file. In order to keep the statistics, the time
-    dependence is performed via adding weights to every event depending on
-    the time period. Both, studied time and Half-life must be written in the
-    same units.
+    with weights. It takes the parameter specified in the config from the
+    events in the root file.
 
     Args:
       filename (str): A root file to study
       spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
-      config (:class:`spectra.SpectrumConfig`, optional): The config for
-        the spectrum
+      config (:class:`echidna.core.spectra.SpectrumConfig`, optional):
+        The config for the spectrum. Not requried when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
@@ -34,9 +31,10 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
     Raises:
       ValueError: If spectrum_name is not set when creating a new
         spectrum.
+      IndexError: Unknown dimension type (not mc, truth or reco).
 
     Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
     dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
@@ -103,11 +101,8 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
                      **kwargs):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
-    with weights. It takes the reconstructed energies and positions
-    of the events from the ntuple. In order to keep the statistics,
-    the time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
+    with weights. It takes the parameters specified in the config from
+    the events in the ntuple.
 
     Args:
       filename (str): The ntuple to study
@@ -124,7 +119,7 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
         spectrum.
 
     Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
     chain = TChain("output")
     chain.Add(filename)

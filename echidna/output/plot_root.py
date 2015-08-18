@@ -4,16 +4,14 @@ from ROOT import TH1D, TH2D
 
 def plot_projection(spectra, dimension, graphical=True):
     """ Plot the spectra as projected onto the dimension.
-    For example dimension == 0 will plot the spectra as projected onto the
-    energy dimension.
 
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
-      dimension (int): The dimension to project the spectra onto.
-      graphical (bool): Shows plot and waits for user input when true.
+      dimension (string): The dimension to project the spectra onto.
+      graphical (bool, optional): Displays plot if True. Default is True.
 
     Returns:
-      (:class:`ROOT.TH1D`): plot.
+      :class:`ROOT.TH1D`: Plot of the dimension.
     """
     plot = TH1D(dimension, "%s;Count per bin" % dimension,
                 int(spectra.get_config().get_par(dimension)._bins),
@@ -29,17 +27,16 @@ def plot_projection(spectra, dimension, graphical=True):
 
 
 def plot_surface(spectra, dimension1, dimension2, graphical=True):
-    """ Plot the spectra with the dimension projected out.
-    For example dimension == 0 will plot the spectra as projected onto the
-    radial and time dimensions i.e. not energy.
+    """ Plots a 2D histogram of the dimensions in spectra.
 
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
-      dimension (int): The dimension to project out.
-      graphical (bool): Shows plot and waits for user input when true.
+      dimension1 (string): The dimension to plot.
+      dimension2 (string): The dimension to plot.
+      graphical (bool, optional): Displays plot if True. Default is True.
 
     Returns:
-      (:class:`ROOT.TH2D`): plot.
+      (:class:`ROOT.TH2D`): Plot of the spectra.
     """
     plot = TH2D("%s:%s" % (dimension1, dimension2),
                 "%s;%s;Count per bin" % (dimension1, dimension2),
@@ -59,8 +56,7 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     return plot
 
 
-# TO DO: Convert the rest of the functions below
-def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
+def spectral_plot(spectra_dict, dimension, show_plot=False, **kwargs):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -71,7 +67,7 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
     Args:
       spectra_dict (dict): Dictionary containing each spectrum you wish
         to plot, and the relevant parameters required to plot them.
-      dimension (int, optional): The dimension or axis along which the
+      dimension (string): The dimension or axis along which the
         spectra should be plotted. Default is energy axis.
 
     Example:
@@ -103,118 +99,61 @@ def spectral_plot(spectra_dict, dimension=0, show_plot=False, **kwargs):
       :class:`ROOT.TCanvas`: Canvas containing spectral plot.
     """
     first_spectra = True
-    if dimension == 0:
-        for value in spectra_dict.values():
-            spectra = value.get("spectra")
-            if first_spectra:
-                energy_low = spectra._energy_low
-                energy_high = spectra._energy_high
-                energy_bins = spectra._energy_bins
-                width = spectra._energy_width
-                shape = (energy_bins)  # Shape for summed arrays
-                first_spectra = False
-            else:
-                if spectra._energy_low != energy_low:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect energy lower limit")
-                if spectra._energy_high != energy_high:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect energy upper limit")
-                if spectra._energy_bins != energy_bins:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect energy upper limit")
-        summed_background = ROOT.TH1F("summed_background",
-                                      "; Energy (MeV); Counts",
-                                      spectra._energy_bins,
-                                      spectra._energy_low,
-                                      spectra._energy_high)
-        summed_total = ROOT.TH1F("summed_total",
-                                 "; Energy (MeV); Counts",
-                                 spectra._energy_bins,
-                                 spectra._energy_low,
-                                 spectra._energy_high)
-    elif dimension == 1:
-        for value in spectra_dict.values:
-            spectra = value.get("spectra")
-            if first_spectra:
-                radial_low = spectra._radial_low
-                radial_high = spectra._radial_high
-                radial_bins = spectra._radial_bins
-                width = spectra._radial_width
-                shape = (radial_bins)
-                first_spectra = False
-            else:
-                if spectra._radial_low != radial_low:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time lower limit")
-                if spectra._radial_high != radial_high:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time upper limit")
-                if spectra._radial_bins != radial_bins:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time upper limit")
-        summed_background = ROOT.TH1F("summed_background",
-                                      "; Radius (mm); Counts",
-                                      spectra._radial_bins,
-                                      spectra._radial_low,
-                                      spectra._radial_high)
-        summed_total = ROOT.TH1F("summed_total",
-                                 "; Radius (mm); Counts",
-                                 spectra._radial_bins,
-                                 spectra._radial_low,
-                                 spectra._radial_high)
-    elif dimension == 2:
-        for value in spectra_dict.values:
-            spectra = value.get("spectra")
-            if first_spectra:
-                time_low = spectra._time_low
-                time_high = spectra._time_high
-                time_bins = spectra._time_bins
-                width = spectra._time_width
-                shape = (time_bins)
-                first_spectra = False
-            else:
-                if spectra._time_low != time_low:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time lower limit")
-                if spectra._time_high != time_high:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time upper limit")
-                if spectra._time_bins != time_bins:
-                    raise AssertionError("Spectra " + spectra._name + " has "
-                                         "incorrect time upper limit")
-        summed_background = ROOT.TH1F("summed_background",
-                                      "; Time (Yr); Counts",
-                                      spectra._time_bins,
-                                      spectra._time_low,
-                                      spectra._time_high)
-        summed_total = ROOT.TH1F("summed_total",
-                                 "; Time (Yr); Counts",
-                                 spectra._time_bins,
-                                 spectra._time_low,
-                                 spectra._time_high)
-    summed_total = numpy.zeros(shape=shape)
     can = ROOT.TCanvas()
     leg = ROOT.TLegend(0.7, 0.7, 0.9, 0.9)
-    summed_background.SetLineStyle(7)
-    summed_background.SetLineColor(ROOT.kRed)
-    summed_total.SetLineStyle(7)
-    summed_total.SetLineColor(ROOT.kBlack)
-    leg.AddEntry(summed_total, "Background + Signal", "l")
-    leg.AddEntry(summed_background, "Background", "l")
-    hists = []
     if kwargs.get("log_y") is True:
         can.SetLogy()
+    hists = []
     for value in spectra_dict.values():
         spectra = value.get("spectra")
-        hist = spectra.project(dimension, graphical=False)
-        hist.SetLineColor(value.get("style")["color"])
-        leg.AddEntry(hist, value.get("label"), 'l')
-        hists.append(hist)
-        if value.get("type") is "background":
-            summed_background.Add(hist)
-        else:
+        if first_spectra:
+            dim_type = spectra.get_config().get_dim_type(dimension)
+            par = spectra.get_config().get_par(dimension+"_"+dim_type)
+            low = par._low
+            high = par._high
+            energy_bins = par._bins
+            width = par.get_width()
+            shape = (bins)  # Shape for summed arrays
+            root_labels = "; %s (%s); Counts" % (dimension, par.get_unit())
+            summed_background = ROOT.TH1F("summed_background", root_labels,
+                                          bins, low, high)
+            summed_total = ROOT.TH1F("summed_total", root_labels,
+                                     bins, low, high)
+            summed_total = numpy.zeros(shape=shape)
+            summed_background.SetLineStyle(7)
+            summed_background.SetLineColor(ROOT.kRed)
+            summed_total.SetLineStyle(7)
+            summed_total.SetLineColor(ROOT.kBlack)
+            leg.AddEntry(summed_total, "Background + Signal", "l")
+            leg.AddEntry(summed_background, "Background", "l")
+            hist = spectra.project(dimension, graphical=False)
+            hist.SetLineColor(value.get("style")["color"])
+            leg.AddEntry(hist, value.get("label"), 'l')
+            hists.append(hist)
+            if value.get("type") is "background":
+                summed_background.Add(hist)
             summed_total.Add(hist)
+            first_spectra = False
+        else:
+            dim_type = spectra.get_config().get_dim_type("energy")
+            par = spectra.get_config().get_par("energy_"+dim_type)
+            if par._low != low:
+                raise AssertionError("Spectra " + spectra._name + " has "
+                                     "incorrect energy lower limit")
+            if par._high != high:
+                raise AssertionError("Spectra " + spectra._name + " has "
+                                     "incorrect energy upper limit")
+            if par._bins != bins:
+                raise AssertionError("Spectra " + spectra._name + " has "
+                                     "incorrect energy upper limit")
+            hist = spectra.project(dimension, graphical=False)
+            hist.SetLineColor(value.get("style")["color"])
+            leg.AddEntry(hist, value.get("label"), 'l')
+            hists.append(hist)
+            if value.get("type") is "background":
+                summed_background.Add(hist)
+            summed_total.Add(hist)
+    # Draw after making hists so they are drawn in the right order
     summed_total.Draw()
     summed_background.Draw("same")
     for hist in hists:

@@ -32,6 +32,20 @@ class SpectraParameter(object):
 
     def set_par(self, **kwargs):
         """Set a limit / binning parameter after initialisation.
+
+        Args:
+          \**kwargs (dict): keyword arguments
+
+        .. note::
+
+        Keyword arguments include:
+
+        * low (float): Value to set the lower limit to of the parameter
+        * high (float): Value to set the higher limit to of the parameter
+        * bins (int): Value to set the number of bins of the parameter
+
+        Raises:
+          TypeError: Unknown variable type passed as a kwarg.
         """
         for kw in kwargs:
             if kw == "low":
@@ -47,12 +61,18 @@ class SpectraParameter(object):
         """Get the width of the binning for the parameter
 
         Returns:
-          Bin width
+          float: Bin width.
         """
         return (self._high - self._low) / float(self._bins)
 
     def get_unit(self):
         """Get the default unit for a given parameter
+
+        Raises:
+          Exception: Unknown parameter.
+
+        Returns:
+          string: Unit of the parameter
         """
         if self._name.split['_'][0] == "energy":
             return "MeV"
@@ -61,11 +81,17 @@ class SpectraParameter(object):
         if self._name.split['_'][0] == "time":
             return "years"
         else:
-            raise ValueError("%s is an unknown parameter"
-                             % self._name.split('_')[0])
+            raise Exception("%s is an unknown parameter"
+                            % self._name.split('_')[0])
 
     def round(self, x):
         """ Round the value to nearest bin edge
+
+        Args:
+          x (float): Value to round.
+
+        Returns:
+          float: The value of the closest bin edge to x
         """
         return round(x/self.get_width())*self.get_width()
 
@@ -95,6 +121,10 @@ class SpectraConfig(object):
 
         Args:
           filename (str) path to config file
+
+        Returns:
+          :class:`echidna.core.spectra.SpectraConfig`: A config object
+            containing the parameters in the file called filename.
         """
         config = yaml.load(open(filename, 'r'))
         parameters = collections.OrderedDict()
@@ -105,26 +135,35 @@ class SpectraConfig(object):
         return cls(parameters)
 
     def get_par(self, name):
-        """Get a named SpectraParameter
+        """Get a named SpectraParameter.
+
+        Args:
+          name (string): Name of the parameter.
 
         Returns:
-          Named parameter
+          :class:`echidna.core.spectra.SpectraParameter`: Named parameter.
         """
         return self._parameters[name]
 
     def get_pars(self):
-        """Get list of parameter names
+        """Get list of all parameter names in the config.
 
         Returns:
-          List of parameter names
+          list: List of parameter names
         """
         return sorted(self._parameters.keys())
 
     def get_index(self, parameter):
-        """Return index of parameter within the existing set
+        """Return the index of a parameter within the existing set
+
+        Args:
+          parameter (string): Name of the parameter.
+
+        Raises:
+          IndexError: parameter is not in the config.
 
         Returns:
-          Index of parameter
+          int: Index of the parameter
         """
         for i, p in enumerate(self.get_pars()):
             if p == parameter:
@@ -136,7 +175,7 @@ class SpectraConfig(object):
         The _mc, _reco and _truth suffixes are removed.
 
         Returns:
-          List of dimensions names
+          list: List of the dimensions names of the config.
         """
         dims = []
         for par in sorted(self._parameters.keys()):
@@ -148,7 +187,11 @@ class SpectraConfig(object):
         return dims
 
     def get_dim(self, par):
-        """Get the dimension of par
+        """Get the dimension of par.
+        The _mc, _reco and _truth suffixes are removed.
+
+        Args:
+          par (string): Name of the parameter
 
         Returns:
           The dimension of par
@@ -161,8 +204,14 @@ class SpectraConfig(object):
     def get_dim_type(self, dim):
         """Returns the type of the dimension i.e. mc, reco or truth.
 
+        Args:
+          dim (string): The name of the dimension
+
+        Raises:
+          IndexError: dim is not in the spectra.
+
         Returns:
-          String of the type of the dimension (mc, reco or truth)
+          string: The type of the dimension (mc, reco or truth)
         """
         for par in sorted(self._parameters.keys()):
             par_split = par.split('_')[:-1]
@@ -217,6 +266,12 @@ class Spectra(object):
         self._num_decays = num_decays
 
     def get_config(self):
+        """ Get the config of the spectra.
+
+        Returns:
+          :class:`echidna.core.spectra.SpectraConfig`: The config of
+            the spectra.
+        """
         return self._config
 
     def fill(self, weight=1.0, **kwargs):
@@ -227,9 +282,11 @@ class Spectra(object):
         Args:
           weight (float, optional): Defaults to 1.0, weight to fill the bin
             with.
-          \**kwargs (float): Named values (e.g. for energy, radial)
+          \**kwargs (float): Named values (e.g. for energy_mc, radial_mc)
 
         Raises:
+          Exception: Parameter in \**kwargs is not in config.
+          Exception: Parameter in config is not in \**kwargs.
           ValueError: If the energy, radius or time is beyond the bin limits.
         """
         # Check all keys in kwargs are in the config parameters and visa versa
@@ -313,7 +370,8 @@ class Spectra(object):
           dimension (str): parameter to project onto
 
         Returns:
-          The projection of the histogram onto the given axis
+          :class:`numpy.ndarray`: The projection of the histogram onto the
+            given axis
         """
         axis = self._config.get_index(dimension)
         projection = copy.copy(self._data)
@@ -333,9 +391,12 @@ class Spectra(object):
           dimension1 (str): first parameter to project onto
           dimension1 (str): second parameter to project onto
 
+        Raises:
+          IndexError: Axis of dimension1 is out of range
+          IndexError: Axis of dimension2 is out of range
 
         Returns:
-          The 2d surface of the histogram.
+          :class:`numpy.ndarray`: The 2d surface of the histogram.
         """
         axis1 = self._config.get_index(dimension1)
         axis2 = self._config.get_index(dimension2)
@@ -353,7 +414,7 @@ class Spectra(object):
         """ Calculate and return the sum of the `_data` values.
 
         Returns:
-          The sum of the values in the `_data` histogram.
+          float: The sum of the values in the `_data` histogram.
         """
         return self._data.sum()
 
@@ -382,18 +443,28 @@ class Spectra(object):
             must be of the form [name]_low or [name]_high where [name]
             is a dimension present in the SpectraConfig.
 
-        Notes:
+        .. note:
+
           The logic in this method is the same for each dimension, first
         check the new values are within the existing ones (can only compress).
         Then calculate the low bin number and high bin number (relative to the
         existing binning low). Finally update all the bookeeping and slice.
+
+        Raises:
+          IndexError: Parameter which is being shrank does not exist in the
+            config file.
+          ValueError: [parameter]_low value is lower than the parameters lower
+            bound.
+          ValueError: [parameter]_high value is lower than the parameters
+            higher bound.
+          IndexError: Suffix to [parameter] is not _high or _low.
         """
         # First check dimensions and bounds in kwargs are valid
         for arg in kwargs:
             high_low = arg.split("_")[-1]
             par = arg[:-1*(len(high_low)+1)]
             if par not in self._config.get_pars():
-                raise IndexError("%s is not a dimension in the config" % par)
+                raise IndexError("%s is not a parameter in the config" % par)
             if high_low == "low":
                 if kwargs[arg] < self._config.get_par(par)._low:
                     raise ValueError("%s low is below existing bound"
@@ -498,7 +569,21 @@ class Spectra(object):
         """ Adds a spectrum to current spectra object.
 
         Args:
-          spectrum (:class:`core.spectra`): Spectrum to add.
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum to add.
+
+        Raises:
+          ValueError: spectrum has different dimenstions to the current
+            spectra.
+          IndexError: spectrum does not contain a dimension(s) that is in the
+            current spectra config.
+          IndexError: The current spectra does not contain a dimension(s) that
+            is in the spectrum config.
+          ValueError: The upper bounds of a parameter in the current spectra
+            and spectra are not equal.
+          ValueError: The lower bounds of a parameter in the current spectra
+            and spectra are not equal.
+          ValueError: The number of bins of a parameter in the current spectra
+            and spectra are not equal.
         """
         if self._data.shape != spectrum._data.shape:
             raise ValueError("The spectra have different dimensions.\n"

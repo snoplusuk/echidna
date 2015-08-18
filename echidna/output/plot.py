@@ -2,15 +2,19 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy
 
+import echidna.core.spectra as spectra
 
 def _produce_axis(spectra, dimension):
     """ This method produces an array that represents the axis between low and
     high with bins.
 
     Args:
-      low (float): Low edge of the axis
-      high (float): High edge of the axis
-      bins (int): Number of bins
+      spectra (:class:`echidna.core.spectra.Spectra`): The spectra you wish to
+        produce the axis from.
+      dimension (string): The dimension you wish to produce the axis for.
+
+    Returns:
+      list: The values for the axis.
     """
     parameter = spectra.get_config().get_par(dimension)
     return [parameter._low + x * (parameter._high - parameter._low) /
@@ -26,9 +30,17 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
 
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
-      dimension (int): The dimension to project the spectra onto.
+      dimension (string): The dimension to project the spectra onto.
+      fig_num (int, optional): The number of the figure. If you are
+        producing multiple spectral plots automatically, this can be
+        useful to ensure pyplot treats each plot as a separate figure.
+        Default is 1.
+      show_plot (bool, optional): Displays the plot if true. Default is True.
+
+    Returns:
+      matplotlib.pyplot.figure: Plot of the projection.
     """
-    fig = plt.figure()
+    fig = plt.figure(fig_num)
     axis = fig.add_subplot(1, 1, 1)
     x = _produce_axis(spectra, dimension)
     par = spectra.get_config().get_par(dimension)
@@ -54,12 +66,13 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
     Args:
       spectra_dict (dict): Dictionary containing each spectrum you wish
         to plot, and the relevant parameters required to plot them.
-      dimension (int, optional): The dimension or axis along which the
-        spectra should be plotted.
+      dimension (string): The dimension  you wish to plot.
       fig_num (int, optional): The number of the figure. If you are
         producing multiple spectral plots automatically, this can be
         useful to ensure pyplot treats each plot as a separate figure.
         Default is 1.
+      show_plot (bool, optional): Displays the plot if true. Default is True.
+
 
     Example:
 
@@ -80,6 +93,9 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
         * per_bin (*bool*): Include chi-squared per bin histogram.
         * limit (:class:`spectra.Spectra`): Include a spectrum showing
           a current or target limit.
+
+    Returns:
+      matplotlib.pyplot.figure: Plot of the signal and backgrounds.
     """
     fig = plt.figure(fig_num)
     ax = fig.add_subplot(3, 1, (1, 2))
@@ -174,13 +190,15 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
 
 
 def plot_surface(spectra, dimension1, dimension2):
-    """ Plot the spectra with the dimension projected out.
-    For example dimension == 0 will plot the spectra as projected onto the
-    radial and time dimensions i.e. not energy.
+    """ Plot the two dimensions from spectra as a 2D histogram
 
     Args:
       spectra (:class:`echidna.core.spectra`): The spectra to plot.
-      dimension (int): The dimension to project out.
+      dimension1 (string): The name of the dimension you want to plot.
+      dimension2 (string): The name of the dimension you want to plot.
+
+    Returns:
+      matplotlib.pyplot.figure: Plot of the surface of the two dimensions.
     """
     fig = plt.figure()
     axis = fig.add_subplot(111, projection='3d')

@@ -4,23 +4,22 @@ import echidna.core.spectra as spectra
 
 
 class Smear(object):
-    """ This class smears the energy and radius of a spectra.
+    """ The base class for smearing spectra.
 
-    The class can recieve energy and radius as individual data points or a
-    1 dimensional numpy array to smear which is then returned. 2d and 3d
-    arrays with linked energy, radius and time information is yet to be
-    implemented.
+    Args:
+      name (string): The name of the smearing class.
 
     Attributes:
-      _light_yield (float): Number of PMT hits expected for a
-        MeV energy deposit in NHit/MeV
-      _position_resolution (float): Sigma in mm
+      _name (string): name of the smeaing class.
+      _num_sigma (float): The width of the window in terms of number of sigma
+        you wish to apply weights to.
     """
 
-    def __init__(self):
-        """ Initialise the Smear class by seeding the random number generator
+    def __init__(self, name):
+        """ Initialise the Smear class by seeding the random number generator.
         """
         np.random.seed()
+        self._name = name
         self._num_sigma = 5.
 
     def calc_gaussian(self, x, mean, sigma):
@@ -33,22 +32,40 @@ class Smear(object):
             sigma : Sigma of the gaussian
 
           Returns:
-            Value of the gaussian at the given position
+            float: Value of the gaussian at the given position
         """
         return np.exp(-(x-mean)**2/(2*sigma**2))/(sigma*np.sqrt(2*np.pi))
 
     def get_bin_mean(self, low, bin, width):
-        """
+        """ Calculates the mean value of a bin.
+
+        Args:
+          low (float): The lower bound value of the parameter.
+          bin (int): The number of the bin you wish to calculate the mean of.
+          width (float): The width of the bin.
+
+        Returns:
+          float: The mean value of the bin.
         """
         return low + (bin + 0.5)*width
 
     def get_num_sigma(self):
-        """
+        """ Returns the width of the window in terms of number of sigma
+          you wish to apply weights to.
+
+        Returns:
+          float: The number of sigma.
         """
         return self._num_sigma
 
     def set_num_sigma(self, num_sigma):
-        """
+        """ Sets the width of the window in terms of number of sigma
+          you wish to apply weights to.
+
+        Args:
+          num_sigma (float): The number of sigma you wish to apply weights to.
+        Raises:
+          ValueError: If the number of sigma is zero or negative.
         """
         if (num_sigma > 0.):
             self._num_sigma = float(num_sigma)
@@ -57,7 +74,16 @@ class Smear(object):
                              "greater than zero." % num_sigma)
 
     def get_bounds(self, mean, sigma):
-        """
+        """ Calculates the boundaries you wish to apply the smearing
+          weights to.
+
+        Args:
+          mean (float): The mean value you are smearing.
+          sigma (float): The sigma of the gaussian you are using to smear.
+
+        Returns:
+          tuple: First value of the tuple is the lower bound. The second is
+            the upper bound.
         """
         low = mean - 0.5*self._num_sigma*sigma
         high = mean + 0.5*self._num_sigma*sigma
@@ -65,17 +91,25 @@ class Smear(object):
 
 
 class EnergySmearLY(Smear):
-    """
+    """ The class which smears energy. It accepts resolution in terms of light
+      yield (LY) in units of NHit per MeV.
+
+    Attributes:
+      _light_yield (float): The light yield of the scintillator in NHits per
+        MeV.
     """
 
     def __init__(self):
+        """ Initialises the class.
         """
-        """
-        super(EnergySmearLY, self).__init__()
+        super(EnergySmearLY, self).__init__("energy_light_yield")
         self._light_yield = 200.  # NHits/MeV
 
     def get_resolution(self):
-        """
+        """ Returns the light yield.
+
+        Returns:
+          float: The light yield.
         """
         return self._light_yield
 
@@ -86,12 +120,18 @@ class EnergySmearLY(Smear):
           energy (float): Energy value of data point(s)
 
         Returns:
-          Sigma equivalent to sqrt(energy/_light_yield)
+          float: Sigma equivalent to sqrt(energy/_light_yield)
         """
         return np.sqrt(energy/self._light_yield)
 
     def set_resolution(self, light_yield):
-        """
+        """ Sets the light yield
+
+        Args:
+          light_yield (float): The value you wish to set the light yield to.
+
+        Raises:
+          ValueError: If the light yield is zero or negative.
         """
         if light_yield > 0.:
             self._light_yield = float(light_yield)
@@ -100,7 +140,22 @@ class EnergySmearLY(Smear):
                              "must be greater than zero.")
 
     def weighted_smear(self, spectrum, par="energy_mc"):
-        """
+        """ Smears the energy of a :class:`echidna.core.spectra.Spectra` by
+          calculating a Gaussian PDF for each bin. Weights are then applied
+          to a window of width specified by the number of sigma depending on
+          the value of the Gaussian PDF at the mean of the bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
@@ -143,8 +198,8 @@ class EnergySmearLY(Smear):
                         weights = []
                         for energy in np.arange(low, high, widths[i]):
                             weights.append(self.calc_gaussian(energy,
-                                                               mean,
-                                                               sigma))
+                                                              mean,
+                                                              sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
@@ -158,7 +213,23 @@ class EnergySmearLY(Smear):
         return smeared_spec
 
     def random_smear(self, spectrum, par="energy_mc"):
-        """
+        """ Smears the energy of a :class:`echidna.core.spectra.Spectra` by
+          generating a number of random points from  Gaussian PDF generated
+          from that bins mean value and the corresponding sigma. The number
+          of points generated is equivalent to the number of entries in that
+          bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
@@ -211,7 +282,7 @@ class EnergySmearRes(Smear):
     def __init__(self):
         """ Initialise the class
         """
-        super(EnergySmearRes, self).__init__()
+        super(EnergySmearRes, self).__init__("energy_resolution")
         self._resolution = 0.05  # 5%/sqrt(MeV)
 
     def get_resolution(self):
@@ -242,6 +313,9 @@ class EnergySmearRes(Smear):
         Args:
           resolution (float): Energy resolution in :math:`\sqrt{MeV}`
             e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+
+        Raises:
+          ValueError: If the resolution is not between 0 and 1.
         """
         if (resolution > 0. and resolution < 1.):
             self._resolution = resolution
@@ -250,7 +324,22 @@ class EnergySmearRes(Smear):
                              "must be between 0. and 1." % resolution)
 
     def weighted_smear(self, spectrum, par="energy_mc"):
-        """
+        """ Smears the energy of a :class:`echidna.core.spectra.Spectra` by
+          calculating a Gaussian PDF for each bin. Weights are then applied
+          to a window of width specified by the number of sigma depending on
+          the value of the Gaussian PDF at the mean of the bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
@@ -293,8 +382,8 @@ class EnergySmearRes(Smear):
                         weights = []
                         for energy in np.arange(low, high, widths[i]):
                             weights.append(self.calc_gaussian(energy,
-                                                               mean,
-                                                               sigma))
+                                                              mean,
+                                                              sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
@@ -308,7 +397,23 @@ class EnergySmearRes(Smear):
         return smeared_spec
 
     def random_smear(self, spectrum, par="energy_mc"):
-        """
+        """ Smears the energy of a :class:`echidna.core.spectra.Spectra` by
+          generating a number of random points from  Gaussian PDF generated
+          from that bins mean value and the corresponding sigma. The number
+          of points generated is equivalent to the number of entries in that
+          bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
@@ -348,13 +453,17 @@ class EnergySmearRes(Smear):
 
 
 class RadialSmear(Smear):
-    """
+    """ The class which smears the radius. It accepts resolution in terms of
+      sigma in units of mm.
+
+    Attributes:
+      _resolution (float): The position resolution (mm).
     """
 
     def __init__(self):
+        """ Initialises the class.
         """
-        """
-        super(RadialSmear, self).__init__()
+        super(RadialSmear, self).__init__("radial")
         self._resolution = 100.  # mm
 
     def get_resolution(self):
@@ -367,6 +476,9 @@ class RadialSmear(Smear):
 
     def set_resolution(self, resolution):
         """Sets the position resolution:
+
+        Raises:
+          ValueError: If resolution is zero or less.
 
         Args:
           resolution (float): Position resolution in mm.
@@ -387,7 +499,22 @@ class RadialSmear(Smear):
         return self.get_resolution()
 
     def weighted_smear(self, spectrum, par="radial_mc"):
-        """
+        """ Smears the radius of a :class:`echidna.core.spectra.Spectra` by
+          calculating a Gaussian PDF for each bin. Weights are then applied
+          to a window of width specified by the number of sigma depending on
+          the value of the Gaussian PDF at the mean of the bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is radial_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)
@@ -430,8 +557,8 @@ class RadialSmear(Smear):
                         weights = []
                         for radius in np.arange(low, high, widths[i]):
                             weights.append(self.calc_gaussian(radius,
-                                                               mean,
-                                                               sigma))
+                                                              mean,
+                                                              sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
@@ -445,7 +572,23 @@ class RadialSmear(Smear):
         return smeared_spec
 
     def random_smear(self, spectrum, par="radial_mc"):
-        """
+        """ Smears the radius of a :class:`echidna.core.spectra.Spectra` by
+          generating a number of random points from  Gaussian PDF generated
+          from that bins mean value and the corresponding sigma. The number
+          of points generated is equivalent to the number of entries in that
+          bin.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish
+            to smear.
+          par (string, optional): The name of the parameter you wish to smear.
+            The default is radial_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The smeared spectrum
         """
         if par not in spectrum.get_config().get_pars():
             raise IndexError("%s is not a parameter in the spectrum" % par)

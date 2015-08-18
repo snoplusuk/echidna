@@ -10,6 +10,10 @@ def function_factory(dimension, **kwargs):
 
     Args:
       dimension (str): to extract from a RAT DS/ntuple file.
+      \**kwargs (dict): to be passed to the extractor.
+
+    Raises:
+      IndexError: dimension is an unknown parameter
 
     Retuns:
       Extractor object.
@@ -64,7 +68,7 @@ class EnergyExtractMC(Extractor):
           mc (:class:`RAT.DS.MC`) entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
             return True
@@ -77,7 +81,7 @@ class EnergyExtractMC(Extractor):
           mc (:class:`RAT.DS.MC`) entry
 
         Returns:
-          True quenched energy
+          float: True quenched energy
         '''
         return mc.GetScintQuenchedEnergyDeposit()
 
@@ -88,7 +92,7 @@ class EnergyExtractMC(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if entry.mc == 1:
             return True
@@ -101,7 +105,7 @@ class EnergyExtractMC(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          True quenched energy
+          float: True quenched energy
         '''
         return entry.mcEdepQuenched
 
@@ -122,7 +126,7 @@ class EnergyExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if ev.DefaultFitVertexExists() and \
                 ev.GetDefaultFitVertex().ContainsEnergy() \
@@ -137,7 +141,7 @@ class EnergyExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Reconstructed energy
+          float: Reconstructed energy
         '''
         return ev.GetDefaultFitVertex().GetEnergy()
 
@@ -148,7 +152,7 @@ class EnergyExtractReco(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         return (entry.scintFit != 0 and entry.energy > 0)
 
@@ -159,7 +163,7 @@ class EnergyExtractReco(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Reconstructed energy
+          float: Reconstructed energy
         '''
         return entry.energy
 
@@ -180,7 +184,7 @@ class EnergyExtractTruth(Extractor):
           mc (:class:`RAT.DS.MC`) entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
             return True
@@ -193,7 +197,7 @@ class EnergyExtractTruth(Extractor):
           mc (:class:`RAT.DS.MC`) entry
 
         Returns:
-          True energy
+          float: True energy
         '''
         return mc.GetScintEnergyDeposit()
 
@@ -204,7 +208,7 @@ class EnergyExtractTruth(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if entry.mc == 1:
             return True
@@ -217,7 +221,7 @@ class EnergyExtractTruth(Extractor):
           entry (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          True energy
+          float: True energy
         '''
         entry.mcEdep
 
@@ -238,7 +242,7 @@ class RadialExtractMC(Extractor):
           ev (:class:`RAT.DS.MC`) event
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
             return True
@@ -251,7 +255,7 @@ class RadialExtractMC(Extractor):
           ev (:class:`RAT.DS.MC`) event
 
         Returns:
-          True radius
+          float: True radius
         '''
         return mc.GetMCParticle(0).GetPosition().Mag()
 
@@ -262,7 +266,7 @@ class RadialExtractMC(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if entry.mc == 1:
             return True
@@ -275,7 +279,7 @@ class RadialExtractMC(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          True radius
+          float: True radius
         '''
         return math.fabs(math.sqrt((entry.mcPosx)**2 +
                                    (entry.mcPosy)**2 +
@@ -298,7 +302,7 @@ class RadialExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if ev.DefaultFitVertexExists() and \
                 ev.GetDefaultFitVertex().ContainsPosition() \
@@ -313,7 +317,7 @@ class RadialExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Reconstructed radius
+          float: Reconstructed radius
         '''
         return ev.GetDefaultFitVertex().GetPosition().Mag()
 
@@ -324,7 +328,7 @@ class RadialExtractReco(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         return entry.scintFit != 0
 
@@ -335,7 +339,7 @@ class RadialExtractReco(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Reconstructed radius
+          float: Reconstructed radius
         '''
         return math.fabs(math.sqrt((entry.posx)**2 +
                                    (entry.posy)**2 +
@@ -343,7 +347,7 @@ class RadialExtractReco(Extractor):
 
 
 class Radial3ExtractMC(Extractor):
-    '''True radial extraction methods.
+    ''' True :math:`(radius/av_radius)^3`radial extraction methods.
     '''
 
     def __init__(self, av_radius=None):
@@ -362,7 +366,7 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`RAT.DS.MC`) event
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
             return True
@@ -375,7 +379,7 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`RAT.DS.MC`) event
 
         Returns:
-          True radius
+          float: True :math:`(radius/av_radius)^3`
         '''
         return (mc.GetMCParticle(0).GetPosition().Mag() / self._av_radius) ** 3
 
@@ -386,7 +390,7 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if entry.mc == 1:
             return True
@@ -399,7 +403,7 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          True radius
+          float: True :math:`(radius/av_radius)^3`
         '''
         return (math.fabs(math.sqrt((entry.mcPosx)**2 +
                                     (entry.mcPosy)**2 +
@@ -407,7 +411,7 @@ class Radial3ExtractMC(Extractor):
 
 
 class Radial3ExtractReco(Extractor):
-    '''Reconstructed radial extraction methods.
+    ''' Reconstructed :math:`(radius/av_radius)^3` radial extraction methods.
     '''
 
     def __init__(self):
@@ -422,7 +426,7 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         if ev.DefaultFitVertexExists() and \
                 ev.GetDefaultFitVertex().ContainsPosition() \
@@ -437,7 +441,7 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          Reconstructed radius
+          float: Reconstructed :math:`(radius/av_radius)^3`
         '''
         return (ev.GetDefaultFitVertex().GetPosition().Mag() /
                 self._av_radius()) ** 3
@@ -449,7 +453,7 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Validity boolean
+          bool: Validity boolean
         '''
         return entry.scintFit != 0
 
@@ -460,7 +464,7 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          Reconstructed radius
+          float: Reconstructed :math:`(radius/av_radius)^3`
         '''
         return (math.fabs(math.sqrt((entry.posx)**2 +
                                     (entry.posy)**2 +
