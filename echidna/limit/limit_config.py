@@ -97,26 +97,23 @@ class LimitConfig(object):
         """
         return self._chi_squareds
 
-    def get_minimum(self, **kwargs):
+    def get_minimum(self, minimum_bin=False):
         """ Get minimum value from chi_squared array.
+
+        Args:
+          minimum_bin (bool, optional): If True, returns the position (bin
+            number) in addition to minimum chi squared. Default is False.
 
         Returns:
           float: Minimum of :attr:`_chi_squareds`
           tuple: (Minimum of :attr:`_chi_squareds`, bin number of minimum)
-
-        .. note::
-
-          Keyword arguments include:
-
-            * minimum_bin (*bool*): If True, returns the position (bin
-              number) in addition to minimum chi squared
         """
         minimum = numpy.min(self._chi_squareds[0])
         minimum_bin = numpy.where(self._chi_squareds[0] == minimum)
         # Set counts corresponding to minimum
         # --> Note scaling counts NOT actual events
         self._limit_count = self._counts[minimum_bin]
-        if kwargs.get("minimum_bin"):
+        if minimum_bin:
             return minimum, minimum_bin
         else:
             return minimum

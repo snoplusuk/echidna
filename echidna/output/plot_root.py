@@ -56,7 +56,8 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     return plot
 
 
-def spectral_plot(spectra_dict, dimension="energy", show_plot=False, **kwargs):
+def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
+                  log_y=False, limit=None):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -70,7 +71,9 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False, **kwargs):
       dimension (string, optional): The dimension or axis along which the
         spectra should be plotted. Default is energy.
       show_plot (bool, optional): Displays plot if True. Default is False.
-      \**kwargs (dict, optional): keyword arguements.
+      log_y (bool, optional): Use log scale on y-axis.
+      limit (:class:`spectra.Spectra`): Include a spectrum showing
+        a current or target limit.
 
     Example:
 
@@ -89,21 +92,13 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False, **kwargs):
                           'style': {'color': ROOT.kGreen},
                           'type': 'background'}}
 
-    .. note::
-
-      Keyword arguments include:
-
-        * log_y (*bool*): Use log scale on y-axis.
-        * limit (:class:`spectra.Spectra`): Include a spectrum showing
-          a current or target limit.
-
     Returns:
       :class:`ROOT.TCanvas`: Canvas containing spectral plot.
     """
     first_spectra = True
     can = ROOT.TCanvas()
     leg = ROOT.TLegend(0.7, 0.7, 0.9, 0.9)
-    if kwargs.get("log_y") is True:
+    if log_y is True:
         can.SetLogy()
     hists = []
     for value in spectra_dict.values():
@@ -162,8 +157,7 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False, **kwargs):
         hist.Draw("same")
 
     # Plot limit
-    if kwargs.get("limit") is not None:
-        limit = kwargs.get("limit")
+    if limit:
         hist = limit.project(dimension, graphical=False)
         hist.SetLineColor(ROOT.kGray)
         leg.AddEntry(hist, "Kamland-Zen Limit", "l")

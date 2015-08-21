@@ -7,7 +7,8 @@ and 7), with SNO+.
 Examples:
   To use simply run the script::
 
-    $ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
+    $ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5
+      -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 
 .. note:: Use the -v option to print out progress and timing information
 """
@@ -105,8 +106,10 @@ def main(args):
 
     # Background configuration
     # Te130_2n2b
-    Te130_2n2b_prior = 3.7396e6  # Based on NEMO-3 T_1/2, for 1 year livetime
-                                 # Since we used cut method to cut to livetime
+    # Based on NEMO-3 T_1/2, for 1 year livetime.
+    # Since we used cut method to cut to livetime
+    Te130_2n2b_prior = 3.7396e6
+
     # No penalty term
     Te130_2n2b_counts_np = numpy.array([Te130_2n2b_prior])
     Te130_2n2b_config_np = limit_config.LimitConfig(Te130_2n2b_prior,
@@ -250,7 +253,8 @@ def main(args):
 
         # Dump SystAnalysers to hdf5
         for syst_analyser in set_limit._syst_analysers.values():
-            store.dump_ndarray(output_dir+syst_analyser._name+str(signal_num)+".hdf5",
+            store.dump_ndarray(output_dir + syst_analyser._name +
+                               str(signal_num)+".hdf5",
                                syst_analyser)
         signal_num += 1
 

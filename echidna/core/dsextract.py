@@ -10,7 +10,7 @@ def function_factory(dimension, **kwargs):
 
     Args:
       dimension (str): to extract from a RAT DS/ntuple file.
-      \**kwargs (dict): to be passed to the extractor.
+      \**kwargs (dict): to be passed to and checked by the extractor.
 
     Raises:
       IndexError: dimension is an unknown parameter
@@ -422,7 +422,6 @@ class Radial3ExtractReco(Extractor):
             self._av_radius = av_radius
         else:
             self._av_radius = const._av_radius
-
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid

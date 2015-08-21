@@ -201,18 +201,13 @@ class LimitSetting(object):
       floating_backgrounds (list): one :class:`echidna.core.spectra.Spectra`
         for each background
       data (:class:`numpy.array`, optional): 1D data energy spectrum
-      **kwargs (dict): keyword arguments
-
-    .. note::
-
-      Keyword arguments include:
-
-        * roi (*tuple*): (energy_lower, energy_upper)
-        * pre_shrink (*bool*): If set to True, :meth:`shrink` method is
-          called on all spectra before limit setting, shrinking to
-          ROI. Only applies if ROI has been set via ``roi`` keyword.
-        * verbose (*bool*): If set to True, progress and timing
-          information is printed to the terminal during limit setting.
+      roi (tuple, optional): Region Of Interest of the form
+        (energy_lower, energy_upper)
+      pre_shrink (bool, optional): If set to True, :meth:`shrink` method is
+        called on all spectra before limit setting, shrinking to
+        ROI. Only applies if ROI has been set via ``roi`` keyword.
+      verbose (bool, optional): If set to True, progress and timing
+        information is printed to the terminal during limit setting.
 
     Attributes:
       _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum
@@ -243,7 +238,8 @@ class LimitSetting(object):
       ValueError: No backgrounds provided.
     """
     def __init__(self, signal, fixed_background=None,
-                 floating_backgrounds=None, data=None, **kwargs):
+                 floating_backgrounds=None, data=None, roi=None,
+                 pre_shrink=False, verbose=False):
         self._signal = signal
         self._signal_config = None
         self._fixed_background = fixed_background
@@ -253,9 +249,12 @@ class LimitSetting(object):
         self._data = data
         self._calculator = None
         self._observed = None
-        if kwargs.get("roi") is not None:
-            self._roi = kwargs.get("roi")
-            if kwargs.get("pre_shrink"):
+        self._roi = roi
+        self._verbose = verbose
+        self._target = {}
+        if self._roi:
+            self._roi = roi
+            if pre_shrink:
                 energy_low, energy_high = self._roi
                 par = "energy_" + \
                     self._signal.get_config().get_dim_type("energy")
@@ -281,13 +280,6 @@ class LimitSetting(object):
                         par = "energy_" + \
                             background.get_config().get_dim_type("energy")
                         background.shrink_to_roi(energy_low, energy_high, par)
-        else:
-            self._roi = None
-        if kwargs.get("verbose"):
-            self._verbose = True
-        else:
-            self._verbose = False
-        self._target = {}
         # Check backgrounds have been added to class
         if not fixed_background and not floating_backgrounds:
             raise ValueError("Must provide fixed or floating backgrounds")
@@ -324,19 +316,15 @@ class LimitSetting(object):
         """
         self._signal_config = signal_config
 
-    def configure_background(self, name, background_config, **kwargs):
+    def configure_background(self, name, background_config,
+                             plot_systematic=False):
         """ Supply configuration object associated with the background.
 
         Args:
           background_config (:class:`echidna.limit.limit_config.LimitConfig`):
           background configuration
-
-        .. note::
-
-          Keyword arguments include:
-
-            * plot_systematic (*bool*): if true produces signal vs systematic
-              plots
+          plot_systematic (bool, optional): if true produces signal vs
+            systematic plots. Default is False.
 
         Raises:
           TypeError: If config has not been set for signal.
@@ -344,7 +332,7 @@ class LimitSetting(object):
         if self._signal_config is None:
             raise TypeError("signal configuration not set")
         self._background_configs[name] = background_config
-        if kwargs.get("plot_systematic"):
+        if plot_systematic:
             self._syst_analysers[name] = SystAnalyser(
                 name+"_counts", self._signal_config._counts,
                 background_config._counts)
@@ -399,27 +387,19 @@ class LimitSetting(object):
         """
         self._calculator = calculator
 
-    def get_limit(self, limit_chi_squared=2.71, **kwargs):
+    def get_limit(self, limit_chi_squared=2.71, debug=False):
         """ Get signal counts at limit.
 
         Args:
           limit_chi_squared (float, optional): chi squared required for
             limit.
-
-        .. note::
-
-          Keyword arguments include:
-
-            * debug (*int*): specify the level of debug information to
-              output.
+          debug (bool, optional): If true plots which are used for debugging
+            are produced.
 
         .. note::
 
           Default value for :obj:`limit_chi_squared` is 2.71, the chi
           squared value corresponding to a 90% confidence limit.
-
-        Returns:
-          float: Signal counts in ROI at required limit
 
         Raises:
           TypeError: If config has not been set for signal.
@@ -430,6 +410,9 @@ class LimitSetting(object):
             :obj:`limit_chi_squared`. If no bin contains a chi squared
             value greater than :obj:`limit_chi_squared`, then there is
             no bin to be found, raising IndexError.
+
+        Returns:
+          float: Signal counts in ROI at required limit
         """
         if self._floating_backgrounds is None:
             return self.get_limit_no_float(limit_chi_squared)
@@ -458,7 +441,7 @@ class LimitSetting(object):
             self._observed = self._data
 
         # Set-up debug output
-        if kwargs.get("debug") == 1:
+        if debug:
             from matplotlib.backends.backend_pdf import PdfPages
             path = echidna.__echidna_base__ + "/debug/"
             filename = self._signal._name + "_debug.pdf"
@@ -479,7 +462,7 @@ class LimitSetting(object):
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
 
-            if kwargs.get("debug") == 1:
+            if debug:
                 spectra = {}
                 for background in self._floating_backgrounds:
                     config = self._background_configs.get(background._name)
@@ -514,7 +497,7 @@ class LimitSetting(object):
                 debug_pdf.savefig(spectral_plot)
                 spectral_plot.clear()
                 fig_num += 1
-        if kwargs.get("debug") == 1:
+        if debug:
             debug_pdf.close()
         for syst_analyser in self._syst_analysers.values():
             print syst_analyser._syst_values
@@ -731,7 +714,7 @@ class LimitSetting(object):
         return minimum
 
 
-def make_fixed_background(spectra_dict, **kwargs):
+def make_fixed_background(spectra_dict, roi=None):
     ''' Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the
       ROI in the LimitSetting class you *must* also pre-shrink here.
 
@@ -739,13 +722,9 @@ def make_fixed_background(spectra_dict, **kwargs):
       spectra (dictionary): Dictionary containing spectra name as keys and
         a list containing the spectra object as index 0 and prior counts as
         index 1 as values.
-
-    Keyword arguments include:
-
-      * roi (*tuple*): (energy_lower, energy_upper)
-      * pre_shrink (*bool*): If set to True, :meth:`shrink` method is
-        called on all spectra before limit setting, shrinking to
-        ROI. Only applies if ROI has been set via ``roi`` keyword.
+      roi (tuple, optional): Region Of Interest of the form
+        (energy_lower, energy_upper). If a ROI is passed then the spectra will
+        be shrunk
 
     Returns: Spectrum containing all fixed backgrounds.
     '''
@@ -755,28 +734,24 @@ def make_fixed_background(spectra_dict, **kwargs):
         scaling = spectra_list[1]
         if first:
             first = False
-            if kwargs.get("roi") is not None:
-                roi = kwargs.get("roi")
-                if kwargs.get("pre_shrink"):
-                    energy_low, energy_high = roi
-                    par = "energy_" + \
-                        spectrum.get_config().get_dim_type("energy")
-                    par_low = par + "_low"
-                    par_high = par + "_high"
-                    spectrum.shrink(par_low=energy_low, par_high=energy_high)
+            if roi:
+                energy_low, energy_high = roi
+                par = "energy_" + \
+                    spectrum.get_config().get_dim_type("energy")
+                par_low = par + "_low"
+                par_high = par + "_high"
+                spectrum.shrink(par_low=energy_low, par_high=energy_high)
             spectrum.scale(scaling)
             total_spectrum = copy.deepcopy(spectrum)
             spectrum._name = "Fixed Background"
         else:
-            if kwargs.get("roi") is not None:
-                roi = kwargs.get("roi")
-                if kwargs.get("pre_shrink"):
-                    energy_low, energy_high = roi
-                    par = "energy_" + \
-                        spectrum.get_config().get_dim_type("energy")
-                    par_low = par + "_low"
-                    par_high = par + "_high"
-                    spectrum.shrink(par_low=energy_low, par_high=energy_high)
+            if roi:
+                energy_low, energy_high = roi
+                par = "energy_" + \
+                    spectrum.get_config().get_dim_type("energy")
+                par_low = par + "_low"
+                par_high = par + "_high"
+                spectrum.shrink(par_low=energy_low, par_high=energy_high)
             spectrum.scale(scaling)
             total_spectrum.add(spectrum)
     return total_spectrum

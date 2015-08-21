@@ -172,9 +172,11 @@ class DBIsotope(object):
 
             # Volume fraction
             volume_fraction = fv_radius**3 / outer_radius**3
-            target_mass = mass_fraction * volume_fraction * loading * scint_mass
+            target_mass = mass_fraction * volume_fraction * loading *\
+                scint_mass
 
-        n_atoms = (target_mass*const._n_avagadro) / (self._atm_weight_iso*1.e-3)
+        n_atoms = (target_mass*const._n_avagadro) /\
+            (self._atm_weight_iso*1.e-3)
         return n_atoms
 
     def half_life_to_activity(self, half_life, n_atoms=None):
@@ -240,8 +242,9 @@ class DBIsotope(object):
           float: Effective majorana mass, in eV.
 
         """
-        return numpy.sqrt(const._electron_mass**2 /
-                          (self._phase_space*self._matrix_element**2*half_life))
+        return numpy.sqrt(const._electron_mass ** 2 /
+                          (self._phase_space * self._matrix_element ** 2 *
+                           half_life))
 
     def activity_to_counts(self, activity, roi_cut=True, livetime=5.):
         """ Converts activity to number of counts, assuming constant activity.
@@ -450,14 +453,17 @@ def test(args):
     print message, "(no FV cut)"
 
     # Check get_n_atoms with SNO+ defaults
-    expected = 7.4694e26  # calculated - A Back 2015-02-25, based on SNO+-doc-1728v2
+    # calculated - A Back 2015-02-25, based on SNO+-doc-1728v2
+    expected = 7.4694e26
     result, message = physics_tests.test_function_float(
         te130_converter.get_n_atoms, expected)
     print message
 
     # Create a DBIsotope instance for KLZ
-    Xe136_atm_weight = 135.907219  # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
-    Xe134_atm_weight = 133.90539450  # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
+    Xe136_atm_weight = 135.907219
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    Xe134_atm_weight = 133.90539450
     # We want the atomic weight of the enriched Xenon
     XeEn_atm_weight = 0.9093*Xe136_atm_weight + 0.0889*Xe134_atm_weight
     Xe136_abundance = 0.9093  # PRC 86, 021601 (2012)
@@ -512,15 +518,18 @@ def test(args):
 
     # Check activity_to_counts
     livetime = 5.0
-    expected = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
-    activity = 50.4 * (const._fv_radius**3/const._av_radius**3) # /y SNO+-doc-2593v8 - adjusted to FV
+    # ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
+    expected = 31.2
+    # /y SNO+-doc-2593v8 - adjusted to FV
+    activity = 50.4 * (const._fv_radius**3/const._av_radius**3)
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_counts, expected, activity=activity,
         livetime=livetime, roi_cut=True)
     print message
 
     # Check counts_to_activity
-    expected = 50.4 * (const._fv_radius**3/const._av_radius**3) # /y SNO+-doc-2593v8 - adjusted to FV
+    # /y SNO+-doc-2593v8 - adjusted to FV
+    expected = 50.4 * (const._fv_radius**3/const._av_radius**3)
     counts = 31.2  # ROI counts, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_activity, expected, counts=counts,
@@ -528,7 +537,8 @@ def test(args):
     print message
 
     # Check counts_to_eff_mass
-    expected = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    expected = te130_converter.half_life_to_eff_mass(5.17e25)
     counts = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_eff_mass,
@@ -537,7 +547,8 @@ def test(args):
 
     # Check eff_mass_to_counts
     expected = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
-    eff_mass = te130_converter.half_life_to_eff_mass(5.17e25)  # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    # eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
+    eff_mass = te130_converter.half_life_to_eff_mass(5.17e25)
     result, message = physics_tests.test_function_float(
         te130_converter.eff_mass_to_counts,
         expected, eff_mass=eff_mass, roi_cut=True)

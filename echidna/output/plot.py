@@ -4,6 +4,7 @@ import numpy
 
 import echidna.core.spectra as spectra
 
+
 def _produce_axis(spectra, dimension):
     """ This method produces an array that represents the axis between low and
     high with bins.
@@ -54,8 +55,9 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     return fig
 
 
-def spectral_plot(spectra_dict, dimension, fig_num=1,
-                  show_plot=True, **kwargs):
+def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
+                  log_y=False, per_bin=False, limit=None, title=None,
+                  text=None):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -72,7 +74,13 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
         useful to ensure pyplot treats each plot as a separate figure.
         Default is 1.
       show_plot (bool, optional): Displays the plot if true. Default is True.
-
+      log_y (bool, optional): Use log scale on y-axis.
+      calculator (:class:`echidna.limit.chi_squared.ChiSquared`, optional):
+        Calculator for including chi-squared per bin histogram.
+      limit (:class:`spectra.Spectra`, optional): Include a spectrum showing
+        a current or target limit.
+      title (string, optional): Title of the plot.
+      text (list, optional): Text to be written on top of plot.
 
     Example:
 
@@ -84,15 +92,6 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
                             'style': {'color': 'red'}, 'type': 'background'},
          B8_Solar._name: {'spectra': B8_Solar, 'label': 'solar',
                           'style': {'color': 'green'}, 'type': 'background'}}
-
-    .. note::
-
-      Keyword arguments include:
-
-        * log_y (*bool*): Use log scale on y-axis.
-        * per_bin (*bool*): Include chi-squared per bin histogram.
-        * limit (:class:`spectra.Spectra`): Include a spectrum showing
-          a current or target limit.
 
     Returns:
       matplotlib.pyplot.figure: Plot of the signal and backgrounds.
@@ -129,15 +128,11 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
     summed_background = numpy.zeros(shape=shape)
     summed_total = numpy.zeros(shape=shape)
     hist_range = (x[0]-0.5*width, x[-1]+0.5*width)
-    if kwargs.get("log_y") is True:
-        log = True
-    else:
-        log = False
     for value in spectra_dict.values():
         spectra = value.get("spectra")
         ax.hist(x, bins=len(x), weights=spectra.project(dimension),
                 range=hist_range, histtype="step", label=value.get("label"),
-                color=spectra.get_style().get("color"), log=log)
+                color=spectra.get_style().get("color"), log=log_y)
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
         else:
@@ -151,14 +146,13 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
                     label="Summed background, standard error")
     summed_total = summed_total + summed_background
     ax.hist(x, bins=len(x), weights=summed_total, range=hist_range,
-            histtype="step", color="black", label="Sum", log=log)
+            histtype="step", color="black", label="Sum", log=log_y)
 
     # Plot limit
-    if kwargs.get("limit") is not None:
-        limit = kwargs.get("limit")
+    if limit:
         ax.hist(x, bins=len(x), weights=limit.project(dimension),
                 range=hist_range, histtype="step", color="LightGrey",
-                label="KamLAND-Zen limit", log=log)
+                label="KamLAND-Zen limit", log=log_y)
 
     # Shrink current axis by 20%
     box = ax.get_position()
@@ -168,8 +162,7 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
     plt.ylim(ymin=0.1)
 
     # Plot chi squared per bin, if required
-    if kwargs.get("per_bin") is not None:
-        calculator = kwargs.get("per_bin")
+    if calculator:
         ax2 = fig.add_subplot(3, 1, 3, sharex=ax)
         chi_squared_per_bin = calculator.get_chi_squared_per_bin()
         ax2.hist(x, bins=len(x), weights=chi_squared_per_bin,
@@ -179,10 +172,10 @@ def spectral_plot(spectra_dict, dimension, fig_num=1,
 
     plt.xlabel(x_label)
     plt.xlim(xmin=x[0], xmax=x[-1])
-    if kwargs.get("title") is not None:
-        plt.figtext(0.05, 0.95, kwargs.get("title"))
-    if kwargs.get("text") is not None:
-        for index, entry in enumerate(kwargs.get("text")):
+    if title:
+        plt.figtext(0.05, 0.95, title)
+    if text:
+        for index, entry in enumerate(text):
             plt.figtext(0.05, 0.90-(index*0.05), entry)
     if show_plot:
         plt.show()

@@ -109,7 +109,6 @@ if __name__ == "__main__":
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
     roi = (2.46, 2.68)  # Define ROI - as used by Andy
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
-                                                pre_shrink=True,
                                                 roi=roi)
 
     # Initialise limit setting class
@@ -146,7 +145,6 @@ if __name__ == "__main__":
     print "90% CL with no penalty at: " + str(sig_num_decays) + " ROI counts"
     print "90% CL with no penalty at: " + str(half_life) + " y"
 
-
     # 2/ Now try fixing B8_Solar and floating Te130_2n2b
     Te130_0n2b = store.load(args.signal)
 
@@ -172,7 +170,6 @@ if __name__ == "__main__":
 
     fixed_backgrounds = {B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
-                                                pre_shrink=True,
                                                 roi=roi)
 
     # List of backgrounds to float
@@ -192,7 +189,8 @@ if __name__ == "__main__":
     Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
                                        1.203*Te130_2n2b_prior, 51)
     # Sigma of rate:
-    sigma = 0.203 * Te130_2n2b_prior # Used in penalty term (20.3%, Andy's doc on systematics)
+    # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,
@@ -253,7 +251,8 @@ if __name__ == "__main__":
     Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
                                        1.203*Te130_2n2b_prior, 51)
     # Sigma of rate:
-    sigma = 0.203 * Te130_2n2b_prior # Used in penalty term (20.3%, Andy's doc on systematics)
+    # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,

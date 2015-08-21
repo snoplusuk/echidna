@@ -27,6 +27,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
+      \**kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
       ValueError: If spectrum_name is not set when creating a new
@@ -113,6 +114,7 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
+      \**kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
       ValueError: If spectrum_name is not set when creating a new
