@@ -414,10 +414,15 @@ class Radial3ExtractReco(Extractor):
     ''' Reconstructed :math:`(radius/av_radius)^3` radial extraction methods.
     '''
 
-    def __init__(self):
+    def __init__(self, av_radius=None):
         '''Initialise the class
         '''
         super(Radial3ExtractReco, self).__init__("radial3_reco")
+        if av_radius:
+            self._av_radius = av_radius
+        else:
+            self._av_radius = const._av_radius
+
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid
@@ -444,7 +449,7 @@ class Radial3ExtractReco(Extractor):
           float: Reconstructed :math:`(radius/av_radius)^3`
         '''
         return (ev.GetDefaultFitVertex().GetPosition().Mag() /
-                self._av_radius()) ** 3
+                self._av_radius) ** 3
 
     def get_valid_ntuple(self, entry):
         '''Check whether radius of an ntuple EV is valid
