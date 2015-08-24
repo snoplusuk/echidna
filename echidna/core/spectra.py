@@ -245,6 +245,9 @@ class Spectra(object):
       _raw_events (int): The number of raw events used to generate the
         spectra. Increments by one with each fill independent of
         weight.
+      _bipo (int): Flag to indicate whether the bipo cut was applied to the
+        spectra. 0 is No Cut. 1 is Cut.
+        Int type as HDF5 does not support bool.
       _style (string): Pyplot-style plotting style e.g. "b-" or
         {"color": "blue"}.
       _rois (dict): Dictionary containing the details of any ROI, along
@@ -260,6 +263,9 @@ class Spectra(object):
             bins.append(self._config.get_par(v)._bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
+        # Flag for indicating bipo cut. HDF5 does not support bool so
+        # 0 = no cut and 1 = cut
+        self._bipo = 0
         self._style = {"color": "blue"}  # default style for plotting
         self._rois = {}
         self._name = name
