@@ -1,4 +1,4 @@
-import math
+import numpy
 import rat
 import echidna.calc.constants as const
 
@@ -281,9 +281,9 @@ class RadialExtractMC(Extractor):
         Returns:
           float: True radius
         '''
-        return math.fabs(math.sqrt((entry.mcPosx)**2 +
-                                   (entry.mcPosy)**2 +
-                                   (entry.mcPosz)**2))
+        return numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
+                                     (entry.mcPosy)**2 +
+                                     (entry.mcPosz)**2))
 
 
 class RadialExtractReco(Extractor):
@@ -341,9 +341,9 @@ class RadialExtractReco(Extractor):
         Returns:
           float: Reconstructed radius
         '''
-        return math.fabs(math.sqrt((entry.posx)**2 +
-                                   (entry.posy)**2 +
-                                   (entry.posz)**2))
+        return numpy.fabs(numpy.sqrt((entry.posx)**2 +
+                                     (entry.posy)**2 +
+                                     (entry.posz)**2))
 
 
 class Radial3ExtractMC(Extractor):
@@ -405,9 +405,10 @@ class Radial3ExtractMC(Extractor):
         Returns:
           float: True :math:`(radius/av_radius)^3`
         '''
-        return (math.fabs(math.sqrt((entry.mcPosx)**2 +
-                                    (entry.mcPosy)**2 +
-                                    (entry.mcPosz)**2)) / self._av_radius) ** 3
+        return (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
+                                      (entry.mcPosy)**2 +
+                                      (entry.mcPosz)**2)) /
+                self._av_radius) ** 3
 
 
 class Radial3ExtractReco(Extractor):
@@ -470,6 +471,6 @@ class Radial3ExtractReco(Extractor):
         Returns:
           float: Reconstructed :math:`(radius/av_radius)^3`
         '''
-        return (math.fabs(math.sqrt((entry.posx)**2 +
-                                    (entry.posy)**2 +
-                                    (entry.posz)**2)) / self._av.radius) ** 3
+        return (numpy.fabs(numpy.sqrt((entry.posx)**2 +
+                                      (entry.posy)**2 +
+                                      (entry.posz)**2)) / self._av.radius) ** 3

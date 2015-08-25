@@ -1,4 +1,5 @@
 from echidna.util import root_help
+from echindna.output import root_style
 from ROOT import TH1D, TH2D
 
 
@@ -95,8 +96,10 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
     Returns:
       :class:`ROOT.TCanvas`: Canvas containing spectral plot.
     """
+    root_style.root_style()
     first_spectra = True
     can = ROOT.TCanvas()
+    root_style.set_ticks(can)
     leg = ROOT.TLegend(0.7, 0.7, 0.9, 0.9)
     if log_y is True:
         can.SetLogy()
