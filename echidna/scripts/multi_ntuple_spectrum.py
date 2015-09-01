@@ -25,7 +25,7 @@ import os
 import optparse
 import echidna.output.store as store
 import echidna.core.fill_spectrum as fill_spectrum
-import echidna.output.plot as plot
+#import echidna.output.plot as plot
 
 def create_combined_ntuple_spectrum(data_path, half_life, bkgnd_name, save_path):
     """ Creates both mc and reco spectra from directory containing background ntuples, 
