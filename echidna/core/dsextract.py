@@ -112,9 +112,9 @@ class EnergyExtractMC(Extractor):
         '''
         if entry.mc == 1:
             if self._fid_r:
-                if numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
-                                         (entry.mcPosy)**2 +
-                                         (entry.mcPosz)**2)) < self._fid_r:
+                if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
+                                          (entry.mcPosy)**2 +
+                                          (entry.mcPosz)**2))) < self._fid_r:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             # MC has associated trigger or vice versa and no fid v applied
@@ -605,4 +605,4 @@ class Radial3ExtractReco(Extractor):
         '''
         return (numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                       (entry.posy)**2 +
-                                      (entry.posz)**2)) / self._av.radius) ** 3
+                                      (entry.posz)**2)) / self._av_radius) ** 3

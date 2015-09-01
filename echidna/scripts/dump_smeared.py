@@ -40,20 +40,36 @@ if __name__ == "__main__":
     # strip directory and extension
     filename = args.path[args.path.rfind("/")+1:args.path.rfind(".")]
 
-    if args.energy_resolution is not None:
-        smearer = smear.EResSmear(args.energy_resolution)
+    if args.energy_resolution:
+        energy_smear = smear.EnergySmearRes()
+        energy_smear.set_resolution(args.energy_resolution)
     else:  # use light yield
-        smearer = smear.Smear()
+        energy_smear = smear.EnergySmearLY()
+    radial_smear = smear.RadialSmear()
     spectrum = store.load(args.path)
 
     if args.smear_method == "weight":  # Use default smear method
-        smeared_spectrum = smearer.weight_gaussian_energy_spectra(spectrum)
-        smeared_spectrum = smearer.weight_gaussian_radius_spectra(smeared_spectrum)
+        for par in spectrum.get_config().get_pars():
+            if "energy" in par:
+                energy_par = par
+                spectrum = energy_smear.weighted_smear(spectrum,
+                                                       par=energy_par)
+            elif "radial" in par:
+                radial_par = par
+                spectrum = radial_smear.weighted_smear(spectrum,
+                                                       par=radial_par)
     elif args.smear_method == "random":
-        smeared_spectrum = smearer.random_gaussian_energy_spectra(spectrum)
-        smeared_spectrum = smearer.random_gaussian_radius_spectra(smeared_spectrum)
+        for par in spectrum.get_config().get_pars():
+            if "energy" in par:
+                energy_par = par
+                spectrum = energy_smear.random_smear(spectrum,
+                                                     par=energy_par)
+            elif "radial" in par:
+                radial_par = par
+                spectrum = radial_smear.random_smear(spectrum,
+                                                     par=radial_par)
     else:  # Not a valid smear method
         parser.error(args.smear_method + " is not a valid smear method")
 
-    filename = directory + filename + "_smeared" + ".hdf5"
-    store.dump(filename, smeared_spectrum)
+    filename = directory + filename + "_smeared.hdf5"
+    store.dump(filename, spectrum)

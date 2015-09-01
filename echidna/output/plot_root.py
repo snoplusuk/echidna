@@ -1,5 +1,5 @@
 from echidna.util import root_help
-from echindna.output import root_style
+from echidna.output import root_style
 from ROOT import TH1D, TH2D
 
 

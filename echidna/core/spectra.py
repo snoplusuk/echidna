@@ -302,17 +302,20 @@ class Spectra(object):
         for par in self._config.get_pars():
             if par not in kwargs:
                 raise Exception('Missing parameter %s' % par)
+        print "Passed parameter check"
         for v in self._config.get_pars():
             if not self._config.get_par(v)._low <= kwargs[v] < \
                     self._config.get_par(v)._high:
                 raise ValueError("%s out of range: %s" % (v, kwargs[v]))
+        print "Passed value check"
         bins = []
         for v in self._config.get_pars():
-            bins.append((kwargs[v] - self._config.get_par(v)._low) /
-                        (self._config.get_par(v)._high -
-                         self._config.get_par(v)._low) *
-                        self._config.get_par(v)._bins)
-        # Cross fingers the ordering is the same!
+            print v, kwargs[v]
+            bins.append(int((kwargs[v] - self._config.get_par(v)._low) /
+                            (self._config.get_par(v)._high -
+                             self._config.get_par(v)._low) *
+                            self._config.get_par(v)._bins))
+        print bins
         self._data[tuple(bins)] += weight
 
     def shrink_to_roi(self, lower_limit, upper_limit, dimension):

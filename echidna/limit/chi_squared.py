@@ -87,10 +87,9 @@ class ChiSquared(object):
           float: Value of chi squared calculated
         """
         # Set up penalty term
-        if (kwargs.get("penalty_terms") is not None):
+        if penalty_terms:
             if self._penalty_terms_set:
-                for name, penalty_term in \
-                        kwargs.get("penalty_terms").iteritems():
+                for name, penalty_term in penalty_terms.iteritems():
                     if (self._penalty_terms.get(name) is not None):
                         _penalty_term = self._penalty_terms.get(name)
                         # overwrite existing entries
@@ -102,7 +101,7 @@ class ChiSquared(object):
                     else:  # create new entry
                         self._penalty_terms[name] = penalty_term
             else:  # no penalty term information currently set
-                self._penalty_terms = kwargs.get("penalty_terms")
+                self._penalty_terms = penalty_terms
                 self._penalty_terms_set = True
 
         # Calculate chi squared

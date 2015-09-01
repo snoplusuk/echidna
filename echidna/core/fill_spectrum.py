@@ -10,6 +10,64 @@ import math
 import echidna.core.spectra as spectra
 import echidna.core.dsextract as dsextract
 
+def _bipo_ntuple(spectrum, chain, extractors):
+    """ Because ROOT is crap, we have to loop through the entries first
+      before using the LoadTree() method required for the bipo checks.
+      If the chain is not looped first then all parameters return 0.
+      This function will apply the bipo cuts to a chain from an ntuple and
+      fill a spectrum.
+
+    Args:
+      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
+        being filled.
+      chain (ROOT.TChain): Chain containing the events.
+      extractors (dict): Keys are the variable names and the keys are their
+        respective extractors.
+
+    Returns:
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
+    """
+    # Need to prepare chain by looping through the entries first.
+    _junk = 0
+    for entry in chain:
+        _junk
+    del _junk
+    entries = chain.GetEntries()
+    for ievent in range(0, entries):
+        fill = True
+        fill_kwargs = {}
+        # This stupidily gets the entry in the chain rather than GetEntry()
+        # Afterwards chain is now the entry. I HATE ROOT!
+        chain.LoadTree(ievent)
+        # Only want the first triggered event:
+        if chain.evIndex != 1:
+            continue
+        # Make sure you dont go out of scope.
+        if ievent + 1 != entries:
+            # Now we have to load the next event to check...
+            chain.LoadTree(ievent + 1)
+            # First triggered event but check if it has trailing events:
+            if chain.evIndex > 1:
+                continue
+            else:
+                # Passed cut so now have to load the prev event again...
+                chain.LoadTree(ievent)
+        # Check to see if all parameters are valid and extract values
+        for e in extractors:
+            if e.get_valid_ntuple(chain):
+                fill_kwargs[e._name] = e.get_value_ntuple(chain)
+            else:
+                fill = False
+                break
+        # If all OK, fill the spectrum
+        if fill:
+            try:
+                spectrum.fill(**fill_kwargs)
+                spectrum._raw_events += 1
+            except ValueError:
+                pass
+    return spectrum
+
 
 def _root_mix(spectrum, dsreader, extractors, bipo):
     """ Internal function for filling a spectrum whose config has a mixture of
@@ -22,7 +80,7 @@ def _root_mix(spectrum, dsreader, extractors, bipo):
         for the root file.
       extractors (dict): Keys are the variable names and the keys are their
         respective extractors.
-      bipo (bool, optional): Applies the bipo cut if set to True.
+      bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
@@ -70,7 +128,7 @@ def _root_ev(spectrum, dsreader, extractors, bipo):
         for the root file.
       extractors (dict): Keys are the variable names and the keys are their
         respective extractors.
-      bipo (bool, optional): Applies the bipo cut if set to True.
+      bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
@@ -106,7 +164,7 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
         for the root file.
       extractors (dict): Keys are the variable names and the keys are their
         respective extractors.
-      bipo (bool, optional): Applies the bipo cut if set to True.
+      bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
         ds = dsreader.GetEntry(ievent)
@@ -141,8 +199,9 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
       filename (str): A root file to study
       spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
-      config (:class:`echidna.core.spectra.SpectrumConfig`, optional):
-        The config for the spectrum. Not requried when appending a spectrum.
+      config (:class:`echidna.core.spectra.SpectraConfig` or string, optional):
+        The config or directory to the config for the spectrum.
+        Not requried when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
@@ -158,6 +217,8 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
     Returns:
       :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
+    if type(config) == str:
+        config = spectra.SpectraConfig.load_from_file(config)
     if spectrum is None:
         if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
@@ -193,7 +254,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
 
 
 def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
-                     **kwargs):
+                     bipo=False, **kwargs):
     """**Weights have been disabled.**
     This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the parameters specified in the config from
@@ -203,23 +264,25 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
       filename (str): The ntuple to study
       spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
-      config (:class:`spectra.SpectrumConfig`, optional): The config for
-        the spectrum
+      config (:class:`spectra.SpectraConfig` or string, optional): The config
+        or directory to the config for the spectrum
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
+      bipo (bool, optional): Applies the bipo cut if set to True.
+        Default is False.
       \**kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
       ValueError: If spectrum_name is not set when creating a new
         spectrum.
-
     Returns:
       :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
     chain = TChain("output")
     chain.Add(filename)
-    entries = chain.GetEntries()
+    if type(config) == str:
+        config = spectra.SpectraConfig.load_from_file(config)
     if spectrum is None:
         if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
@@ -234,25 +297,15 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
         extractors.append(dsextract.function_factory(var, **kwargs))
     if bipo:
         spectrum._bipo = 1  # Flag to indicate bipo cuts are applied
-    for ievent in range(0, entries):
+        return _bipo_ntuple(spectrum, chain, extractors)
+    # No bipo so use standard loop:
+    for entry in chain:
         fill = True
         fill_kwargs = {}
-        event = chain.GetEvent(ievent)
-        # Apply bipo cut here:
-        if bipo:
-            # Only want the first triggered event:
-            if event.evIndex != 1:
-                continue
-            # Make sure you dont go out of scope·
-            if ievent + 1 != entires:
-                event2 = chain.GetEvent(ievent + 1)
-                # First triggered event but check if it has trailing events:
-                elif event2.evIndex > 1:
-                    continue
         # Check to see if all parameters are valid and extract values
         for e in extractors:
-            if e.get_valid_ntuple(event):
-                fill_kwargs[e.name] = e.get_value_ntuple(event)
+            if e.get_valid_ntuple(entry):
+                fill_kwargs[e._name] = e.get_value_ntuple(entry)
             else:
                 fill = False
                 break
