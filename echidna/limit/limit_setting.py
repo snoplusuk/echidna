@@ -740,7 +740,8 @@ def make_fixed_background(spectra_dict, roi=None):
                     spectrum.get_config().get_dim_type("energy")
                 par_low = par + "_low"
                 par_high = par + "_high"
-                spectrum.shrink(par_low=energy_low, par_high=energy_high)
+                shrink_dict = {par_low: energy_low, par_high: energy_high}
+                spectrum.shrink(**shrink_dict)
             spectrum.scale(scaling)
             total_spectrum = copy.deepcopy(spectrum)
             spectrum._name = "Fixed Background"
@@ -751,7 +752,8 @@ def make_fixed_background(spectra_dict, roi=None):
                     spectrum.get_config().get_dim_type("energy")
                 par_low = par + "_low"
                 par_high = par + "_high"
-                spectrum.shrink(par_low=energy_low, par_high=energy_high)
+                shrink_dict = {par_low: energy_low, par_high: energy_high}
+                spectrum.shrink(**shrink_dict)
             spectrum.scale(scaling)
             total_spectrum.add(spectrum)
     return total_spectrum

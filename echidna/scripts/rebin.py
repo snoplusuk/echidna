@@ -36,13 +36,13 @@ if __name__ == "__main__":
     filename = args.input[args.input.rfind("/")+1:args.input.rfind(".")]
     spectrum = store.load(args.input)
     new_bins = args.bins
-    print spectrum._data.shape
-    print "sum pre bin", spectrum.sum()
+    print "Data shape pre bin", spectrum._data.shape
+    print "Sum pre bin", spectrum.sum()
     spectrum.rebin(new_bins)
     print 'Sum post bin:', spectrum.sum()
-    print spectrum._data.shape
+    print 'Data shape post bin:', spectrum._data.shape
     f_out = args.output
     if not f_out:
-        f_out = directory + filename + "_rebin" + ".hdf5"
+        f_out = directory + filename + "_rebin.hdf5"
     print "Rebinned", args.input, ", saved to", f_out
     store.dump(f_out, spectrum)
