@@ -451,9 +451,10 @@ class Spectra(object):
         .. note:
 
           The logic in this method is the same for each dimension, first
-        check the new values are within the existing ones (can only compress).
-        Then calculate the low bin number and high bin number (relative to the
-        existing binning low). Finally update all the bookeeping and slice.
+          check the new values are within the existing ones
+          (can only compress). Then calculate the low bin number and high bin
+          number (relative to the existing binning low).
+          Finally update all the bookeeping and slice.
 
         Raises:
           IndexError: Parameter which is being shrank does not exist in the
