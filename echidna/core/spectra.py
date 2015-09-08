@@ -34,15 +34,15 @@ class SpectraParameter(object):
         """Set a limit / binning parameter after initialisation.
 
         Args:
-          \**kwargs (dict): keyword arguments
+          kwargs (dict): keyword arguments
 
         .. note::
 
-        Keyword arguments include:
+          Keyword arguments include:
 
-        * low (float): Value to set the lower limit to of the parameter
-        * high (float): Value to set the higher limit to of the parameter
-        * bins (int): Value to set the number of bins of the parameter
+            * low (float): Value to set the lower limit to of the parameter
+            * high (float): Value to set the higher limit to of the parameter
+            * bins (int): Value to set the number of bins of the parameter
 
         Raises:
           TypeError: Unknown variable type passed as a kwarg.
@@ -288,11 +288,11 @@ class Spectra(object):
         Args:
           weight (float, optional): Defaults to 1.0, weight to fill the bin
             with.
-          \**kwargs (float): Named values (e.g. for energy_mc, radial_mc)
+          kwargs (float): Named values (e.g. for energy_mc, radial_mc)
 
         Raises:
-          Exception: Parameter in \**kwargs is not in config.
-          Exception: Parameter in config is not in \**kwargs.
+          Exception: Parameter in kwargs is not in config.
+          Exception: Parameter in config is not in kwargs.
           ValueError: If the energy, radius or time is beyond the bin limits.
         """
         # Check all keys in kwargs are in the config parameters and visa versa
@@ -444,7 +444,7 @@ class Spectra(object):
         information as well as the data.
 
         Args:
-          \**kwargs (float): Named parameters to slice on; note that these
+          kwargs (float): Named parameters to slice on; note that these
             must be of the form [name]_low or [name]_high where [name]
             is a dimension present in the SpectraConfig.
 
@@ -556,7 +556,7 @@ class Spectra(object):
         new *full* spectrum.
 
         Args:
-          \**kwargs (float): Named parameters to slice on; note that these
+          kwargs (float): Named parameters to slice on; note that these
             must be of the form [name]_low or [name]_high where [name]
             is a dimension present in the SpectraConfig.
         """
@@ -637,6 +637,9 @@ class Spectra(object):
         Args:
           new_bins (tuple): new binning, this must match both the
             number and ordering of dimensions in the spectra config.
+            For example if the old data shape is made of bins (1000, 10)
+            and you would like to increase the bin width of both by 2 then
+            you must pass the tuple (500, 5)
 
         Raises:
           ValueError: Shape mismatch. Number of dimenesions are different.

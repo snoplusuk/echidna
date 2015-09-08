@@ -21,7 +21,7 @@ def _bipo_ntuple(spectrum, chain, extractors):
       spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
         being filled.
       chain (ROOT.TChain): Chain containing the events.
-      extractors (dict): Keys are the variable names and the keys are their
+      extractors (dict): Keys are the variable names and the values are their
         respective extractors.
 
     Returns:
@@ -78,7 +78,7 @@ def _root_mix(spectrum, dsreader, extractors, bipo):
         being filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
-      extractors (dict): Keys are the variable names and the keys are their
+      extractors (dict): Keys are the variable names and the values are their
         respective extractors.
       bipo (bool): Applies the bipo cut if set to True.
     """
@@ -126,7 +126,7 @@ def _root_ev(spectrum, dsreader, extractors, bipo):
         being filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
-      extractors (dict): Keys are the variable names and the keys are their
+      extractors (dict): Keys are the variable names and the values are their
         respective extractors.
       bipo (bool): Applies the bipo cut if set to True.
     """
@@ -162,7 +162,7 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
         being filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
-      extractors (dict): Keys are the variable names and the keys are their
+      extractors (dict): Keys are the variable names and the values are their
         respective extractors.
       bipo (bool): Applies the bipo cut if set to True.
     """

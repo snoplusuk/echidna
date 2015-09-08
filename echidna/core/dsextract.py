@@ -10,13 +10,13 @@ def function_factory(dimension, **kwargs):
 
     Args:
       dimension (str): to extract from a RAT DS/ntuple file.
-      \**kwargs (dict): to be passed to and checked by the extractor.
+      kwargs (dict): to be passed to and checked by the extractor.
 
     Raises:
       IndexError: dimension is an unknown parameter
 
     Retuns:
-      Extractor object.
+      :class:`echidna.core.dsextract.Extractor`: Extractor object.
     '''
     if dimension == "energy_mc":
         return EnergyExtractMC(**kwargs)
@@ -41,37 +41,37 @@ class Extractor(object):
 
     Args:
       name (str): of the dimension
-      fid_r (float): Fiducial radius. Applies a cut to remove
+      fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
 
     Attributes:
       _name (str): of the dimension
-      _fid_r (float): Fiducial radius. Applies a cut to remove
+      _fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, name, fid_r):
+    def __init__(self, name, fv_radius):
         '''Initialise the class
         '''
         self._name = name
-        self._fid_r = fid_r
+        self._fv_radius = fv_radius
 
 
 class EnergyExtractMC(Extractor):
     '''Quenched energy extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, fid_r=None):
+    def __init__(self, fv_radius=None):
         '''Initialise the class
         '''
-        super(EnergyExtractMC, self).__init__("energy_mc", fid_r)
+        super(EnergyExtractMC, self).__init__("energy_mc", fv_radius)
 
     def get_valid_root(self, mc):
         '''Check whether energy of a DS::MC is valid
@@ -83,8 +83,8 @@ class EnergyExtractMC(Extractor):
           bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
-            if self._fid_r:
-                if mc.GetMCParticle(0).GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes particle count and no fid v cut
@@ -111,10 +111,11 @@ class EnergyExtractMC(Extractor):
           bool: Validity boolean
         '''
         if entry.mc == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                           (entry.mcPosy)**2 +
-                                          (entry.mcPosz)**2))) < self._fid_r:
+                                          (entry.mcPosz)**2))) < \
+                                          self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             # MC has associated trigger or vice versa and no fid v applied
@@ -137,15 +138,15 @@ class EnergyExtractReco(Extractor):
     '''Reconstructed energy extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, fid_r=None):
+    def __init__(self, fv_radius=None):
         '''Initialise the class
         '''
-        super(EnergyExtractReco, self).__init__("energy_reco", fid_r)
+        super(EnergyExtractReco, self).__init__("energy_reco", fv_radius)
 
     def get_valid_root(self, ev):
         '''Check whether energy of a DS::EV is valid
@@ -159,8 +160,9 @@ class EnergyExtractReco(Extractor):
         if ev.DefaultFitVertexExists() and \
                 ev.GetDefaultFitVertex().ContainsEnergy() \
                 and ev.GetDefaultFitVertex().ValidEnergy():
-            if self._fid_r:
-                if ev.GetDefaultFitVertex().GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if ev.GetDefaultFitVertex().GetPosition().Mag() < \
+                        self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes fit checks and no fid v cut
@@ -187,10 +189,10 @@ class EnergyExtractReco(Extractor):
           bool: Validity boolean
         '''
         if entry.scintFit == 1 and entry.energy > 0:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                          (entry.posy)**2 +
-                                         (entry.posz)**2)) < self._fid_r:
+                                         (entry.posz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes scintFit, has energy and no fid v cut
@@ -212,15 +214,15 @@ class EnergyExtractTruth(Extractor):
     '''True MC energy extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, fid_r=None):
+    def __init__(self, fv_radius=None):
         '''Initialise the class
         '''
-        super(EnergyExtractTruth, self).__init__("energy_truth", fid_r)
+        super(EnergyExtractTruth, self).__init__("energy_truth", fv_radius)
 
     def get_valid_root(self, mc):
         '''Check whether energy of a DS::MC is valid
@@ -232,8 +234,8 @@ class EnergyExtractTruth(Extractor):
           bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
-            if self._fid_r:
-                if mc.GetMCParticle(0).GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes particle count and no fid v cut
@@ -260,10 +262,10 @@ class EnergyExtractTruth(Extractor):
           bool: Validity boolean
         '''
         if entry.mc == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                          (entry.mcPosy)**2 +
-                                         (entry.mcPosz)**2)) < self._fid_r:
+                                         (entry.mcPosz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             # MC has associated trigger or vice versa and no fid v applied
@@ -286,15 +288,15 @@ class RadialExtractMC(Extractor):
     '''True radial extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, fid_r=None):
+    def __init__(self, fv_radius=None):
         '''Initialise the class
         '''
-        super(RadialExtractMC, self).__init__("radial_mc", fid_r)
+        super(RadialExtractMC, self).__init__("radial_mc", fv_radius)
 
     def get_valid_root(self, mc):
         '''Check whether radius of a DS::MC is valid
@@ -306,8 +308,8 @@ class RadialExtractMC(Extractor):
           bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
-            if self._fid_r:
-                if mc.GetMCParticle(0).GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes particle count and no fid v cut
@@ -334,10 +336,10 @@ class RadialExtractMC(Extractor):
           bool: Validity boolean
         '''
         if entry.mc == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                          (entry.mcPosy)**2 +
-                                         (entry.mcPosz)**2)) < self._fid_r:
+                                         (entry.mcPosz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             # MC has associated trigger or vice versa and no fid v applied
@@ -362,15 +364,15 @@ class RadialExtractReco(Extractor):
     '''Reconstructed radial extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, fid_r=None):
+    def __init__(self, fv_radius=None):
         '''Initialise the class
         '''
-        super(RadialExtractReco, self).__init__("radial_reco", fid_r)
+        super(RadialExtractReco, self).__init__("radial_reco", fv_radius)
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid
@@ -408,10 +410,10 @@ class RadialExtractReco(Extractor):
           bool: Validity boolean
         '''
         if entry.scintFit == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                          (entry.posy)**2 +
-                                         (entry.posz)**2)) < self._fid_r:
+                                         (entry.posz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes scintFit and no fid v cut
@@ -432,10 +434,10 @@ class RadialExtractReco(Extractor):
 
 
 class Radial3ExtractMC(Extractor):
-    ''' True :math:`(radius/av_radius)^3`radial extraction methods.
+    ''' True :math:`(radius/av_radius)^3` radial extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
       av_radius (float, optional): The radius of the AV used in calculating
@@ -447,10 +449,10 @@ class Radial3ExtractMC(Extractor):
         :math:`(radius/av_radius)^3`.
     '''
 
-    def __init__(self, fid_r=None, av_radius=None):
+    def __init__(self, fv_radius=None, av_radius=None):
         '''Initialise the class
         '''
-        super(Radial3ExtractMC, self).__init__("radial3_mc", fid_r)
+        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius)
         if av_radius:
             self._av_radius = av_radius
         else:
@@ -466,8 +468,8 @@ class Radial3ExtractMC(Extractor):
           bool: Validity boolean
         '''
         if mc.GetMCParticleCount > 0:
-            if self._fid_r:
-                if mc.GetMCParticle(0).GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes particle count and no fid v cut
@@ -494,10 +496,10 @@ class Radial3ExtractMC(Extractor):
           bool: Validity boolean
         '''
         if entry.mc == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                          (entry.mcPosy)**2 +
-                                         (entry.mcPosz)**2)) < self._fid_r:
+                                         (entry.mcPosz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             # MC has associated trigger or vice versa and no fid v applied
@@ -523,7 +525,7 @@ class Radial3ExtractReco(Extractor):
     ''' Reconstructed :math:`(radius/av_radius)^3` radial extraction methods.
 
     Args:
-      fid_r (float, optional): Fiducial radius. Applies a cut to remove
+      fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
       av_radius (float, optional): The radius of the AV used in calculating
@@ -535,10 +537,10 @@ class Radial3ExtractReco(Extractor):
         :math:`(radius/av_radius)^3`.
     '''
 
-    def __init__(self, fid_r=None, av_radius=None):
+    def __init__(self, fv_radius=None, av_radius=None):
         '''Initialise the class
         '''
-        super(Radial3ExtractReco, self).__init__("radial3_reco", fid_r)
+        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius)
         if av_radius:
             self._av_radius = av_radius
         else:
@@ -556,8 +558,9 @@ class Radial3ExtractReco(Extractor):
         if ev.DefaultFitVertexExists() and \
                 ev.GetDefaultFitVertex().ContainsEnergy() \
                 and ev.GetDefaultFitVertex().ValidEnergy():
-            if self._fid_r:
-                if ev.GetDefaultFitVertex().GetPosition().Mag() < self._fid_r:
+            if self._fv_radius:
+                if ev.GetDefaultFitVertex().GetPosition().Mag() < \
+                        self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes fit checks and no fid v cut
@@ -585,10 +588,10 @@ class Radial3ExtractReco(Extractor):
           bool: Validity boolean
         '''
         if entry.scintFit == 1:
-            if self._fid_r:
+            if self._fv_radius:
                 if numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                          (entry.posy)**2 +
-                                         (entry.posz)**2)) < self._fid_r:
+                                         (entry.posz)**2)) < self._fv_radius:
                     return True  # Passes fiducial volume cut
                 return False  # Fails fiducial volume cut
             return True  # Passes scintFit and no fid v cut

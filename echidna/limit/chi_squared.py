@@ -74,11 +74,11 @@ class ChiSquared(object):
             events
           expected (:class:`numpy.array`): energy spectrum of expected
             events
-      penalty_terms (dict, optional): specify (for each penalty term)
-        values for:
+          penalty_terms (dict, optional): specify (for each penalty term)
+            values for:
 
-          * "parameter_value" (optional)
-          * "sigma"
+              * "parameter_value" (optional)
+              * "sigma"
 
         .. warning:: A named penalty term defined here will overwrite
           one with the same name defined in the constructor.

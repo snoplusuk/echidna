@@ -101,8 +101,8 @@ def chi_squared_map(syst_analyser, fig_num=1, preferred_values=True,
     """ Plot chi squared surface for systematic vs. signal counts
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`):
-        Systematic analyser object, created during limit setting. Can be used
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from hdf5
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
@@ -221,8 +221,8 @@ def penalty_vs_systematic(syst_analyser, fig_num=1, save_as=None):
     """ Plot penalty_value vs. systematic
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`):
-        Systematic analyser object, created during limit setting. Can be used
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from hdf5
       fig_num (int, optional): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
@@ -257,8 +257,8 @@ def turn_on(syst_analyser, signal_config, fig=1, save_as=None):
     When does the effect of floating the systematic "turn on"?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`):
-        Systematic analyser object, created during limit setting. Can be used
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from hdf5.
       signal_config (:class:`echidna.limit.limit_config.LimitConfig`): Signal
         config class, where chi squareds have been stored.
@@ -349,8 +349,8 @@ def push_pull(syst_analyser, fig=1, save_as=None):
     dominate?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`):
-        Systematic analyser object, created during limit setting. Can be used
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
         during limit setting setting or can load an instance from hdf5
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
