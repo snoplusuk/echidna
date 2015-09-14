@@ -86,6 +86,7 @@ def dump(file_path, spectra):
                 spectra.get_config().get_par(v)._bins
         file_.attrs["num_decays"] = spectra._num_decays
         file_.attrs["raw_events"] = spectra._raw_events
+        file_.attrs["bipo"] = spectra._bipo
         if len(spectra._style) == 0:
             file_.attrs["style"] = ""
         else:
@@ -145,6 +146,7 @@ def load(file_path):
                                file_.attrs["num_decays"],
                                spectra.SpectraConfig(parameters))
         spec._raw_events = file_.attrs["raw_events"]
+        spec._bipo = file_.attrs["bipo"]
         style_dict = file_.attrs["style"]
         if len(style_dict) > 0:
             spec._style = string_to_dict(style_dict)
