@@ -14,7 +14,7 @@ def plot_projection(spectra, dimension, graphical=True):
     Returns:
       :class:`ROOT.TH1D`: Plot of the dimension.
     """
-    plot = TH1D(dimension, "%s;Count per bin" % dimension,
+    plot = TH1D(dimension, "; %s; Count per bin" % dimension,
                 int(spectra.get_config().get_par(dimension)._bins),
                 spectra.get_config().get_par(dimension)._low,
                 spectra.get_config().get_par(dimension)._high)

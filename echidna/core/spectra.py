@@ -49,11 +49,11 @@ class SpectraParameter(object):
         """
         for kw in kwargs:
             if kw == "low":
-                self._low = kwargs[kw]
+                self._low = float(kwargs[kw])
             elif kw == "high":
-                self._high = kwargs[kw]
+                self._high = float(kwargs[kw])
             elif kw == "bins":
-                self._bins = kwargs[kw]
+                self._bins = int(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
@@ -219,7 +219,7 @@ class SpectraConfig(object):
             for entry in par_split:
                 cur_dim += entry+"_"
             if cur_dim[:-1] == dim:
-                return par.split('_')[-1]
+                return str(par.split('_')[-1])
         raise IndexError("No %s dimension in spectra" % dim)
 
 
@@ -467,17 +467,26 @@ class Spectra(object):
         """
         # First check dimensions and bounds in kwargs are valid
         for arg in kwargs:
+            pars = self.get_config().get_pars()
             high_low = arg.split("_")[-1]
             par = arg[:-1*(len(high_low)+1)]
             if par not in self._config.get_pars():
                 raise IndexError("%s is not a parameter in the config" % par)
             if high_low == "low":
+                if numpy.allclose(kwargs[arg], self._config.get_par(par)._low):
+                    continue  # To avoid floating point errors
                 if kwargs[arg] < self._config.get_par(par)._low:
-                    raise ValueError("%s low is below existing bound"
-                                     % kwargs[par])
+                    raise ValueError("%s is below existing bound for %s (%s)"
+                                     % (kwargs[arg], par,
+                                        self._config.get_par(par)._low))
             elif high_low == "high":
+                if numpy.allclose(kwargs[arg],
+                                  self._config.get_par(par)._high):
+                    continue  # To avoid floating point errors
                 if kwargs[arg] > self._config.get_par(par)._high:
-                    raise ValueError("%s high is above existing bound")
+                    raise ValueError("%s is above existing bound for %s (%s)"
+                                     % (kwargs[arg], par,
+                                        self._config.get_par(par)._high))
             else:
                 raise IndexError("%s index invalid. Index must be of the form"
                                  "[dimension name]_high or"
@@ -615,18 +624,33 @@ class Spectra(object):
                 v_spec = dim+'_'+types[dim]
             else:
                 v_spec = v
-            if self._config.get_par(v)._high != \
-                    spectrum.get_config().get_par(v_spec)._high:
+            if not numpy.allclose(self.get_config().get_par(v)._high,
+                                  spectrum.get_config().get_par(v_spec)._high):
                 raise ValueError("Upper %s bounds in spectra are not equal."
-                                 % v)
-            if self._config.get_par(v)._low != \
-                    spectrum.get_config().get_par(v_spec)._low:
+                                 "\n%s upper bound: %s\n%s upper bound: %s"
+                                 % (v, self._name,
+                                    self.get_config().get_par(v)._high,
+                                    spectrum._name,
+                                    spectrum.get_config().get_par(v_spec)
+                                    ._high))
+            if not numpy.allclose(self.get_config().get_par(v)._low,
+                                  spectrum.get_config().get_par(v_spec)._low):
                 raise ValueError("Lower %s bounds in spectra are not equal."
-                                 % v)
-            if self._config.get_par(v)._bins != \
+                                 "\n%s lower bound: %s\n%s lower bound: %s"
+                                 % (v, self._name,
+                                    self.get_config().get_par(v)._low,
+                                    spectrum._name,
+                                    spectrum.get_config().get_par(v_spec)
+                                    ._low))
+            if self.get_config().get_par(v)._bins != \
                     spectrum.get_config().get_par(v_spec)._bins:
                 raise ValueError("Number of %s bins in spectra are not equal."
-                                 % v)
+                                 "\n%s bins: %s\n%s lower bins: %s"
+                                 % (v, self._name,
+                                    self.get_config().get_par(v)._bins,
+                                    spectrum._name,
+                                    spectrum.get_config().get_par(v_spec)
+                                    ._bins))
         self._data += spectrum._data
         self._raw_events += spectrum._raw_events
         self._num_decays += spectrum._num_decays

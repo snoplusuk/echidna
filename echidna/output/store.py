@@ -140,13 +140,17 @@ def load(file_path):
             if v.startswith("pars:"):
                 [_, par, val] = v.split(":")
                 if par not in parameters:
-                    parameters[par] = spectra.SpectraParameter(par, 1, 1, 1)
-                parameters[par].set_par(**{val: file_.attrs[v]})
+                    parameters[str(par)] = spectra.SpectraParameter(par, 1.,
+                                                                    1., 1)
+                parameters[str(par)].set_par(**{val: float(file_.attrs[v])})
         spec = spectra.Spectra(file_.attrs["name"],
                                file_.attrs["num_decays"],
                                spectra.SpectraConfig(parameters))
         spec._raw_events = file_.attrs["raw_events"]
-        spec._bipo = file_.attrs["bipo"]
+        try:
+            spec._bipo = file_.attrs["bipo"]
+        except:
+            spec._bipo = 0
         style_dict = file_.attrs["style"]
         if len(style_dict) > 0:
             spec._style = string_to_dict(style_dict)

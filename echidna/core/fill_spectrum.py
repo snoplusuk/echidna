@@ -27,45 +27,29 @@ def _bipo_ntuple(spectrum, chain, extractors):
     Returns:
       :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
-    # Need to prepare chain by looping through the entries first.
-    _junk = 0
+    check_next = False
     for entry in chain:
-        _junk
-    del _junk
-    entries = chain.GetEntries()
-    for ievent in range(0, entries):
-        fill = True
-        fill_kwargs = {}
-        # This stupidily gets the entry in the chain rather than GetEntry()
-        # Afterwards chain is now the entry. I HATE ROOT!
-        chain.LoadTree(ievent)
-        # Only want the first triggered event:
-        if chain.evIndex != 1:
-            continue
-        # Make sure you dont go out of scope.
-        if ievent + 1 != entries:
-            # Now we have to load the next event to check...
-            chain.LoadTree(ievent + 1)
-            # First triggered event but check if it has trailing events:
-            if chain.evIndex > 1:
-                continue
-            else:
-                # Passed cut so now have to load the prev event again...
-                chain.LoadTree(ievent)
-        # Check to see if all parameters are valid and extract values
-        for e in extractors:
-            if e.get_valid_ntuple(chain):
-                fill_kwargs[e._name] = e.get_value_ntuple(chain)
-            else:
-                fill = False
-                break
-        # If all OK, fill the spectrum
-        if fill:
+        # check_next means previous event has evIndex = 1 & passes fill checks
+        print "evIndex", entry.evIndex
+        if check_next and entry.evIndex < 1:
             try:
+                print "Filling"
                 spectrum.fill(**fill_kwargs)
                 spectrum._raw_events += 1
             except ValueError:
                 pass
+        # Reset kwargs
+        fill_kwargs = {}
+        if entry.evIndex != 0:
+            check_next = False
+            continue
+        for e in extractors:
+            if e.get_valid_ntuple(chain):
+                fill_kwargs[e._name] = e.get_value_ntuple(chain)
+                check_next = True
+            else:
+                check_next = False
+                break
     return spectrum
 
 

@@ -744,7 +744,7 @@ def make_fixed_background(spectra_dict, roi=None):
                 spectrum.shrink(**shrink_dict)
             spectrum.scale(scaling)
             total_spectrum = copy.deepcopy(spectrum)
-            spectrum._name = "Fixed Background"
+            total_spectrum._name = "Fixed Background"
         else:
             if roi:
                 energy_low, energy_high = roi
