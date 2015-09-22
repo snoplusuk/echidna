@@ -57,11 +57,11 @@ def main(args):
     for spectrum in signals:
         spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
         spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, 0)  # shrink to ROI
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
     for spectrum in floating_backgrounds:
         spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
         spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, 0)  # shrink to ROI
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
 
     # Signal configuration
     signal_configs_np = []  # no penalty term
