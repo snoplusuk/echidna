@@ -174,8 +174,7 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
 
 def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
                    bipo=False, **kwargs):
-    """**Weights have been disabled.**
-    This function fills in the ndarray (dimensions specified in the config)
+    """ This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the parameter specified in the config from the
     events in the root file.
 
@@ -191,7 +190,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
         new spectrum.
       bipo (bool, optional): Applies the bipo cut if set to True.
         Default is False.
-      \**kwargs (dict): Passed to and checked by the dsextractor.
+      kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
       ValueError: If spectrum_name is not set when creating a new
@@ -239,8 +238,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
 
 def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
                      bipo=False, **kwargs):
-    """**Weights have been disabled.**
-    This function fills in the ndarray (dimensions specified in the config)
+    """ This function fills in the ndarray (dimensions specified in the config)
     with weights. It takes the parameters specified in the config from
     the events in the ntuple.
 
@@ -255,7 +253,7 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
         new spectrum.
       bipo (bool, optional): Applies the bipo cut if set to True.
         Default is False.
-      \**kwargs (dict): Passed to and checked by the dsextractor.
+      kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
       ValueError: If spectrum_name is not set when creating a new

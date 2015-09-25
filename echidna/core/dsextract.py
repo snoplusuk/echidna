@@ -434,29 +434,29 @@ class RadialExtractReco(Extractor):
 
 
 class Radial3ExtractMC(Extractor):
-    ''' True :math:`(radius/av_radius)^3` radial extraction methods.
+    ''' True :math:`(radius/outer_radius)^3` radial extraction methods.
 
     Args:
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      av_radius (float, optional): The radius of the AV used in calculating
-        :math:`(radius/av_radius)^3`. If None then the av_radius in
+      outer_radius (float, optional): The fixed radius used in calculating
+        :math:`(radius/outer_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
 
     Attributes:
-      _av_radius (float, optional): The radius of the AV used in calculating
-        :math:`(radius/av_radius)^3`.
+      _outer_radius (float, optional): The fixed radius used in calculating
+        :math:`(radius/outer_radius)^3`.
     '''
 
-    def __init__(self, fv_radius=None, av_radius=None):
+    def __init__(self, fv_radius=None, outer_radius=None):
         '''Initialise the class
         '''
         super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius)
-        if av_radius:
-            self._av_radius = av_radius
+        if outer_radius:
+            self._outer_radius = outer_radius
         else:
-            self._av_radius = const._av_radius
+            self._outer_radius = const._outer_radius
 
     def get_valid_root(self, mc):
         '''Check whether radius of a DS::MC is valid
@@ -482,9 +482,10 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`RAT.DS.MC`) event
 
         Returns:
-          float: True :math:`(radius/av_radius)^3`
+          float: True :math:`(radius/outer_radius)^3`
         '''
-        return (mc.GetMCParticle(0).GetPosition().Mag() / self._av_radius) ** 3
+        return (mc.GetMCParticle(0).GetPosition().Mag() /
+                self._outer_radius) ** 3
 
     def get_valid_ntuple(self, entry):
         '''Check whether energy of an ntuple MC is valid
@@ -513,38 +514,39 @@ class Radial3ExtractMC(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          float: True :math:`(radius/av_radius)^3`
+          float: True :math:`(radius/outer_radius)^3`
         '''
         return (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                       (entry.mcPosy)**2 +
                                       (entry.mcPosz)**2)) /
-                self._av_radius) ** 3
+                self._outer_radius) ** 3
 
 
 class Radial3ExtractReco(Extractor):
-    ''' Reconstructed :math:`(radius/av_radius)^3` radial extraction methods.
+    ''' Reconstructed :math:`(radius/outer_radius)^3` radial extraction
+      methods.
 
     Args:
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      av_radius (float, optional): The radius of the AV used in calculating
-        :math:`(radius/av_radius)^3`. If None then the av_radius in
+      outer_radius (float, optional): The fixed radius used in calculating
+        :math:`(radius/outer_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
 
     Attributes:
-      _av_radius (float, optional): The radius of the AV used in calculating
-        :math:`(radius/av_radius)^3`.
+      _outer_radius (float, optional): The fixed radius used in calculating
+        :math:`(radius/outer_radius)^3`.
     '''
 
-    def __init__(self, fv_radius=None, av_radius=None):
+    def __init__(self, fv_radius=None, outer_radius=None):
         '''Initialise the class
         '''
         super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius)
-        if av_radius:
-            self._av_radius = av_radius
+        if outer_radius:
+            self._outer_radius = outer_radius
         else:
-            self._av_radius = const._av_radius
+            self._outer_radius = const._outer_radius
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid
@@ -573,10 +575,10 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`) event
 
         Returns:
-          float: Reconstructed :math:`(radius/av_radius)^3`
+          float: Reconstructed :math:`(radius/outer_radius)^3`
         '''
         return (ev.GetDefaultFitVertex().GetPosition().Mag() /
-                self._av_radius) ** 3
+                self._outer_radius) ** 3
 
     def get_valid_ntuple(self, entry):
         '''Check whether radius of an ntuple EV is valid
@@ -604,8 +606,9 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`ROOT.TChain`) chain entry
 
         Returns:
-          float: Reconstructed :math:`(radius/av_radius)^3`
+          float: Reconstructed :math:`(radius/outer_radius)^3`
         '''
         return (numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                       (entry.posy)**2 +
-                                      (entry.posz)**2)) / self._av_radius) ** 3
+                                      (entry.posz)**2)) /
+                self._outer_radius) ** 3

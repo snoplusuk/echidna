@@ -26,8 +26,8 @@ import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot_root as plot
 
 
-def create_combined_ntuple_spectrum(data_path, config_path,
-                                    bkgnd_name, save_path):
+def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name,
+                                    save_path, bipo, fv_radius, outer_radius):
     """ Creates both mc, truth and reco spectra from directory containing
     background ntuples, dumping the results as a spectrum object in an
     hdf5 file.
@@ -37,16 +37,37 @@ def create_combined_ntuple_spectrum(data_path, config_path,
       config_path (str): Path to config file
       bkgnd_name (str): Name of the background being processed
       save_path (str): Path to a directory where the hdf5 files will be dumped
+      bipo (bool): Apply Bi*Po* cuts when extracting data if True.
+      fv_radius (float): Cut events outside the fiducial volume of this radius.
+      outer_radius (float): Used for calculating the radial3 parameter. 
+        See :class:`echidna.core.dsextract` for details.
     """
     config = spectra.SpectraConfig.load_from_file(config_path)
     file_list = os.listdir(data_path)
-    for idx, fname in enumerate(file_list):
-        file_path = "%s/%s" % (data_path, fname)
-        if idx == 0:
-            spec = fill_spectrum.fill_from_ntuple(
-                file_path, spectrum_name="%s" % bkgnd_name, config=config)
-        else:
-            spec = fill_spectrum.fill_from_ntuple(file_path, spectrum=spec)
+    if outer_radius:
+        if "radial3" not in config.get_dims():
+            raise ValueError("Outer radius passed as an command line arg "
+                             "but no radial3 in the config file.")
+        for idx, fname in enumerate(file_list):
+            file_path = "%s/%s" % (data_path, fname)
+            if idx == 0:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum_name="%s" % bkgnd_name, config=config,
+                    bipo=bipo, fv_radius=fv_radius, outer_radius=outer_radius)
+            else:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum=spec, bipo=bipo, fv_radius=fv_radius,
+                    outer_radius=outer_radius)
+    else:
+                for idx, fname in enumerate(file_list):
+            file_path = "%s/%s" % (data_path, fname)
+            if idx == 0:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum_name="%s" % bkgnd_name, config=config,
+                    bipo=bipo, fv_radius=fv_radius)
+            else:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum=spec, bipo=bipo, fv_radius=fv_radius)
     # Plot
     plot_spectrum(spec, config)
     # Dump to file
@@ -77,6 +98,16 @@ if __name__ == "__main__":
                         help="Path to config file")
     parser.add_argument("-p", "--path", type=str,
                         help="Path to ntuple directory")
+    parser.add_argument("--bipo", dest="bipo", action="store_true",
+                        help="Apply bipo cut")
+    parser.add_argument("--no-bipo", dest="bipo", action="store_false",
+                        help="Don't apply bipo cut")
+    parser.add_argument("-v", "--fv_radius", type=float,
+                        help="Radius for fiducial volume cut", default=None)
+    parser.add_argument("-o", "--outer_radius", type=float,
+                        help="Outer radius for filling spectra with the"
+                        "parameter radial3.", default=None)
+    parser.set_defaults(bipo=False)
     args = parser.parse_args()
 
     # Take data_path from arg input
@@ -93,5 +124,6 @@ if __name__ == "__main__":
     # All files contained should be read and filled into a single specturm
     # object.
     ##########################################################################
-    create_combined_ntuple_spectrum(data_path, args.config,
-                                    bkgnd_name, args.save_path)
+    create_combined_ntuple_spectrum(data_path, args.config, bkgnd_name,
+                                    args.save_path, bipo, fv_radius,
+                                    outer_radius)
