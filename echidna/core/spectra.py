@@ -74,11 +74,11 @@ class SpectraParameter(object):
         Returns:
           string: Unit of the parameter
         """
-        if self._name.split['_'][0] == "energy":
+        if self._name.split('_')[0] == "energy":
             return "MeV"
-        if self._name.split['_'][0] == "radial":
+        if self._name.split('_')[0] == "radial":
             return "mm"
-        if self._name.split['_'][0] == "time":
+        if self._name.split('_')[0] == "time":
             return "years"
         else:
             raise Exception("%s is an unknown parameter"

@@ -1,8 +1,5 @@
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy
-
-import echidna.core.spectra as spectra
 
 
 def _produce_axis(spectra, dimension):
@@ -46,10 +43,10 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     x = _produce_axis(spectra, dimension)
     par = spectra.get_config().get_par(dimension)
     width = par.get_width()
-    plt.xlabel("%s (%s)", (dimension, unit))
+    plt.xlabel("%s (%s)" % (dimension, par.get_unit()))
     plt.ylabel("Count per %f %s bin" % (width, par.get_unit()))
     data = spectra.project(dimension)
-    ax.bar(x, data, width=width)
+    axis.bar(x, data, width=width)
     if show_plot:
         plt.show()
     return fig
