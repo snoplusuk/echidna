@@ -18,20 +18,27 @@ def function_factory(dimension, **kwargs):
     Retuns:
       :class:`echidna.core.dsextract.Extractor`: Extractor object.
     '''
+    kwdict = {}
+    if "fv_radius" in kwargs:
+        kwdict["fv_radius"] = kwargs["fv_radius"]
     if dimension == "energy_mc":
-        return EnergyExtractMC(**kwargs)
+        return EnergyExtractMC(**kwdict)
     elif dimension == "energy_reco":
-        return EnergyExtractReco(**kwargs)
+        return EnergyExtractReco(**kwdict)
     elif dimension == "energy_truth":
-        return EnergyExtractTruth(**kwargs)
+        return EnergyExtractTruth(**kwdict)
     elif dimension == "radial_mc":
-        return RadialExtractMC(**kwargs)
+        return RadialExtractMC(**kwdict)
     elif dimension == "radial_reco":
-        return RadialExtractReco(**kwargs)
+        return RadialExtractReco(**kwdict)
     elif dimension == "radial3_mc":
-        return Radial3ExtractMC(**kwargs)
+        if "outer_radius" in kwargs:
+            kwdict["outer_radius"] = kwargs["outer_radius"]
+        return Radial3ExtractMC(**kwdict)
     elif dimension == "radial3_reco":
-        return Radial3ExtractReco(**kwargs)
+        if "outer_radius" in kwargs:
+            kwdict["outer_radius"] = kwargs["outer_radius"]
+        return Radial3ExtractReco(**kwdict)
     else:
         raise IndexError("Unknown parameter: %s" % dimension)
 
