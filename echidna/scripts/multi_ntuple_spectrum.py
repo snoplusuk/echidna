@@ -59,7 +59,7 @@ def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name,
                     file_path, spectrum=spec, bipo=bipo, fv_radius=fv_radius,
                     outer_radius=outer_radius)
     else:
-                for idx, fname in enumerate(file_list):
+        for idx, fname in enumerate(file_list):
             file_path = "%s/%s" % (data_path, fname)
             if idx == 0:
                 spec = fill_spectrum.fill_from_ntuple(
@@ -125,5 +125,5 @@ if __name__ == "__main__":
     # object.
     ##########################################################################
     create_combined_ntuple_spectrum(data_path, args.config, bkgnd_name,
-                                    args.save_path, bipo, fv_radius,
-                                    outer_radius)
+                                    args.save_path, args.bipo, args.fv_radius,
+                                    args.outer_radius)

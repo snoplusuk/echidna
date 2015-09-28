@@ -115,9 +115,11 @@ if __name__ == "__main__":
         for fname in path_list:
             spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
             read_and_dump_root(fname, args.config, spectrum_name,
-                               args.save_path, bipo, fv_radius, outer_radius)
+                               args.save_path, args.bipo, args.fv_radius,
+                               args.outer_radius)
     else:  # If args passed directly, deal with them
         fname = args.fname
         spectrum_name = fname[fname.rfind('/', 0, -1)+1:]
         read_and_dump_root(fname, args.config, spectrum_name,
-                           args.save_path, bipo, fv_radius, outer_radius)
+                           args.save_path, args.bipo, args.fv_radius,
+                           args.outer_radius)
