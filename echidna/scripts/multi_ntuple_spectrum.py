@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument("--bipo", dest="bipo", action="store_true",
                         help="Apply bipo cut")
     parser.add_argument("--no-bipo", dest="bipo", action="store_false",
-                        help="Don't apply bipo cut")
+                        help="Don't apply bipo cut (default)")
     parser.add_argument("-v", "--fv_radius", type=float,
                         help="Radius for fiducial volume cut", default=None)
     parser.add_argument("-o", "--outer_radius", type=float,
