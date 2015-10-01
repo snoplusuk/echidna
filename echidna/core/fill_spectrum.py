@@ -3,12 +3,11 @@ from RAT Root files/ntuples.
 """
 
 from echidna.util import root_help
-import rat
 from ROOT import RAT
 from ROOT import TChain
-import math
 import echidna.core.spectra as spectra
 import echidna.core.dsextract as dsextract
+
 
 def _bipo_ntuple(spectrum, chain, extractors):
     """ Because ROOT is crap, we have to loop through the entries first
@@ -28,6 +27,7 @@ def _bipo_ntuple(spectrum, chain, extractors):
       :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
     check_next = False
+    fill_kwargs = {}
     for entry in chain:
         # check_next means previous event has evIndex = 1 & passes fill checks
         print "evIndex", entry.evIndex
@@ -67,7 +67,7 @@ def _root_mix(spectrum, dsreader, extractors, bipo):
       bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
+        ds = dsreader.GetEntry(entry)
         fill_kwargs = {}
         # Note mc will be the same for all evs in loop below:
         mc = ds.GetMC()
@@ -115,7 +115,7 @@ def _root_ev(spectrum, dsreader, extractors, bipo):
       bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
+        ds = dsreader.GetEntry(entry)
         if bipo and ds.GetEVCount() != 1:
             # Only bipos with 1 ev survive bipo cut
             continue
@@ -151,7 +151,7 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
       bipo (bool): Applies the bipo cut if set to True.
     """
     for entry in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
+        ds = dsreader.GetEntry(entry)
         mc = ds.GetMC()
         fill = True
         fill_kwargs = {}

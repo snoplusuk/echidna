@@ -288,7 +288,7 @@ class EnergyExtractTruth(Extractor):
         Returns:
           float: True energy
         '''
-        entry.mcEdep
+        return entry.mcEdep
 
 
 class RadialExtractMC(Extractor):
