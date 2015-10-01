@@ -3,6 +3,7 @@ from RAT Root files/ntuples.
 """
 
 from echidna.util import root_help
+import rat
 from ROOT import RAT
 from ROOT import TChain
 import echidna.core.spectra as spectra
@@ -202,6 +203,7 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
     """
     if type(config) == str:
         config = spectra.SpectraConfig.load_from_file(config)
+    dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
         if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
@@ -224,7 +226,6 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
         else:
             raise IndexError("Unknown paramer type %s" % var_type)
         extractors[var] = dsextract.function_factory(var, **kwargs)
-    dsreader = RAT.DU.DSReader(filename)
     if bipo:
         spectrum._bipo = 1  # Flag to indicate bipo cuts are applied
     if mc_fill and ev_fill:
