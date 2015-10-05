@@ -463,7 +463,7 @@ class Radial3ExtractMC(Extractor):
         if outer_radius:
             self._outer_radius = outer_radius
         else:
-            self._outer_radius = const._outer_radius
+            self._outer_radius = const._av_radius
 
     def get_valid_root(self, mc):
         '''Check whether radius of a DS::MC is valid
@@ -553,7 +553,7 @@ class Radial3ExtractReco(Extractor):
         if outer_radius:
             self._outer_radius = outer_radius
         else:
-            self._outer_radius = const._outer_radius
+            self._outer_radius = const._av_radius
 
     def get_valid_root(self, ev):
         '''Check whether radius of a DS::EV is valid
