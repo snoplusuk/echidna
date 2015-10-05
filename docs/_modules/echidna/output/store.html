@@ -50,37 +50,101 @@
   <h1>Source code for echidna.output.store</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="kn">import</span> <span class="nn">echidna.core.spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">echidna.limit.limit_setting</span> <span class="kn">as</span> <span class="nn">limit_setting</span>
 
 <span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">collections</span>
 
 
+<div class="viewcode-block" id="dict_to_string"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.dict_to_string">[docs]</a><span class="k">def</span> <span class="nf">dict_to_string</span><span class="p">(</span><span class="n">in_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Converts a dicionary to a string so it can be saved in a hdf5 file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      in_dict (dict): Dictionary to convert.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      TypeError: If the type of a value of in_dict is not supported currently.</span>
+<span class="sd">        Supported types are string, float and int.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      string: The converted dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_string</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">in_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">out_string</span> <span class="o">+=</span> <span class="n">key</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">out_string</span> <span class="o">+=</span> <span class="s">&quot;str,&quot;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="n">out_string</span> <span class="o">+=</span> <span class="s">&quot;float,&quot;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="n">out_string</span> <span class="o">+=</span> <span class="s">&quot;int,&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> has the unsupported type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span>
+                                                                <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">out_string</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="string_to_dict"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.string_to_dict">[docs]</a><span class="k">def</span> <span class="nf">string_to_dict</span><span class="p">(</span><span class="n">in_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Converts a string to a dictionary so it can</span>
+<span class="sd">      be loaded from the hdf5 file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      in_string (string): The string to convert into a dictionary.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      TypeError: If the type of a value of in_dict is not supported currently.</span>
+<span class="sd">        Supported types are string, float and int.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      dict: The converted string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">keys_values</span> <span class="o">=</span> <span class="n">in_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">keys_values</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;;&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;;&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">typ</span> <span class="o">==</span> <span class="s">&quot;str&quot;</span><span class="p">:</span>
+            <span class="n">out_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">elif</span> <span class="n">typ</span> <span class="o">==</span> <span class="s">&quot;int&quot;</span><span class="p">:</span>
+            <span class="n">out_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">typ</span> <span class="o">==</span> <span class="s">&quot;float&quot;</span><span class="p">:</span>
+            <span class="n">out_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> has the unsupported type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">out_dict</span>
+
+</div>
 <div class="viewcode-block" id="dump"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.dump">[docs]</a><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Dump the spectra to the file_path.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      file_path (string): Location to save to.</span>
-<span class="sd">      spectra (:class:`echidna.core.spectra.Spectra`): The spectra to save</span>
+<span class="sd">      spectra (:class:`spectra.Spectra`): The spectra to save</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
         <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span>
-        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span>
+        <span class="c"># Store parameters with a key word &#39;pars&#39;</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;pars:</span><span class="si">%s</span><span class="s">:low&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;pars:</span><span class="si">%s</span><span class="s">:high&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;pars:</span><span class="si">%s</span><span class="s">:bins&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span>
         <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_num_decays</span>
-
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;raw_events&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;bipo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_bipo</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_style</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;style&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;style&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_to_string</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_style</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_rois</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;rois&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;rois&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_to_string</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_rois</span><span class="p">)</span>
         <span class="n">file_</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">spectra</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">)</span>
 
 </div>
@@ -98,7 +162,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">ndarray_object</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">print</span> <span class="n">attr_name</span>
             <span class="k">if</span> <span class="n">attribute</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># Can&#39;t save to hdf5, skip --&gt; continue</span>
                 <span class="k">continue</span>
             <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;ndarray&quot;</span><span class="p">:</span>
@@ -119,26 +182,72 @@
 <span class="sd">      file_path (string): Location to save to.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      Loaded spectra (:class:`echidna.core.spectra.Spectra`).</span>
+<span class="sd">      Loaded spectra (:class:`spectra.Spectra`).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
-        <span class="n">spectra</span> <span class="o">=</span> <span class="n">echidna</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">],</span>
-                                               <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">])</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_low&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_high&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_bins&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_width&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_low&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_high&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_bins&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_width&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_low&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_high&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_bins&quot;</span><span class="p">]</span>
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_width&quot;</span><span class="p">]</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;pars:&quot;</span><span class="p">):</span>
+                <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="p">)]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraParameter</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span>
+                                                                    <span class="mf">1.</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">parameters</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="p">)]</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">v</span><span class="p">])})</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">],</span>
+                               <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">],</span>
+                               <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;raw_events&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_bipo</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;bipo&quot;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_bipo</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">style_dict</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;style&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">style_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="n">string_to_dict</span><span class="p">(</span><span class="n">style_dict</span><span class="p">)</span>
+        <span class="n">rois_dict</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;rois&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rois_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_rois</span> <span class="o">=</span> <span class="n">string_to_dict</span><span class="p">(</span><span class="n">rois_dict</span><span class="p">)</span>
+        <span class="c"># else the default values of Spectra __init__ are kept</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">file_</span><span class="p">[</span><span class="s">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">spec</span>
 
-        <span class="n">spectra</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">file_</span><span class="p">[</span><span class="s">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">spectra</span>
+</div>
+<div class="viewcode-block" id="load_old"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.load_old">[docs]</a><span class="k">def</span> <span class="nf">load_old</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Load a spectra from file_path.</span>
+<span class="sd">    Args:</span>
+<span class="sd">      file_path (string): Location to save to.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      Loaded spectra (:class:`spectra.Spectra`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraParameter</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">,</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_low&quot;</span><span class="p">],</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_high&quot;</span><span class="p">],</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;energy_bins&quot;</span><span class="p">])</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;radial&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraParameter</span><span class="p">(</span><span class="s">&quot;radial&quot;</span><span class="p">,</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_low&quot;</span><span class="p">],</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_high&quot;</span><span class="p">],</span>
+                                     <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;radial_bins&quot;</span><span class="p">])</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraParameter</span><span class="p">(</span><span class="s">&quot;time&quot;</span><span class="p">,</span>
+                                                      <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_low&quot;</span><span class="p">],</span>
+                                                      <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_high&quot;</span><span class="p">],</span>
+                                                      <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;time_bins&quot;</span><span class="p">])</span>
+        <span class="n">spectra_config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">],</span>
+                               <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;num_decays&quot;</span><span class="p">],</span>
+                               <span class="n">spectra_config</span><span class="p">)</span>
+        <span class="c"># The following may not be present in old, old hdf5s</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;raw_events&quot;</span><span class="p">]:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;raw_events&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;style&quot;</span><span class="p">]:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;style&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;rois&quot;</span><span class="p">]:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">_rois</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&quot;rois&quot;</span><span class="p">]</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">file_</span><span class="p">[</span><span class="s">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">spec</span>
 
 </div>
 <div class="viewcode-block" id="load_ndarray"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.store.load_ndarray">[docs]</a><span class="k">def</span> <span class="nf">load_ndarray</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">ndarray_object</span><span class="p">):</span>
@@ -151,7 +260,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">ndarray_object</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">print</span> <span class="n">attr_name</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;ndarray&quot;</span><span class="p">:</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="n">ndarray_object</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">file_</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>

@@ -49,45 +49,29 @@
             
   <h1>Source code for echidna.core.smear</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">decimal</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 
 
 <div class="viewcode-block" id="Smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear">[docs]</a><span class="k">class</span> <span class="nc">Smear</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; This class smears the energy and radius of a spectra.</span>
+    <span class="sd">&quot;&quot;&quot; The base class for smearing spectra.</span>
 
-<span class="sd">    The class can recieve energy and radius as individual data points or a</span>
-<span class="sd">    1 dimensional numpy array to smear which is then returned. 2d and 3d</span>
-<span class="sd">    arrays with linked energy, radius and time information is yet to be</span>
-<span class="sd">    implemented.</span>
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): The name of the smearing class.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">      _light_yield (float): Number of PMT hits expected for a</span>
-<span class="sd">        MeV energy deposit in NHit/MeV</span>
-<span class="sd">      _position_resolution (float): Sigma in mm</span>
+<span class="sd">      _name (string): name of the smeaing class.</span>
+<span class="sd">      _num_sigma (float): The width of the window in terms of number of sigma</span>
+<span class="sd">        you wish to apply weights to.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_light_yield</span> <span class="o">=</span> <span class="mf">200.</span>  <span class="c"># NHit per MeV</span>
-    <span class="n">_position_resolution</span> <span class="o">=</span> <span class="mf">100.</span>  <span class="c"># mm</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Initialise the Smear class by seeding the random number generator</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise the Smear class by seeding the random number generator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span> <span class="o">=</span> <span class="mf">5.</span>
 
-<div class="viewcode-block" id="Smear.bin_1d_array"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.bin_1d_array">[docs]</a>    <span class="k">def</span> <span class="nf">bin_1d_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sorts a 1 dimensional array and bins it</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          array (:class:`numpy.array`): To sort and bin</span>
-<span class="sd">          bins (list): Upper limit of bins</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A 1 dimensional numpy array, sorted and binned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">split_at</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">split_at</span><span class="p">)</span>
-</div>
 <div class="viewcode-block" id="Smear.calc_gaussian"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.calc_gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">calc_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculates the value of a gaussian whose integral is equal to</span>
 <span class="sd">          one at position x with a given mean and sigma.</span>
@@ -98,377 +82,269 @@
 <span class="sd">            sigma : Sigma of the gaussian</span>
 
 <span class="sd">          Returns:</span>
-<span class="sd">            Value of the gaussian at the given position</span>
+<span class="sd">            float: Value of the gaussian at the given position</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Smear.floor_to_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.floor_to_bin">[docs]</a>    <span class="k">def</span> <span class="nf">floor_to_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_size</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Rounds down value bin content to lower edge of nearest bin.</span>
+<div class="viewcode-block" id="Smear.get_bin_mean"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.get_bin_mean">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="nb">bin</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the mean value of a bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          x (float): Value to round down</span>
-<span class="sd">          bin_size (float): Width of a bin</span>
+<span class="sd">          low (float): The lower bound value of the parameter.</span>
+<span class="sd">          bin (int): The number of the bin you wish to calculate the mean of.</span>
+<span class="sd">          width (float): The width of the bin.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          Value of nearest lower bin edge</span>
+<span class="sd">          float: The mean value of the bin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dp</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bin_size</span><span class="p">))</span><span class="o">.</span><span class="n">as_tuple</span><span class="p">()</span><span class="o">.</span><span class="n">exponent</span><span class="p">)</span>
-        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dp</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">coef</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">//</span><span class="n">bin_size</span><span class="p">)</span><span class="o">*</span><span class="n">bin_size</span><span class="p">)</span><span class="o">/</span><span class="n">coef</span>
+        <span class="k">return</span> <span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">width</span>
 </div>
-<div class="viewcode-block" id="Smear.ceil_to_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.ceil_to_bin">[docs]</a>    <span class="k">def</span> <span class="nf">ceil_to_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_size</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Rounds up value bin content to upper edge of nearest bin.</span>
+<div class="viewcode-block" id="Smear.get_num_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.get_num_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the width of the window in terms of number of sigma</span>
+<span class="sd">          you wish to apply weights to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The number of sigma.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span>
+</div>
+<div class="viewcode-block" id="Smear.set_num_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.set_num_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">set_num_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the width of the window in terms of number of sigma</span>
+<span class="sd">          you wish to apply weights to.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          x (float): Value to round down</span>
-<span class="sd">          bin_size (float): Width of a bin</span>
+<span class="sd">          num_sigma (float): The number of sigma you wish to apply weights to.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If the number of sigma is zero or negative.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">num_sigma</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_sigma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an invalid num_sigma. Value must be &quot;</span>
+                             <span class="s">&quot;greater than zero.&quot;</span> <span class="o">%</span> <span class="n">num_sigma</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Smear.get_bounds"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.get_bounds">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the boundaries you wish to apply the smearing</span>
+<span class="sd">          weights to.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          mean (float): The mean value you are smearing.</span>
+<span class="sd">          sigma (float): The sigma of the gaussian you are using to smear.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          Value of nearest lower bin edge</span>
+<span class="sd">          tuple: First value of the tuple is the lower bound. The second is</span>
+<span class="sd">            the upper bound.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dp</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bin_size</span><span class="p">))</span><span class="o">.</span><span class="n">as_tuple</span><span class="p">()</span><span class="o">.</span><span class="n">exponent</span><span class="p">)</span>
-        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dp</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">coef</span><span class="o">*</span><span class="p">(</span><span class="n">bin_size</span><span class="o">+</span><span class="p">(</span><span class="n">x</span><span class="o">//</span><span class="n">bin_size</span><span class="p">)</span><span class="o">*</span><span class="n">bin_size</span><span class="p">))</span><span class="o">/</span><span class="n">coef</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span><span class="o">*</span><span class="n">sigma</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span><span class="o">*</span><span class="n">sigma</span>
+        <span class="k">return</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span>
+
+</div></div>
+<div class="viewcode-block" id="EnergySmearLY"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY">[docs]</a><span class="k">class</span> <span class="nc">EnergySmearLY</span><span class="p">(</span><span class="n">Smear</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The class which smears energy. It accepts resolution in terms of light</span>
+<span class="sd">      yield (LY) in units of NHit per MeV.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _light_yield (float): The light yield of the scintillator in NHits per</span>
+<span class="sd">        MeV.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialises the class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearLY</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_light_yield&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="mf">200.</span>  <span class="c"># NHits/MeV</span>
+
+<div class="viewcode-block" id="EnergySmearLY.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the light yield.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The light yield.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span>
 </div>
-<div class="viewcode-block" id="Smear.get_energy_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.get_energy_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_energy_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergySmearLY.get_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculates sigma at a given energy.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          energy (float): Energy value of data point(s)</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          Sigma equivalent to sqrt(energy/_light_yield)</span>
+<span class="sd">          float: Sigma equivalent to sqrt(energy/_light_yield)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">energy</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Smear.smear_energy_0d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_energy_0d">[docs]</a>    <span class="k">def</span> <span class="nf">smear_energy_0d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears a single energy value</span>
+<div class="viewcode-block" id="EnergySmearLY.set_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">light_yield</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the light yield</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          energy (float): Value to smear</span>
+<span class="sd">          light_yield (float): The value you wish to set the light yield to.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">          Smeared energy value</span>
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If the light yield is zero or negative.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energy_sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">light_yield</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">light_yield</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an invalid light yield. Light yield &quot;</span>
+                             <span class="s">&quot;must be greater than zero.&quot;</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Smear.smear_energy_1d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_energy_1d">[docs]</a>    <span class="k">def</span> <span class="nf">smear_energy_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">binned</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears a 1 dimensional array of energy values</span>
+<div class="viewcode-block" id="EnergySmearLY.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
+<span class="sd">          to a window of width specified by the number of sigma depending on</span>
+<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          energies (:class:`numpy.array`): Values to smear</span>
-<span class="sd">          bins (list): Upper edge of bins for array</span>
-<span class="sd">          binned (bool): Is the array already binned? (True or False)</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is energy_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          Smeared and sorted 1 dimensional numpy array of energy values</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">binned</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
-            <span class="n">energies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_1d_array</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
-        <span class="n">bin_size</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">smeared_energies</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">energies</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">energy</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="n">energy_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bin_size</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">bin_size</span>
-                <span class="n">num_entries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-                <span class="n">smeared_energies</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smear_energy_bin</span><span class="p">(</span><span class="n">energy_bin</span><span class="p">,</span>
-                                                          <span class="n">num_entries</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smeared_energies</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_ly&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">),</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+                        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+                        <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">high</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> \
+                            <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+                            <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+                            <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                              <span class="n">mean</span><span class="p">,</span>
+                                                              <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
+                    <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span>
 </div>
-<div class="viewcode-block" id="Smear.smear_energy_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_energy_bin">[docs]</a>    <span class="k">def</span> <span class="nf">smear_energy_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears one energy bin.</span>
+<div class="viewcode-block" id="EnergySmearLY.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
+<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
+<span class="sd">          of points generated is equivalent to the number of entries in that</span>
+<span class="sd">          bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          energy (float): Central value of energy of bin</span>
-<span class="sd">          entries (int): Number of entries in the bin</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is energy_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          A list of smeared energies corresponding to the input bin.</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energy_sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-        <span class="n">smeared_energies</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-            <span class="n">smeared_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)))</span>
-        <span class="k">return</span> <span class="n">smeared_energies</span>
-</div>
-<div class="viewcode-block" id="Smear.smear_radius_0d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_radius_0d">[docs]</a>    <span class="k">def</span> <span class="nf">smear_radius_0d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears a single radius value</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          radius (float): Value to smear</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          Smeared radius value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">))</span>
-</div>
-<div class="viewcode-block" id="Smear.smear_radii_1d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_radii_1d">[docs]</a>    <span class="k">def</span> <span class="nf">smear_radii_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radii</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">binned</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears a 1 dimensional array of radius values</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          radii (:class:`numpy.array`): Values to smear</span>
-<span class="sd">          bins (list): Upper edge of bins for array</span>
-<span class="sd">          binned (bool): Is the array already binned? (True or False)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          Smeared and sorted 1 dimensional numpy array of radius values</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">binned</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
-            <span class="n">radii</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_1d_array</span><span class="p">(</span><span class="n">radii</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
-        <span class="n">bin_size</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">smeared_radii</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">radii</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">radius</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="n">radius_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">radius</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                               <span class="n">bin_size</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bin_size</span>
-                <span class="n">num_entries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
-                <span class="n">smeared_radii</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smear_radius_bin</span><span class="p">(</span><span class="n">radius_bin</span><span class="p">,</span> <span class="n">num_entries</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smeared_radii</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="Smear.smear_radius_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.smear_radius_bin">[docs]</a>    <span class="k">def</span> <span class="nf">smear_radius_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears one energy bin.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          radius (float): Central value of radius of bin</span>
-<span class="sd">          entries (int): Number of entries in the bin</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A list of smeared radii corresponding to the input bin.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">smeared_radii</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-            <span class="n">smeared_radii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)))</span>
-        <span class="k">return</span> <span class="n">smeared_radii</span>
-</div>
-<div class="viewcode-block" id="Smear.random_gaussian_energy_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.random_gaussian_energy_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">random_gaussian_energy_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a spectra object by generating</span>
-<span class="sd">          a number of random points from a Gaussian pdf generated</span>
-<span class="sd">          for that bin. The number of points generated is equivalent</span>
-<span class="sd">          to the number of entries in that bin.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A smeared spectra object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">raw_events</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
-        <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
-        <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
-        <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-            <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
-            <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
-                <span class="n">mean_radius</span> <span class="o">=</span> <span class="n">radial_bin</span><span class="o">*</span><span class="n">radial_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
-                    <span class="n">mean_energy</span> <span class="o">=</span> <span class="n">energy_bin</span><span class="o">*</span><span class="n">energy_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energy_sigma</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">)</span>
-                    <span class="n">entries</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">,</span>
-                                                  <span class="n">radial_bin</span><span class="p">,</span>
-                                                  <span class="n">time_bin</span><span class="p">]</span>
-                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">)):</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
-                                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)),</span>
-                                <span class="n">mean_radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="c"># Occurs when smeared energy is outside bin range</span>
-                            <span class="k">print</span> <span class="s">&quot;Warning: Smeared energy out of bounds. Skipping.&quot;</span>
-                            <span class="k">continue</span>
-        <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">raw_events</span>
-        <span class="k">return</span> <span class="n">smeared_spectrum</span>
-</div>
-<div class="viewcode-block" id="Smear.weight_gaussian_energy_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.weight_gaussian_energy_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">weight_gaussian_energy_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a spectra object by calculating a</span>
-<span class="sd">          Gaussian pdf for each bin and applying a weight to the bin</span>
-<span class="sd">          and corresponding bins a default 5 sigma apart.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
-<span class="sd">          num_sigma (float): Width of window to apply the weight method.</span>
-<span class="sd">            Default is 5.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A smeared spectra object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">raw_events</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
-        <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
-        <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
-        <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_light_yield&quot;</span><span class="p">,</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-            <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
-            <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
-                <span class="n">mean_radius</span> <span class="o">=</span> <span class="n">radial_bin</span><span class="o">*</span><span class="n">radial_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
-                    <span class="n">mean_energy</span> <span class="o">=</span> <span class="n">energy_bin</span><span class="o">*</span><span class="n">energy_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energy_sigma</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">)</span>
-                    <span class="n">entries</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">,</span>
-                                                        <span class="n">radial_bin</span><span class="p">,</span>
-                                                        <span class="n">time_bin</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">entries</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">continue</span>  <span class="c"># Bin Empty</span>
-                    <span class="n">lower_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">mean_energy</span><span class="o">-</span><span class="n">num_sigma</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
-                                                  <span class="n">energy_step</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="n">upper_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceil_to_bin</span><span class="p">(</span><span class="n">mean_energy</span><span class="o">+</span><span class="n">num_sigma</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
-                                                 <span class="n">energy_step</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="k">if</span> <span class="n">upper_bin</span> <span class="o">&gt;</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">:</span>
-                        <span class="n">upper_bin</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="k">if</span> <span class="n">lower_bin</span> <span class="o">&lt;</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">:</span>
-                        <span class="n">lower_bin</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">):</span>
-                        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
-                                                          <span class="n">mean_energy</span><span class="p">,</span>
-                                                          <span class="n">sigma</span><span class="p">))</span>
-                    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="n">tot_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                    <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">):</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
-                                <span class="n">energy</span><span class="p">,</span> <span class="n">mean_radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">,</span>
-                                <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">tot_weight</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="c"># Occurs when smeared energy is outside bin range</span>
-                            <span class="k">print</span> <span class="s">&quot;Warning: Smeared energy out of bounds. Skipping.&quot;</span>
-                            <span class="k">continue</span>
-                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">raw_events</span>
-        <span class="k">return</span> <span class="n">smeared_spectrum</span>
-</div>
-<div class="viewcode-block" id="Smear.random_gaussian_radius_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.random_gaussian_radius_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">random_gaussian_radius_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the radius of a spectra object by generating a</span>
-<span class="sd">          number of random points from a Gaussian pdf generated for</span>
-<span class="sd">          that bin. The number of points generated is equivalent to the</span>
-<span class="sd">          number of entries in that bin.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A smeared spectra object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">raw_events</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
-        <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
-        <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
-        <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-            <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
-            <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
-                <span class="n">mean_energy</span> <span class="o">=</span> <span class="n">energy_bin</span><span class="o">*</span><span class="n">energy_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
-                    <span class="n">mean_radius</span> <span class="o">=</span> <span class="n">radial_bin</span><span class="o">*</span><span class="n">radial_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                    <span class="n">entries</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">,</span>
-                                                  <span class="n">radial_bin</span><span class="p">,</span>
-                                                  <span class="n">time_bin</span><span class="p">]</span>
-                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">)):</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
-                                <span class="n">mean_energy</span><span class="p">,</span>
-                                <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                                    <span class="n">mean_radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)),</span>
-                                <span class="n">mean_time</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="c"># Occurs when smeared radius is outside bin range</span>
-                            <span class="k">print</span> <span class="s">&quot;Warning: Smeared radius out of bounds. Skipping.&quot;</span>
-                            <span class="k">continue</span>
-        <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">raw_events</span>
-        <span class="k">return</span> <span class="n">smeared_spectrum</span>
-</div>
-<div class="viewcode-block" id="Smear.weight_gaussian_radius_spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.weight_gaussian_radius_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">weight_gaussian_radius_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_spectrum</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the radius of a spectra object by calculating a</span>
-<span class="sd">          Gaussian pdf for each bin and applies a weight to the bin and</span>
-<span class="sd">          corresponding bins a default 5 sigma apart.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          true_spectrum (spectra): spectrum to be smeared</span>
-<span class="sd">          num_sigma (float): Width of window to apply the weight method.</span>
-<span class="sd">            Default is 5.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          A smeared spectra object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">raw_events</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
-        <span class="n">energy_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span>
-        <span class="n">time_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span>
-        <span class="n">radial_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">)</span><span class="o">/</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span>
-        <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_position_resolution&quot;</span><span class="p">,</span>
-            <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">time_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-            <span class="n">mean_time</span> <span class="o">=</span> <span class="n">time_bin</span><span class="o">*</span><span class="n">time_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">time_step</span>
-            <span class="k">for</span> <span class="n">energy_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">):</span>
-                <span class="n">mean_energy</span> <span class="o">=</span> <span class="n">energy_bin</span><span class="o">*</span><span class="n">energy_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                <span class="k">for</span> <span class="n">radial_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">):</span>
-                    <span class="n">mean_radius</span> <span class="o">=</span> <span class="n">radial_bin</span><span class="o">*</span><span class="n">radial_step</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                    <span class="n">entries</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">true_spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">energy_bin</span><span class="p">,</span>
-                                                        <span class="n">radial_bin</span><span class="p">,</span>
-                                                        <span class="n">time_bin</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">entries</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">continue</span>  <span class="c"># Bin Empty</span>
-                    <span class="n">lower_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_bin</span><span class="p">(</span><span class="n">mean_radius</span><span class="o">-</span><span class="n">num_sigma</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">,</span>
-                                                  <span class="n">radial_step</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                    <span class="n">upper_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceil_to_bin</span><span class="p">(</span><span class="n">mean_radius</span><span class="o">+</span><span class="n">num_sigma</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">,</span>
-                                                 <span class="n">radial_step</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">radial_step</span>
-                    <span class="k">if</span> <span class="n">upper_bin</span> <span class="o">&gt;</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">:</span>
-                        <span class="n">upper_bin</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_high</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="k">if</span> <span class="n">lower_bin</span> <span class="o">&lt;</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">:</span>
-                        <span class="n">lower_bin</span> <span class="o">=</span> <span class="n">true_spectrum</span><span class="o">.</span><span class="n">_radial_low</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">energy_step</span>
-                    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">radial_step</span><span class="p">):</span>
-                        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">mean_radius</span><span class="p">,</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">_position_resolution</span><span class="p">))</span>
-                    <span class="n">weight_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_bin</span><span class="p">,</span> <span class="n">upper_bin</span><span class="p">,</span> <span class="n">radial_step</span><span class="p">):</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
-                                <span class="n">mean_energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">mean_time</span><span class="p">,</span>
-                                <span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">weight_tot</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="c"># Occurs when smeared radius is outside bin range</span>
-                            <span class="k">print</span> <span class="s">&quot;Warning: Smeared radius out of bounds. Skipping.&quot;</span>
-                            <span class="k">continue</span>
-                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">raw_events</span>
-        <span class="k">return</span> <span class="n">smeared_spectrum</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_ly&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">),</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">mean_e</span> <span class="o">=</span> <span class="n">mean</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&quot;WARNING: Smeared energy out of bounds. Skipping&quot;</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span>
 
 </div></div>
-<div class="viewcode-block" id="EResSmear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EResSmear">[docs]</a><span class="k">class</span> <span class="nc">EResSmear</span><span class="p">(</span><span class="n">Smear</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergySmearRes"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes">[docs]</a><span class="k">class</span> <span class="nc">EnergySmearRes</span><span class="p">(</span><span class="n">Smear</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Allows you to smear directly by supplied energy resolution</span>
 <span class="sd">      (in :math:`\sqrt{MeV}`).</span>
 
-<span class="sd">    Inherits from :class:`Smear` to provide exactly the same</span>
-<span class="sd">    functionality but overrides :meth:`Smear.get_energy_sigma` to use</span>
-<span class="sd">    a given energy resolution to calculate sigma.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
-<span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+<span class="sd">    Inherits from :class:`Smear`</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">      _light_yield (float): Number of PMT hits expected for a</span>
-<span class="sd">        MeV energy deposit in NHit/MeV.</span>
 <span class="sd">      _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
 <span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
-<span class="sd">      _position_resolution (float): Sigma in mm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_resolution</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">EResSmear</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_resolution</span> <span class="o">=</span> <span class="n">energy_resolution</span>
 
-<div class="viewcode-block" id="EResSmear.get_energy_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EResSmear.get_energy_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_energy_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearRes</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_resolution&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c"># 5%/sqrt(MeV)</span>
+
+<div class="viewcode-block" id="EnergySmearRes.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the energy resolution</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Energy resolution in  :math:`\sqrt{MeV}`</span>
+<span class="sd">          e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span>
+</div>
+<div class="viewcode-block" id="EnergySmearRes.get_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculates sigma at a given energy.</span>
 
 <span class="sd">        Args:</span>
@@ -478,7 +354,327 @@
 <span class="sd">          float: Sigma (MeV) equivalent to energy_resolution *</span>
 <span class="sd">            :math:`\sqrt{energy}`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_resolution</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">2.</span><span class="p">))</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="EnergySmearRes.set_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the energy resolution in :math:`\sqrt{MeV}`</span>
+<span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
+<span class="sd">            e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If the resolution is not between 0 and 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">resolution</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">resolution</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an invalid energy resolution. Value &quot;</span>
+                             <span class="s">&quot;must be between 0. and 1.&quot;</span> <span class="o">%</span> <span class="n">resolution</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EnergySmearRes.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
+<span class="sd">          to a window of width specified by the number of sigma depending on</span>
+<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is energy_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="mf">100.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;%&quot;</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+                        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+                        <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">high</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> \
+                            <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+                            <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+                            <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                              <span class="n">mean</span><span class="p">,</span>
+                                                              <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
+                    <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span>
+</div>
+<div class="viewcode-block" id="EnergySmearRes.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
+<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
+<span class="sd">          of points generated is equivalent to the number of entries in that</span>
+<span class="sd">          bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is energy_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="mf">100.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;%&quot;</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">mean_e</span> <span class="o">=</span> <span class="n">mean</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&quot;WARNING: Smeared energy out of bounds. Skipping&quot;</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span>
+
+</div></div>
+<div class="viewcode-block" id="RadialSmear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear">[docs]</a><span class="k">class</span> <span class="nc">RadialSmear</span><span class="p">(</span><span class="n">Smear</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The class which smears the radius. It accepts resolution in terms of</span>
+<span class="sd">      sigma in units of mm.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _resolution (float): The position resolution (mm).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialises the class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RadialSmear</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="mf">100.</span>  <span class="c"># mm</span>
+
+<div class="viewcode-block" id="RadialSmear.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the position resolution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Position resolution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span>
+</div>
+<div class="viewcode-block" id="RadialSmear.set_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the position resolution:</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If resolution is zero or less.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          resolution (float): Position resolution in mm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">resolution</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an incorrect position resolutioin. Value &quot;</span>
+                             <span class="s">&quot;must be greater than zero.&quot;</span> <span class="o">%</span> <span class="n">resolution</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="RadialSmear.get_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sigma and resolution are equivalent for radial dimensions</span>
+<span class="sd">        currently. This function calls self.get_resolution()</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Sigma in mm equivalent to resolution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="RadialSmear.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;radial_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
+<span class="sd">          to a window of width specified by the number of sigma depending on</span>
+<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is radial_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;mm&quot;</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+                        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+                        <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span>
+                            <span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">high</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> \
+                            <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+                            <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+                            <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
+                                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span>
+                                                              <span class="n">mean</span><span class="p">,</span>
+                                                              <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">radius</span>
+                    <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span>
+</div>
+<div class="viewcode-block" id="RadialSmear.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;radial_mc&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`echidna.core.spectra.Spectra` by</span>
+<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
+<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
+<span class="sd">          of points generated is equivalent to the number of entries in that</span>
+<span class="sd">          bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
+<span class="sd">            to smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
+<span class="sd">            The default is radial_mc.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If par is not in the specta config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">par_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="n">par_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+        <span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;mm&quot;</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">bin</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">bin</span><span class="p">)):</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bin_mean</span><span class="p">(</span><span class="n">lows</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">bin</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+                        <span class="n">mean_r</span> <span class="o">=</span> <span class="n">mean</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_r</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&quot;WARNING: Smeared radius out of bounds. Skipping&quot;</span>
+        <span class="n">smeared_spec</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
+        <span class="k">return</span> <span class="n">smeared_spec</span></div></div>
 </pre></div>
 
           </div>

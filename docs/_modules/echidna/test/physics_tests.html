@@ -59,42 +59,31 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 
 
-<div class="viewcode-block" id="test_function_float"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.physics_tests.test_function_float">[docs]</a><span class="k">def</span> <span class="nf">test_function_float</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="test_function_float"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.physics_tests.test_function_float">[docs]</a><span class="k">def</span> <span class="nf">test_function_float</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Tests a function that returns a physics result (float)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      function (function): An instance of the function/method. e.g.</span>
 <span class="sd">        :obj:`caculator.get_n_atoms` - notice no parentheses.</span>
 <span class="sd">      expected (float): Expected physics result of function.</span>
-<span class="sd">      *args: Arguments to pass to the function.</span>
-<span class="sd">      **kwargs: Keyword arguments</span>
-
-<span class="sd">    .. note::</span>
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * tolerance (*float*): Tolerance in agreement of results.</span>
-<span class="sd">          Evaluated as :obj:`tolerance*expected`, i.e. a tolerance of</span>
-<span class="sd">          0.001 ensures agreement to within 0.1% of expected value.</span>
+<span class="sd">      tolerance (float, optional): Tolerance in agreement of results.</span>
+<span class="sd">        Evaluated as :obj:`tolerance*expected`, i.e. a tolerance of</span>
+<span class="sd">        0.001 ensures agreement to within 0.1% of expected value.</span>
+<span class="sd">      \**kwargs: Keyword arguments to pass to the function</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">      (bool, string): Tuple containing the result of the check True/</span>
 <span class="sd">        False for Pass/Fail and a message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Set defaults</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;tolerance&quot;</span><span class="p">):</span>
-        <span class="n">tolerance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;tolerance&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">tolerance</span> <span class="o">=</span> <span class="mf">0.001</span>
-
     <span class="c"># Evaluate function</span>
-    <span class="n">observed</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">tolerance</span><span class="o">*</span><span class="n">expected</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
         <span class="n">message</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s">&quot;: OK&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">message</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s">&quot;: FAIL&quot;</span>
-        <span class="n">message</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> --&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span><span class="o">+</span> <span class="s">&quot; != &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="o">+</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> --&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; != &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="o">+</span>
                     <span class="s">&quot; to within &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tolerance</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;%&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">message</span></div>
 </pre></div>

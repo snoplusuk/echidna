@@ -64,7 +64,7 @@
 <span id="echidna-limit-chi-squared-module"></span><h2>echidna.limit.chi_squared module<a class="headerlink" href="#module-echidna.limit.chi_squared" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="echidna.limit.chi_squared.ChiSquared">
-<em class="property">class </em><code class="descclassname">echidna.limit.chi_squared.</code><code class="descname">ChiSquared</code><span class="sig-paren">(</span><em>form='poisson_likelihood'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/chi_squared.html#ChiSquared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.chi_squared.ChiSquared" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.limit.chi_squared.</code><code class="descname">ChiSquared</code><span class="sig-paren">(</span><em>form='poisson_likelihood'</em>, <em>penalty_terms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/chi_squared.html#ChiSquared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.chi_squared.ChiSquared" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>This class calculates the chi squared comparing &#8220;data&#8221; to
 &#8220;montecarlo&#8221;.</p>
@@ -78,8 +78,20 @@ constraints via a penalty term.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>form</strong> (<em>str, optional</em>) &#8211; specify form of chi squared calculation to
-use</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>form</strong> (<em>str, optional</em>) &#8211; specify form of chi squared calculation to
+use</li>
+<li><strong>penalty_terms</strong> (<em>dict, optional</em>) &#8211; <p>specify (for each penalty term)
+values for:</p>
+<blockquote>
+<div><ul>
+<li>&#8220;parameter_value&#8221; (optional)</li>
+<li>&#8220;sigma&#8221;</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -91,20 +103,6 @@ use</td>
 <li>&#8220;pearson&#8221;</li>
 <li>&#8220;neyman&#8221;</li>
 <li>&#8220;poisson_likelihood&#8221; (<em>default</em>)</li>
-</ul>
-</div></blockquote>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>penalty_terms (<em>dict</em>): specify (for each penalty term) values
-for:<ul>
-<li>&#8220;parameter_value&#8221; (<em>optional</em>)</li>
-<li>&#8220;sigma&#8221;</li>
-</ul>
-</li>
 </ul>
 </div></blockquote>
 </div>
@@ -126,7 +124,7 @@ penalty term</li>
 </table>
 <dl class="method">
 <dt id="echidna.limit.chi_squared.ChiSquared.get_chi_squared">
-<code class="descname">get_chi_squared</code><span class="sig-paren">(</span><em>observed</em>, <em>expected</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/chi_squared.html#ChiSquared.get_chi_squared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.chi_squared.ChiSquared.get_chi_squared" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chi_squared</code><span class="sig-paren">(</span><em>observed</em>, <em>expected</em>, <em>penalty_terms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/chi_squared.html#ChiSquared.get_chi_squared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.chi_squared.ChiSquared.get_chi_squared" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the chi squared comparing observed to expected.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -137,25 +135,20 @@ penalty term</li>
 events</li>
 <li><strong>expected</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>) &#8211; energy spectrum of expected
 events</li>
+<li><strong>penalty_terms</strong> (<em>dict, optional</em>) &#8211; <p>specify (for each penalty term)
+values for:</p>
+<blockquote>
+<div><ul>
+<li>&#8220;parameter_value&#8221; (optional)</li>
+<li>&#8220;sigma&#8221;</li>
+</ul>
+</div></blockquote>
+</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>penalty_terms (<em>dict</em>): specify (for each penalty term)
-values for:<ul>
-<li>&#8220;parameter_value&#8221;</li>
-<li>&#8220;sigma&#8221; (<em>optional</em>)</li>
-</ul>
-</li>
-</ul>
-</div></blockquote>
-</div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">A named penalty term defined here will overwrite
@@ -530,29 +523,22 @@ preferred value over the full float of systematics use the
 
 <dl class="method">
 <dt id="echidna.limit.limit_config.LimitConfig.get_minimum">
-<code class="descname">get_minimum</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_config.html#LimitConfig.get_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_config.LimitConfig.get_minimum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_minimum</code><span class="sig-paren">(</span><em>minimum_bin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_config.html#LimitConfig.get_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_config.LimitConfig.get_minimum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get minimum value from chi_squared array.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Minimum of <code class="xref py py-attr docutils literal"><span class="pre">_chi_squareds</span></code>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minimum_bin</strong> (<em>bool, optional</em>) &#8211; If True, returns the position (bin
+number) in addition to minimum chi squared. Default is False.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Minimum of <code class="xref py py-attr docutils literal"><span class="pre">_chi_squareds</span></code>
 tuple: (Minimum of <code class="xref py py-attr docutils literal"><span class="pre">_chi_squareds</span></code>, bin number of minimum)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include:</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>minimum_bin (<em>bool</em>): If True, returns the position (bin
-number) in addition to minimum chi squared</li>
-</ul>
-</div></blockquote>
-</div>
 </dd></dl>
 
 <dl class="method">
@@ -584,44 +570,31 @@ number) in addition to minimum chi squared</li>
 <span id="echidna-limit-limit-setting-module"></span><h2>echidna.limit.limit_setting module<a class="headerlink" href="#module-echidna.limit.limit_setting" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="echidna.limit.limit_setting.LimitSetting">
-<em class="property">class </em><code class="descclassname">echidna.limit.limit_setting.</code><code class="descname">LimitSetting</code><span class="sig-paren">(</span><em>signal</em>, <em>fixed_background=None</em>, <em>floating_backgrounds=None</em>, <em>data=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.limit.limit_setting.</code><code class="descname">LimitSetting</code><span class="sig-paren">(</span><em>signal</em>, <em>fixed_background=None</em>, <em>floating_backgrounds=None</em>, <em>data=None</em>, <em>roi=None</em>, <em>pre_shrink=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Class to handle main limit setting.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>signal</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; signal spectrum</li>
 <li><strong>fixed_background</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; A spectrum
 containing all fixed backgrounds.</li>
 <li><strong>floating_backgrounds</strong> (<em>list</em>) &#8211; one <a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>
 for each background</li>
 <li><strong>data</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>, optional) &#8211; 1D data energy spectrum</li>
+<li><strong>roi</strong> (<em>tuple, optional</em>) &#8211; Region Of Interest of the form
+(energy_lower, energy_upper)</li>
+<li><strong>pre_shrink</strong> (<em>bool, optional</em>) &#8211; If set to True, <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code> method is
+called on all spectra before limit setting, shrinking to
+ROI. Only applies if ROI has been set via <code class="docutils literal"><span class="pre">roi</span></code> keyword.</li>
+<li><strong>verbose</strong> (<em>bool, optional</em>) &#8211; If set to True, progress and timing
+information is printed to the terminal during limit setting.</li>
 </ul>
 </td>
 </tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include:</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>roi (<em>tuple</em>): (energy_lower, energy_upper)</li>
-<li>pre_shrink (<em>bool</em>): If set to True, <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code> method is
-called on all spectra before limit setting, shrinking to
-ROI. Only applies if ROI has been set via <code class="docutils literal"><span class="pre">roi</span></code> keyword.</li>
-<li>verbose (<em>bool</em>): If set to True, progress and timing
-information is printed to the terminal during limit setting.</li>
-</ul>
-</div></blockquote>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
 <li><strong>_signal</strong> &#8211; signal spectrum</li>
 <li><strong>_fixed_background</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; A spectrum
 containing all fixed backgrounds.</li>
@@ -642,13 +615,15 @@ during limit setting.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
 If fixed_background is not pre-shrunk and
 pre-shrinking is activated for floating backgrounds.</li>
 <li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
 If any background spectrum is incompatible
 with the signal spectrum</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+No backgrounds provided.</li>
 </ul>
 </td>
 </tr>
@@ -696,29 +671,16 @@ Region Of Interest (ROI).</p>
 
 <dl class="method">
 <dt id="echidna.limit.limit_setting.LimitSetting.configure_background">
-<code class="descname">configure_background</code><span class="sig-paren">(</span><em>name</em>, <em>background_config</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting.configure_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting.configure_background" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure_background</code><span class="sig-paren">(</span><em>name</em>, <em>background_config</em>, <em>plot_systematic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting.configure_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting.configure_background" title="Permalink to this definition">¶</a></dt>
 <dd><p>Supply configuration object associated with the background.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-</tbody>
-</table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include:</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>plot_systematic (<em>bool</em>): if true produces signal vs systematic
-plots</li>
-</ul>
-</div></blockquote>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>plot_systematic</strong> (<em>bool, optional</em>) &#8211; if true produces signal vs
+systematic plots. Default is False.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
 If config has not been set for signal.</td>
 </tr>
 </tbody>
@@ -741,27 +703,22 @@ If config has not been set for signal.</td>
 
 <dl class="method">
 <dt id="echidna.limit.limit_setting.LimitSetting.get_limit">
-<code class="descname">get_limit</code><span class="sig-paren">(</span><em>limit_chi_squared=2.71</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting.get_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting.get_limit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_limit</code><span class="sig-paren">(</span><em>limit_chi_squared=2.71</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#LimitSetting.get_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.LimitSetting.get_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get signal counts at limit.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>limit_chi_squared</strong> (<em>float, optional</em>) &#8211; chi squared required for
-limit.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>limit_chi_squared</strong> (<em>float, optional</em>) &#8211; chi squared required for
+limit.</li>
+<li><strong>debug</strong> (<em>bool, optional</em>) &#8211; If true plots which are used for debugging
+are produced.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include:</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>debug (<em>int</em>): specify the level of debug information to
-output.</li>
-</ul>
-</div></blockquote>
-</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Default value for <code class="xref py py-obj docutils literal"><span class="pre">limit_chi_squared</span></code> is 2.71, the chi
@@ -771,13 +728,7 @@ squared value corresponding to a 90% confidence limit.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Signal counts in ROI at required limit</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">float</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
 <li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
 If config has not been set for signal.</li>
 <li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; 
@@ -790,6 +741,12 @@ the first bin with a chi squared value above
 value greater than <code class="xref py py-obj docutils literal"><span class="pre">limit_chi_squared</span></code>, then there is
 no bin to be found, raising IndexError.</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Signal counts in ROI at required limit</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
 </td>
 </tr>
 </tbody>
@@ -827,6 +784,8 @@ squared value corresponding to a 90% confidence limit.</p>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
 If config has not been set for signal.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If chi squared calculator not set.</li>
 <li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; 
 If config has not been set for one or more
 backgrounds.</li>
@@ -1155,7 +1114,7 @@ over the values.</td>
 
 <dl class="function">
 <dt id="echidna.limit.limit_setting.make_fixed_background">
-<code class="descclassname">echidna.limit.limit_setting.</code><code class="descname">make_fixed_background</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#make_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.make_fixed_background" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.limit.limit_setting.</code><code class="descname">make_fixed_background</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>roi=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/limit/limit_setting.html#make_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.limit.limit_setting.make_fixed_background" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the</dt>
 <dd>ROI in the LimitSetting class you <em>must</em> also pre-shrink here.</dd>
@@ -1164,21 +1123,18 @@ over the values.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<em>dictionary</em>) &#8211; Dictionary containing spectra name as keys and
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra</strong> (<em>dictionary</em>) &#8211; Dictionary containing spectra name as keys and
 a list containing the spectra object as index 0 and prior counts as
-index 1 as values.</td>
+index 1 as values.</li>
+<li><strong>roi</strong> (<em>tuple, optional</em>) &#8211; Region Of Interest of the form
+(energy_lower, energy_upper). If a ROI is passed then the spectra will
+be shrunk</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<p>Keyword arguments include:</p>
-<blockquote>
-<div><ul class="simple">
-<li>roi (<em>tuple</em>): (energy_lower, energy_upper)</li>
-<li>pre_shrink (<em>bool</em>): If set to True, <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code> method is
-called on all spectra before limit setting, shrinking to
-ROI. Only applies if ROI has been set via <code class="docutils literal"><span class="pre">roi</span></code> keyword.</li>
-</ul>
-</div></blockquote>
 <p>Returns: Spectrum containing all fixed backgrounds.</p>
 </dd></dl>
 

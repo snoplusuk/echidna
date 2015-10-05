@@ -60,28 +60,688 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-echidna.core.dsextract">
+<span id="echidna-core-dsextract-module"></span><h2>echidna.core.dsextract module<a class="headerlink" href="#module-echidna.core.dsextract" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.core.dsextract.EnergyExtractMC">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>Quenched energy extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of an ntuple MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of a DS::MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from an ntuple MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True quenched energy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from a DS::MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True quenched energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.EnergyExtractReco">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>Reconstructed energy extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of an ntuple EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of a DS::EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from an ntuple EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from a DS::EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.EnergyExtractTruth">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractTruth</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>True MC energy extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of an ntuple MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of a DS::MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from an ntuple MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get energy value from a DS::MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.Extractor">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Extractor</code><span class="sig-paren">(</span><em>name</em>, <em>fv_radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Extractor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Extractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for extractor classes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>str</em>) &#8211; of the dimension</li>
+<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>str</em>) &#8211; of the dimension</li>
+<li><strong>_fv_radius</strong> (<em>float</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.Radial3ExtractMC">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>True <span class="math">\((radius/outer_radius)^3\)</span> radial extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</li>
+<li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
+<span class="math">\((radius/outer_radius)^3\)</span>. If None then the av_radius in
+<a class="reference internal" href="echidna.calc.html#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a> is used in the calculation.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
+<span class="math">\((radius/outer_radius)^3\)</span>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of an ntuple MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of a DS::MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from an ntuple MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer_radius)^3\)</span></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from a DS::MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer_radius)^3\)</span></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.Radial3ExtractReco">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<dl class="docutils">
+<dt>Reconstructed <span class="math">\((radius/outer_radius)^3\)</span> radial extraction</dt>
+<dd>methods.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</li>
+<li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
+<span class="math">\((radius/outer_radius)^3\)</span>. If None then the av_radius in
+<a class="reference internal" href="echidna.calc.html#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a> is used in the calculation.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
+<span class="math">\((radius/outer_radius)^3\)</span>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of an ntuple EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of a DS::EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from an ntuple EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer_radius)^3\)</span></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from a DS::EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer_radius)^3\)</span></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.RadialExtractMC">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>True radial extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether energy of an ntuple MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of a DS::MC is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from an ntuple MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from a DS::MC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.dsextract.RadialExtractReco">
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
+<p>Reconstructed radial extraction methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+events which have a radial position greater than the radius of the
+fiducial volume. If None no cut is applied.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.get_valid_ntuple">
+<code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of an ntuple EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.get_valid_root">
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether radius of a DS::EV is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.get_value_ntuple">
+<code class="descname">get_value_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_value_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_value_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from an ntuple EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.get_value_root">
+<code class="descname">get_value_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_value_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_value_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get radius value from a DS::EV</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.core.dsextract.function_factory">
+<code class="descclassname">echidna.core.dsextract.</code><code class="descname">function_factory</code><span class="sig-paren">(</span><em>dimension</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#function_factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.function_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function that returns a dsextract class
+corresponding to the dimension (i.e. DS parameter)
+that is being extracted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dimension</strong> (<em>str</em>) &#8211; to extract from a RAT DS/ntuple file.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; to be passed to and checked by the extractor.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+dimension is an unknown parameter</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Retuns:</dt>
+<dd><a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a>: Extractor object.</dd>
+</dl>
+</dd></dl>
+
+</div>
 <div class="section" id="module-echidna.core.fill_spectrum">
 <span id="echidna-core-fill-spectrum-module"></span><h2>echidna.core.fill_spectrum module<a class="headerlink" href="#module-echidna.core.fill_spectrum" title="Permalink to this headline">¶</a></h2>
 <p>Provides code for creating echidna spectra and populating with data
 from RAT Root files/ntuples.</p>
 <dl class="function">
-<dt id="echidna.core.fill_spectrum._av_weights">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_av_weights</code><span class="sig-paren">(</span><em>times</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_av_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._av_weights" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>UNAVAILABLE</strong>
-This method applies to the backgrounds due to AV leaching.
-It produces the list of weights relative to each time period.
-The calculation of weights is based on radioactive decay formula.</p>
+<dt id="echidna.core.fill_spectrum._bipo_ntuple">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_bipo_ntuple</code><span class="sig-paren">(</span><em>spectrum</em>, <em>chain</em>, <em>extractors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_bipo_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._bipo_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Because ROOT is crap, we have to loop through the entries first</dt>
+<dd>before using the LoadTree() method required for the bipo checks.
+If the chain is not looped first then all parameters return 0.
+This function will apply the bipo cuts to a chain from an ntuple and
+fill a spectrum.</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>times</strong> (<em>list</em> of <em>int</em>) &#8211; Time periods</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectrum which is
+being filled.</li>
+<li><strong>chain</strong> (<em>ROOT.TChain</em>) &#8211; Chain containing the events.</li>
+<li><strong>extractors</strong> (<em>dict</em>) &#8211; Keys are the variable names and the values are their
+respective extractors.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Weights (<em>list</em> of <em>float</em>)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The filled spectrum.</p>
 </td>
 </tr>
 </tbody>
@@ -89,23 +749,25 @@ The calculation of weights is based on radioactive decay formula.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="echidna.core.fill_spectrum._scint_weights">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_scint_weights</code><span class="sig-paren">(</span><em>times</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_scint_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._scint_weights" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>CURRENTLY DISABLED</strong>
-This method applies to the scintillator backgrounds.
-It produces the list of weights relative to each time period.
-The calculation of weights is based on radioactive decay formula.</p>
+<dt id="echidna.core.fill_spectrum._root_ev">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_root_ev</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dsreader</em>, <em>extractors</em>, <em>bipo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_root_ev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._root_ev" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Internal function for filling a spectrum whose config only has</dt>
+<dd>reco paremeters.</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>times</strong> (<em>list</em> of <em>int</em>) &#8211; Time periods</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectrum which is
+being filled.</li>
+<li><strong>dsreder</strong> (<em>ROOT.RAT.DU.DSReader</em>) &#8211; rat&#8217;s data structure reader
+for the root file.</li>
+<li><strong>extractors</strong> (<em>dict</em>) &#8211; Keys are the variable names and the values are their
+respective extractors.</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Applies the bipo cut if set to True.</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Weights (<em>list</em> of <em>float</em>)</p>
 </td>
 </tr>
 </tbody>
@@ -113,33 +775,85 @@ The calculation of weights is based on radioactive decay formula.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_mc_ntuple_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_mc_ntuple_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_mc_ntuple_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_mc_ntuple_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of energies, radii, times and
-weights. It takes the true quenched energies and positions of the
-events from ntuple. In order to keep the statistics, the time
-dependence is performed via adding weights to every event depending
-on the time period. Both, studied time and Half-life must be
-written in the same units.</p>
+<dt id="echidna.core.fill_spectrum._root_mc">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_root_mc</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dsreader</em>, <em>extractors</em>, <em>bipo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_root_mc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._root_mc" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Internal function for filling a spectrum whose config only has</dt>
+<dd>mc or truth paremeters.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectrum which is
+being filled.</li>
+<li><strong>dsreder</strong> (<em>ROOT.RAT.DU.DSReader</em>) &#8211; rat&#8217;s data structure reader
+for the root file.</li>
+<li><strong>extractors</strong> (<em>dict</em>) &#8211; Keys are the variable names and the values are their
+respective extractors.</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Applies the bipo cut if set to True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.core.fill_spectrum._root_mix">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">_root_mix</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dsreader</em>, <em>extractors</em>, <em>bipo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#_root_mix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum._root_mix" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Internal function for filling a spectrum whose config has a mixture of</dt>
+<dd>mc (and/or truth) and reco paremeters.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectrum which is
+being filled.</li>
+<li><strong>dsreder</strong> (<em>ROOT.RAT.DU.DSReader</em>) &#8211; rat&#8217;s data structure reader
+for the root file.</li>
+<li><strong>extractors</strong> (<em>dict</em>) &#8211; Keys are the variable names and the values are their
+respective extractors.</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Applies the bipo cut if set to True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.core.fill_spectrum.fill_from_ntuple">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_from_ntuple</code><span class="sig-paren">(</span><em>filename</em>, <em>spectrum_name=''</em>, <em>config=None</em>, <em>spectrum=None</em>, <em>bipo=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_from_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_from_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function fills in the ndarray (dimensions specified in the config)
+with weights. It takes the parameters specified in the config from
+the events in the ntuple.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>filename</strong> (<em>str</em>) &#8211; The ntuple to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> &#8211; A name of future spectrum. Not
+<li><strong>spectrum_name</strong> (<em>str, optional</em>) &#8211; A name of future spectrum. Not
 required when appending a spectrum.</li>
+<li><strong>config</strong> &#8211; The config
+or directory to the config for the spectrum</li>
+<li><strong>bipo</strong> (<em>bool, optional</em>) &#8211; Applies the bipo cut if set to True.
+Default is False.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; Passed to and checked by the dsextractor.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
+If spectrum_name is not set when creating a new
 spectrum.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The filled spectrum.</p>
 </td>
 </tr>
 </tbody>
@@ -147,171 +861,35 @@ spectrum.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_mc_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_mc_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_mc_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_mc_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of energies, radii, times and
-weights. It takes the true quenched energies and positions of the
-events from the root file. In order to keep the statistics, the
-time dependence is performed via adding weights to every event
-depending on the time period. Both, studied time and Half-life must
-be written in the same units.</p>
+<dt id="echidna.core.fill_spectrum.fill_from_root">
+<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_from_root</code><span class="sig-paren">(</span><em>filename</em>, <em>spectrum_name=''</em>, <em>config=None</em>, <em>spectrum=None</em>, <em>bipo=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_from_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_from_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function fills in the ndarray (dimensions specified in the config)
+with weights. It takes the parameter specified in the config from the
+events in the root file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>filename</strong> (<em>str</em>) &#8211; A root file to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> (<em>str, optional</em>) &#8211; A name of future spectrum. Not
+<li><strong>spectrum_name</strong> &#8211; A name of future spectrum. Not
 required when appending a spectrum.</li>
-<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>, optional) &#8211; Spectrum
-you wish to append. Not required when creating a new spectrum.</li>
+<li><strong>bipo</strong> (<em>bool, optional</em>) &#8211; Applies the bipo cut if set to True.
+Default is False.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; Passed to and checked by the dsextractor.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
-spectrum.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_reco_ntuple_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_reco_ntuple_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_reco_ntuple_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_reco_ntuple_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of energies, radii, times and
-weights. It takes the reconstructed energies and true positions of
-the events from the ntuple. In order to keep the statistics, the
-time dependence is performed via adding weights to every event
-depending on the time period. Both, studied time and Half-life must
-be written in the same units.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<em>str</em>) &#8211; The ntuple to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> &#8211; A name of future spectrum. Not
-required when appending a spectrum.</li>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If spectrum_name is not set when creating a new
+spectrum.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+Unknown dimension type (not mc, truth or reco).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
-spectrum.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_reco_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_reco_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_reco_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_reco_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of energies, radii, times
-and weights. It takes the reconstructed energies and true positions
-of the events from the root file. In order to keep the statistics,
-the time dependence is performed via adding weights to every event
-depending on the time period. Both, studied time and Half-life must
-be written in the same units.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<em>str</em>) &#8211; A root file to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> &#8211; A name of future spectrum. Not
-required when appending a spectrum.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
-spectrum.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_truth_ntuple_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_truth_ntuple_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_truth_ntuple_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_truth_ntuple_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of energies, radii, times and
-weights. It takes the true (non-quenched) energies and positions
-of the events from ntuple. In order to keep the statistics, the
-time dependence is performed via adding weights to every event
-depending on the time period. Both, studied time and Half-life must
-be written in the same units.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<em>str</em>) &#8211; The ntuple to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> &#8211; A name of future spectrum. Not
-required when appending a spectrum.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
-spectrum.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="echidna.core.fill_spectrum.fill_truth_spectrum">
-<code class="descclassname">echidna.core.fill_spectrum.</code><code class="descname">fill_truth_spectrum</code><span class="sig-paren">(</span><em>filename</em>, <em>T</em>, <em>spectrumname=''</em>, <em>spectrum=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/fill_spectrum.html#fill_truth_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.fill_spectrum.fill_truth_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Weights have been disabled.</strong>
-This function fills in the ndarray of true energies, radii, times
-and weights. It takes the true (non-quenched) energies and
-positions of the events from the root file. In order to keep the
-statistics, the time dependence is performed via adding weights to
-every event depending on the time period. Both, studied time and
-Half-life must be written in the same units.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<em>str</em>) &#8211; A root file to study</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; The Half-life of a studied background</li>
-<li><strong>spectrumname</strong> &#8211; A name of future spectrum. Not
-required when appending a spectrum.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If spectrumname is not set when creating a new
-spectrum.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spectrum (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>)</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The filled spectrum.</p>
 </td>
 </tr>
 </tbody>
@@ -322,38 +900,178 @@ spectrum.</p>
 <div class="section" id="module-echidna.core.smear">
 <span id="echidna-core-smear-module"></span><h2>echidna.core.smear module<a class="headerlink" href="#module-echidna.core.smear" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="echidna.core.smear.EResSmear">
-<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">EResSmear</code><span class="sig-paren">(</span><em>energy_resolution</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EResSmear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EResSmear" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.core.smear.EnergySmearLY">
+<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">EnergySmearLY</code><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.smear.Smear" title="echidna.core.smear.Smear"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.smear.Smear</span></code></a></p>
+<dl class="docutils">
+<dt>The class which smears energy. It accepts resolution in terms of light</dt>
+<dd>yield (LY) in units of NHit per MeV.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>_light_yield</strong> (<em>float</em>) &#8211; The light yield of the scintillator in NHits per
+MeV.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.get_resolution">
+<code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.get_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the light yield.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The light yield.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.get_sigma">
+<code class="descname">get_sigma</code><span class="sig-paren">(</span><em>energy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.get_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.get_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates sigma at a given energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>energy</strong> (<em>float</em>) &#8211; Energy value of data point(s)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Sigma equivalent to sqrt(energy/_light_yield)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.random_smear">
+<code class="descname">random_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='energy_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.random_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.random_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the energy of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>generating a number of random points from  Gaussian PDF generated
+from that bins mean value and the corresponding sigma. The number
+of points generated is equivalent to the number of entries in that
+bin.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is energy_mc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.set_resolution">
+<code class="descname">set_resolution</code><span class="sig-paren">(</span><em>light_yield</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.set_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the light yield</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>light_yield</strong> (<em>float</em>) &#8211; The value you wish to set the light yield to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the light yield is zero or negative.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.weighted_smear">
+<code class="descname">weighted_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='energy_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.weighted_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.weighted_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the energy of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>calculating a Gaussian PDF for each bin. Weights are then applied
+to a window of width specified by the number of sigma depending on
+the value of the Gaussian PDF at the mean of the bin.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is energy_mc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.smear.EnergySmearRes">
+<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">EnergySmearRes</code><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.smear.Smear" title="echidna.core.smear.Smear"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.smear.Smear</span></code></a></p>
 <dl class="docutils">
 <dt>Allows you to smear directly by supplied energy resolution</dt>
 <dd>(in <span class="math">\(\sqrt{MeV}\)</span>).</dd>
 </dl>
-<p>Inherits from <a class="reference internal" href="#echidna.core.smear.Smear" title="echidna.core.smear.Smear"><code class="xref py py-class docutils literal"><span class="pre">Smear</span></code></a> to provide exactly the same
-functionality but overrides <a class="reference internal" href="#echidna.core.smear.Smear.get_energy_sigma" title="echidna.core.smear.Smear.get_energy_sigma"><code class="xref py py-meth docutils literal"><span class="pre">Smear.get_energy_sigma()</span></code></a> to use
-a given energy resolution to calculate sigma.</p>
+<p>Inherits from <a class="reference internal" href="#echidna.core.smear.Smear" title="echidna.core.smear.Smear"><code class="xref py py-class docutils literal"><span class="pre">Smear</span></code></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>energy_resolution</strong> (<em>float</em>) &#8211; Energy resolution in <span class="math">\(\sqrt{MeV}\)</span>
-e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>_light_yield</strong> (<em>float</em>) &#8211; Number of PMT hits expected for a
-MeV energy deposit in NHit/MeV.</li>
-<li><strong>_energy_resolution</strong> (<em>float</em>) &#8211; Energy resolution in <span class="math">\(\sqrt{MeV}\)</span>
-e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</li>
-<li><strong>_position_resolution</strong> (<em>float</em>) &#8211; Sigma in mm.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>_energy_resolution</strong> (<em>float</em>) &#8211; Energy resolution in <span class="math">\(\sqrt{MeV}\)</span>
+e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="echidna.core.smear.EResSmear.get_energy_sigma">
-<code class="descname">get_energy_sigma</code><span class="sig-paren">(</span><em>energy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EResSmear.get_energy_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EResSmear.get_energy_sigma" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.core.smear.EnergySmearRes.get_resolution">
+<code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.get_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the energy resolution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Energy resolution in  <span class="math">\(\sqrt{MeV}\)</span>
+e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearRes.get_sigma">
+<code class="descname">get_sigma</code><span class="sig-paren">(</span><em>energy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.get_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.get_sigma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates sigma at a given energy.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -370,51 +1088,246 @@ e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</li>
 </table>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="class">
-<dt id="echidna.core.smear.Smear">
-<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">Smear</code><a class="reference internal" href="_modules/echidna/core/smear.html#Smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>This class smears the energy and radius of a spectra.</p>
-<p>The class can recieve energy and radius as individual data points or a
-1 dimensional numpy array to smear which is then returned. 2d and 3d
-arrays with linked energy, radius and time information is yet to be
-implemented.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>_light_yield</strong> (<em>float</em>) &#8211; Number of PMT hits expected for a
-MeV energy deposit in NHit/MeV</li>
-<li><strong>_position_resolution</strong> (<em>float</em>) &#8211; Sigma in mm</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 <dl class="method">
-<dt id="echidna.core.smear.Smear.bin_1d_array">
-<code class="descname">bin_1d_array</code><span class="sig-paren">(</span><em>array</em>, <em>bins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.bin_1d_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.bin_1d_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sorts a 1 dimensional array and bins it</p>
+<dt id="echidna.core.smear.EnergySmearRes.random_smear">
+<code class="descname">random_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='energy_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.random_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.random_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the energy of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>generating a number of random points from  Gaussian PDF generated
+from that bins mean value and the corresponding sigma. The number
+of points generated is equivalent to the number of entries in that
+bin.</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>array</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>) &#8211; To sort and bin</li>
-<li><strong>bins</strong> (<em>list</em>) &#8211; Upper limit of bins</li>
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is energy_mc.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A 1 dimensional numpy array, sorted and binned.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearRes.set_resolution">
+<code class="descname">set_resolution</code><span class="sig-paren">(</span><em>resolution</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.set_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the energy resolution in <span class="math">\(\sqrt{MeV}\)</span>
+e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resolution</strong> (<em>float</em>) &#8211; Energy resolution in <span class="math">\(\sqrt{MeV}\)</span>
+e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the resolution is not between 0 and 1.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearRes.weighted_smear">
+<code class="descname">weighted_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='energy_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.weighted_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.weighted_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the energy of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>calculating a Gaussian PDF for each bin. Weights are then applied
+to a window of width specified by the number of sigma depending on
+the value of the Gaussian PDF at the mean of the bin.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is energy_mc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.smear.RadialSmear">
+<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">RadialSmear</code><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.core.smear.Smear" title="echidna.core.smear.Smear"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.smear.Smear</span></code></a></p>
+<dl class="docutils">
+<dt>The class which smears the radius. It accepts resolution in terms of</dt>
+<dd>sigma in units of mm.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>_resolution</strong> (<em>float</em>) &#8211; The position resolution (mm).</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.get_resolution">
+<code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.get_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the position resolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Position resolution.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.get_sigma">
+<code class="descname">get_sigma</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.get_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.get_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sigma and resolution are equivalent for radial dimensions
+currently. This function calls self.get_resolution()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Sigma in mm equivalent to resolution</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.random_smear">
+<code class="descname">random_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='radial_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.random_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.random_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the radius of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>generating a number of random points from  Gaussian PDF generated
+from that bins mean value and the corresponding sigma. The number
+of points generated is equivalent to the number of entries in that
+bin.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is radial_mc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.set_resolution">
+<code class="descname">set_resolution</code><span class="sig-paren">(</span><em>resolution</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.set_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the position resolution:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If resolution is zero or less.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resolution</strong> (<em>float</em>) &#8211; Position resolution in mm.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.weighted_smear">
+<code class="descname">weighted_smear</code><span class="sig-paren">(</span><em>spectrum</em>, <em>par='radial_mc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.weighted_smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.weighted_smear" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Smears the radius of a <a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> by</dt>
+<dd>calculating a Gaussian PDF for each bin. Weights are then applied
+to a window of width specified by the number of sigma depending on
+the value of the Gaussian PDF at the mean of the bin.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum you wish
+to smear.</li>
+<li><strong>par</strong> (<em>string, optional</em>) &#8211; The name of the parameter you wish to smear.
+The default is radial_mc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If par is not in the specta config.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The smeared spectrum</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.smear.Smear">
+<em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">Smear</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The base class for smearing spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> (<em>string</em>) &#8211; The name of the smearing class.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; name of the smeaing class.</li>
+<li><strong>_num_sigma</strong> (<em>float</em>) &#8211; The width of the window in terms of number of sigma
+you wish to apply weights to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="echidna.core.smear.Smear.calc_gaussian">
 <code class="descname">calc_gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>mean</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.calc_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.calc_gaussian" title="Permalink to this definition">¶</a></dt>
@@ -431,7 +1344,10 @@ one at position x with a given mean and sigma.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Value of the gaussian at the given position</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the gaussian at the given position</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
 </td>
 </tr>
 </tbody>
@@ -439,20 +1355,24 @@ one at position x with a given mean and sigma.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.core.smear.Smear.ceil_to_bin">
-<code class="descname">ceil_to_bin</code><span class="sig-paren">(</span><em>x</em>, <em>bin_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.ceil_to_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.ceil_to_bin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rounds up value bin content to upper edge of nearest bin.</p>
+<dt id="echidna.core.smear.Smear.get_bin_mean">
+<code class="descname">get_bin_mean</code><span class="sig-paren">(</span><em>low</em>, <em>bin</em>, <em>width</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.get_bin_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.get_bin_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the mean value of a bin.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> (<em>float</em>) &#8211; Value to round down</li>
-<li><strong>bin_size</strong> (<em>float</em>) &#8211; Width of a bin</li>
+<li><strong>low</strong> (<em>float</em>) &#8211; The lower bound value of the parameter.</li>
+<li><strong>bin</strong> (<em>int</em>) &#8211; The number of the bin you wish to calculate the mean of.</li>
+<li><strong>width</strong> (<em>float</em>) &#8211; The width of the bin.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Value of nearest lower bin edge</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The mean value of the bin.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
 </td>
 </tr>
 </tbody>
@@ -460,222 +1380,27 @@ one at position x with a given mean and sigma.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.core.smear.Smear.floor_to_bin">
-<code class="descname">floor_to_bin</code><span class="sig-paren">(</span><em>x</em>, <em>bin_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.floor_to_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.floor_to_bin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rounds down value bin content to lower edge of nearest bin.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> (<em>float</em>) &#8211; Value to round down</li>
-<li><strong>bin_size</strong> (<em>float</em>) &#8211; Width of a bin</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Value of nearest lower bin edge</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.get_energy_sigma">
-<code class="descname">get_energy_sigma</code><span class="sig-paren">(</span><em>energy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.get_energy_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.get_energy_sigma" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates sigma at a given energy.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>energy</strong> (<em>float</em>) &#8211; Energy value of data point(s)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Sigma equivalent to sqrt(energy/_light_yield)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.random_gaussian_energy_spectra">
-<code class="descname">random_gaussian_energy_spectra</code><span class="sig-paren">(</span><em>true_spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.random_gaussian_energy_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.random_gaussian_energy_spectra" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.core.smear.Smear.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><em>mean</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.get_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.get_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>Smears the energy of a spectra object by generating</dt>
-<dd>a number of random points from a Gaussian pdf generated
-for that bin. The number of points generated is equivalent
-to the number of entries in that bin.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>true_spectrum</strong> (<a class="reference internal" href="#module-echidna.core.spectra" title="echidna.core.spectra"><em>spectra</em></a>) &#8211; spectrum to be smeared</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A smeared spectra object.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.random_gaussian_radius_spectra">
-<code class="descname">random_gaussian_radius_spectra</code><span class="sig-paren">(</span><em>true_spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.random_gaussian_radius_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.random_gaussian_radius_spectra" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Smears the radius of a spectra object by generating a</dt>
-<dd>number of random points from a Gaussian pdf generated for
-that bin. The number of points generated is equivalent to the
-number of entries in that bin.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>true_spectrum</strong> (<a class="reference internal" href="#module-echidna.core.spectra" title="echidna.core.spectra"><em>spectra</em></a>) &#8211; spectrum to be smeared</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A smeared spectra object.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_energy_0d">
-<code class="descname">smear_energy_0d</code><span class="sig-paren">(</span><em>energy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_energy_0d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_energy_0d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears a single energy value</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>energy</strong> (<em>float</em>) &#8211; Value to smear</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Smeared energy value</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_energy_1d">
-<code class="descname">smear_energy_1d</code><span class="sig-paren">(</span><em>energies</em>, <em>bins</em>, <em>binned=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_energy_1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_energy_1d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears a 1 dimensional array of energy values</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energies</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>) &#8211; Values to smear</li>
-<li><strong>bins</strong> (<em>list</em>) &#8211; Upper edge of bins for array</li>
-<li><strong>binned</strong> (<em>bool</em>) &#8211; Is the array already binned? (True or False)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Smeared and sorted 1 dimensional numpy array of energy values</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_energy_bin">
-<code class="descname">smear_energy_bin</code><span class="sig-paren">(</span><em>energy</em>, <em>entries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_energy_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_energy_bin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears one energy bin.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> (<em>float</em>) &#8211; Central value of energy of bin</li>
-<li><strong>entries</strong> (<em>int</em>) &#8211; Number of entries in the bin</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of smeared energies corresponding to the input bin.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_radii_1d">
-<code class="descname">smear_radii_1d</code><span class="sig-paren">(</span><em>radii</em>, <em>bins</em>, <em>binned=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_radii_1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_radii_1d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears a 1 dimensional array of radius values</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>radii</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>) &#8211; Values to smear</li>
-<li><strong>bins</strong> (<em>list</em>) &#8211; Upper edge of bins for array</li>
-<li><strong>binned</strong> (<em>bool</em>) &#8211; Is the array already binned? (True or False)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Smeared and sorted 1 dimensional numpy array of radius values</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_radius_0d">
-<code class="descname">smear_radius_0d</code><span class="sig-paren">(</span><em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_radius_0d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_radius_0d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears a single radius value</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<em>float</em>) &#8211; Value to smear</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Smeared radius value</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.smear_radius_bin">
-<code class="descname">smear_radius_bin</code><span class="sig-paren">(</span><em>radius</em>, <em>entries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.smear_radius_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.smear_radius_bin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Smears one energy bin.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>radius</strong> (<em>float</em>) &#8211; Central value of radius of bin</li>
-<li><strong>entries</strong> (<em>int</em>) &#8211; Number of entries in the bin</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of smeared radii corresponding to the input bin.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.smear.Smear.weight_gaussian_energy_spectra">
-<code class="descname">weight_gaussian_energy_spectra</code><span class="sig-paren">(</span><em>true_spectrum</em>, <em>num_sigma=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.weight_gaussian_energy_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.weight_gaussian_energy_spectra" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Smears the energy of a spectra object by calculating a</dt>
-<dd>Gaussian pdf for each bin and applying a weight to the bin
-and corresponding bins a default 5 sigma apart.</dd>
+<dt>Calculates the boundaries you wish to apply the smearing</dt>
+<dd>weights to.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>true_spectrum</strong> (<a class="reference internal" href="#module-echidna.core.spectra" title="echidna.core.spectra"><em>spectra</em></a>) &#8211; spectrum to be smeared</li>
-<li><strong>num_sigma</strong> (<em>float</em>) &#8211; Width of window to apply the weight method.
-Default is 5.</li>
+<li><strong>mean</strong> (<em>float</em>) &#8211; The mean value you are smearing.</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; The sigma of the gaussian you are using to smear.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A smeared spectra object.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">First value of the tuple is the lower bound. The second is
+the upper bound.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
 </td>
 </tr>
 </tbody>
@@ -683,26 +1408,39 @@ Default is 5.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.core.smear.Smear.weight_gaussian_radius_spectra">
-<code class="descname">weight_gaussian_radius_spectra</code><span class="sig-paren">(</span><em>true_spectrum</em>, <em>num_sigma=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.weight_gaussian_radius_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.weight_gaussian_radius_spectra" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.core.smear.Smear.get_num_sigma">
+<code class="descname">get_num_sigma</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.get_num_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.get_num_sigma" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>Smears the radius of a spectra object by calculating a</dt>
-<dd>Gaussian pdf for each bin and applies a weight to the bin and
-corresponding bins a default 5 sigma apart.</dd>
+<dt>Returns the width of the window in terms of number of sigma</dt>
+<dd>you wish to apply weights to.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>true_spectrum</strong> (<a class="reference internal" href="#module-echidna.core.spectra" title="echidna.core.spectra"><em>spectra</em></a>) &#8211; spectrum to be smeared</li>
-<li><strong>num_sigma</strong> (<em>float</em>) &#8211; Width of window to apply the weight method.
-Default is 5.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The number of sigma.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A smeared spectra object.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.smear.Smear.set_num_sigma">
+<code class="descname">set_num_sigma</code><span class="sig-paren">(</span><em>num_sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#Smear.set_num_sigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.Smear.set_num_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Sets the width of the window in terms of number of sigma</dt>
+<dd>you wish to apply weights to.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num_sigma</strong> (<em>float</em>) &#8211; The number of sigma you wish to apply weights to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the number of sigma is zero or negative.</td>
 </tr>
 </tbody>
 </table>
@@ -715,7 +1453,7 @@ Default is 5.</li>
 <span id="echidna-core-spectra-module"></span><h2>echidna.core.spectra module<a class="headerlink" href="#module-echidna.core.spectra" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="echidna.core.spectra.Spectra">
-<em class="property">class </em><code class="descclassname">echidna.core.spectra.</code><code class="descname">Spectra</code><span class="sig-paren">(</span><em>name</em>, <em>num_decays</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.spectra.</code><code class="descname">Spectra</code><span class="sig-paren">(</span><em>name</em>, <em>num_decays</em>, <em>spectra_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>This class contains a spectra as a function of energy, radius and time.</p>
 <p>The spectra is stored as histogram binned in energy, x, radius, y, and
@@ -729,29 +1467,22 @@ time, z. This histogram can be flattened to 2d (energy, radius) or 1d
 <li><strong>name</strong> (<em>str</em>) &#8211; The name of this spectra</li>
 <li><strong>num_decays</strong> (<em>float</em>) &#8211; The number of decays this spectra is created to
 represent.</li>
+<li><strong>spectra_config</strong> (<a class="reference internal" href="#echidna.core.spectra.SpectraConfig" title="echidna.core.spectra.SpectraConfig"><code class="xref py py-class docutils literal"><span class="pre">SpectraConfig</span></code></a>) &#8211; The configuration object</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
 <li><strong>_data</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; The histogram of data</li>
 <li><strong>_name</strong> (<em>str</em>) &#8211; The name of this spectra</li>
-<li><strong>_energy_low</strong> (<em>float</em>) &#8211; Lowest bin edge in MeV</li>
-<li><strong>_energy_high</strong> (<em>float</em>) &#8211; Highest bin edge in MeV</li>
-<li><strong>_energy_bins</strong> (<em>int</em>) &#8211; Number of energy bins</li>
-<li><strong>_energy_width</strong> (<em>float</em>) &#8211; Width of a single bin in MeV</li>
-<li><strong>_radial_low</strong> (<em>float</em>) &#8211; Lowest bin edge in mm</li>
-<li><strong>_radial_high</strong> (<em>float</em>) &#8211; Highest bin edge in mm</li>
-<li><strong>_radial_bins</strong> (<em>int</em>) &#8211; Number of raidal bins</li>
-<li><strong>_radial_width</strong> (<em>float</em>) &#8211; Width of a single bin in mm</li>
-<li><strong>_time_low</strong> (<em>float</em>) &#8211; Lowest bin edge in years</li>
-<li><strong>_time_high</strong> (<em>float</em>) &#8211; Highest bin edge in years</li>
-<li><strong>_time_bins</strong> (<em>int</em>) &#8211; Number of time bins</li>
-<li><strong>_time_width</strong> (<em>float</em>) &#8211; Width of a single bin in yr</li>
+<li><strong>_config</strong> (<a class="reference internal" href="#echidna.core.spectra.SpectraConfig" title="echidna.core.spectra.SpectraConfig"><code class="xref py py-class docutils literal"><span class="pre">SpectraConfig</span></code></a>) &#8211; The configuration object</li>
 <li><strong>_num_decays</strong> (<em>float</em>) &#8211; The number of decays this spectra currently
 represents.</li>
 <li><strong>_raw_events</strong> (<em>int</em>) &#8211; The number of raw events used to generate the
 spectra. Increments by one with each fill independent of
 weight.</li>
+<li><strong>_bipo</strong> (<em>int</em>) &#8211; Flag to indicate whether the bipo cut was applied to the
+spectra. 0 is No Cut. 1 is Cut.
+Int type as HDF5 does not support bool.</li>
 <li><strong>_style</strong> (<em>string</em>) &#8211; Pyplot-style plotting style e.g. &#8220;b-&#8221; or
 {&#8220;color&#8221;: &#8220;blue&#8221;}.</li>
 <li><strong>_rois</strong> (<em>dict</em>) &#8211; Dictionary containing the details of any ROI, along
@@ -769,31 +1500,30 @@ any axis, which has been defined.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<code class="xref py py-class docutils literal"><span class="pre">core.spectra</span></code>) &#8211; Spectrum to add.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spectrum</strong> (<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum to add.</p>
+</td>
 </tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.spectra.Spectra.calc_widths">
-<code class="descname">calc_widths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.calc_widths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.calc_widths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recalculates bin widths</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.core.spectra.Spectra.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Copies the current spectra and returns a new identical one.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string, optional</em>) &#8211; Name of the new copied spectrum.
-Default is the name of the current spectrum.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> object which is identical to
-the current spectra apart from possibly its name.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+spectrum has different dimenstions to the current
+spectra.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+spectrum does not contain a dimension(s) that is in the
+current spectra config.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+The current spectra does not contain a dimension(s) that
+is in the spectrum config.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+The upper bounds of a parameter in the current spectra
+and spectra are not equal.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+The lower bounds of a parameter in the current spectra
+and spectra are not equal.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+The number of bins of a parameter in the current spectra
+and spectra are not equal.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -801,7 +1531,7 @@ the current spectra apart from possibly its name.</td>
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.cut">
-<code class="descname">cut</code><span class="sig-paren">(</span><em>energy_low=None</em>, <em>energy_high=None</em>, <em>radial_low=None</em>, <em>radial_high=None</em>, <em>time_low=None</em>, <em>time_high=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.cut" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cut</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.cut" title="Permalink to this definition">¶</a></dt>
 <dd><p>Similar to <a class="reference internal" href="#echidna.core.spectra.Spectra.shrink" title="echidna.core.spectra.Spectra.shrink"><code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code></a>, but updates scaling information.</p>
 <p>If a spectrum is cut using <a class="reference internal" href="#echidna.core.spectra.Spectra.shrink" title="echidna.core.spectra.Spectra.shrink"><code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code></a>, subsequent calls to
 <a class="reference internal" href="#echidna.core.spectra.Spectra.scale" title="echidna.core.spectra.Spectra.scale"><code class="xref py py-meth docutils literal"><span class="pre">scale()</span></code></a> the spectrum must still scale the <em>full</em> spectrum
@@ -815,15 +1545,9 @@ new <em>full</em> spectrum.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy_low</strong> (<em>float, optional</em>) &#8211; New low bound of the energy.</li>
-<li><strong>energy_low</strong> &#8211; New high bound of the energy.</li>
-<li><strong>radial_low</strong> (<em>float, optional</em>) &#8211; New low bound of the radius.</li>
-<li><strong>radial_low</strong> &#8211; New high bound of the radius.</li>
-<li><strong>time_low</strong> (<em>float, optional</em>) &#8211; New low bound of the time.</li>
-<li><strong>time_low</strong> &#8211; New high bound of the time.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> (<em>float</em>) &#8211; Named parameters to slice on; note that these
+must be of the form [name]_low or [name]_high where [name]
+is a dimension present in the SpectraConfig.</td>
 </tr>
 </tbody>
 </table>
@@ -831,23 +1555,29 @@ new <em>full</em> spectrum.</p>
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.fill">
-<code class="descname">fill</code><span class="sig-paren">(</span><em>energy</em>, <em>radius</em>, <em>time</em>, <em>weight=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.fill" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fill the bin for the <cite>energy</cite> <cite>radius</cite> and <cite>time</cite> with weight.</p>
+<code class="descname">fill</code><span class="sig-paren">(</span><em>weight=1.0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill the bin with weight.  Note that values for all named
+parameters in the spectra&#8217;s config (e.g. energy, radial) must be
+passed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> (<em>float</em>) &#8211; Energy value to fill.</li>
-<li><strong>raidus</strong> (<em>float</em>) &#8211; Radial value to fill.</li>
-<li><strong>time</strong> (<em>float</em>) &#8211; Time value to fill.</li>
 <li><strong>weight</strong> (<em>float, optional</em>) &#8211; Defaults to 1.0, weight to fill the bin
 with.</li>
+<li><strong>kwargs</strong> (<em>float</em>) &#8211; Named values (e.g. for energy_mc, radial_mc)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
-If the energy, radius or time is beyond the bin limits.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; 
+Parameter in kwargs is not in config.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; 
+Parameter in config is not in kwargs.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the energy, radius or time is beyond the bin limits.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -855,15 +1585,30 @@ If the energy, radius or time is beyond the bin limits.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="echidna.core.spectra.Spectra.get_config">
+<code class="descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config of the spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#echidna.core.spectra.SpectraConfig" title="echidna.core.spectra.SpectraConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code></a>: The config of
+the spectra.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="echidna.core.spectra.Spectra.get_roi">
-<code class="descname">get_roi</code><span class="sig-paren">(</span><em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.get_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.get_roi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Access information about a predefined ROI on a given axis</p>
+<code class="descname">get_roi</code><span class="sig-paren">(</span><em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.get_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.get_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access information about a predefined ROI for a given dimension</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing parameters defining the ROI, on
-the given axis.</td>
+the given dimension.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
 </tr>
@@ -886,15 +1631,18 @@ the given axis.</td>
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.project">
-<code class="descname">project</code><span class="sig-paren">(</span><em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.project" title="Permalink to this definition">¶</a></dt>
-<dd><p>Project the histogram along an <cite>axis</cite>.</p>
+<code class="descname">project</code><span class="sig-paren">(</span><em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project the histogram along an axis for a given dimension.
+Note that the dimension must be one of the named parameters in
+the SpectraConfig.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<em>int</em>) &#8211; To project onto</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dimension</strong> (<em>str</em>) &#8211; parameter to project onto</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The projection of the histogram onto the given axis</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: The projection of the histogram onto the
+given axis</td>
 </tr>
 </tbody>
 </table>
@@ -909,8 +1657,11 @@ dimensions are factors of the original dimensions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_bins</strong> (<em>tuple</em>) &#8211; New bin sizes for spectra. Should be in order of
-energy, radial, time.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_bins</strong> (<em>tuple</em>) &#8211; new binning, this must match both the
+number and ordering of dimensions in the spectra config.
+For example if the old data shape is made of bins (1000, 10)
+and you would like to increase the bin width of both by 2 then
+you must pass the tuple (500, 5)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
@@ -962,36 +1713,46 @@ blue line, or dictionaries of strings e.g. {&#8220;color&#8221;: &#8220;red&#822
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.shrink">
-<code class="descname">shrink</code><span class="sig-paren">(</span><em>energy_low=None</em>, <em>energy_high=None</em>, <em>radial_low=None</em>, <em>radial_high=None</em>, <em>time_low=None</em>, <em>time_high=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.shrink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.shrink" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shrink the data such that it only contains values between energy_low
-and energy_high (for example) by slicing. This updates the internal bin
+<code class="descname">shrink</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.shrink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.shrink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shrink the data such that it only contains values between low and
+high for a given dimension by slicing. This updates the internal bin
 information as well as the data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy_low</strong> (<em>float</em>) &#8211; Optional new low bound of the energy.</li>
-<li><strong>energy_low</strong> &#8211; Optional new high bound of the energy.</li>
-<li><strong>radial_low</strong> (<em>float</em>) &#8211; Optional new low bound of the radius.</li>
-<li><strong>radial_low</strong> &#8211; Optional new high bound of the radius.</li>
-<li><strong>time_low</strong> (<em>float</em>) &#8211; Optional new low bound of the time.</li>
-<li><strong>time_low</strong> &#8211; Optional new high bound of the time.</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> (<em>float</em>) &#8211; Named parameters to slice on; note that these
+must be of the form [name]_low or [name]_high where [name]
+is a dimension present in the SpectraConfig.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+Parameter which is being shrank does not exist in the
+config file.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+[parameter]_low value is lower than the parameters lower
+bound.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+[parameter]_high value is lower than the parameters
+higher bound.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+Suffix to [parameter] is not _high or _low.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Notes</p>
-<p>The logic in this method is the same for each dimension, first</p>
-<p>check the new values are within the existing ones (can only compress).
-Then calculate the low bin number and high bin number (relative to the
-existing binning low). Finally update all the bookeeping and slice.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.shrink_to_roi">
-<code class="descname">shrink_to_roi</code><span class="sig-paren">(</span><em>lower_limit</em>, <em>upper_limit</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.shrink_to_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.shrink_to_roi" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shrink_to_roi</code><span class="sig-paren">(</span><em>lower_limit</em>, <em>upper_limit</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.shrink_to_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.shrink_to_roi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shrink spectrum to a defined Region of Interest (ROI)</p>
 <p>Shrinks spectrum to given ROI and saves ROI parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1001,7 +1762,7 @@ existing binning low). Finally update all the bookeeping and slice.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>lower_limit</strong> (<em>float</em>) &#8211; Lower bound of ROI, along given axis.</li>
 <li><strong>upper_limit</strong> (<em>float</em>) &#8211; Upper bound of ROI, along given axis.</li>
-<li><strong>axis</strong> (<em>int</em>) &#8211; Axis along which to define ROI.</li>
+<li><strong>dimension</strong> (<em>str</em>) &#8211; Name of the dimension to shrink.</li>
 </ul>
 </td>
 </tr>
@@ -1019,21 +1780,300 @@ existing binning low). Finally update all the bookeeping and slice.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The sum of the values in the <cite>_data</cite> histogram.</td>
 </tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
 <dt id="echidna.core.spectra.Spectra.surface">
-<code class="descname">surface</code><span class="sig-paren">(</span><em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.surface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Project the histogram along two axis, along the <cite>axis</cite>.</p>
+<code class="descname">surface</code><span class="sig-paren">(</span><em>dimension1</em>, <em>dimension2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project the histogram along two axes for the given dimensions.
+Note that the dimensions must be one of the named parameters in
+the SpectraConfig.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<em>int</em>) &#8211; To project away</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dimension1</strong> (<em>str</em>) &#8211; first parameter to project onto</li>
+<li><strong>dimension1</strong> &#8211; second parameter to project onto</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The 2d surface of the histogram.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+Axis of dimension1 is out of range</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+Axis of dimension2 is out of range</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: The 2d surface of the histogram.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.spectra.SpectraConfig">
+<em class="property">class </em><code class="descclassname">echidna.core.spectra.</code><code class="descname">SpectraConfig</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Configuration container for Spectra objects.  Able to load
+directly with a set list of SpectraParameters or from yaml
+configuration files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<code class="xref py py-class docutils literal"><span class="pre">collections.OrderedDict</span></code>) &#8211; List of
+SpectraParameter objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><strong>_parameters</strong> (<code class="xref py py-class docutils literal"><span class="pre">collections.OrderedDict</span></code>) &#8211; List of
+SpectraParameter objects</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_dim">
+<code class="descname">get_dim</code><span class="sig-paren">(</span><em>par</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_dim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dimension of par.
+The _mc, _reco and _truth suffixes are removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>par</strong> (<em>string</em>) &#8211; Name of the parameter</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The dimension of par</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_dim_type">
+<code class="descname">get_dim_type</code><span class="sig-paren">(</span><em>dim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_dim_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_dim_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the type of the dimension i.e. mc, reco or truth.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dim</strong> (<em>string</em>) &#8211; The name of the dimension</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+dim is not in the spectra.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The type of the dimension (mc, reco or truth)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_dims">
+<code class="descname">get_dims</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_dims"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of dimension names.
+The _mc, _reco and _truth suffixes are removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of the dimensions names of the config.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_index">
+<code class="descname">get_index</code><span class="sig-paren">(</span><em>parameter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of a parameter within the existing set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameter</strong> (<em>string</em>) &#8211; Name of the parameter.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+parameter is not in the config.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Index of the parameter</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_par">
+<code class="descname">get_par</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_par"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_par" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a named SpectraParameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; Name of the parameter.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#echidna.core.spectra.SpectraParameter" title="echidna.core.spectra.SpectraParameter"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraParameter</span></code></a>: Named parameter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraConfig.get_pars">
+<code class="descname">get_pars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.get_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.get_pars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of all parameter names in the config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of parameter names</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="echidna.core.spectra.SpectraConfig.load_from_file">
+<em class="property">classmethod </em><code class="descname">load_from_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraConfig.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraConfig.load_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise SpectraConfig class from a config file (classmethod).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#echidna.core.spectra.SpectraConfig" title="echidna.core.spectra.SpectraConfig"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code></a>: A config object
+containing the parameters in the file called filename.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.core.spectra.SpectraParameter">
+<em class="property">class </em><code class="descclassname">echidna.core.spectra.</code><code class="descname">SpectraParameter</code><span class="sig-paren">(</span><em>name</em>, <em>low</em>, <em>high</em>, <em>bins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Simple data container that holds information for a Spectra parameter
+(i.e. axis of the spectrum).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>str</em>) &#8211; The name of this parameter</li>
+<li><strong>low</strong> (<em>float</em>) &#8211; The lower limit of this parameter</li>
+<li><strong>high</strong> (<em>float</em>) &#8211; The upper limit of this parameter</li>
+<li><strong>bins</strong> (<em>int</em>) &#8211; The number of bins for this parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>str</em>) &#8211; The name of this parameter</li>
+<li><strong>_low</strong> (<em>float</em>) &#8211; The lower limit of this parameter</li>
+<li><strong>_high</strong> (<em>float</em>) &#8211; The upper limit of this parameter</li>
+<li><strong>_bins</strong> (<em>int</em>) &#8211; The number of bins for this parameter</li>
+<li><strong>_dimension</strong> (<em>int</em>) &#8211; The position in the data array for this parameter.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.get_unit">
+<code class="descname">get_unit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the default unit for a given parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; 
+Unknown parameter.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Unit of the parameter</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.get_width">
+<code class="descname">get_width</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the width of the binning for the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Bin width.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.round">
+<code class="descname">round</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.round"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.round" title="Permalink to this definition">¶</a></dt>
+<dd><p>Round the value to nearest bin edge</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>float</em>) &#8211; Value to round.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value of the closest bin edge to x</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.set_par">
+<code class="descname">set_par</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.set_par"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.set_par" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a limit / binning parameter after initialisation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> (<em>dict</em>) &#8211; keyword arguments</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Keyword arguments include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>low (float): Value to set the lower limit to of the parameter</li>
+<li>high (float): Value to set the higher limit to of the parameter</li>
+<li>bins (int): Value to set the number of bins of the parameter</li>
+</ul>
+</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+Unknown variable type passed as a kwarg.</td>
 </tr>
 </tbody>
 </table>
@@ -1057,6 +2097,7 @@ existing binning low). Finally update all the bookeeping and slice.</p>
   <ul>
 <li><a class="reference internal" href="#">echidna.core package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-echidna.core.dsextract">echidna.core.dsextract module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.smear">echidna.core.smear module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.spectra">echidna.core.spectra module</a></li>

@@ -36,6 +36,14 @@ echidna.output.plot_root module
     :undoc-members:
     :show-inheritance:
 
+echidna.output.root_style module
+--------------------------------
+
+.. automodule:: echidna.output.root_style
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.output.store module
 ---------------------------
 

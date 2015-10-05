@@ -147,26 +147,23 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span>
 </div>
-<div class="viewcode-block" id="LimitConfig.get_minimum"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LimitConfig.get_minimum"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get minimum value from chi_squared array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          minimum_bin (bool, optional): If True, returns the position (bin</span>
+<span class="sd">            number) in addition to minimum chi squared. Default is False.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Minimum of :attr:`_chi_squareds`</span>
 <span class="sd">          tuple: (Minimum of :attr:`_chi_squareds`, bin number of minimum)</span>
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">          Keyword arguments include:</span>
-
-<span class="sd">            * minimum_bin (*bool*): If True, returns the position (bin</span>
-<span class="sd">              number) in addition to minimum chi squared</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">minimum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">minimum_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">minimum</span><span class="p">)</span>
         <span class="c"># Set counts corresponding to minimum</span>
         <span class="c"># --&gt; Note scaling counts NOT actual events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_limit_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">minimum_bin</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;minimum_bin&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">minimum_bin</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">minimum_bin</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">minimum</span>

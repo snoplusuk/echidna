@@ -51,6 +51,7 @@
 <span class="kn">import</span> <span class="nn">ROOT</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
+
 <div class="viewcode-block" id="chi_squared_vs_signal"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_signal">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot the chi squared as a function of signal counts</span>
 
@@ -58,64 +59,57 @@
 <span class="sd">      signal_config (:class:`echidna.limit.limit_config.LimitConfig`): signal</span>
 <span class="sd">        config class, where chi squareds have been stored.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config</span>
-<span class="sd">          for signal with penalty term.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      ROOT.TGraph: Plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TGraph</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span> <span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TGraph</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;Signal counts&quot;</span><span class="p">)</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;$\chi^{2}$&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">graph</span>
+
 </div>
-<div class="viewcode-block" id="chi_squared_vs_half_life"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_half_life">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_half_life</span><span class="p">(</span><span class="n">signal_config</span><span class="p">,</span> <span class="n">converter</span><span class="p">,</span> <span class="n">scaling</span><span class="p">):</span>
+<div class="viewcode-block" id="chi_squared_vs_half_life"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_half_life">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_half_life</span><span class="p">(</span><span class="n">signal_config</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot the chi squared as a function of signal counts</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      signal_config (:class:`echidna.limit.limit_config.LimitConfig`): signal</span>
 <span class="sd">        config class, where chi squareds have been stored.</span>
+<span class="sd">      converter (:class:`echidna.calc.decay.DBIsotope`, optional): Converter</span>
+<span class="sd">        used to convert between counts and half-life/effective mass.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config</span>
-<span class="sd">          for signal with penalty term.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      ROOT.TGraph: Plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">graph</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TGraph</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-        <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">scaling</span><span class="p">)</span>
+        <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">graph</span><span class="o">.</span><span class="n">SetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">half_life</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;1/T_{1/2}&quot;</span><span class="p">)</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;$\chi^{2}$&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">graph</span>
 
 </div>
-<div class="viewcode-block" id="chi_squared_vs_mass"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_mass">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_mass</span><span class="p">(</span><span class="n">signal_config</span><span class="p">,</span> <span class="n">converter</span><span class="p">,</span> <span class="n">scaling</span><span class="p">):</span>
+<div class="viewcode-block" id="chi_squared_vs_mass"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_mass">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_mass</span><span class="p">(</span><span class="n">signal_config</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot the chi squared as a function of signal counts</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      signal_config (:class:`echidna.limit.limit_config.LimitConfig`): signal</span>
 <span class="sd">        config class, where chi squareds have been stored.</span>
+<span class="sd">      converter (:class:`echidna.calc.decay.DBIsotope`, optional): Converter</span>
+<span class="sd">        used to convert between counts and half-life/effective mass.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config</span>
-<span class="sd">          for signal with penalty term.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      ROOT.TGraph: Plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">graph</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TGraph</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-        <span class="n">mass</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">scaling</span><span class="p">)</span>
+        <span class="n">mass</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">graph</span><span class="o">.</span><span class="n">SetPoint</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;$m_{#beta#beta}$&quot;</span><span class="p">)</span>
     <span class="n">graph</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s">&quot;$\chi^{2}$&quot;</span><span class="p">)</span>

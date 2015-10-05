@@ -68,7 +68,8 @@ neutrinoless double beta decay modes (with spectral indices n = 1, 2, 3
 and 7), with KamLAND-Zen.</p>
 <p class="rubric">Examples</p>
 <p>To use simply run the script:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python Xe136_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
+<div class="highlight-python"><div class="highlight"><pre>$ python Xe136_majoron_limit.py -s /path/to/majoron_mode.hdf5
+-t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 </pre></div>
 </div>
 <div class="admonition note">
@@ -147,9 +148,8 @@ added to the file name</li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>To read rat_ds root file &#8220;example.ntuple.root&#8221;,
-with isotope half-life &#8220;half_life&#8221;:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python dump_spectra_ntuple.py /path/to/example.ntuple.root half_life
+<p>To read rat_ds root file &#8220;file.ntuple.root&#8221; with config file cnfg.yml:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python dump_spectra_ntuple.py /path/to/cnfg.yml /path/to/file.ntuple.root
 </pre></div>
 </div>
 <p>This will create the smeared hdf5 file <code class="docutils literal"><span class="pre">./example.hdf5</span></code>.
@@ -157,17 +157,18 @@ To specify a save directory, include a -s flag followed by path to
 the required save destination.</p>
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_ntuple.plot_spectrum">
-<code class="descclassname">echidna.scripts.dump_spectra_ntuple.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_ntuple.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_ntuple.plot_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Plot spectra for each of the three spectrum dimensions:</dt>
-<dd>Energy, radius and time.</dd>
-</dl>
+<code class="descclassname">echidna.scripts.dump_spectra_ntuple.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em>, <em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_ntuple.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_ntuple.plot_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot spectra for each of the spectrum dimensions (e.g. energy)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>Spec</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum object
-to be plotted</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Spec</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum object
+to be plotted</li>
+<li><strong>config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Config</span></code>) &#8211; configuration object</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -175,22 +176,29 @@ to be plotted</td>
 
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_ntuple.read_and_dump_ntuple">
-<code class="descclassname">echidna.scripts.dump_spectra_ntuple.</code><code class="descname">read_and_dump_ntuple</code><span class="sig-paren">(</span><em>fname</em>, <em>half_life</em>, <em>spectrum_name</em>, <em>save_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_ntuple.html#read_and_dump_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_ntuple.read_and_dump_ntuple" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates both mc and reco spectra from ntuple files, dumping the
-results as a spectrum object in a hdf5 file.</p>
+<code class="descclassname">echidna.scripts.dump_spectra_ntuple.</code><code class="descname">read_and_dump_ntuple</code><span class="sig-paren">(</span><em>fname</em>, <em>config_path</em>, <em>spectrum_name</em>, <em>save_path</em>, <em>bipo</em>, <em>fv_radius</em>, <em>outer_radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_ntuple.html#read_and_dump_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_ntuple.read_and_dump_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Creates both mc and reco spectra from ntuple files, dumping the</dt>
+<dd>results as a spectrum object in a hdf5 file</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fname</strong> (<em>str</em>) &#8211; The file to be evaluated</li>
-<li><strong>half_life</strong> (<em>float</em>) &#8211; Half-life of isotope</li>
-<li><strong>spectrum_name</strong> (<em>str</em>) &#8211; Name to be applied to the spectrum</li>
-<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be dumped</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If outer_radius not None and radial3 is not in the config.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> (<em>str</em>) &#8211; The file to be evaluated</li>
+<li><strong>config_path</strong> (<em>str</em>) &#8211; Path to the config file</li>
+<li><strong>spectrum_name</strong> (<em>str</em>) &#8211; Name to be applied to the spectrum</li>
+<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be dumped</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Apply Bi*Po* cuts when extracting data if True.</li>
+<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Cut events outside the fiducial volume of this radius.</li>
+<li><strong>outer_radius</strong> (<em>float</em>) &#8211; Used for calculating the radial3 parameter.
+See <a class="reference internal" href="echidna.core.html#module-echidna.core.dsextract" title="echidna.core.dsextract"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract</span></code></a> for details.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -200,16 +208,14 @@ results as a spectrum object in a hdf5 file.</p>
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_ntuple.read_tab_delim_file">
 <code class="descclassname">echidna.scripts.dump_spectra_ntuple.</code><code class="descname">read_tab_delim_file</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_ntuple.html#read_tab_delim_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_ntuple.read_tab_delim_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read file paths and respective half lives from tab delimited text file.</p>
+<dd><p>Read file paths from text file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fname</strong> (<em>str</em>) &#8211; Name of file to be read.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>file_paths</strong> &#8211;
-List of file paths read from file
-half_lives (list): List of half lives read from file</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of file paths read from file</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
 </tr>
@@ -233,9 +239,8 @@ half_lives (list): List of half lives read from file</td>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>To read rat_ds root file &#8220;example.root&#8221;,
-with isotope half-life &#8220;half_life&#8221;:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python dump_spectra_ntuple.py /path/to/example.root half_life
+<p>To read rat_ds root file &#8220;example.root&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python dump_spectra_ntuple.py /path/to/config.yml /path/to/example.root
 </pre></div>
 </div>
 <p>This will create the smeared hdf5 file <code class="docutils literal"><span class="pre">./example.hdf5</span></code>.
@@ -243,17 +248,18 @@ To specify a save directory, include a -s flag followed by path to
 the required save destination.</p>
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_root.plot_spectrum">
-<code class="descclassname">echidna.scripts.dump_spectra_root.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_root.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_root.plot_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Plot spectra for each of the three spectrum dimensions:</dt>
-<dd>Energy, radius and time</dd>
-</dl>
+<code class="descclassname">echidna.scripts.dump_spectra_root.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em>, <em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_root.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_root.plot_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot spectra for each of the spectrum dimensions (e.g. energy)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>Spec</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum object to
-be plotted</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Spec</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum object to
+be plotted</li>
+<li><strong>config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Config</span></code>) &#8211; configuration object</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -261,21 +267,22 @@ be plotted</td>
 
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_root.read_and_dump_root">
-<code class="descclassname">echidna.scripts.dump_spectra_root.</code><code class="descname">read_and_dump_root</code><span class="sig-paren">(</span><em>fname</em>, <em>half_life</em>, <em>spectrum_name</em>, <em>save_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_root.html#read_and_dump_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_root.read_and_dump_root" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Creates both mc and reco spectra from ROOT files, dumping the</dt>
-<dd>results as a spectrum object in a hdf5 file.</dd>
-</dl>
+<code class="descclassname">echidna.scripts.dump_spectra_root.</code><code class="descname">read_and_dump_root</code><span class="sig-paren">(</span><em>fname</em>, <em>config_path</em>, <em>spectrum_name</em>, <em>save_path</em>, <em>bipo</em>, <em>fv_radius</em>, <em>outer_radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_root.html#read_and_dump_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_root.read_and_dump_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates both mc and reco spectra from ROOT files, dumping the
+results as a spectrum object in a hdf5 file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fname</strong> (<em>str</em>) &#8211; The file to be evaluated.</li>
-<li><strong>half_life</strong> (<em>float</em>) &#8211; Half-life of isotope.</li>
-<li><strong>spectrum_name</strong> (<em>str</em>) &#8211; Name to be applied to the spectrum.</li>
-<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be
-dumped.</li>
+<li><strong>fname</strong> (<em>str</em>) &#8211; The file to be evaluated</li>
+<li><strong>config_path</strong> (<em>str</em>) &#8211; Path to the config file</li>
+<li><strong>spectrum_name</strong> (<em>str</em>) &#8211; Name to be applied to the spectrum</li>
+<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be dumped</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Apply Bi*Po* cuts when extracting data if True.</li>
+<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Cut events outside the fiducial volume of this radius.</li>
+<li><strong>outer_radius</strong> (<em>float</em>) &#8211; Used for calculating the radial3 parameter.
+See <a class="reference internal" href="echidna.core.html#module-echidna.core.dsextract" title="echidna.core.dsextract"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract</span></code></a> for details.</li>
 </ul>
 </td>
 </tr>
@@ -286,19 +293,14 @@ dumped.</li>
 <dl class="function">
 <dt id="echidna.scripts.dump_spectra_root.read_tab_delim_file">
 <code class="descclassname">echidna.scripts.dump_spectra_root.</code><code class="descname">read_tab_delim_file</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/dump_spectra_root.html#read_tab_delim_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.dump_spectra_root.read_tab_delim_file" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Read file paths and respective half lives from tab delimited</dt>
-<dd>text file.</dd>
-</dl>
+<dd><p>Read file paths from text file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fname</strong> (<em>str</em>) &#8211; Name of file to be read.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>file_paths</strong> &#8211;
-List of file paths read from file
-half_lives (list): List of half lives read from file</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of file paths read from file</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
 </tr>
@@ -325,16 +327,16 @@ created for both mc and reconstructed data sets in dedicated
 </dl>
 <p class="rubric">Examples</p>
 <p>To read all ntuples in a directory and save both individual and summed
-spectra to file:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python multi_ntuple_spectrum.py /path/to/ntuple/direc/
+spectra to file with config cnfg.yml:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python multi_ntuple_spectrum.py /path/to/cnfg.yml /path/to/ntuple/direc/
 </pre></div>
 </div>
 <p>To specify a save directory, include a -s flag followed by path to
 the required save destination.</p>
 <dl class="function">
 <dt id="echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum">
-<code class="descclassname">echidna.scripts.multi_ntuple_spectrum.</code><code class="descname">create_combined_ntuple_spectrum</code><span class="sig-paren">(</span><em>data_path</em>, <em>half_life</em>, <em>bkgnd_name</em>, <em>save_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/multi_ntuple_spectrum.html#create_combined_ntuple_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates mc, truth and reco spectra from directory containing
+<code class="descclassname">echidna.scripts.multi_ntuple_spectrum.</code><code class="descname">create_combined_ntuple_spectrum</code><span class="sig-paren">(</span><em>data_path</em>, <em>config_path</em>, <em>bkgnd_name</em>, <em>save_path</em>, <em>bipo</em>, <em>fv_radius</em>, <em>outer_radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/multi_ntuple_spectrum.html#create_combined_ntuple_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates both mc, truth and reco spectra from directory containing
 background ntuples, dumping the results as a spectrum object in an
 hdf5 file.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -342,12 +344,14 @@ hdf5 file.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data_path</strong> (<em>str</em>) &#8211; Path to directory containing the ntuples to be
-evaluated.</li>
-<li><strong>half_life</strong> (<em>float</em>) &#8211; Half-life of isotope.</li>
-<li><strong>bkgnd_name</strong> (<em>str</em>) &#8211; Name of the background being processed.</li>
-<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be
-dumped.</li>
+<li><strong>data_path</strong> (<em>str</em>) &#8211; Path to directory containing the ntuples to be evaluated</li>
+<li><strong>config_path</strong> (<em>str</em>) &#8211; Path to config file</li>
+<li><strong>bkgnd_name</strong> (<em>str</em>) &#8211; Name of the background being processed</li>
+<li><strong>save_path</strong> (<em>str</em>) &#8211; Path to a directory where the hdf5 files will be dumped</li>
+<li><strong>bipo</strong> (<em>bool</em>) &#8211; Apply Bi*Po* cuts when extracting data if True.</li>
+<li><strong>fv_radius</strong> (<em>float</em>) &#8211; Cut events outside the fiducial volume of this radius.</li>
+<li><strong>outer_radius</strong> (<em>float</em>) &#8211; Used for calculating the radial3 parameter.
+See <a class="reference internal" href="echidna.core.html#module-echidna.core.dsextract" title="echidna.core.dsextract"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract</span></code></a> for details.</li>
 </ul>
 </td>
 </tr>
@@ -357,11 +361,8 @@ dumped.</li>
 
 <dl class="function">
 <dt id="echidna.scripts.multi_ntuple_spectrum.plot_spectrum">
-<code class="descclassname">echidna.scripts.multi_ntuple_spectrum.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/multi_ntuple_spectrum.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.multi_ntuple_spectrum.plot_spectrum" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Plot spectra for each of the three spectrum dimensions:</dt>
-<dd>Energy, radius and time.</dd>
-</dl>
+<code class="descclassname">echidna.scripts.multi_ntuple_spectrum.</code><code class="descname">plot_spectrum</code><span class="sig-paren">(</span><em>spec</em>, <em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/multi_ntuple_spectrum.html#plot_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.multi_ntuple_spectrum.plot_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot spectra for each of the spectrum dimensions (e.g energy)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -407,7 +408,8 @@ neutrinoless double beta decay modes (with spectral indices n = 1, 2, 3
 and 7), with SNO+.</p>
 <p class="rubric">Examples</p>
 <p>To use simply run the script:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
+<div class="highlight-python"><div class="highlight"><pre>$ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5
+  -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 </pre></div>
 </div>
 <div class="admonition note">
@@ -430,6 +432,9 @@ beta decay.</p>
 <p>The numbers used in scaling the signal/backgrounds should set a
 reasonable limit, but are not necessariy the optimum choice of
 parameters.</p>
+<p>Note that this script assumes the user has already made a fiducial volume
+cut when creating the spectra and the energy par is &#8220;energy_mc&#8221; for all
+spectra.</p>
 <p class="rubric">Examples</p>
 <p>To use simply run the script:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python zero_nu_limit.py -s /path/to/signal.hdf5 -t /path/to/2n2b.hdf5

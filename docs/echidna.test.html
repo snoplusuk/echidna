@@ -70,38 +70,25 @@
 </div>
 <dl class="function">
 <dt id="echidna.test.physics_tests.test_function_float">
-<code class="descclassname">echidna.test.physics_tests.</code><code class="descname">test_function_float</code><span class="sig-paren">(</span><em>function</em>, <em>expected</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/physics_tests.html#test_function_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.physics_tests.test_function_float" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.test.physics_tests.</code><code class="descname">test_function_float</code><span class="sig-paren">(</span><em>function</em>, <em>expected</em>, <em>tolerance=0.001</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/physics_tests.html#test_function_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.physics_tests.test_function_float" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tests a function that returns a physics result (float)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>function</strong> (<em>function</em>) &#8211; An instance of the function/method. e.g.
 <code class="xref py py-obj docutils literal"><span class="pre">caculator.get_n_atoms</span></code> - notice no parentheses.</li>
 <li><strong>expected</strong> (<em>float</em>) &#8211; Expected physics result of function.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>Keyword arguments include:</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>tolerance (<em>float</em>): Tolerance in agreement of results.
+<li><strong>tolerance</strong> (<em>float, optional</em>) &#8211; Tolerance in agreement of results.
 Evaluated as <code class="xref py py-obj docutils literal"><span class="pre">tolerance*expected</span></code>, i.e. a tolerance of
 0.001 ensures agreement to within 0.1% of expected value.</li>
 </ul>
-</div></blockquote>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(bool, string): Tuple containing the result of the check True/
-False for Pass/Fail and a message.</td>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(bool, string): Tuple containing the result of the check True/
+False for Pass/Fail and a message.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -155,7 +142,8 @@ method in different use case scenarios</p>
 <dl class="method">
 <dt id="echidna.test.test_limit_setting.TestLimitSetting.setUp">
 <code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_limit_setting.html#TestLimitSetting.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_limit_setting.TestLimitSetting.setUp" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sets up the signal and background for limit setting.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">
@@ -189,7 +177,10 @@ method in different use case scenarios</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be smeared</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and integral (float) of the spectrum.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
+integral (float) of the spectrum.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
 </tr>
 </tbody>
 </table>
@@ -207,6 +198,8 @@ method in different use case scenarios</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and integral (float)</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -223,14 +216,26 @@ method in different use case scenarios</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Value of gaussian at x for given parameters (float)</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_random_energy">
-<code class="descname">test_random_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests the random gaussian smearing method for energy.</p>
+<dt id="echidna.test.test_smear.TestSmear.test_random_energy_ly">
+<code class="descname">test_random_energy_ly</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_ly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_ly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the random gaussian smearing method for energy light yield.</p>
+<p>Creates a delta function and fits the mean and sigma after smearing.
+Mean and sigma are checked against set values within 1 %.
+Integral of smeared spectrum is checked against original number of
+entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.test_random_energy_res">
+<code class="descname">test_random_energy_res</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the random gaussian smearing method for energy resolution.</p>
 <p>Creates a delta function and fits the mean and sigma after smearing.
 Mean and sigma are checked against set values within 1 %.
 Integral of smeared spectrum is checked against original number of
@@ -248,9 +253,20 @@ entries.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_weight_energy">
-<code class="descname">test_weight_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests the weighted gaussian smearing method for energy.</p>
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_ly">
+<code class="descname">test_weight_energy_ly</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_ly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_ly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the weighted gaussian smearing method for energy
+by light yield.</p>
+<p>Creates a delta function and fits the mean and sigma after smearing.
+Mean and sigma are checked against set values within 1 %.
+Integral of smeared spectrum is checked against original number of
+entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_res">
+<code class="descname">test_weight_energy_res</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the weighted gaussian smearing method for energy resolution.</p>
 <p>Creates a delta function and fits the mean and sigma after smearing.
 Mean and sigma are checked against set values within 1 %.
 Integral of smeared spectrum is checked against original number of
@@ -276,12 +292,6 @@ entries.</p>
 <dt id="echidna.test.test_spectra.TestSpectra">
 <em class="property">class </em><code class="descclassname">echidna.test.test_spectra.</code><code class="descname">TestSpectra</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_spectra.html#TestSpectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_spectra.TestSpectra" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
-<dl class="method">
-<dt id="echidna.test.test_spectra.TestSpectra.test_copy">
-<code class="descname">test_copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_spectra.html#TestSpectra.test_copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_spectra.TestSpectra.test_copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests that the spectra are being copied correctly.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="echidna.test.test_spectra.TestSpectra.test_fill">
 <code class="descname">test_fill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_spectra.html#TestSpectra.test_fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_spectra.TestSpectra.test_fill" title="Permalink to this definition">¶</a></dt>

@@ -49,6 +49,7 @@
             
   <h1>Source code for echidna.limit.limit_setting</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
 <span class="kn">import</span> <span class="nn">echidna</span>
 <span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">CompatibilityError</span>
@@ -158,7 +159,8 @@
 <span class="sd">            preferred values to add.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">:</span>  <span class="c"># doesn&#39;t exist</span>
-            <span class="n">new_layer</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferred_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">new_layer</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferred_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span>
+                                    <span class="n">shape</span><span class="p">,</span>
                                     <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferred_values</span><span class="p">,</span>
                                                   <span class="n">new_layer</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -249,18 +251,13 @@
 <span class="sd">      floating_backgrounds (list): one :class:`echidna.core.spectra.Spectra`</span>
 <span class="sd">        for each background</span>
 <span class="sd">      data (:class:`numpy.array`, optional): 1D data energy spectrum</span>
-<span class="sd">      **kwargs (dict): keyword arguments</span>
-
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * roi (*tuple*): (energy_lower, energy_upper)</span>
-<span class="sd">        * pre_shrink (*bool*): If set to True, :meth:`shrink` method is</span>
-<span class="sd">          called on all spectra before limit setting, shrinking to</span>
-<span class="sd">          ROI. Only applies if ROI has been set via ``roi`` keyword.</span>
-<span class="sd">        * verbose (*bool*): If set to True, progress and timing</span>
-<span class="sd">          information is printed to the terminal during limit setting.</span>
+<span class="sd">      roi (tuple, optional): Region Of Interest of the form</span>
+<span class="sd">        (energy_lower, energy_upper)</span>
+<span class="sd">      pre_shrink (bool, optional): If set to True, :meth:`shrink` method is</span>
+<span class="sd">        called on all spectra before limit setting, shrinking to</span>
+<span class="sd">        ROI. Only applies if ROI has been set via ``roi`` keyword.</span>
+<span class="sd">      verbose (bool, optional): If set to True, progress and timing</span>
+<span class="sd">        information is printed to the terminal during limit setting.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">      _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum</span>
@@ -288,9 +285,11 @@
 <span class="sd">        pre-shrinking is activated for floating backgrounds.</span>
 <span class="sd">      CompatibilityError: If any background spectrum is incompatible</span>
 <span class="sd">        with the signal spectrum</span>
+<span class="sd">      ValueError: No backgrounds provided.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">fixed_background</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">roi</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">signal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span> <span class="o">=</span> <span class="n">fixed_background</span>
@@ -300,63 +299,63 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;pre_shrink&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="n">roi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="n">roi</span>
+            <span class="k">if</span> <span class="n">pre_shrink</span><span class="p">:</span>
                 <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span>
+                    <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>\
+                        <span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span>
+                                          <span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span>
                                           <span class="n">energy_low</span><span class="p">):</span>
                         <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Fixed background must be &quot;</span>
                                                  <span class="s">&quot;pre-shrunk before&quot;</span>
                                                  <span class="s">&quot;LimitSetting.&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span>
+                                          <span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span>
                                           <span class="n">energy_high</span><span class="p">):</span>
                         <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Fixed background must be &quot;</span>
                                                  <span class="s">&quot;pre-shrunk before&quot;</span>
                                                  <span class="s">&quot;LimitSetting.&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
-                        <span class="n">background</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;verbose&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                            <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                        <span class="n">background</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span>
         <span class="c"># Check backgrounds have been added to class</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed_background</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">floating_backgrounds</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Must provide fixed or floating backgrounds&quot;</span><span class="p">)</span>
         <span class="c"># Check spectra are compatible</span>
         <span class="k">if</span> <span class="n">fixed_background</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">fixed_background</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">,</span>
-                                  <span class="n">signal</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="n">dim</span> <span class="o">=</span> <span class="n">fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+                <span class="n">par_sig</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span>
+                                  <span class="n">get_width</span><span class="p">(),</span>
+                                  <span class="n">signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_sig</span><span class="p">)</span><span class="o">.</span>
+                                  <span class="n">get_width</span><span class="p">()):</span>
                 <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                         <span class="s">&quot;different energy bin widths&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">fixed_background</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">,</span>
-                                  <span class="n">signal</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                         <span class="s">&quot;different radial bin widths&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">fixed_background</span><span class="o">.</span><span class="n">_time_width</span><span class="p">,</span>
-                                  <span class="n">signal</span><span class="o">.</span><span class="n">_time_width</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                         <span class="s">&quot;different time bin width&quot;</span><span class="p">)</span>
+                                         <span class="s">&quot;different </span><span class="si">%s</span><span class="s"> bin widths&quot;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="n">floating_backgrounds</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">,</span>
-                                      <span class="n">signal</span><span class="o">.</span><span class="n">_energy_width</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                             <span class="s">&quot;different energy bin widths&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">,</span>
-                                      <span class="n">signal</span><span class="o">.</span><span class="n">_radial_width</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                             <span class="s">&quot;different radial bin widths&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_time_width</span><span class="p">,</span>
-                                      <span class="n">signal</span><span class="o">.</span><span class="n">_time_width</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms with &quot;</span>
-                                             <span class="s">&quot;different time bin width&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                    <span class="n">dim</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+                    <span class="n">par_sig</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span>
+                                          <span class="n">get_width</span><span class="p">(),</span>
+                                          <span class="n">signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_sig</span><span class="p">)</span><span class="o">.</span>
+                                          <span class="n">get_width</span><span class="p">()):</span>
+                        <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;cannot compare histograms&quot;</span>
+                                                 <span class="s">&quot;with different </span><span class="si">%s</span><span class="s"> bin&quot;</span>
+                                                 <span class="s">&quot;widths&quot;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LimitSetting.configure_signal"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_signal">[docs]</a>    <span class="k">def</span> <span class="nf">configure_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Supply a configuration object associated with the signal.</span>
@@ -367,19 +366,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="o">=</span> <span class="n">signal_config</span>
 </div>
-<div class="viewcode-block" id="LimitSetting.configure_background"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_background">[docs]</a>    <span class="k">def</span> <span class="nf">configure_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">background_config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LimitSetting.configure_background"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_background">[docs]</a>    <span class="k">def</span> <span class="nf">configure_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">background_config</span><span class="p">,</span>
+                             <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Supply configuration object associated with the background.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          background_config (:class:`echidna.limit.limit_config.LimitConfig`):</span>
 <span class="sd">          background configuration</span>
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">          Keyword arguments include:</span>
-
-<span class="sd">            * plot_systematic (*bool*): if true produces signal vs systematic</span>
-<span class="sd">              plots</span>
+<span class="sd">          plot_systematic (bool, optional): if true produces signal vs</span>
+<span class="sd">            systematic plots. Default is False.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          TypeError: If config has not been set for signal.</span>
@@ -387,7 +382,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;signal configuration not set&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">background_config</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;plot_systematic&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">plot_systematic</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SystAnalyser</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">+</span><span class="s">&quot;_counts&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">_counts</span><span class="p">,</span>
                 <span class="n">background_config</span><span class="o">.</span><span class="n">_counts</span><span class="p">)</span>
@@ -442,27 +437,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="n">calculator</span>
 </div>
-<div class="viewcode-block" id="LimitSetting.get_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_chi_squared</span><span class="o">=</span><span class="mf">2.71</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LimitSetting.get_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_chi_squared</span><span class="o">=</span><span class="mf">2.71</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get signal counts at limit.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          limit_chi_squared (float, optional): chi squared required for</span>
 <span class="sd">            limit.</span>
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">          Keyword arguments include:</span>
-
-<span class="sd">            * debug (*int*): specify the level of debug information to</span>
-<span class="sd">              output.</span>
+<span class="sd">          debug (bool, optional): If true plots which are used for debugging</span>
+<span class="sd">            are produced.</span>
 
 <span class="sd">        .. note::</span>
 
 <span class="sd">          Default value for :obj:`limit_chi_squared` is 2.71, the chi</span>
 <span class="sd">          squared value corresponding to a 90% confidence limit.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          float: Signal counts in ROI at required limit</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          TypeError: If config has not been set for signal.</span>
@@ -473,6 +460,9 @@
 <span class="sd">            :obj:`limit_chi_squared`. If no bin contains a chi squared</span>
 <span class="sd">            value greater than :obj:`limit_chi_squared`, then there is</span>
 <span class="sd">            no bin to be found, raising IndexError.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Signal counts in ROI at required limit</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_limit_no_float</span><span class="p">(</span><span class="n">limit_chi_squared</span><span class="p">)</span>
@@ -483,20 +473,25 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;chi squared calculator not set&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+            <span class="n">sig_par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span>
+                                          <span class="n">get_par</span><span class="p">(</span><span class="n">sig_par</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">],</span>
                                    <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
-                <span class="n">observed</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">observed</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">sig_par</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
+                <span class="n">bkgnd_par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
                 <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
                 <span class="n">background</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">_prior_count</span><span class="p">)</span>
-                <span class="n">observed</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">observed</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">bkgnd_par</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="n">observed</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c"># _data is not None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
         <span class="c"># Set-up debug output</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;debug&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="kn">import</span> <span class="n">PdfPages</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">echidna</span><span class="o">.</span><span class="n">__echidna_base__</span> <span class="o">+</span> <span class="s">&quot;/debug/&quot;</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot;_debug.pdf&quot;</span>
@@ -517,7 +512,7 @@
                 <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Calculations for </span><span class="si">%.4f</span><span class="s"> signal counts took </span><span class="si">%.03f</span><span class="s"> &quot;</span>
                        <span class="s">&quot;seconds.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">signal_count</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">_interval</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;debug&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
                 <span class="n">spectra</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
                     <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
@@ -534,30 +529,36 @@
                                                <span class="s">&quot;style&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_style</span><span class="p">,</span>
                                                <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;signal&quot;</span><span class="p">,</span>
                                                <span class="s">&quot;label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_name</span><span class="p">}</span>
-                <span class="n">current_chi_squared</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span><span class="n">get_chi_squared_per_bin</span><span class="p">())</span>
+                <span class="n">current_chi_squared</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span>
+                                                <span class="n">get_chi_squared_per_bin</span><span class="p">())</span>
                 <span class="n">plot_text</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;$\chi^2$ = </span><span class="si">%.2g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">current_chi_squared</span><span class="p">]</span>
-                <span class="n">plot_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;Livetime = </span><span class="si">%.1f</span><span class="s"> years&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_high</span><span class="p">)</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; @ </span><span class="si">%.2g</span><span class="s"> counts&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">plot_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;Livetime = </span><span class="si">%.1f</span><span class="s"> years&quot;</span>
+                                 <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_high</span><span class="p">)</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> \
+                    <span class="s">&quot; @ </span><span class="si">%.2g</span><span class="s"> counts&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
                 <span class="n">spectral_plot</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">spectral_plot</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fig_num</span><span class="p">,</span>
                                                    <span class="n">show_plot</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                                                    <span class="n">per_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="p">,</span>
                                                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
                                                    <span class="n">text</span><span class="o">=</span><span class="n">plot_text</span><span class="p">,</span>
                                                    <span class="n">log_y</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                                   <span class="n">limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectrum&quot;</span><span class="p">))</span>
+                                                   <span class="n">limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span>
+                                                   <span class="n">get</span><span class="p">(</span><span class="s">&quot;spectrum&quot;</span><span class="p">))</span>
                 <span class="n">debug_pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">spectral_plot</span><span class="p">)</span>
                 <span class="n">spectral_plot</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="n">fig_num</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;debug&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
             <span class="n">debug_pdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">syst_analyser</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="k">print</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_syst_values</span>
             <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_actual_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_counts_down</span><span class="p">():</span>  <span class="c"># Use get_last_bin_above</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_last_bin_above</span><span class="p">(</span><span class="n">limit_chi_squared</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_last_bin_above</span><span class="p">(</span>
+                    <span class="n">limit_chi_squared</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_first_bin_above</span><span class="p">(</span><span class="n">limit_chi_squared</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_first_bin_above</span><span class="p">(</span>
+                    <span class="n">limit_chi_squared</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;unable to calculate confidence limit - &quot;</span> <span class="o">+</span>
                              <span class="nb">str</span><span class="p">(</span><span class="n">detail</span><span class="p">))</span>
@@ -579,6 +580,7 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">          TypeError: If config has not been set for signal.</span>
+<span class="sd">          TypeError: If chi squared calculator not set.</span>
 <span class="sd">          KeyError: If config has not been set for one or more</span>
 <span class="sd">            backgrounds.</span>
 <span class="sd">          IndexError: If no limit can be calculated. Relies on finding</span>
@@ -592,14 +594,18 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;chi squared calculator not set&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">reset_chi_squareds</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">signal_count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">get_count</span><span class="p">():</span>
             <span class="k">with</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>  <span class="c"># set timer</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">signal_count</span><span class="p">)</span>
-                <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_signal_config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span><span class="n">get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">),</span>
                     <span class="n">signal_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
@@ -668,14 +674,23 @@
                     <span class="n">count</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>  <span class="c"># function recursion</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
-                    <span class="n">total_background</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span>\
+                        <span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                    <span class="n">total_background</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
                     <span class="n">total_background</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                        <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+                        <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">],</span>
                         <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
-                    <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                        <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                    <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                     <span class="n">penalty_term</span> <span class="o">=</span> <span class="p">{</span>
                         <span class="n">name</span><span class="p">:</span> <span class="p">{</span>
@@ -699,18 +714,31 @@
                         <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span>
 
                         <span class="c"># Shrink signal to ROI</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
-
+                        <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                        <span class="n">par_low</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_low&quot;</span>
+                        <span class="n">par_high</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_high&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">par_low</span><span class="o">=</span><span class="n">energy_low</span><span class="p">,</span>
+                                            <span class="n">par_high</span><span class="o">=</span><span class="n">energy_high</span><span class="p">)</span>
                         <span class="c"># Create new total background with shrunk spectra</span>
+                        <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
                         <span class="n">total_background</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">],</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span>
+                                   <span class="n">_bins</span><span class="p">],</span>
                             <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
-                            <span class="n">background</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
-                            <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
+                            <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                                <span class="n">background</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                            <span class="n">par_low</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_low&quot;</span>
+                            <span class="n">par_low</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_high&quot;</span>
+                            <span class="n">background</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">par_low</span><span class="o">=</span><span class="n">energy_low</span><span class="p">,</span>
+                                              <span class="n">par_high</span><span class="o">=</span><span class="n">energy_high</span><span class="p">)</span>
+                            <span class="n">total_background</span> <span class="o">+=</span> <span class="n">background</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
                         <span class="c"># Set make new expected and _observed (if required)</span>
-                        <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                        <span class="n">expected</span> <span class="o">=</span> <span class="n">total_background</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_observed</span> <span class="o">=</span> <span class="n">total_background</span>
                         <span class="n">config</span><span class="o">.</span><span class="n">add_chi_squared</span><span class="p">(</span>
@@ -724,7 +752,8 @@
                 <span class="n">penalty_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span><span class="o">.</span><span class="n">_current_values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">syst_analyser</span><span class="o">.</span><span class="n">add_penalty_value</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">penalty_value</span><span class="p">)</span>
         <span class="n">minimum</span><span class="p">,</span> <span class="n">minimum_bin</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_minimum</span><span class="p">(</span><span class="n">minimum_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">sig_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sig_config</span><span class="o">.</span><span class="n">_counts</span> <span class="o">==</span> <span class="n">sig_config</span><span class="o">.</span><span class="n">_current_count</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sig_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sig_config</span><span class="o">.</span><span class="n">_counts</span> <span class="o">==</span>
+                              <span class="n">sig_config</span><span class="o">.</span><span class="n">_current_count</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">preferred_value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">minimum_bin</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">syst_analyser</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">syst_analyser</span><span class="o">.</span><span class="n">add_chi_squareds</span><span class="p">(</span><span class="n">sig_bin</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">_chi_squareds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -735,7 +764,7 @@
         <span class="k">return</span> <span class="n">minimum</span>
 
 </div></div>
-<div class="viewcode-block" id="make_fixed_background"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.make_fixed_background">[docs]</a><span class="k">def</span> <span class="nf">make_fixed_background</span><span class="p">(</span><span class="n">spectra_dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="make_fixed_background"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit_setting.make_fixed_background">[docs]</a><span class="k">def</span> <span class="nf">make_fixed_background</span><span class="p">(</span><span class="n">spectra_dict</span><span class="p">,</span> <span class="n">roi</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39; Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the</span>
 <span class="sd">      ROI in the LimitSetting class you *must* also pre-shrink here.</span>
 
@@ -743,13 +772,9 @@
 <span class="sd">      spectra (dictionary): Dictionary containing spectra name as keys and</span>
 <span class="sd">        a list containing the spectra object as index 0 and prior counts as</span>
 <span class="sd">        index 1 as values.</span>
-
-<span class="sd">    Keyword arguments include:</span>
-
-<span class="sd">      * roi (*tuple*): (energy_lower, energy_upper)</span>
-<span class="sd">      * pre_shrink (*bool*): If set to True, :meth:`shrink` method is</span>
-<span class="sd">        called on all spectra before limit setting, shrinking to</span>
-<span class="sd">        ROI. Only applies if ROI has been set via ``roi`` keyword.</span>
+<span class="sd">      roi (tuple, optional): Region Of Interest of the form</span>
+<span class="sd">        (energy_lower, energy_upper). If a ROI is passed then the spectra will</span>
+<span class="sd">        be shrunk</span>
 
 <span class="sd">    Returns: Spectrum containing all fixed backgrounds.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -759,19 +784,26 @@
         <span class="n">scaling</span> <span class="o">=</span> <span class="n">spectra_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
             <span class="n">first</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">roi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;pre_shrink&quot;</span><span class="p">):</span>
-                    <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="n">roi</span>
-                    <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">roi</span><span class="p">:</span>
+                <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="n">roi</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                <span class="n">par_low</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_low&quot;</span>
+                <span class="n">par_high</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_high&quot;</span>
+                <span class="n">shrink_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">par_low</span><span class="p">:</span> <span class="n">energy_low</span><span class="p">,</span> <span class="n">par_high</span><span class="p">:</span> <span class="n">energy_high</span><span class="p">}</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">shrink_dict</span><span class="p">)</span>
             <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaling</span><span class="p">)</span>
-            <span class="n">total_spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;fixed_background&quot;</span><span class="p">)</span>
+            <span class="n">total_spectrum</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+            <span class="n">total_spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s">&quot;Fixed Background&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">roi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;pre_shrink&quot;</span><span class="p">):</span>
-                    <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="n">roi</span>
-                    <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">roi</span><span class="p">:</span>
+                <span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span> <span class="o">=</span> <span class="n">roi</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="s">&quot;energy_&quot;</span> <span class="o">+</span> \
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
+                <span class="n">par_low</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_low&quot;</span>
+                <span class="n">par_high</span> <span class="o">=</span> <span class="n">par</span> <span class="o">+</span> <span class="s">&quot;_high&quot;</span>
+                <span class="n">shrink_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">par_low</span><span class="p">:</span> <span class="n">energy_low</span><span class="p">,</span> <span class="n">par_high</span><span class="p">:</span> <span class="n">energy_high</span><span class="p">}</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">shrink_dict</span><span class="p">)</span>
             <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaling</span><span class="p">)</span>
             <span class="n">total_spectrum</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">total_spectrum</span></div>

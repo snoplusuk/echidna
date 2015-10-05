@@ -58,10 +58,9 @@
 <span class="sd">  * Saves spectra objects to file in hdf5 format</span>
 
 <span class="sd">Examples:</span>
-<span class="sd">  To read rat_ds root file &quot;example.root&quot;,</span>
-<span class="sd">  with isotope half-life &quot;half_life&quot;::</span>
+<span class="sd">  To read rat_ds root file &quot;example.root&quot;::</span>
 
-<span class="sd">    $ python dump_spectra_ntuple.py /path/to/example.root half_life</span>
+<span class="sd">    $ python dump_spectra_ntuple.py /path/to/config.yml /path/to/example.root</span>
 
 <span class="sd">  This will create the smeared hdf5 file ``./example.hdf5``.</span>
 <span class="sd">  To specify a save directory, include a -s flag followed by path to</span>
@@ -70,95 +69,110 @@
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">echidna.core.fill_spectrum</span> <span class="kn">as</span> <span class="nn">fill_spectrum</span>
 <span class="kn">import</span> <span class="nn">echidna.output.plot</span> <span class="kn">as</span> <span class="nn">plot</span>
 
 
-<div class="viewcode-block" id="read_and_dump_root"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_root.read_and_dump_root">[docs]</a><span class="k">def</span> <span class="nf">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="n">save_path</span><span class="p">):</span>
+<div class="viewcode-block" id="read_and_dump_root"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_root.read_and_dump_root">[docs]</a><span class="k">def</span> <span class="nf">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="n">save_path</span><span class="p">,</span> <span class="n">bipo</span><span class="p">,</span>
+                       <span class="n">fv_radius</span><span class="p">,</span> <span class="n">outer_radius</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Creates both mc and reco spectra from ROOT files, dumping the</span>
-<span class="sd">      results as a spectrum object in a hdf5 file.</span>
+<span class="sd">    results as a spectrum object in a hdf5 file</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      fname (str): The file to be evaluated.</span>
-<span class="sd">      half_life (float): Half-life of isotope.</span>
-<span class="sd">      spectrum_name (str): Name to be applied to the spectrum.</span>
-<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be</span>
-<span class="sd">        dumped.</span>
+<span class="sd">      fname (str): The file to be evaluated</span>
+<span class="sd">      config_path (str): Path to the config file</span>
+<span class="sd">      spectrum_name (str): Name to be applied to the spectrum</span>
+<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be dumped</span>
+<span class="sd">      bipo (bool): Apply Bi*Po* cuts when extracting data if True.</span>
+<span class="sd">      fv_radius (float): Cut events outside the fiducial volume of this radius.</span>
+<span class="sd">      outer_radius (float): Used for calculating the radial3 parameter.</span>
+<span class="sd">        See :class:`echidna.core.dsextract` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">mc_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_mc_spectrum</span><span class="p">(</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_mc&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spectrum_name</span><span class="p">))</span>
-    <span class="n">reco_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_reco_spectrum</span><span class="p">(</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_reco&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spectrum_name</span><span class="p">))</span>
-    <span class="n">truth_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_truth_spectrum</span><span class="p">(</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_truth&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spectrum_name</span><span class="p">))</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outer_radius</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&quot;radial3&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_dims</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Outer radius passed as an command line arg &quot;</span>
+                             <span class="s">&quot;but no radial3 in the config file.&quot;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_root</span><span class="p">(</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spectrum_name</span><span class="p">),</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_root</span><span class="p">(</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spectrum_name</span><span class="p">),</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">)</span>
 
     <span class="c"># Plot</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">mc_spec</span><span class="p">)</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">reco_spec</span><span class="p">)</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">truth_spec</span><span class="p">)</span>
-
+    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
     <span class="c"># Dump to file</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">_mc.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">),</span> <span class="n">mc_spec</span><span class="p">)</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">_reco.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">),</span> <span class="n">reco_spec</span><span class="p">)</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">_truth.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">),</span> <span class="n">truth_spec</span><span class="p">)</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">),</span> <span class="n">spectrum</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="plot_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_root.plot_spectrum">[docs]</a><span class="k">def</span> <span class="nf">plot_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Plot spectra for each of the three spectrum dimensions:</span>
-<span class="sd">      Energy, radius and time</span>
+<div class="viewcode-block" id="plot_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_root.plot_spectrum">[docs]</a><span class="k">def</span> <span class="nf">plot_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot spectra for each of the spectrum dimensions (e.g. energy)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to</span>
 <span class="sd">        be plotted</span>
+<span class="sd">      config (:class:`echidna.core.spectra.Config`): configuration object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">getpars</span><span class="p">():</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="read_tab_delim_file"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_root.read_tab_delim_file">[docs]</a><span class="k">def</span> <span class="nf">read_tab_delim_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Read file paths and respective half lives from tab delimited</span>
-<span class="sd">      text file.</span>
+    <span class="sd">&quot;&quot;&quot; Read file paths from text file</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      fname (str): Name of file to be read.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      file_paths (list): List of file paths read from file</span>
-<span class="sd">      half_lives (list): List of half lives read from file</span>
+<span class="sd">      list: List of file paths read from file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">file_paths</span><span class="p">,</span> <span class="n">half_lives</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">file_paths</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="c"># next(f) # skip headings</span>
         <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">half</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
             <span class="n">file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-            <span class="n">half_lives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">half</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">file_paths</span><span class="p">,</span> <span class="n">half_lives</span>
+    <span class="k">return</span> <span class="n">file_paths</span>
+
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-r&quot;</span><span class="p">,</span> <span class="s">&quot;--read_text_file&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Pass path to list .txt of tab separated &quot;</span>
-                        <span class="s">&quot;filepaths and half_lives.&quot;</span><span class="p">)</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Pass path to list .txt of file paths&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span> <span class="s">&quot;--save_path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;./&quot;</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Enter destination path for .hdf5 spectra files.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;fname&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-c&quot;</span><span class="p">,</span> <span class="s">&quot;--config&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to config file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-f&quot;</span><span class="p">,</span> <span class="s">&quot;--fname&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to root file to be read.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;half_life&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Half-life of isotope.root file being read&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--bipo&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bipo&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Apply bipo cut&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--no-bipo&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bipo&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_false&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Don&#39;t apply bipo cut&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-v&quot;</span><span class="p">,</span> <span class="s">&quot;--fv_radius&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Radius for fiducial volume cut&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-o&quot;</span><span class="p">,</span> <span class="s">&quot;--outer_radius&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Outer radius for filling spectra with the&quot;</span>
+                        <span class="s">&quot;parameter radial3.&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bipo</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">:</span>  <span class="c"># If passed text file: read, format and dump</span>
-        <span class="n">path_list</span><span class="p">,</span> <span class="n">half_life_list</span> <span class="o">=</span> <span class="n">read_tab_delim_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path_list</span><span class="p">,</span> <span class="n">half_life_list</span><span class="p">):</span>
+        <span class="n">path_list</span> <span class="o">=</span> <span class="n">read_tab_delim_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">path_list</span><span class="p">:</span>
             <span class="n">spectrum_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="n">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="n">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">bipo</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">fv_radius</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">.</span><span class="n">outer_radius</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c"># If args passed directly, deal with them</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">fname</span>
         <span class="n">spectrum_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">half_life</span><span class="p">,</span>
-                           <span class="n">spectrum_name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="n">read_and_dump_root</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span>
+                           <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">bipo</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">fv_radius</span><span class="p">,</span>
+                           <span class="n">args</span><span class="o">.</span><span class="n">outer_radius</span><span class="p">)</span>
 </pre></div>
 
           </div>

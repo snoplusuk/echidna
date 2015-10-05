@@ -105,12 +105,12 @@
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">110.0</span><span class="p">])</span>
         <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
-            <span class="c"># Just total, not ll per bin</span>
+        <span class="c"># Just total, not ll per bin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="mf">0.9379640391350215</span><span class="p">)</span>
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.0</span><span class="p">])</span>
         <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">)</span>
-            <span class="c"># Just total, not ll per bin</span>
+        <span class="c"># Just total, not ll per bin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="mf">1.072103131565271</span><span class="p">)</span>
         <span class="n">array1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>
         <span class="n">array2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">])</span>

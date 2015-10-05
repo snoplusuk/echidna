@@ -222,9 +222,11 @@
 
             <span class="c"># Volume fraction</span>
             <span class="n">volume_fraction</span> <span class="o">=</span> <span class="n">fv_radius</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">outer_radius</span><span class="o">**</span><span class="mi">3</span>
-            <span class="n">target_mass</span> <span class="o">=</span> <span class="n">mass_fraction</span> <span class="o">*</span> <span class="n">volume_fraction</span> <span class="o">*</span> <span class="n">loading</span> <span class="o">*</span> <span class="n">scint_mass</span>
+            <span class="n">target_mass</span> <span class="o">=</span> <span class="n">mass_fraction</span> <span class="o">*</span> <span class="n">volume_fraction</span> <span class="o">*</span> <span class="n">loading</span> <span class="o">*</span>\
+                <span class="n">scint_mass</span>
 
-        <span class="n">n_atoms</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_mass</span><span class="o">*</span><span class="n">const</span><span class="o">.</span><span class="n">_n_avagadro</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atm_weight_iso</span><span class="o">*</span><span class="mf">1.e-3</span><span class="p">)</span>
+        <span class="n">n_atoms</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_mass</span><span class="o">*</span><span class="n">const</span><span class="o">.</span><span class="n">_n_avagadro</span><span class="p">)</span> <span class="o">/</span>\
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atm_weight_iso</span><span class="o">*</span><span class="mf">1.e-3</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">n_atoms</span>
 </div>
 <div class="viewcode-block" id="DBIsotope.half_life_to_activity"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.half_life_to_activity">[docs]</a>    <span class="k">def</span> <span class="nf">half_life_to_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -290,8 +292,9 @@
 <span class="sd">          float: Effective majorana mass, in eV.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_electron_mass</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span>
-                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phase_space</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_matrix_element</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">half_life</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_electron_mass</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span>
+                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phase_space</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrix_element</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span>
+                           <span class="n">half_life</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="DBIsotope.activity_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.activity_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">activity_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts activity to number of counts, assuming constant activity.</span>
@@ -500,14 +503,17 @@
     <span class="k">print</span> <span class="n">message</span><span class="p">,</span> <span class="s">&quot;(no FV cut)&quot;</span>
 
     <span class="c"># Check get_n_atoms with SNO+ defaults</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="mf">7.4694e26</span>  <span class="c"># calculated - A Back 2015-02-25, based on SNO+-doc-1728v2</span>
+    <span class="c"># calculated - A Back 2015-02-25, based on SNO+-doc-1728v2</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="mf">7.4694e26</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Create a DBIsotope instance for KLZ</span>
-    <span class="n">Xe136_atm_weight</span> <span class="o">=</span> <span class="mf">135.907219</span>  <span class="c"># Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07</span>
-    <span class="n">Xe134_atm_weight</span> <span class="o">=</span> <span class="mf">133.90539450</span>  <span class="c"># Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03</span>
+    <span class="c"># Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07</span>
+    <span class="n">Xe136_atm_weight</span> <span class="o">=</span> <span class="mf">135.907219</span>
+    <span class="c"># Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03</span>
+    <span class="n">Xe134_atm_weight</span> <span class="o">=</span> <span class="mf">133.90539450</span>
     <span class="c"># We want the atomic weight of the enriched Xenon</span>
     <span class="n">XeEn_atm_weight</span> <span class="o">=</span> <span class="mf">0.9093</span><span class="o">*</span><span class="n">Xe136_atm_weight</span> <span class="o">+</span> <span class="mf">0.0889</span><span class="o">*</span><span class="n">Xe134_atm_weight</span>
     <span class="n">Xe136_abundance</span> <span class="o">=</span> <span class="mf">0.9093</span>  <span class="c"># PRC 86, 021601 (2012)</span>
@@ -562,15 +568,18 @@
 
     <span class="c"># Check activity_to_counts</span>
     <span class="n">livetime</span> <span class="o">=</span> <span class="mf">5.0</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)</span>
-    <span class="n">activity</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
+    <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="mf">31.2</span>
+    <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
+    <span class="n">activity</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">activity_to_counts</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">activity</span><span class="o">=</span><span class="n">activity</span><span class="p">,</span>
         <span class="n">livetime</span><span class="o">=</span><span class="n">livetime</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check counts_to_activity</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
+    <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">counts</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">counts_to_activity</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span>
@@ -578,7 +587,8 @@
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check counts_to_eff_mass</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="mf">5.17e25</span><span class="p">)</span>  <span class="c"># eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)</span>
+    <span class="c"># eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="mf">5.17e25</span><span class="p">)</span>
     <span class="n">counts</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">,</span>
@@ -587,7 +597,8 @@
 
     <span class="c"># Check eff_mass_to_counts</span>
     <span class="n">expected</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)</span>
-    <span class="n">eff_mass</span> <span class="o">=</span> <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="mf">5.17e25</span><span class="p">)</span>  <span class="c"># eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)</span>
+    <span class="c"># eV, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)</span>
+    <span class="n">eff_mass</span> <span class="o">=</span> <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="mf">5.17e25</span><span class="p">)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">eff_mass_to_counts</span><span class="p">,</span>
         <span class="n">expected</span><span class="p">,</span> <span class="n">eff_mass</span><span class="o">=</span><span class="n">eff_mass</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>

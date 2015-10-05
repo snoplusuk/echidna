@@ -48,21 +48,26 @@
           <div class="body" role="main">
             
   <h1>Source code for echidna.output.plot</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
 
-<div class="viewcode-block" id="_produce_axis"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot._produce_axis">[docs]</a><span class="k">def</span> <span class="nf">_produce_axis</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+<div class="viewcode-block" id="_produce_axis"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot._produce_axis">[docs]</a><span class="k">def</span> <span class="nf">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; This method produces an array that represents the axis between low and</span>
 <span class="sd">    high with bins.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      low (float): Low edge of the axis</span>
-<span class="sd">      high (float): High edge of the axis</span>
-<span class="sd">      bins (int): Number of bins</span>
+<span class="sd">      spectra (:class:`echidna.core.spectra.Spectra`): The spectra you wish to</span>
+<span class="sd">        produce the axis from.</span>
+<span class="sd">      dimension (string): The dimension you wish to produce the axis for.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      list: The values for the axis.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">low</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">)]</span>
+    <span class="n">parameter</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> <span class="n">parameter</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span>
+            <span class="n">parameter</span><span class="o">.</span><span class="n">_bins</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">_bins</span><span class="p">)]</span>
 
 </div>
 <div class="viewcode-block" id="plot_projection"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.plot_projection">[docs]</a><span class="k">def</span> <span class="nf">plot_projection</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -73,31 +78,33 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">      spectra (:class:`echidna.core.spectra`): The spectra to plot.</span>
-<span class="sd">      dimension (int): The dimension to project the spectra onto.</span>
+<span class="sd">      dimension (string): The dimension to project the spectra onto.</span>
+<span class="sd">      fig_num (int, optional): The number of the figure. If you are</span>
+<span class="sd">        producing multiple spectral plots automatically, this can be</span>
+<span class="sd">        useful to ensure pyplot treats each plot as a separate figure.</span>
+<span class="sd">        Default is 1.</span>
+<span class="sd">      show_plot (bool, optional): Displays the plot if true. Default is True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plot of the projection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="n">fig_num</span><span class="p">)</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
-        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
-        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
-        <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Count per </span><span class="si">%.2g</span><span class="s"> bin&quot;</span> <span class="o">%</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">)</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">par</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Count per </span><span class="si">%f</span><span class="s"> </span><span class="si">%s</span><span class="s"> bin&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">show_plot</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">fig</span>
+
 </div>
-<div class="viewcode-block" id="spectral_plot"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.spectral_plot">[docs]</a><span class="k">def</span> <span class="nf">spectral_plot</span><span class="p">(</span><span class="n">spectra_dict</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                  <span class="n">show_plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="spectral_plot"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.spectral_plot">[docs]</a><span class="k">def</span> <span class="nf">spectral_plot</span><span class="p">(</span><span class="n">spectra_dict</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">log_y</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">text</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Produce spectral plot.</span>
 
 <span class="sd">    For a given signal, produce a plot showing the signal and relevant</span>
@@ -108,12 +115,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">      spectra_dict (dict): Dictionary containing each spectrum you wish</span>
 <span class="sd">        to plot, and the relevant parameters required to plot them.</span>
-<span class="sd">      dimension (int, optional): The dimension or axis along which the</span>
-<span class="sd">        spectra should be plotted. Default is energy axis.</span>
+<span class="sd">      dimension (string): The dimension  you wish to plot.</span>
 <span class="sd">      fig_num (int, optional): The number of the figure. If you are</span>
 <span class="sd">        producing multiple spectral plots automatically, this can be</span>
 <span class="sd">        useful to ensure pyplot treats each plot as a separate figure.</span>
 <span class="sd">        Default is 1.</span>
+<span class="sd">      show_plot (bool, optional): Displays the plot if true. Default is True.</span>
+<span class="sd">      log_y (bool, optional): Use log scale on y-axis.</span>
+<span class="sd">      calculator (:class:`echidna.limit.chi_squared.ChiSquared`, optional):</span>
+<span class="sd">        Calculator for including chi-squared per bin histogram.</span>
+<span class="sd">      limit (:class:`spectra.Spectra`, optional): Include a spectrum showing</span>
+<span class="sd">        a current or target limit.</span>
+<span class="sd">      title (string, optional): Title of the plot.</span>
+<span class="sd">      text (list, optional): Text to be written on top of plot.</span>
 
 <span class="sd">    Example:</span>
 
@@ -126,97 +140,46 @@
 <span class="sd">         B8_Solar._name: {&#39;spectra&#39;: B8_Solar, &#39;label&#39;: &#39;solar&#39;,</span>
 <span class="sd">                          &#39;style&#39;: {&#39;color&#39;: &#39;green&#39;}, &#39;type&#39;: &#39;background&#39;}}</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * log_y (*bool*): Use log scale on y-axis.</span>
-<span class="sd">        * per_bin (*bool*): Include chi-squared per bin histogram.</span>
-<span class="sd">        * limit (:class:`spectra.Spectra`): Include a spectrum showing</span>
-<span class="sd">          a current or target limit.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plot of the signal and backgrounds.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="c"># All spectra should have same width</span>
     <span class="n">first_spectra</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">spectra</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">first_spectra</span><span class="p">:</span>
-                <span class="n">energy_low</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span>
-                <span class="n">energy_high</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span>
-                <span class="n">energy_bins</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span>
-                <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_width</span>
-                <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">energy_bins</span><span class="p">)</span>  <span class="c"># Shape for summed arrays</span>
-                <span class="n">first_spectra</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span> <span class="o">!=</span> <span class="n">energy_low</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect energy lower limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span> <span class="o">!=</span> <span class="n">energy_high</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect energy upper limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span> <span class="o">!=</span> <span class="n">energy_bins</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect energy upper limit&quot;</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">energy_low</span><span class="p">,</span> <span class="n">energy_high</span><span class="p">,</span> <span class="n">energy_bins</span><span class="p">)</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="s">&quot;Energy [MeV]&quot;</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-            <span class="n">spectra</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">first_spectra</span><span class="p">:</span>
-                <span class="n">radial_low</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span>
-                <span class="n">radial_high</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span>
-                <span class="n">radial_bins</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span>
-                <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_width</span>
-                <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">radial_bins</span><span class="p">)</span>
-                <span class="n">first_spectra</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span> <span class="o">!=</span> <span class="n">radial_low</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect radial lower limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span> <span class="o">!=</span> <span class="n">radial_high</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect radial upper limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span> <span class="o">!=</span> <span class="n">radial_bins</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect radial upper limit&quot;</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">radial_low</span><span class="p">,</span> <span class="n">radial_high</span><span class="p">,</span> <span class="n">radial_bins</span><span class="p">)</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="s">&quot;Radius [mm]&quot;</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-            <span class="n">spectra</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">first_spectra</span><span class="p">:</span>
-                <span class="n">time_low</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span>
-                <span class="n">time_high</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span>
-                <span class="n">time_bins</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span>
-                <span class="n">width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_width</span>
-                <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_bins</span><span class="p">)</span>
-                <span class="n">first_spectra</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span> <span class="o">!=</span> <span class="n">time_low</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect time lower limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span> <span class="o">!=</span> <span class="n">time_high</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect time upper limit&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span> <span class="o">!=</span> <span class="n">time_bins</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
-                                         <span class="s">&quot;incorrect time upper limit&quot;</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="s">&quot;Time [yr]&quot;</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">spectra</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">)</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">first_spectra</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_bins</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">bins</span><span class="p">)</span>  <span class="c"># Shape for summed arrays</span>
+            <span class="n">first_spectra</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">!=</span> <span class="n">low</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
+                                     <span class="s">&quot;incorrect dimension </span><span class="si">%s</span><span class="s"> lower limit&quot;</span>
+                                     <span class="o">%</span> <span class="n">dimension</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span> <span class="o">!=</span> <span class="n">high</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
+                                     <span class="s">&quot;incorrect dimension </span><span class="si">%s</span><span class="s"> higher limit&quot;</span>
+                                     <span class="o">%</span> <span class="n">dimension</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">par</span><span class="o">.</span><span class="n">_bins</span> <span class="o">!=</span> <span class="n">bins</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Spectra &quot;</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has &quot;</span>
+                                     <span class="s">&quot;incorrect dimension </span><span class="si">%s</span><span class="s"> bins&quot;</span>
+                                     <span class="o">%</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">x_label</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">())</span>
     <span class="n">summed_background</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">summed_total</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">hist_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;log_y&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">=</span><span class="bp">True</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">=</span><span class="bp">False</span>
     <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="n">spectra</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">spectra</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">),</span>
                 <span class="nb">range</span><span class="o">=</span><span class="n">hist_range</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;step&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;label&quot;</span><span class="p">),</span>
-                <span class="n">color</span><span class="o">=</span><span class="n">spectra</span><span class="o">.</span><span class="n">get_style</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;color&quot;</span><span class="p">),</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">spectra</span><span class="o">.</span><span class="n">get_style</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;color&quot;</span><span class="p">),</span> <span class="n">log</span><span class="o">=</span><span class="n">log_y</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="s">&quot;background&quot;</span><span class="p">:</span>
             <span class="n">summed_background</span> <span class="o">=</span> <span class="n">summed_background</span> <span class="o">+</span> <span class="n">spectra</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -230,75 +193,76 @@
                     <span class="n">label</span><span class="o">=</span><span class="s">&quot;Summed background, standard error&quot;</span><span class="p">)</span>
     <span class="n">summed_total</span> <span class="o">=</span> <span class="n">summed_total</span> <span class="o">+</span> <span class="n">summed_background</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">summed_total</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hist_range</span><span class="p">,</span>
-            <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;step&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;Sum&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="n">kev_width</span> <span class="o">=</span> <span class="n">width</span> <span class="o">*</span> <span class="mf">1.0e3</span>
+            <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;step&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;Sum&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log_y</span><span class="p">)</span>
 
     <span class="c"># Plot limit</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;limit&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">limit</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;limit&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">limit</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">),</span>
                 <span class="nb">range</span><span class="o">=</span><span class="n">hist_range</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;step&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;LightGrey&quot;</span><span class="p">,</span>
-                <span class="n">label</span><span class="o">=</span><span class="s">&quot;KamLAND-Zen limit&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+                <span class="n">label</span><span class="o">=</span><span class="s">&quot;KamLAND-Zen limit&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log_y</span><span class="p">)</span>
 
     <span class="c"># Shrink current axis by 20%</span>
     <span class="n">box</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_position</span><span class="p">([</span><span class="n">box</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">height</span><span class="o">*</span><span class="mf">0.8</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper right&quot;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.25</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="s">&quot;8&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Count per </span><span class="si">%.1f</span><span class="s"> keV bin&quot;</span> <span class="o">%</span> <span class="n">kev_width</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Count per </span><span class="si">%f</span><span class="s"> </span><span class="si">%s</span><span class="s"> bin&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
     <span class="c"># Plot chi squared per bin, if required</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;per_bin&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">calculator</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;per_bin&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">calculator</span><span class="p">:</span>
         <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
         <span class="n">chi_squared_per_bin</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="n">get_chi_squared_per_bin</span><span class="p">()</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">chi_squared_per_bin</span><span class="p">,</span>
                  <span class="nb">range</span><span class="o">=</span><span class="n">hist_range</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;step&quot;</span><span class="p">)</span>  <span class="c"># same x axis as above</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;$\chi^2$ per </span><span class="si">%.1f</span><span class="s"> keV bin&quot;</span> <span class="o">%</span> <span class="n">kev_width</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;$\chi^2$ per </span><span class="si">%f</span><span class="s"> </span><span class="si">%s</span><span class="s"> bin&quot;</span>
+                   <span class="o">%</span> <span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xmax</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;title&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">figtext</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;title&quot;</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;text&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;text&quot;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figtext</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">figtext</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.90</span><span class="o">-</span><span class="p">(</span><span class="n">index</span><span class="o">*</span><span class="mf">0.05</span><span class="p">),</span> <span class="n">entry</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">show_plot</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">fig</span>
+
 </div>
-<div class="viewcode-block" id="plot_surface"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.plot_surface">[docs]</a><span class="k">def</span> <span class="nf">plot_surface</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Plot the spectra with the dimension projected out.</span>
-<span class="sd">    For example dimension == 0 will plot the spectra as projected onto the</span>
-<span class="sd">    radial and time dimensions i.e. not energy.</span>
+<div class="viewcode-block" id="plot_surface"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot.plot_surface">[docs]</a><span class="k">def</span> <span class="nf">plot_surface</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension1</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot the two dimensions from spectra as a 2D histogram</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      spectra (:class:`echidna.core.spectra`): The spectra to plot.</span>
-<span class="sd">      dimension (int): The dimension to project out.</span>
+<span class="sd">      dimension1 (string): The name of the dimension you want to plot.</span>
+<span class="sd">      dimension2 (string): The name of the dimension you want to plot.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plot of the surface of the two dimensions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
     <span class="n">axis</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s">&#39;3d&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_energy_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_energy_bins</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Energy [MeV]&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_radial_bins</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Time [yr]&quot;</span><span class="p">)</span>
-        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Radius [mm]&quot;</span><span class="p">)</span>
-    <span class="n">axis</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s">&quot;Count per bin&quot;</span><span class="p">)</span>
+    <span class="n">index1</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension1</span><span class="p">)</span>
+    <span class="n">index2</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index1</span> <span class="o">&lt;</span> <span class="n">index2</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension1</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_produce_axis</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="n">dimension1</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">)</span>
+    <span class="n">par1</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension1</span><span class="p">)</span>
+    <span class="n">par2</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index1</span> <span class="o">&lt;</span> <span class="n">index2</span><span class="p">:</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%f</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension2</span><span class="p">,</span> <span class="n">par2</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%f</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension1</span><span class="p">,</span> <span class="n">par1</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%f</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension1</span><span class="p">,</span> <span class="n">par1</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%f</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dimension2</span><span class="p">,</span> <span class="n">par2</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()))</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s">&quot;Counts per bin&quot;</span><span class="p">)</span>
     <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>  <span class="c"># `plot_surface` expects `x` and `y` data to be 2D</span>
+    <span class="c"># `plot_surface` expects `x` and `y` data to be 2D</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">axis</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">show_plot</span><span class="p">:</span>
@@ -309,7 +273,6 @@
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">echidna</span>
     <span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
-
 
     <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;/data/Te130_0n2b_mc_smeared.hdf5&quot;</span>
     <span class="n">spectre</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">echidna</span><span class="o">.</span><span class="n">__echidna_home__</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>

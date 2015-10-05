@@ -51,6 +51,7 @@
 <span class="kn">import</span> <span class="nn">unittest</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">echidna.limit.limit_setting</span> <span class="kn">as</span> <span class="nn">limit_setting</span>
@@ -62,10 +63,16 @@
 <div class="viewcode-block" id="TestLimitSetting"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting">[docs]</a><span class="k">class</span> <span class="nc">TestLimitSetting</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 
 <div class="viewcode-block" id="TestLimitSetting.setUp"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets up the signal and background for limit setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span> <span class="o">=</span> <span class="mf">1e5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;signal&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
-                             <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)]</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="s">&quot;echidna/config/example.yml&quot;</span>
+        <span class="n">config1</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">config2</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">config3</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;signal&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">,</span> <span class="n">config1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">,</span> <span class="n">config2</span><span class="p">),</span>
+                             <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;bkg_2&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">,</span> <span class="n">config3</span><span class="p">)]</span>
 </div>
 <div class="viewcode-block" id="TestLimitSetting.test_init"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Test initialisation of the class.</span>
@@ -73,31 +80,35 @@
 <span class="sd">        Checks that the CompatibilityError is raised when necessary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Test energy compatibility</span>
-        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
+        <span class="n">orig_spectra</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">new_bins</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="o">==</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">:</span>
+                <span class="n">new_bins</span> <span class="o">+=</span> <span class="p">(</span><span class="n">bins</span><span class="o">/</span><span class="mf">2.</span><span class="p">,)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_bins</span> <span class="o">+=</span> <span class="p">(</span><span class="n">bins</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rebin</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
                           <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
                           <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_energy_width</span> <span class="o">=</span> <span class="n">width_orig</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_spectra</span>
         <span class="c"># Test radial compatibility</span>
-        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
+        <span class="n">orig_spectra</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">new_bins</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="o">==</span> <span class="s">&quot;radial_mc&quot;</span><span class="p">:</span>
+                <span class="n">new_bins</span> <span class="o">+=</span> <span class="p">(</span><span class="n">bins</span><span class="o">/</span><span class="mf">2.</span><span class="p">,)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_bins</span> <span class="o">+=</span> <span class="p">(</span><span class="n">bins</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rebin</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
                           <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
                           <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_radial_width</span> <span class="o">=</span> <span class="n">width_orig</span>
-
-        <span class="c"># Test time compatibility</span>
-        <span class="n">width_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">*=</span> <span class="mf">0.5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">CompatibilityError</span><span class="p">,</span>
-                          <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                          <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">=</span> <span class="n">width_orig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_spectra</span>
 </div>
 <div class="viewcode-block" id="TestLimitSetting.test_get_limit"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Test main limit setting code</span>
@@ -105,17 +116,16 @@
         <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
         <span class="n">mu</span> <span class="o">=</span> <span class="mf">5.0</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1.0</span>
-        <span class="k">for</span> <span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">radial_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;radial_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">radial_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;radial_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span>
+        <span class="k">for</span> <span class="n">energy</span><span class="p">,</span> <span class="n">radius</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
-                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_radial_low</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_radial_high</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">),</span>
-                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_low</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">_time_high</span><span class="p">,</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">radial_low</span><span class="p">,</span>
+                                     <span class="n">radial_high</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">_n_events</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">:</span>
-                <span class="n">background</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+                <span class="n">background</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
 
         <span class="c"># Configure signal</span>
         <span class="n">signal_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">55.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -133,8 +143,9 @@
         <span class="n">calculator</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">ChiSquared</span><span class="p">()</span>
 
         <span class="c"># Test 1: test Exceptions</span>
-        <span class="n">limit_setter_1</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">limit_setter_1</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+            <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
         <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">limit_setter_1</span><span class="o">.</span><span class="n">get_limit</span><span class="p">)</span>
@@ -146,9 +157,10 @@
         <span class="c"># Define ROI</span>
         <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">sigma</span><span class="p">)</span>
 
-        <span class="n">limit_setter_2</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
-                                                    <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">limit_setter_2</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+            <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
@@ -164,7 +176,9 @@
 
         <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_penalty_config</span><span class="p">)</span>
         <span class="n">limit_2_penalty</span> <span class="o">=</span> <span class="n">limit_setter_2</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_2_penalty</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_2_penalty</span><span class="p">,</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Limit no penatly: </span><span class="si">%s</span><span class="s">; Penalty: </span><span class="si">%s</span><span class="s">&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_2_penalty</span><span class="p">))</span>
 
         <span class="c"># Test 3: Try with a second background</span>
         <span class="c"># Configure bkg_2</span>
@@ -173,20 +187,24 @@
         <span class="n">bkg_2_prior</span> <span class="o">=</span> <span class="mf">10.0</span>
         <span class="n">bkg_2_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">bkg_2_prior</span><span class="p">,</span> <span class="n">bkg_2_counts</span><span class="p">)</span>
 
-        <span class="n">limit_setter_3</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
-                                                    <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
-                                                    <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">limit_setter_3</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">LimitSetting</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+            <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backgrounds</span><span class="p">,</span>
+            <span class="n">roi</span><span class="o">=</span><span class="n">roi</span><span class="p">,</span> <span class="n">pre_shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_1&quot;</span><span class="p">,</span> <span class="n">bkg_1_config</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="s">&quot;bkg_2&quot;</span><span class="p">,</span> <span class="n">bkg_2_config</span><span class="p">)</span>
         <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
         <span class="n">limit_3</span> <span class="o">=</span> <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">get_limit</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_3</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_3</span><span class="p">,</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Limit background 1: </span><span class="si">%s</span><span class="s"> + background 2: </span><span class="si">%s</span><span class="s">&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">limit_2</span><span class="p">,</span> <span class="n">limit_3</span><span class="p">))</span>
         <span class="c"># Check chi squareds have been recorded for each background</span>
         <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">limit_setter_3</span><span class="o">.</span><span class="n">_background_configs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">chi_squareds</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">_chi_squareds</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">chi_squareds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">chi_squareds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Missing chi-squared value for 1 or more&quot;</span>
+                            <span class="s">&quot;backgrounds&quot;</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>

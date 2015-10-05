@@ -4,6 +4,14 @@ echidna.core package
 Submodules
 ----------
 
+echidna.core.dsextract module
+-----------------------------
+
+.. automodule:: echidna.core.dsextract
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.core.fill_spectrum module
 ---------------------------------
 

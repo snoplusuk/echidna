@@ -56,431 +56,299 @@
 <span class="kn">import</span> <span class="nn">rat</span>
 <span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">RAT</span>
 <span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">TChain</span>
-<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">import</span> <span class="nn">echidna.core.dsextract</span> <span class="kn">as</span> <span class="nn">dsextract</span>
 
 
-<div class="viewcode-block" id="_scint_weights"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._scint_weights">[docs]</a><span class="k">def</span> <span class="nf">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**CURRENTLY DISABLED**</span>
-<span class="sd">    This method applies to the scintillator backgrounds.</span>
-<span class="sd">    It produces the list of weights relative to each time period.</span>
-<span class="sd">    The calculation of weights is based on radioactive decay formula.</span>
+<div class="viewcode-block" id="_bipo_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._bipo_ntuple">[docs]</a><span class="k">def</span> <span class="nf">_bipo_ntuple</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">extractors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Because ROOT is crap, we have to loop through the entries first</span>
+<span class="sd">      before using the LoadTree() method required for the bipo checks.</span>
+<span class="sd">      If the chain is not looped first then all parameters return 0.</span>
+<span class="sd">      This function will apply the bipo cuts to a chain from an ntuple and</span>
+<span class="sd">      fill a spectrum.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      times (*list* of *int*): Time periods</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
+<span class="sd">        being filled.</span>
+<span class="sd">      chain (ROOT.TChain): Chain containing the events.</span>
+<span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
+<span class="sd">        respective extractors.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      Weights (*list* of *float*)</span>
+<span class="sd">      :class:`echidna.core.spectra.Spectra`: The filled spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
-        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">time</span><span class="o">/</span><span class="n">T</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">weights</span>
+    <span class="n">check_next</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+        <span class="c"># check_next means previous event has evIndex = 1 &amp; passes fill checks</span>
+        <span class="k">print</span> <span class="s">&quot;evIndex&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">evIndex</span>
+        <span class="k">if</span> <span class="n">check_next</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">evIndex</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;Filling&quot;</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">fill_kwargs</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="c"># Reset kwargs</span>
+        <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">evIndex</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">check_next</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extractors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get_valid_ntuple</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+                <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">get_value_ntuple</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
+                <span class="n">check_next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">check_next</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">break</span>
+    <span class="k">return</span> <span class="n">spectrum</span>
 
 </div>
-<div class="viewcode-block" id="_av_weights"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._av_weights">[docs]</a><span class="k">def</span> <span class="nf">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**UNAVAILABLE**</span>
-<span class="sd">    This method applies to the backgrounds due to AV leaching.</span>
-<span class="sd">    It produces the list of weights relative to each time period.</span>
-<span class="sd">    The calculation of weights is based on radioactive decay formula.</span>
+<div class="viewcode-block" id="_root_mix"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._root_mix">[docs]</a><span class="k">def</span> <span class="nf">_root_mix</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Internal function for filling a spectrum whose config has a mixture of</span>
+<span class="sd">      mc (and/or truth) and reco paremeters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      times (*list* of *int*): Time periods</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      Weights (*list* of *float*)</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
+<span class="sd">        being filled.</span>
+<span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
+<span class="sd">        for the root file.</span>
+<span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
+<span class="sd">        respective extractors.</span>
+<span class="sd">      bipo (bool): Applies the bipo cut if set to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
-        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">weights</span>
-
-</div>
-<div class="viewcode-block" id="fill_reco_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_reco_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_reco_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of energies, radii, times</span>
-<span class="sd">    and weights. It takes the reconstructed energies and true positions</span>
-<span class="sd">    of the events from the root file. In order to keep the statistics,</span>
-<span class="sd">    the time dependence is performed via adding weights to every event</span>
-<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
-<span class="sd">    be written in the same units.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      filename (str): A root file to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
-<span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
-<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
-<span class="sd">        new spectrum.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
-<span class="sd">        spectrum.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span>
-                                   <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">())</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># Note mc will be the same for all evs in loop below:</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bipo</span> <span class="ow">and</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Only bipos with 1 ev survive bipo cut</span>
+            <span class="k">continue</span>
         <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()):</span>
             <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">DefaultFitVertexExists</span><span class="p">()</span> <span class="ow">or</span>
-                    <span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ContainsEnergy</span><span class="p">()</span> <span class="ow">or</span>
-                    <span class="ow">not</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ValidEnergy</span><span class="p">()):</span>
-                <span class="k">continue</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetEnergy</span><span class="p">()</span>
-            <span class="n">position</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span>
-            <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="n">fill</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">extractor</span> <span class="ow">in</span> <span class="n">extractors</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="n">var_type</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s">&quot;reco&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_valid_root</span><span class="p">(</span><span class="n">ev</span><span class="p">):</span>
+                        <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">extractor</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="n">extractor</span><span class="o">.</span><span class="n">get_value_root</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">fill</span> <span class="o">=</span> <span class="bp">False</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c"># mc or truth</span>
+                    <span class="k">if</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_valid_root</span><span class="p">(</span><span class="n">mc</span><span class="p">):</span>
+                        <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">extractor</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="n">extractor</span><span class="o">.</span><span class="n">get_value_root</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">fill</span> <span class="o">=</span> <span class="bp">False</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="n">fill</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">fill_kwargs</span><span class="p">)</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                     <span class="k">pass</span>
 
-    <span class="k">return</span> <span class="n">spectrum</span>
-
 </div>
-<div class="viewcode-block" id="fill_mc_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_mc_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_mc_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of energies, radii, times and</span>
-<span class="sd">    weights. It takes the true quenched energies and positions of the</span>
-<span class="sd">    events from the root file. In order to keep the statistics, the</span>
-<span class="sd">    time dependence is performed via adding weights to every event</span>
-<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
-<span class="sd">    be written in the same units.</span>
+<div class="viewcode-block" id="_root_ev"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._root_ev">[docs]</a><span class="k">def</span> <span class="nf">_root_ev</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Internal function for filling a spectrum whose config only has</span>
+<span class="sd">      reco paremeters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      filename (str): A root file to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
-<span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional): Spectrum</span>
-<span class="sd">        you wish to append. Not required when creating a new spectrum.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
-<span class="sd">        spectrum.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
+<span class="sd">        being filled.</span>
+<span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
+<span class="sd">        for the root file.</span>
+<span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
+<span class="sd">        respective extractors.</span>
+<span class="sd">      bipo (bool): Applies the bipo cut if set to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span>
-                                   <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">())</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
-        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetScintQuenchedEnergyDeposit</span><span class="p">()</span>
-            <span class="n">position</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span>
-            <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                    <span class="k">pass</span>
-
-    <span class="k">return</span> <span class="n">spectrum</span>
-
-</div>
-<div class="viewcode-block" id="fill_truth_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_truth_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_truth_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of true energies, radii, times</span>
-<span class="sd">    and weights. It takes the true (non-quenched) energies and</span>
-<span class="sd">    positions of the events from the root file. In order to keep the</span>
-<span class="sd">    statistics, the time dependence is performed via adding weights to</span>
-<span class="sd">    every event depending on the time period. Both, studied time and</span>
-<span class="sd">    Half-life must be written in the same units.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      filename (str): A root file to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
-<span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
-<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
-<span class="sd">        new spectrum.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
-<span class="sd">        spectrum.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span>
-                                   <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">())</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
-        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetScintEnergyDeposit</span><span class="p">()</span>
-            <span class="n">position</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span>
-            <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                    <span class="k">pass</span>
-
-    <span class="k">return</span> <span class="n">spectrum</span>
-
-</div>
-<div class="viewcode-block" id="fill_reco_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_reco_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_reco_ntuple_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of energies, radii, times and</span>
-<span class="sd">    weights. It takes the reconstructed energies and true positions of</span>
-<span class="sd">    the events from the ntuple. In order to keep the statistics, the</span>
-<span class="sd">    time dependence is performed via adding weights to every event</span>
-<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
-<span class="sd">    be written in the same units.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      filename (str): The ntuple to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
-<span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
-<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
-<span class="sd">        new spectrum.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
-<span class="sd">        spectrum.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
-    <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
-    <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bipo</span> <span class="ow">and</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Only bipos with 1 ev survive bipo cut</span>
             <span class="k">continue</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">energy</span>
-        <span class="n">position</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                       <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ievent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()):</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="n">ievent</span><span class="p">)</span>
+            <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">fill</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">extractor</span> <span class="ow">in</span> <span class="n">extractors</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_valid_root</span><span class="p">(</span><span class="n">ev</span><span class="p">):</span>
+                    <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">extractor</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_value_root</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fill</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">fill</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">fill_kwargs</span><span class="p">)</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="_root_mc"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum._root_mc">[docs]</a><span class="k">def</span> <span class="nf">_root_mc</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Internal function for filling a spectrum whose config only has</span>
+<span class="sd">      mc or truth paremeters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
+<span class="sd">        being filled.</span>
+<span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
+<span class="sd">        for the root file.</span>
+<span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
+<span class="sd">        respective extractors.</span>
+<span class="sd">      bipo (bool): Applies the bipo cut if set to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="n">fill</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">bipo</span> <span class="ow">and</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Only bipos with 1 ev survive bipo cut</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">extractor</span> <span class="ow">in</span> <span class="n">extractors</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_valid_root</span><span class="p">(</span><span class="n">mc</span><span class="p">):</span>
+                <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">extractor</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_value_root</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fill</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">fill_kwargs</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">pass</span>
 
-    <span class="k">return</span> <span class="n">spectrum</span>
-
 </div>
-<div class="viewcode-block" id="fill_mc_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_mc_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_mc_ntuple_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of energies, radii, times and</span>
-<span class="sd">    weights. It takes the true quenched energies and positions of the</span>
-<span class="sd">    events from ntuple. In order to keep the statistics, the time</span>
-<span class="sd">    dependence is performed via adding weights to every event depending</span>
-<span class="sd">    on the time period. Both, studied time and Half-life must be</span>
-<span class="sd">    written in the same units.</span>
+<div class="viewcode-block" id="fill_from_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_from_root">[docs]</a><span class="k">def</span> <span class="nf">fill_from_root</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">bipo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This function fills in the ndarray (dimensions specified in the config)</span>
+<span class="sd">    with weights. It takes the parameter specified in the config from the</span>
+<span class="sd">    events in the root file.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      filename (str): The ntuple to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">      filename (str): A root file to study</span>
+<span class="sd">      spectrum_name (str, optional): A name of future spectrum. Not</span>
 <span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      config (:class:`echidna.core.spectra.SpectraConfig` or string, optional):</span>
+<span class="sd">        The config or directory to the config for the spectrum.</span>
+<span class="sd">        Not requried when appending a spectrum.</span>
 <span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
 <span class="sd">        Spectrum you wish to append. Not required when creating a</span>
 <span class="sd">        new spectrum.</span>
+<span class="sd">      bipo (bool, optional): Applies the bipo cut if set to True.</span>
+<span class="sd">        Default is False.</span>
+<span class="sd">      kwargs (dict): Passed to and checked by the dsextractor.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">      ValueError: If spectrum_name is not set when creating a new</span>
 <span class="sd">        spectrum.</span>
+<span class="sd">      IndexError: Unknown dimension type (not mc, truth or reco).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">      :class:`echidna.core.spectra.Spectra`: The filled spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
-    <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
-    <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrum_name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">config</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrum_name</span><span class="p">),</span>
+                                   <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">(),</span>
+                                   <span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="n">dsreader</span><span class="o">.</span><span class="n">GetEntryCount</span><span class="p">()</span>
+        <span class="n">spectrum_name</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="s">&quot;Filling&quot;</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="s">&quot;with&quot;</span><span class="p">,</span> <span class="n">filename</span>
+    <span class="n">extractors</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mc_fill</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">ev_fill</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+        <span class="n">var_type</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span> <span class="ow">or</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s">&quot;truth&quot;</span><span class="p">:</span>
+            <span class="n">mc_fill</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s">&quot;reco&quot;</span><span class="p">:</span>
+            <span class="n">ev_fill</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown paramer type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">var_type</span><span class="p">)</span>
+        <span class="n">extractors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">dsextract</span><span class="o">.</span><span class="n">function_factory</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bipo</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_bipo</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># Flag to indicate bipo cuts are applied</span>
+    <span class="k">if</span> <span class="n">mc_fill</span> <span class="ow">and</span> <span class="n">ev_fill</span><span class="p">:</span>
+        <span class="n">_root_mix</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mc_fill</span><span class="p">:</span>
+        <span class="n">_root_mc</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">mcEdepQuenched</span>
-        <span class="n">position</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                       <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">pass</span>
-
+        <span class="n">_root_ev</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dsreader</span><span class="p">,</span> <span class="n">extractors</span><span class="p">,</span> <span class="n">bipo</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">spectrum</span>
 
 </div>
-<div class="viewcode-block" id="fill_truth_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_truth_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">fill_truth_ntuple_spectrum</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;**Weights have been disabled.**</span>
-<span class="sd">    This function fills in the ndarray of energies, radii, times and</span>
-<span class="sd">    weights. It takes the true (non-quenched) energies and positions</span>
-<span class="sd">    of the events from ntuple. In order to keep the statistics, the</span>
-<span class="sd">    time dependence is performed via adding weights to every event</span>
-<span class="sd">    depending on the time period. Both, studied time and Half-life must</span>
-<span class="sd">    be written in the same units.</span>
+<div class="viewcode-block" id="fill_from_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.fill_spectrum.fill_from_ntuple">[docs]</a><span class="k">def</span> <span class="nf">fill_from_ntuple</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">bipo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This function fills in the ndarray (dimensions specified in the config)</span>
+<span class="sd">    with weights. It takes the parameters specified in the config from</span>
+<span class="sd">    the events in the ntuple.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      filename (str): The ntuple to study</span>
-<span class="sd">      T (float): The Half-life of a studied background</span>
-<span class="sd">      spectrumname (str, optional): A name of future spectrum. Not</span>
+<span class="sd">      spectrum_name (str, optional): A name of future spectrum. Not</span>
 <span class="sd">        required when appending a spectrum.</span>
+<span class="sd">      config (:class:`spectra.SpectraConfig` or string, optional): The config</span>
+<span class="sd">        or directory to the config for the spectrum</span>
 <span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
 <span class="sd">        Spectrum you wish to append. Not required when creating a</span>
 <span class="sd">        new spectrum.</span>
+<span class="sd">      bipo (bool, optional): Applies the bipo cut if set to True.</span>
+<span class="sd">        Default is False.</span>
+<span class="sd">      kwargs (dict): Passed to and checked by the dsextractor.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If spectrumname is not set when creating a new</span>
+<span class="sd">      ValueError: If spectrum_name is not set when creating a new</span>
 <span class="sd">        spectrum.</span>
-
 <span class="sd">    Returns:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`)</span>
+<span class="sd">      :class:`echidna.core.spectra.Spectra`: The filled spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="n">filename</span>
     <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
     <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spectrumname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">spectrum_name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">config</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrumname</span><span class="p">),</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">spectrum_name</span><span class="p">),</span> <span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">(),</span>
+                                   <span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="mf">10.</span><span class="o">*</span><span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
-        <span class="n">spectrumname</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
-    <span class="k">print</span> <span class="n">spectrumname</span>
-
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">time_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_bins</span><span class="p">):</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="n">time_step</span> <span class="o">*</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_width</span> <span class="o">+</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_time_low</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s">&#39;AV&#39;</span> <span class="ow">in</span> <span class="n">spectrumname</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;AV WEIGHTS ARE CURRENTLY UNAVAILABLE&quot;</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_av_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">_scint_weights</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">mcEdep</span>
-        <span class="n">position</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                       <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="n">chain</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
+        <span class="n">spectrum_name</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span>
+    <span class="k">print</span> <span class="s">&quot;Filling&quot;</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="s">&quot;with&quot;</span><span class="p">,</span> <span class="n">filename</span>
+    <span class="n">extractors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+        <span class="n">extractors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dsextract</span><span class="o">.</span><span class="n">function_factory</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">bipo</span><span class="p">:</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">_bipo</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># Flag to indicate bipo cuts are applied</span>
+        <span class="k">return</span> <span class="n">_bipo_ntuple</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">extractors</span><span class="p">)</span>
+    <span class="c"># No bipo so use standard loop:</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+        <span class="n">fill</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># Check to see if all parameters are valid and extract values</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extractors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get_valid_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+                <span class="n">fill_kwargs</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">get_value_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fill</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">break</span>
+        <span class="c"># If all OK, fill the spectrum</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">fill_kwargs</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">pass</span>
-
     <span class="k">return</span> <span class="n">spectrum</span></div>
 </pre></div>
 

@@ -68,7 +68,8 @@
 
 
 <div class="viewcode-block" id="chi_squared_vs_signal"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.chi_squared_vs_signal">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_vs_signal</span><span class="p">(</span><span class="n">signal_config</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                          <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                          <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peanalty</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">effective_mass</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                          <span class="n">half_life</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot the chi squared as a function of signal counts</span>
 
 <span class="sd">    Args:</span>
@@ -80,44 +81,42 @@
 <span class="sd">        same script, ensures matplotlib doesn&#39;t overwrite them.</span>
 <span class="sd">      n_atoms (float): Number of atoms for converter to use in</span>
 <span class="sd">        calculations of half life or effective mass.</span>
-<span class="sd">      *args: Arguments to pass to converter methods.</span>
-<span class="sd">      **kwargs: Keyword arguments.</span>
-
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config</span>
-<span class="sd">          for signal with penalty term.</span>
-<span class="sd">        * effective_mass (*bool*): if True, plot the x-axis as the</span>
-<span class="sd">          signal contribution effective mass.</span>
-<span class="sd">        * half_life (*bool*): if True, plot the x-axis as the signal</span>
-<span class="sd">          contribution half life.</span>
+<span class="sd">      penalty (:class:`echidna.limit.limit_config.LimitConfig`, optional):</span>
+<span class="sd">        config for signal with penalty term.</span>
+<span class="sd">      effective_mass (bool, optional): if True, plot the x-axis as the</span>
+<span class="sd">        signal contribution effective mass.</span>
+<span class="sd">      half_life (bool, optional): if True, plot the x-axis as the signal</span>
+<span class="sd">        contribution half life.</span>
+<span class="sd">      save_as (string, optional): Name of plot to save. All plots are</span>
+<span class="sd">        saved in .png format.</span>
+<span class="sd">      show (bool, optional): Display the plot to screen. Default is False.</span>
+<span class="sd">      \**kwargs: Keyword arguments to pass to converter methods.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">      TypeError: If &#39;half_life&#39; or &#39;effective_mass&#39; keyword arguments</span>
 <span class="sd">        are used without :class:`echidna.calc.decay.DBIsotope` object</span>
 <span class="sd">        to use as converter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plotted figure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">converter</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span>
-        <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;half_life&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;effective_mass&quot;</span><span class="p">))):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">converter</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">half_life</span> <span class="ow">or</span> <span class="n">effective_mass</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;converter is None. Cannot use &#39;half_life&#39; or &quot;</span>
                         <span class="s">&quot;&#39;effective_mass&#39; keywords without converter&quot;</span><span class="p">)</span>
-
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>  <span class="c"># Fig. 1 (axes generated automatically)</span>
+    <span class="c"># Fig. 1 (axes generated automatically)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 
     <span class="c"># X axis values</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;effective_mass&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">effective_mass</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i_bin</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">2</span><span class="p">]):</span>
-            <span class="n">effective_mass</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-                                                          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">effective_mass</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i_bin</span><span class="p">]</span> <span class="o">=</span> <span class="n">effective_mass</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">r&quot;$m_{\beta\beta}$&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;half_life&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">half_life</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i_bin</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">2</span><span class="p">]):</span>
-            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">r&quot;$1/T_{1/2}^{0\nu}$&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
@@ -125,10 +124,11 @@
     <span class="c"># Y axis values</span>
     <span class="n">y_1</span> <span class="o">=</span> <span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">r&quot;$\chi^{2}$&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">y_2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">penalty</span><span class="p">:</span>
+        <span class="n">y_2</span> <span class="o">=</span> <span class="n">penalty</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="s">&quot;bo-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;no systematic uncertainties&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_2</span><span class="p">,</span> <span class="s">&quot;ro-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;systematic uncertainties&quot;</span><span class="p">)</span>  <span class="c"># lines and dots</span>
+        <span class="c"># lines and dots</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_2</span><span class="p">,</span> <span class="s">&quot;ro-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;systematic uncertainties&quot;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_1</span><span class="p">,</span> <span class="s">&quot;o-&quot;</span><span class="p">)</span>  <span class="c"># lines and dots</span>
@@ -136,49 +136,41 @@
     <span class="c"># Set the tick labels, via Axes instance</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c"># Get current Axes instance</span>
     <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">()</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()):</span>
-        <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>  <span class="c"># Set other properties here e.g. colour, rotation</span>
+        <span class="c"># Set other properties here e.g. colour, rotation</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;show&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span> <span class="o">+</span> <span class="s">&quot;.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">fig</span>
 
 </div>
-<div class="viewcode-block" id="chi_squared_map"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.chi_squared_map">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_map</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="chi_squared_map"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.chi_squared_map">[docs]</a><span class="k">def</span> <span class="nf">chi_squared_map</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preferred_values</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">minima</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">contours</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot chi squared surface for systematic vs. signal counts</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic</span>
-<span class="sd">        analyser object, created during limit setting. Can be used</span>
-<span class="sd">        during limit setting setting or can load an instance from</span>
-<span class="sd">        hdf5</span>
+<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A</span>
+<span class="sd">        systematic analyser object, created during limit setting. Can be used</span>
+<span class="sd">        during limit setting setting or can load an instance from hdf5</span>
 <span class="sd">      fig_num (int): Fig number. When creating multiple plots in the</span>
 <span class="sd">        same script, ensures matplotlib doesn&#39;t overwrite them.</span>
-
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * contours (*bool*): if True produces a contour plot of chi</span>
-<span class="sd">          squared surface. Default (*False*).</span>
-<span class="sd">        * preferred_values (*bool*): if False &quot;preferred values&quot; curve</span>
-<span class="sd">          is not overlayed on colour map. Default (*True*)</span>
-<span class="sd">        * minima (*bool*): if False &quot;minima&quot; are not overlayed on</span>
-<span class="sd">          colour map. Default (*True*)</span>
-<span class="sd">        * save_as (*string*): supply file name to save image</span>
+<span class="sd">      preferred_values (bool, optional): if False &quot;preferred values&quot; curve</span>
+<span class="sd">        is not overlayed on colour map. Default is True.</span>
+<span class="sd">      minima (bool, optional): if False &quot;minima&quot; are not overlayed on</span>
+<span class="sd">        colour map. Default is True.</span>
+<span class="sd">      contours (bool, optional): if True produces a contour plot of chi</span>
+<span class="sd">        squared surface. Default is False.</span>
+<span class="sd">      save_as (string, optional): Name of plot to save. All plots are</span>
+<span class="sd">        saved with in .png format.</span>
 
 <span class="sd">      Default is to produce a colour map, with &quot;preferred values&quot; curve</span>
 <span class="sd">      and &quot;minima&quot; overlayed.</span>
 
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plotted figure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Set kwargs defaults</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;preferred_values&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;preferred_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;minima&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;minima&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-
     <span class="c"># Set x and y axes</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">get_actual_counts</span><span class="p">()</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">get_syst_values</span><span class="p">()</span>
@@ -206,7 +198,7 @@
     <span class="n">levels</span> <span class="o">=</span> <span class="n">locator</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
     <span class="n">norm</span> <span class="o">=</span> <span class="n">BoundaryNorm</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">ncolors</span><span class="o">=</span><span class="n">color_map</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;contours&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">contours</span><span class="p">:</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>  <span class="c"># Fig. 2</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">Axes3D</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
@@ -238,8 +230,8 @@
         <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;_contour.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span> <span class="o">+</span> <span class="s">&quot;_contour.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>  <span class="c"># Fig. 2</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
@@ -253,15 +245,16 @@
         <span class="n">color_map</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">color_map</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
         <span class="n">color_bar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">color_map</span><span class="p">)</span>
         <span class="n">color_bar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&quot;$\chi^2$&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
-        <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>  <span class="c"># tick label size</span>
+        <span class="c"># tick label size</span>
+        <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
         <span class="c"># Set axes limits</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
 
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;preferred_values&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">preferred_values</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_2</span><span class="p">,</span> <span class="s">&quot;bo-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;Preferred values&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;minima&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">minima</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_3</span><span class="p">,</span> <span class="n">y_3</span><span class="p">,</span> <span class="s">&quot;ko&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;Minima&quot;</span><span class="p">)</span>
 
         <span class="c"># Set axes tick label size</span>
@@ -269,27 +262,25 @@
             <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;_color_map.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span> <span class="o">+</span> <span class="s">&quot;_color_map.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span>
 
 </div>
-<div class="viewcode-block" id="penalty_vs_systematic"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.penalty_vs_systematic">[docs]</a><span class="k">def</span> <span class="nf">penalty_vs_systematic</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="penalty_vs_systematic"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.penalty_vs_systematic">[docs]</a><span class="k">def</span> <span class="nf">penalty_vs_systematic</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot penalty_value vs. systematic</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic</span>
-<span class="sd">        analyser object, created during limit setting. Can be used</span>
-<span class="sd">        during limit setting setting or can load an instance from</span>
-<span class="sd">        hdf5</span>
-<span class="sd">      fig_num (int): Fig number. When creating multiple plots in the</span>
+<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A</span>
+<span class="sd">        systematic analyser object, created during limit setting. Can be used</span>
+<span class="sd">        during limit setting setting or can load an instance from hdf5</span>
+<span class="sd">      fig_num (int, optional): Fig number. When creating multiple plots in the</span>
 <span class="sd">        same script, ensures matplotlib doesn&#39;t overwrite them.</span>
+<span class="sd">      save_as (string, optional): Name of plot to save. All plots are</span>
+<span class="sd">        saved with in .png format.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * save_as (*string*): supply file name to save image</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plotted figure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">fig_num</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>  <span class="c"># Fig. 3</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="o">**</span><span class="n">BOLD_FONT</span><span class="p">)</span>
@@ -302,33 +293,32 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&quot;bo&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">()</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()):</span>
-        <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>  <span class="c"># Set other properties here e.g. colour, rotation</span>
+        <span class="c"># Set other properties here e.g. colour, rotation</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwagrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwagrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.png&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span>
 
 </div>
-<div class="viewcode-block" id="turn_on"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.turn_on">[docs]</a><span class="k">def</span> <span class="nf">turn_on</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">signal_config</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="turn_on"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.turn_on">[docs]</a><span class="k">def</span> <span class="nf">turn_on</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">signal_config</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot deviation from chi-squared with no floated systematics.</span>
 
 <span class="sd">    When does the effect of floating the systematic &quot;turn on&quot;?</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic</span>
-<span class="sd">        analyser object, created during limit setting. Can be used</span>
-<span class="sd">        during limit setting setting or can load an instance from</span>
-<span class="sd">        hdf5</span>
+<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A</span>
+<span class="sd">        systematic analyser object, created during limit setting. Can be used</span>
+<span class="sd">        during limit setting setting or can load an instance from hdf5.</span>
 <span class="sd">      signal_config (:class:`echidna.limit.limit_config.LimitConfig`): Signal</span>
 <span class="sd">        config class, where chi squareds have been stored.</span>
 <span class="sd">      fig_num (int): Fig number. When creating multiple plots in the</span>
 <span class="sd">        same script, ensures matplotlib doesn&#39;t overwrite them.</span>
+<span class="sd">      save_as (string, optional): Name of plot to save. All plots are</span>
+<span class="sd">        saved with in .png format.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * save_as (*string*): supply file name to save image</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plotted figure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Set x and y axes</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">get_actual_counts</span><span class="p">()</span>
@@ -341,7 +331,9 @@
     <span class="c"># Create meshgrid</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-    <span class="c"># Define an array of \chi_0 values - chi squared without floating systematics</span>
+    <span class="c"># Define an array of \chi_0 values - chi squared without</span>
+    <span class="c"># floating systematics</span>
+
     <span class="n">chi_squareds</span> <span class="o">=</span> <span class="n">signal_config</span><span class="o">.</span><span class="n">get_chi_squareds</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">data_np</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c"># zeroed array the same size as data</span>
     <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_np</span><span class="p">)):</span>
@@ -381,7 +373,8 @@
     <span class="n">color_map</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">color_map</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
     <span class="n">color_bar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">color_map</span><span class="p">)</span>
     <span class="n">color_bar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&quot;$\chi^2 - \chi_0^2$&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
-    <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>  <span class="c"># tick label size</span>
+    <span class="c"># tick label size</span>
+    <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
     <span class="c"># Set axes limits</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
@@ -392,12 +385,12 @@
         <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;_turn_on.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span> <span class="o">+</span> <span class="s">&quot;_turn_on.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span>
 
 </div>
-<div class="viewcode-block" id="push_pull"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.push_pull">[docs]</a><span class="k">def</span> <span class="nf">push_pull</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="push_pull"><a class="viewcode-back" href="../../../echidna.output.html#echidna.output.plot_chi_squared.push_pull">[docs]</a><span class="k">def</span> <span class="nf">push_pull</span><span class="p">(</span><span class="n">syst_analyser</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Plot penalty value - poisson likelihood chi squared.</span>
 
 <span class="sd">    When does minimising chi squared, which wants to &quot;pull&quot; the away</span>
@@ -406,18 +399,16 @@
 <span class="sd">    dominate?</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic</span>
-<span class="sd">        analyser object, created during limit setting. Can be used</span>
-<span class="sd">        during limit setting setting or can load an instance from</span>
-<span class="sd">        hdf5</span>
+<span class="sd">      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A</span>
+<span class="sd">        systematic analyser object, created during limit setting. Can be used</span>
+<span class="sd">        during limit setting setting or can load an instance from hdf5</span>
 <span class="sd">      fig_num (int): Fig number. When creating multiple plots in the</span>
 <span class="sd">        same script, ensures matplotlib doesn&#39;t overwrite them.</span>
+<span class="sd">      save_as (string, optional): Name of plot to save. All plots are</span>
+<span class="sd">        saved with in .png format.</span>
 
-<span class="sd">    .. note::</span>
-
-<span class="sd">      Keyword arguments include:</span>
-
-<span class="sd">        * save_as (*string*): supply file name to save image</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      matplotlib.pyplot.figure: Plotted figure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Set x and y axes</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">get_actual_counts</span><span class="p">()</span>
@@ -432,7 +423,8 @@
 
     <span class="c"># Define an array penalty values</span>
     <span class="n">penalty_values</span> <span class="o">=</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_penalty_values</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span>
-    <span class="n">penalty_array</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c"># zeroed array the same size as data</span>
+    <span class="c"># zeroed array the same size as data</span>
+    <span class="n">penalty_array</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">y</span><span class="p">,</span> <span class="n">penalty_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">penalty_values</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">penalty_array</span><span class="p">[</span><span class="n">y</span><span class="p">])):</span>
             <span class="n">penalty_array</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_value</span>
@@ -472,7 +464,8 @@
     <span class="n">color_map</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">push_pull</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">color_map</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
     <span class="n">color_bar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">color_map</span><span class="p">)</span>
     <span class="n">color_bar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&quot;$s-\chi^{2}_{\lambda,p}$&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
-    <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>  <span class="c"># tick label size</span>
+    <span class="c"># tick label size</span>
+    <span class="n">color_bar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
     <span class="c"># Set axes limits</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
@@ -483,8 +476,8 @@
         <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">MAIN_FONT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">))</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;save_as&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;_push_pull.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_as</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span> <span class="o">+</span> <span class="s">&quot;_push_pull.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span>
 
 </div>

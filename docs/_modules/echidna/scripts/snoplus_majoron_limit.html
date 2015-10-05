@@ -57,7 +57,8 @@
 <span class="sd">Examples:</span>
 <span class="sd">  To use simply run the script::</span>
 
-<span class="sd">    $ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5</span>
+<span class="sd">    $ python snoplus_majoron_limit.py -s /path/to/majoron_mode.hdf5</span>
+<span class="sd">      -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5</span>
 
 <span class="sd">.. note:: Use the -v option to print out progress and timing information</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -105,11 +106,11 @@
     <span class="k">for</span> <span class="n">spectrum</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
         <span class="n">spectrum</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">time_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">time_high</span><span class="o">=</span><span class="n">livetime</span><span class="p">)</span>  <span class="c"># cut to livetime</span>
         <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">radial_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">radial_high</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">)</span>  <span class="c"># shrink to FV</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c"># shrink to ROI</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>  <span class="c"># shrink to ROI</span>
     <span class="k">for</span> <span class="n">spectrum</span> <span class="ow">in</span> <span class="n">floating_backgrounds</span><span class="p">:</span>
         <span class="n">spectrum</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">time_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">time_high</span><span class="o">=</span><span class="n">livetime</span><span class="p">)</span>  <span class="c"># cut to livelime</span>
         <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="n">radial_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">radial_high</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">)</span>  <span class="c"># shrink to FV</span>
-        <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c"># shrink to ROI</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>  <span class="c"># shrink to ROI</span>
 
     <span class="c"># Signal configuration</span>
     <span class="n">signal_configs_np</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># no penalty term</span>
@@ -155,8 +156,10 @@
 
     <span class="c"># Background configuration</span>
     <span class="c"># Te130_2n2b</span>
-    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="mf">3.7396e6</span>  <span class="c"># Based on NEMO-3 T_1/2, for 1 year livetime</span>
-                                 <span class="c"># Since we used cut method to cut to livetime</span>
+    <span class="c"># Based on NEMO-3 T_1/2, for 1 year livetime.</span>
+    <span class="c"># Since we used cut method to cut to livetime</span>
+    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="mf">3.7396e6</span>
+
     <span class="c"># No penalty term</span>
     <span class="n">Te130_2n2b_counts_np</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Te130_2n2b_prior</span><span class="p">])</span>
     <span class="n">Te130_2n2b_config_np</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
@@ -300,7 +303,8 @@
 
         <span class="c"># Dump SystAnalysers to hdf5</span>
         <span class="k">for</span> <span class="n">syst_analyser</span> <span class="ow">in</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">_syst_analysers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="n">output_dir</span><span class="o">+</span><span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">signal_num</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.hdf5&quot;</span><span class="p">,</span>
+            <span class="n">store</span><span class="o">.</span><span class="n">dump_ndarray</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">+</span> <span class="n">syst_analyser</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span>
+                               <span class="nb">str</span><span class="p">(</span><span class="n">signal_num</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.hdf5&quot;</span><span class="p">,</span>
                                <span class="n">syst_analyser</span><span class="p">)</span>
         <span class="n">signal_num</span> <span class="o">+=</span> <span class="mi">1</span>
 

@@ -65,7 +65,11 @@
 <span class="sd">    Args:</span>
 <span class="sd">      form (str, optional): specify form of chi squared calculation to</span>
 <span class="sd">        use</span>
-<span class="sd">      **kwargs: Keyword arguments</span>
+<span class="sd">      penalty_terms (dict, optional): specify (for each penalty term)</span>
+<span class="sd">        values for:</span>
+
+<span class="sd">          * &quot;parameter_value&quot; (optional)</span>
+<span class="sd">          * &quot;sigma&quot;</span>
 
 <span class="sd">    .. note::</span>
 
@@ -75,15 +79,6 @@
 <span class="sd">        * &quot;neyman&quot;</span>
 <span class="sd">        * &quot;poisson_likelihood&quot; (*default*)</span>
 
-<span class="sd">    .. note::</span>
-<span class="sd">      Keyword arguments include</span>
-
-<span class="sd">        * penalty_terms (*dict*): specify (for each penalty term) values</span>
-<span class="sd">          for:</span>
-
-<span class="sd">          * &quot;parameter_value&quot; (*optional*)</span>
-<span class="sd">          * &quot;sigma&quot;</span>
-
 <span class="sd">    Attributes:</span>
 <span class="sd">      _form (str): form of chi squared calculation to use</span>
 <span class="sd">      _penalty_terms (dict): information about each penalty term</span>
@@ -92,10 +87,10 @@
 <span class="sd">      _current_values (dict): Stores the current value of each named</span>
 <span class="sd">        penalty term</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&quot;poisson_likelihood&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&quot;poisson_likelihood&quot;</span><span class="p">,</span> <span class="n">penalty_terms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_form</span> <span class="o">=</span> <span class="n">form</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">penalty_terms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">penalty_terms</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="p">{}</span>
@@ -121,7 +116,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chi_squared_per_bin</span>
 </div>
-<div class="viewcode-block" id="ChiSquared.get_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ChiSquared.get_chi_squared"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared">[docs]</a>    <span class="k">def</span> <span class="nf">get_chi_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">penalty_terms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculate the chi squared comparing observed to expected.</span>
 
 <span class="sd">        Args:</span>
@@ -129,16 +124,11 @@
 <span class="sd">            events</span>
 <span class="sd">          expected (:class:`numpy.array`): energy spectrum of expected</span>
 <span class="sd">            events</span>
-<span class="sd">          **kwargs: keyword argumets</span>
+<span class="sd">          penalty_terms (dict, optional): specify (for each penalty term)</span>
+<span class="sd">            values for:</span>
 
-<span class="sd">        .. note::</span>
-<span class="sd">          Keyword arguments include</span>
-
-<span class="sd">            * penalty_terms (*dict*): specify (for each penalty term)</span>
-<span class="sd">              values for:</span>
-
-<span class="sd">              * &quot;parameter_value&quot;</span>
-<span class="sd">              * &quot;sigma&quot; (*optional*)</span>
+<span class="sd">              * &quot;parameter_value&quot; (optional)</span>
+<span class="sd">              * &quot;sigma&quot;</span>
 
 <span class="sd">        .. warning:: A named penalty term defined here will overwrite</span>
 <span class="sd">          one with the same name defined in the constructor.</span>
@@ -147,10 +137,9 @@
 <span class="sd">          float: Value of chi squared calculated</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Set up penalty term</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">penalty_terms</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">penalty_term</span> <span class="ow">in</span> \
-                        <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">penalty_term</span> <span class="ow">in</span> <span class="n">penalty_terms</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
                         <span class="n">_penalty_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                         <span class="c"># overwrite existing entries</span>
@@ -162,7 +151,7 @@
                     <span class="k">else</span><span class="p">:</span>  <span class="c"># create new entry</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_term</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c"># no penalty term information currently set</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_terms&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">penalty_terms</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms_set</span> <span class="o">=</span> <span class="bp">True</span>
 
         <span class="c"># Calculate chi squared</span>
@@ -295,7 +284,8 @@
         <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
             <span class="n">ll</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ll</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">ll</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span>\
+                <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="n">total</span> <span class="o">+=</span> <span class="n">ll</span>
         <span class="n">ll_per_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ll_per_bin</span><span class="p">,</span> <span class="p">[</span><span class="n">ll</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">per_bin</span><span class="p">:</span>

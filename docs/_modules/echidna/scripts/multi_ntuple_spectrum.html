@@ -61,9 +61,9 @@
 
 <span class="sd">Examples:</span>
 <span class="sd">  To read all ntuples in a directory and save both individual and summed</span>
-<span class="sd">  spectra to file::</span>
+<span class="sd">  spectra to file with config cnfg.yml::</span>
 
-<span class="sd">    $ python multi_ntuple_spectrum.py /path/to/ntuple/direc/</span>
+<span class="sd">    $ python multi_ntuple_spectrum.py /path/to/cnfg.yml /path/to/ntuple/direc/</span>
 
 <span class="sd">  To specify a save directory, include a -s flag followed by path to</span>
 <span class="sd">  the required save destination.</span>
@@ -71,56 +71,61 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">echidna.core.fill_spectrum</span> <span class="kn">as</span> <span class="nn">fill_spectrum</span>
-<span class="kn">import</span> <span class="nn">echidna.output.plot</span> <span class="kn">as</span> <span class="nn">plot</span>
+<span class="kn">import</span> <span class="nn">echidna.output.plot_root</span> <span class="kn">as</span> <span class="nn">plot</span>
 
 
-<div class="viewcode-block" id="create_combined_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">create_combined_ntuple_spectrum</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span>
-                                    <span class="n">bkgnd_name</span><span class="p">,</span> <span class="n">save_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Creates mc, truth and reco spectra from directory containing</span>
+<div class="viewcode-block" id="create_combined_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">create_combined_ntuple_spectrum</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">,</span>
+                                    <span class="n">save_path</span><span class="p">,</span> <span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">,</span> <span class="n">outer_radius</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Creates both mc, truth and reco spectra from directory containing</span>
 <span class="sd">    background ntuples, dumping the results as a spectrum object in an</span>
 <span class="sd">    hdf5 file.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      data_path (str): Path to directory containing the ntuples to be</span>
-<span class="sd">        evaluated.</span>
-<span class="sd">      half_life (float): Half-life of isotope.</span>
-<span class="sd">      bkgnd_name (str): Name of the background being processed.</span>
-<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be</span>
-<span class="sd">        dumped.</span>
+<span class="sd">      data_path (str): Path to directory containing the ntuples to be evaluated</span>
+<span class="sd">      config_path (str): Path to config file</span>
+<span class="sd">      bkgnd_name (str): Name of the background being processed</span>
+<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be dumped</span>
+<span class="sd">      bipo (bool): Apply Bi*Po* cuts when extracting data if True.</span>
+<span class="sd">      fv_radius (float): Cut events outside the fiducial volume of this radius.</span>
+<span class="sd">      outer_radius (float): Used for calculating the radial3 parameter. </span>
+<span class="sd">        See :class:`echidna.core.dsextract` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
     <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">file_list</span><span class="p">):</span>
-        <span class="n">file_path</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">mc_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_mc_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_mc&quot;</span> <span class="o">%</span> <span class="n">bkgnd_name</span><span class="p">)</span>
-            <span class="n">reco_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_reco_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_reco&quot;</span> <span class="o">%</span> <span class="n">bkgnd_name</span><span class="p">)</span>
-            <span class="n">truth_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_truth_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrumname</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_truth&quot;</span> <span class="o">%</span> <span class="n">bkgnd_name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mc_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_mc_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">mc_spec</span><span class="p">)</span>
-            <span class="n">reco_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_reco_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">reco_spec</span><span class="p">)</span>
-            <span class="n">truth_spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_truth_ntuple_spectrum</span><span class="p">(</span>
-                <span class="n">file_path</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">truth_spec</span><span class="p">)</span>
-
+    <span class="k">if</span> <span class="n">outer_radius</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&quot;radial3&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_dims</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Outer radius passed as an command line arg &quot;</span>
+                             <span class="s">&quot;but no radial3 in the config file.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">file_list</span><span class="p">):</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_ntuple</span><span class="p">(</span>
+                    <span class="n">file_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">bkgnd_name</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                    <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_ntuple</span><span class="p">(</span>
+                    <span class="n">file_path</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">,</span>
+                    <span class="n">outer_radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">file_list</span><span class="p">):</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_ntuple</span><span class="p">(</span>
+                    <span class="n">file_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">bkgnd_name</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                    <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">fill_spectrum</span><span class="o">.</span><span class="n">fill_from_ntuple</span><span class="p">(</span>
+                    <span class="n">file_path</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">bipo</span><span class="o">=</span><span class="n">bipo</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">)</span>
     <span class="c"># Plot</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">mc_spec</span><span class="p">)</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">reco_spec</span><span class="p">)</span>
-    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">truth_spec</span><span class="p">)</span>
-
+    <span class="n">plot_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
     <span class="c"># Dump to file</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s%s</span><span class="s">_mc.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">),</span> <span class="n">mc_spec</span><span class="p">)</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s%s</span><span class="s">_reco.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">),</span> <span class="n">reco_spec</span><span class="p">)</span>
-    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s%s</span><span class="s">_truth.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">),</span> <span class="n">truth_spec</span><span class="p">)</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s%s</span><span class="s">.hdf5&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">),</span> <span class="n">spec</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="plot_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.multi_ntuple_spectrum.plot_spectrum">[docs]</a><span class="k">def</span> <span class="nf">plot_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Plot spectra for each of the three spectrum dimensions:</span>
-<span class="sd">      Energy, radius and time.</span>
+<div class="viewcode-block" id="plot_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.multi_ntuple_spectrum.plot_spectrum">[docs]</a><span class="k">def</span> <span class="nf">plot_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot spectra for each of the spectrum dimensions (e.g energy)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to</span>
@@ -129,20 +134,30 @@
 <span class="sd">    Returns:</span>
 <span class="sd">      None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span> <span class="s">&quot;--save_path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;./&quot;</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Enter destination path for .hdf5 spectra files.&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-n&quot;</span><span class="p">,</span> <span class="s">&quot;--bkgnd_name&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Name of background &quot;</span>
-                        <span class="s">&quot;(to be used as file and spectrum name)&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to ntuple directory&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;half_life&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Half-life of isotope ntuple files being read&quot;</span><span class="p">)</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Name of background (to be used as file and &quot;</span>
+                        <span class="s">&quot;spectrum name)&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-c&quot;</span><span class="p">,</span> <span class="s">&quot;--config&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to config file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-p&quot;</span><span class="p">,</span> <span class="s">&quot;--path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to ntuple directory&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--bipo&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bipo&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Apply bipo cut&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--no-bipo&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;bipo&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_false&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Don&#39;t apply bipo cut (default)&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-v&quot;</span><span class="p">,</span> <span class="s">&quot;--fv_radius&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Radius for fiducial volume cut&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-o&quot;</span><span class="p">,</span> <span class="s">&quot;--outer_radius&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Outer radius for filling spectra with the&quot;</span>
+                        <span class="s">&quot;parameter radial3.&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bipo</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="c"># Take data_path from arg input</span>
@@ -159,8 +174,9 @@
     <span class="c"># All files contained should be read and filled into a single specturm</span>
     <span class="c"># object.</span>
     <span class="c">##########################################################################</span>
-    <span class="n">create_combined_ntuple_spectrum</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">half_life</span><span class="p">,</span>
-                                    <span class="n">bkgnd_name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+    <span class="n">create_combined_ntuple_spectrum</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">,</span>
+                                    <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">bipo</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">fv_radius</span><span class="p">,</span>
+                                    <span class="n">args</span><span class="o">.</span><span class="n">outer_radius</span><span class="p">)</span>
 </pre></div>
 
           </div>
