@@ -55,12 +55,12 @@ class TestChiSquared(unittest.TestCase):
         array1 = numpy.array([100.0])
         array2 = numpy.array([110.0])
         log_likelihood = chi_squared.log_likelihood(array1, array2)
-            # Just total, not ll per bin
+        # Just total, not ll per bin
         self.assertAlmostEqual(2.0 * log_likelihood, 0.9379640391350215)
         array1 = numpy.array([100.0])
         array2 = numpy.array([90.0])
         log_likelihood = chi_squared.log_likelihood(array1, array2)
-            # Just total, not ll per bin
+        # Just total, not ll per bin
         self.assertAlmostEqual(2.0 * log_likelihood, 1.072103131565271)
         array1 = numpy.array([100.0])
         array2 = numpy.array([100.0])

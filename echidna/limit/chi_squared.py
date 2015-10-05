@@ -15,7 +15,11 @@ class ChiSquared(object):
     Args:
       form (str, optional): specify form of chi squared calculation to
         use
-      **kwargs: Keyword arguments
+      penalty_terms (dict, optional): specify (for each penalty term)
+        values for:
+
+          * "parameter_value" (optional)
+          * "sigma"
 
     .. note::
 
@@ -25,15 +29,6 @@ class ChiSquared(object):
         * "neyman"
         * "poisson_likelihood" (*default*)
 
-    .. note::
-      Keyword arguments include
-
-        * penalty_terms (*dict*): specify (for each penalty term) values
-          for:
-
-          * "parameter_value" (*optional*)
-          * "sigma"
-
     Attributes:
       _form (str): form of chi squared calculation to use
       _penalty_terms (dict): information about each penalty term
@@ -42,10 +37,10 @@ class ChiSquared(object):
       _current_values (dict): Stores the current value of each named
         penalty term
     """
-    def __init__(self, form="poisson_likelihood", **kwargs):
+    def __init__(self, form="poisson_likelihood", penalty_terms=None):
         self._form = form
-        if (kwargs.get("penalty_terms") is not None):
-            self._penalty_terms = kwargs.get("penalty_terms")
+        if penalty_terms:
+            self._penalty_terms = penalty_terms
             self._penalty_terms_set = True
         else:
             self._penalty_terms = {}
@@ -71,7 +66,7 @@ class ChiSquared(object):
         """
         return self._chi_squared_per_bin
 
-    def get_chi_squared(self, observed, expected, **kwargs):
+    def get_chi_squared(self, observed, expected, penalty_terms=None):
         """ Calculate the chi squared comparing observed to expected.
 
         Args:
@@ -79,16 +74,11 @@ class ChiSquared(object):
             events
           expected (:class:`numpy.array`): energy spectrum of expected
             events
-          **kwargs: keyword argumets
+          penalty_terms (dict, optional): specify (for each penalty term)
+            values for:
 
-        .. note::
-          Keyword arguments include
-
-            * penalty_terms (*dict*): specify (for each penalty term)
-              values for:
-
-              * "parameter_value"
-              * "sigma" (*optional*)
+              * "parameter_value" (optional)
+              * "sigma"
 
         .. warning:: A named penalty term defined here will overwrite
           one with the same name defined in the constructor.
@@ -97,10 +87,9 @@ class ChiSquared(object):
           float: Value of chi squared calculated
         """
         # Set up penalty term
-        if (kwargs.get("penalty_terms") is not None):
+        if penalty_terms:
             if self._penalty_terms_set:
-                for name, penalty_term in \
-                        kwargs.get("penalty_terms").iteritems():
+                for name, penalty_term in penalty_terms.iteritems():
                     if (self._penalty_terms.get(name) is not None):
                         _penalty_term = self._penalty_terms.get(name)
                         # overwrite existing entries
@@ -112,7 +101,7 @@ class ChiSquared(object):
                     else:  # create new entry
                         self._penalty_terms[name] = penalty_term
             else:  # no penalty term information currently set
-                self._penalty_terms = kwargs.get("penalty_terms")
+                self._penalty_terms = penalty_terms
                 self._penalty_terms_set = True
 
         # Calculate chi squared
@@ -245,7 +234,8 @@ def log_likelihood(observed, expected, per_bin=False):
         if observed[i] < epsilon:
             ll = expected[i]
         else:
-            ll = expected[i]-observed[i]+observed[i]*numpy.log(observed[i]/expected[i])
+            ll = expected[i] - observed[i] + observed[i] *\
+                numpy.log(observed[i] / expected[i])
         total += ll
         ll_per_bin = numpy.append(ll_per_bin, [ll], axis=0)
     if per_bin:

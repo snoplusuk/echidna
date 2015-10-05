@@ -7,7 +7,8 @@ and 7), with KamLAND-Zen.
 Examples:
   To use simply run the script::
 
-    $ python Xe136_majoron_limit.py -s /path/to/majoron_mode.hdf5s -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
+    $ python Xe136_majoron_limit.py -s /path/to/majoron_mode.hdf5
+    -t /path/to/2n2b.hdf5 -b /path/to/B8_Solar.hdf5
 
 .. note:: Use the -v option to print out progress and timing information
 """
@@ -56,11 +57,11 @@ def main(args):
     for spectrum in signals:
         spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
         spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, 0)  # shrink to ROI
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
     for spectrum in floating_backgrounds:
         spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
         spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, 0)  # shrink to ROI
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
 
     # Signal configuration
     signal_configs_np = []  # no penalty term
@@ -106,8 +107,9 @@ def main(args):
 
     # Background configuration
     # Xe136_2n2b
-    Xe136_2n2b_prior = 1.132e6  # Based on KLZ T_1/2, for 1 years
-                                # Since we used cut method to cut to livetime
+    # Based on KLZ T_1/2, for 1 years
+    # Since we used cut method to cut to livetime
+    Xe136_2n2b_prior = 1.132e6
 
     # No penalty term
     Xe136_2n2b_counts_np = numpy.array([Xe136_2n2b_prior])
@@ -139,11 +141,15 @@ def main(args):
                                                B8_Solar_counts, sigma)
 
     # DBIsotope converter information - constant across modes
-    Xe136_atm_weight = 135.907219  # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
-    Xe134_atm_weight = 133.90539450  # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
+    Xe136_atm_weight = 135.907219
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    Xe134_atm_weight = 133.90539450
     # We want the atomic weight of the enriched Xenon
     XeEn_atm_weight = 0.9093*Xe136_atm_weight + 0.0889*Xe134_atm_weight
-    Xe136_abundance = 0.089  # Xenon @ Periodic Table of Chemical Elements, http://www/webqc.org/periodictable-Xenon-Xe.html, 05/07/2015
+    # Xenon @ Periodic Table of Chemical Elements,
+    # http://www/webqc.org/periodictable-Xenon-Xe.html, 05/07/2015
+    Xe136_abundance = 0.089
     loading = 0.0244  # PRC 86, 021601 (2012)
     ib_radius = 1540.  # mm, PRC 86, 021601 (2012)
     scint_density = 7.5628e-7  # kg/mm^3, calculated by A Back 2015-07-28
@@ -263,7 +269,8 @@ def main(args):
 
         # Dump SystAnalysers to hdf5
         for syst_analyser in set_limit._syst_analysers.values():
-            store.dump_ndarray(output_dir+syst_analyser._name+str(signal_num)+".hdf5",
+            store.dump_ndarray(output_dir + syst_analyser._name +
+                               str(signal_num) + ".hdf5",
                                syst_analyser)
         signal_num += 1
 

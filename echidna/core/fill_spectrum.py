@@ -6,429 +6,297 @@ from echidna.util import root_help
 import rat
 from ROOT import RAT
 from ROOT import TChain
-import math
 import echidna.core.spectra as spectra
+import echidna.core.dsextract as dsextract
 
 
-def _scint_weights(times, T):
-    """**CURRENTLY DISABLED**
-    This method applies to the scintillator backgrounds.
-    It produces the list of weights relative to each time period.
-    The calculation of weights is based on radioactive decay formula.
-
-    Args:
-      times (*list* of *int*): Time periods
-      T (float): The Half-life of a studied background
-
-    Returns:
-      Weights (*list* of *float*)
-    """
-    weights = []
-    for time in times:
-        weights.append(math.exp(-time/T))
-    return weights
-
-
-def _av_weights(times, T):
-    """**UNAVAILABLE**
-    This method applies to the backgrounds due to AV leaching.
-    It produces the list of weights relative to each time period.
-    The calculation of weights is based on radioactive decay formula.
+def _bipo_ntuple(spectrum, chain, extractors):
+    """ Because ROOT is crap, we have to loop through the entries first
+      before using the LoadTree() method required for the bipo checks.
+      If the chain is not looped first then all parameters return 0.
+      This function will apply the bipo cuts to a chain from an ntuple and
+      fill a spectrum.
 
     Args:
-      times (*list* of *int*): Time periods
-      T (float): The Half-life of a studied background
+      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
+        being filled.
+      chain (ROOT.TChain): Chain containing the events.
+      extractors (dict): Keys are the variable names and the values are their
+        respective extractors.
 
     Returns:
-      Weights (*list* of *float*)
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
-    weights = []
-    for time in times:
-        weights.append(1.0)
-    return weights
+    check_next = False
+    fill_kwargs = {}
+    for entry in chain:
+        # check_next means previous event has evIndex = 1 & passes fill checks
+        print "evIndex", entry.evIndex
+        if check_next and entry.evIndex < 1:
+            try:
+                print "Filling"
+                spectrum.fill(**fill_kwargs)
+                spectrum._raw_events += 1
+            except ValueError:
+                pass
+        # Reset kwargs
+        fill_kwargs = {}
+        if entry.evIndex != 0:
+            check_next = False
+            continue
+        for e in extractors:
+            if e.get_valid_ntuple(chain):
+                fill_kwargs[e._name] = e.get_value_ntuple(chain)
+                check_next = True
+            else:
+                check_next = False
+                break
+    return spectrum
 
 
-def fill_reco_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times
-    and weights. It takes the reconstructed energies and true positions
-    of the events from the root file. In order to keep the statistics,
-    the time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
+def _root_mix(spectrum, dsreader, extractors, bipo):
+    """ Internal function for filling a spectrum whose config has a mixture of
+      mc (and/or truth) and reco paremeters.
 
     Args:
-      filename (str): A root file to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
-        required when appending a spectrum.
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional):
-        Spectrum you wish to append. Not required when creating a
-        new spectrum.
-
-    Raises:
-      ValueError: If spectrumname is not set when creating a new
-        spectrum.
-
-    Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
+        being filled.
+      dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
+        for the root file.
+      extractors (dict): Keys are the variable names and the values are their
+        respective extractors.
+      bipo (bool): Applies the bipo cut if set to True.
     """
-    print filename
-    print spectrumname
-    dsreader = RAT.DU.DSReader(filename)
-    if spectrum is None:
-        if spectrumname == "":
-            raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
-    else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = [0]
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
-    for ievent in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
+    for entry in range(0, dsreader.GetEntryCount()):
+        ds = dsreader.GetEntry(entry)
+        fill_kwargs = {}
+        # Note mc will be the same for all evs in loop below:
+        mc = ds.GetMC()
+        if bipo and ds.GetEVCount() != 1:
+            # Only bipos with 1 ev survive bipo cut
+            continue
         for ievent in range(0, ds.GetEVCount()):
             ev = ds.GetEV(ievent)
-            if (not ev.DefaultFitVertexExists() or
-                    not ev.GetDefaultFitVertex().ContainsEnergy() or
-                    not ev.GetDefaultFitVertex().ValidEnergy()):
-                continue
-            energy = ev.GetDefaultFitVertex().GetEnergy()
-            position = ev.GetDefaultFitVertex().GetPosition().Mag()
-            spectrum._raw_events += 1
-            for time, weight in zip(times, weights):
+            fill = True
+            for var, extractor in extractors.iteritems():
+                var_type = var.split("_")[-1]
+                if var_type == "reco":
+                    if extractor.get_valid_root(ev):
+                        fill_kwargs[extractor._name] = \
+                            extractor.get_value_root(ev)
+                    else:
+                        fill = False
+                        break
+                else:  # mc or truth
+                    if extractor.get_valid_root(mc):
+                        fill_kwargs[extractor._name] = \
+                            extractor.get_value_root(mc)
+                    else:
+                        fill = False
+                        break
+            if fill:
                 try:
-                    spectrum.fill(energy, position, time, 1.)
+                    spectrum.fill(**fill_kwargs)
+                    spectrum._raw_events += 1
                 except ValueError:
                     pass
 
-    return spectrum
 
-
-def fill_mc_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times and
-    weights. It takes the true quenched energies and positions of the
-    events from the root file. In order to keep the statistics, the
-    time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
+def _root_ev(spectrum, dsreader, extractors, bipo):
+    """ Internal function for filling a spectrum whose config only has
+      reco paremeters.
 
     Args:
-      filename (str): A root file to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
-        required when appending a spectrum.
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional): Spectrum
-        you wish to append. Not required when creating a new spectrum.
-
-    Raises:
-      ValueError: If spectrumname is not set when creating a new
-        spectrum.
-
-    Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
+        being filled.
+      dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
+        for the root file.
+      extractors (dict): Keys are the variable names and the values are their
+        respective extractors.
+      bipo (bool): Applies the bipo cut if set to True.
     """
-    print filename
-    print spectrumname
-    dsreader = RAT.DU.DSReader(filename)
-    if spectrum is None:
-        if spectrumname == "":
-            raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
-    else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
-    for ievent in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
-        mc = ds.GetMC()
-        if mc.GetMCParticleCount() > 0:
-            energy = mc.GetScintQuenchedEnergyDeposit()
-            position = mc.GetMCParticle(0).GetPosition().Mag()
-            spectrum._raw_events += 1
-            for time, weight in zip(times, weights):
-                try:
-                    spectrum.fill(energy, position, time, 1.)
-                except ValueError:
-                    pass
-
-    return spectrum
-
-
-def fill_truth_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of true energies, radii, times
-    and weights. It takes the true (non-quenched) energies and
-    positions of the events from the root file. In order to keep the
-    statistics, the time dependence is performed via adding weights to
-    every event depending on the time period. Both, studied time and
-    Half-life must be written in the same units.
-
-    Args:
-      filename (str): A root file to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
-        required when appending a spectrum.
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional):
-        Spectrum you wish to append. Not required when creating a
-        new spectrum.
-
-    Raises:
-      ValueError: If spectrumname is not set when creating a new
-        spectrum.
-
-    Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
-    """
-    print filename
-    print spectrumname
-    dsreader = RAT.DU.DSReader(filename)
-    if spectrum is None:
-        if spectrumname == "":
-            raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname),
-                                   10.*dsreader.GetEntryCount())
-    else:
-        spectrum._num_decays += 10.*dsreader.GetEntryCount()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
-    for ievent in range(0, dsreader.GetEntryCount()):
-        ds = dsreader.GetEntry(ievent)
-        mc = ds.GetMC()
-        if mc.GetMCParticleCount() > 0:
-            energy = mc.GetScintEnergyDeposit()
-            position = mc.GetMCParticle(0).GetPosition().Mag()
-            spectrum._raw_events += 1
-            for time, weight in zip(times, weights):
-                try:
-                    spectrum.fill(energy, position, time, 1.)
-                except ValueError:
-                    pass
-
-    return spectrum
-
-
-def fill_reco_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times and
-    weights. It takes the reconstructed energies and true positions of
-    the events from the ntuple. In order to keep the statistics, the
-    time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
-
-    Args:
-      filename (str): The ntuple to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
-        required when appending a spectrum.
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional):
-        Spectrum you wish to append. Not required when creating a
-        new spectrum.
-
-    Raises:
-      ValueError: If spectrumname is not set when creating a new
-        spectrum.
-
-    Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
-    """
-    print filename
-    chain = TChain("output")
-    chain.Add(filename)
-    if spectrum is None:
-        if spectrumname == "":
-            raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
-    else:
-        spectrum._num_decays += 10.*chain.GetEntries()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
-    for event in chain:
-        if event.scintFit == 0:
+    for entry in range(0, dsreader.GetEntryCount()):
+        ds = dsreader.GetEntry(entry)
+        if bipo and ds.GetEVCount() != 1:
+            # Only bipos with 1 ev survive bipo cut
             continue
-        energy = event.energy
-        position = math.fabs(math.sqrt((event.posx)**2 +
-                                       (event.posy)**2 + (event.posz)**2))
-        spectrum._raw_events += 1
-        for time, weight in zip(times, weights):
+        for ievent in range(0, ds.GetEVCount()):
+            ev = ds.GetEV(ievent)
+            fill_kwargs = {}
+            fill = True
+            for var, extractor in extractors.iteritems():
+                if extractor.get_valid_root(ev):
+                    fill_kwargs[extractor._name] = extractor.get_value_root(ev)
+                else:
+                    fill = False
+                    break
+            if fill:
+                try:
+                    spectrum.fill(**fill_kwargs)
+                    spectrum._raw_events += 1
+                except ValueError:
+                    pass
+
+
+def _root_mc(spectrum, dsreader, extractors, bipo):
+    """ Internal function for filling a spectrum whose config only has
+      mc or truth paremeters.
+
+    Args:
+      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
+        being filled.
+      dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
+        for the root file.
+      extractors (dict): Keys are the variable names and the values are their
+        respective extractors.
+      bipo (bool): Applies the bipo cut if set to True.
+    """
+    for entry in range(0, dsreader.GetEntryCount()):
+        ds = dsreader.GetEntry(entry)
+        mc = ds.GetMC()
+        fill = True
+        fill_kwargs = {}
+        if bipo and ds.GetEVCount() != 1:
+            # Only bipos with 1 ev survive bipo cut
+            continue
+        for var, extractor in extractors.iteritems():
+            if extractor.get_valid_root(mc):
+                fill_kwargs[extractor._name] = extractor.get_value_root(mc)
+            else:
+                fill = False
+                break
+        if fill:
             try:
-                spectrum.fill(energy, position, time, 1.)
+                spectrum.fill(**fill_kwargs)
+                spectrum._raw_events += 1
             except ValueError:
                 pass
 
-    return spectrum
 
-
-def fill_mc_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times and
-    weights. It takes the true quenched energies and positions of the
-    events from ntuple. In order to keep the statistics, the time
-    dependence is performed via adding weights to every event depending
-    on the time period. Both, studied time and Half-life must be
-    written in the same units.
+def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
+                   bipo=False, **kwargs):
+    """ This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the parameter specified in the config from the
+    events in the root file.
 
     Args:
-      filename (str): The ntuple to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
+      filename (str): A root file to study
+      spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
+      config (:class:`echidna.core.spectra.SpectraConfig` or string, optional):
+        The config or directory to the config for the spectrum.
+        Not requried when appending a spectrum.
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
+      bipo (bool, optional): Applies the bipo cut if set to True.
+        Default is False.
+      kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
-      ValueError: If spectrumname is not set when creating a new
+      ValueError: If spectrum_name is not set when creating a new
         spectrum.
+      IndexError: Unknown dimension type (not mc, truth or reco).
 
     Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
-    print filename
-    chain = TChain("output")
-    chain.Add(filename)
+    if type(config) == str:
+        config = spectra.SpectraConfig.load_from_file(config)
+    dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrum_name),
+                                   dsreader.GetEntryCount(),
+                                   config)
     else:
-        spectrum._num_decays += 10.*chain.GetEntries()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
+        spectrum._num_decays += dsreader.GetEntryCount()
+        spectrum_name = spectrum._name
+    print "Filling", spectrum_name, "with", filename
+    extractors = {}
+    mc_fill = False
+    ev_fill = False
+    for var in spectrum.get_config().get_pars():
+        var_type = var.split("_")[-1]
+        if var_type == "mc" or var_type == "truth":
+            mc_fill = True
+        elif var_type == "reco":
+            ev_fill = True
+        else:
+            raise IndexError("Unknown paramer type %s" % var_type)
+        extractors[var] = dsextract.function_factory(var, **kwargs)
+    if bipo:
+        spectrum._bipo = 1  # Flag to indicate bipo cuts are applied
+    if mc_fill and ev_fill:
+        _root_mix(spectrum, dsreader, extractors, bipo)
+    elif mc_fill:
+        _root_mc(spectrum, dsreader, extractors, bipo)
     else:
-        weights = _scint_weights(times, T)
-
-    for event in chain:
-        energy = event.mcEdepQuenched
-        position = math.fabs(math.sqrt((event.mcPosx)**2 +
-                                       (event.mcPosy)**2 + (event.mcPosz)**2))
-        spectrum._raw_events += 1
-        for time, weight in zip(times, weights):
-            try:
-                spectrum.fill(energy, position, time, 1.)
-            except ValueError:
-                pass
-
+        _root_ev(spectrum, dsreader, extractors, bipo)
     return spectrum
 
 
-def fill_truth_ntuple_spectrum(filename, T, spectrumname="", spectrum=None):
-    """**Weights have been disabled.**
-    This function fills in the ndarray of energies, radii, times and
-    weights. It takes the true (non-quenched) energies and positions
-    of the events from ntuple. In order to keep the statistics, the
-    time dependence is performed via adding weights to every event
-    depending on the time period. Both, studied time and Half-life must
-    be written in the same units.
+def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
+                     bipo=False, **kwargs):
+    """ This function fills in the ndarray (dimensions specified in the config)
+    with weights. It takes the parameters specified in the config from
+    the events in the ntuple.
 
     Args:
       filename (str): The ntuple to study
-      T (float): The Half-life of a studied background
-      spectrumname (str, optional): A name of future spectrum. Not
+      spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
+      config (:class:`spectra.SpectraConfig` or string, optional): The config
+        or directory to the config for the spectrum
       spectrum (:class:`echidna.core.spectra.Spectra`, optional):
         Spectrum you wish to append. Not required when creating a
         new spectrum.
+      bipo (bool, optional): Applies the bipo cut if set to True.
+        Default is False.
+      kwargs (dict): Passed to and checked by the dsextractor.
 
     Raises:
-      ValueError: If spectrumname is not set when creating a new
+      ValueError: If spectrum_name is not set when creating a new
         spectrum.
-
     Returns:
-      spectrum (:class:`echidna.core.spectra.Spectra`)
+      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
     """
-    print filename
     chain = TChain("output")
     chain.Add(filename)
+    if type(config) == str:
+        config = spectra.SpectraConfig.load_from_file(config)
     if spectrum is None:
-        if spectrumname == "":
+        if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")
-        spectrum = spectra.Spectra(str(spectrumname), 10.*chain.GetEntries())
+        spectrum = spectra.Spectra(str(spectrum_name), chain.GetEntries(),
+                                   config)
     else:
-        spectrum._num_decays += 10.*chain.GetEntries()
-        spectrumname = spectrum._name
-    print spectrumname
-
-    times = []
-    for time_step in range(0, spectrum._time_bins):
-        time = time_step * spectrum._time_width + spectrum._time_low
-        times.append(time)
-
-    if 'AV' in spectrumname:
-        print "AV WEIGHTS ARE CURRENTLY UNAVAILABLE"
-        weights = _av_weights(times, T)
-    else:
-        weights = _scint_weights(times, T)
-
-    for event in chain:
-        energy = event.mcEdep
-        position = math.fabs(math.sqrt((event.mcPosx)**2 +
-                                       (event.mcPosy)**2 + (event.mcPosz)**2))
-        spectrum._raw_events += 1
-        for time, weight in zip(times, weights):
+        spectrum._num_decays += chain.GetEntries()
+        spectrum_name = spectrum._name
+    print "Filling", spectrum_name, "with", filename
+    extractors = []
+    for var in spectrum.get_config().get_pars():
+        extractors.append(dsextract.function_factory(var, **kwargs))
+    if bipo:
+        spectrum._bipo = 1  # Flag to indicate bipo cuts are applied
+        return _bipo_ntuple(spectrum, chain, extractors)
+    # No bipo so use standard loop:
+    for entry in chain:
+        fill = True
+        fill_kwargs = {}
+        # Check to see if all parameters are valid and extract values
+        for e in extractors:
+            if e.get_valid_ntuple(entry):
+                fill_kwargs[e._name] = e.get_value_ntuple(entry)
+            else:
+                fill = False
+                break
+        # If all OK, fill the spectrum
+        if fill:
             try:
-                spectrum.fill(energy, position, time, 1.)
+                spectrum.fill(**fill_kwargs)
+                spectrum._raw_events += 1
             except ValueError:
                 pass
-
     return spectrum

@@ -8,6 +8,10 @@ The numbers used in scaling the signal/backgrounds should set a
 reasonable limit, but are not necessariy the optimum choice of
 parameters.
 
+Note that this script assumes the user has already made a fiducial volume
+cut when creating the spectra and the energy par is "energy_mc" for all
+spectra.
+
 Examples:
   To use simply run the script::
 
@@ -67,13 +71,16 @@ if __name__ == "__main__":
                         help="Supply paths for B8_Solar hdf5 files")
     args = parser.parse_args()
 
+    roi = (2.46, 2.68)  # Define ROI - as used by Andy
+
+
     # Create signal spectrum
     Te130_0n2b = store.load(args.signal)
-    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
     Te130_0n2b.scale(200.)
     unshrunk = Te130_0n2b.sum()
     Te130_0n2b = store.load(args.signal)
-    Te130_0n2b.shrink(2.46, 2.68, 0.0, 3500.0, 0.0, 5.0)
+    shrink_dict = {"energy_mc_low": roi[0], "energy_mc_high": roi[1]}
+    Te130_0n2b.shrink(**shrink_dict)
     Te130_0n2b.scale(200.)
     shrunk = Te130_0n2b.sum()
     scaling = shrunk/unshrunk
@@ -84,20 +91,6 @@ if __name__ == "__main__":
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
 
-    Te130_0n2b._num_decays = Te130_0n2b.sum()
-    Te130_0n2b._raw_events = 200034
-    Te130_2n2b._num_decays = Te130_2n2b.sum()
-    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
-    Te130_2n2b._raw_events = 75073953
-    B8_Solar._num_decays = B8_Solar.sum()
-    print "B8_Solar._num_decays:", B8_Solar._num_decays
-    B8_Solar._raw_events = 106228
-
-    # Shrink spectra to 5 years - livetime used by Andy
-    # And make 3.5m fiducial volume cut
-    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
     # 1/ Set limit with no penalty term
     # Create dictionary of backgrounds and priors
@@ -107,9 +100,7 @@ if __name__ == "__main__":
     fixed_backgrounds = {Te130_2n2b._name: [Te130_2n2b, Te130_2n2b_prior],
                          B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
-    roi = (2.46, 2.68)  # Define ROI - as used by Andy
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
-                                                pre_shrink=True,
                                                 roi=roi)
 
     # Initialise limit setting class
@@ -118,7 +109,7 @@ if __name__ == "__main__":
                                            verbose=args.verbose)
 
     # Configure Te130_0n2b
-    Te130_0n2b_counts = numpy.arange(5.0, 1000.0, 5.0, dtype=float)
+    Te130_0n2b_counts = numpy.arange(0.5, 500.0, 0.5, dtype=float)
     Te130_0n2b_prior = 0.  # Setting a 90% CL so no signal in observed
     Te130_0n2b_config = limit_config.LimitConfig(Te130_0n2b_prior,
                                                  Te130_0n2b_counts)
@@ -140,12 +131,11 @@ if __name__ == "__main__":
 
     converter = decay.DBIsotope(
         "Te130", atm_weight_iso, atm_weight_nat, abundance, phase_space,
-        matrix_element, roi_efficiency=Te130_0n2b.get_roi(0).get("efficiency"))
+        matrix_element, roi_efficiency=scaling)
 
     half_life = converter.counts_to_half_life(sig_num_decays)
     print "90% CL with no penalty at: " + str(sig_num_decays) + " ROI counts"
     print "90% CL with no penalty at: " + str(half_life) + " y"
-
 
     # 2/ Now try fixing B8_Solar and floating Te130_2n2b
     Te130_0n2b = store.load(args.signal)
@@ -154,25 +144,9 @@ if __name__ == "__main__":
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
 
-    # Need to reset all of these for correct scaling
-    Te130_0n2b._num_decays = Te130_0n2b.sum()
-    Te130_0n2b._raw_events = 200034
-    Te130_2n2b._num_decays = Te130_2n2b.sum()
-    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
-    Te130_2n2b._raw_events = 75073953
-    B8_Solar._num_decays = B8_Solar.sum()
-    print "B8_Solar._num_decays:", B8_Solar._num_decays
-    B8_Solar._raw_events = 106228
-
-    # Shrink spectra to 5 years - livetime used by Andy
-    # And make 3.5m fiducial volume cut
-    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
 
     fixed_backgrounds = {B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
-                                                pre_shrink=True,
                                                 roi=roi)
 
     # List of backgrounds to float
@@ -192,7 +166,8 @@ if __name__ == "__main__":
     Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
                                        1.203*Te130_2n2b_prior, 51)
     # Sigma of rate:
-    sigma = 0.203 * Te130_2n2b_prior # Used in penalty term (20.3%, Andy's doc on systematics)
+    # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,
@@ -222,20 +197,6 @@ if __name__ == "__main__":
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
 
-    # Need to reset all of these for correct scaling
-    Te130_0n2b._num_decays = Te130_0n2b.sum()
-    Te130_0n2b._raw_events = 200034
-    Te130_2n2b._num_decays = Te130_2n2b.sum()
-    print "Te130_2n2b._num_decays:", Te130_2n2b._num_decays
-    Te130_2n2b._raw_events = 75073953
-    B8_Solar._num_decays = B8_Solar.sum()
-    print "B8_Solar._num_decays:", B8_Solar._num_decays
-    B8_Solar._raw_events = 106228
-
-    Te130_0n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    Te130_2n2b.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-    B8_Solar.shrink(0.0, 10.0, 0.0, 3500.0, 0.0, 5.0)
-
     # List of backgrounds to float
     floating = [Te130_2n2b, B8_Solar]
 
@@ -253,7 +214,8 @@ if __name__ == "__main__":
     Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
                                        1.203*Te130_2n2b_prior, 51)
     # Sigma of rate:
-    sigma = 0.203 * Te130_2n2b_prior # Used in penalty term (20.3%, Andy's doc on systematics)
+    # Used in penalty term (20.3%, Andy's doc on systematics)
+    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
         Te130_2n2b_prior, Te130_2n2b_counts, sigma)
     set_limit.configure_background(Te130_2n2b._name,
