@@ -85,8 +85,8 @@ class Smear(object):
           tuple: First value of the tuple is the lower bound. The second is
             the upper bound.
         """
-        low = mean - 0.5*self._num_sigma*sigma
-        high = mean + 0.5*self._num_sigma*sigma
+        low = mean - self._num_sigma*sigma
+        high = mean + self._num_sigma*sigma
         return low, high
 
 
