@@ -105,6 +105,32 @@ class EnergySmearLY(Smear):
         super(EnergySmearLY, self).__init__("energy_light_yield")
         self._light_yield = 200.  # NHits/MeV
 
+    def calc_smear_ly(self, new_ly, cur_ly=None):
+        """Calculates the value of light yield (ly) required to smear a
+          data set which has already been smeared with a light yield of cur_ly
+          to achieve a smeared data set with a new light yield of new_ly.
+
+        Args:
+          new_ly (float): The value of light yield wanted for the smeared PDF.
+          cur_ly (float, optional): Current value of light yield the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_ly is smaller than cur_sigma. Can't smear to
+            higher light yields (smaller sigmas)
+
+        Returns:
+          float: The value of light yield needed to smear the current
+            PDF to obtain a new light yield: new_ly.
+        """
+        if not cur_ly:
+            cur_ly = self.get_resolution()
+        if new_ly > cur_ly:
+            raise ValueError("New light yield must be smaller than the"
+                             "current light yield. cur_ly: %s. new_ly: %s."
+                             % (cur_ly, new_ly))
+        return new_ly*cur_ly/(cur_ly-new_ly)
+
     def get_resolution(self):
         """ Returns the light yield.
 
@@ -284,6 +310,32 @@ class EnergySmearRes(Smear):
         """
         super(EnergySmearRes, self).__init__("energy_resolution")
         self._resolution = 0.05  # 5%/sqrt(MeV)
+
+    def calc_smear_resoluton(self, new_res, cur_res=None):
+        """Calculates the value of resolution required to smear a data set
+          which has already been smeared with a resolution of cur_res to
+          achieve a new resolution of new_res.
+
+        Args:
+          new_res (float): The value of resolution wanted for the smeared PDF.
+          cur_res (float, optional): Current value of resolution the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_res is smaller than cur_sigma. Can't smear to
+            higher resolutions (smaller sigmas)
+
+        Returns:
+          float: The value of resolution needed to smear the current
+            PDF to obtain a new resolution with sigma value new_res.
+        """
+        if not cur_res:
+            cur_res = self.get_resolution()
+        if cur_res > new_res:
+            raise ValueError("New resolution must be larger than the"
+                             "current resolution. cur_res: %s. new_res: %s."
+                             % (cur_res, new_res))
+        return numpy.fabs(numpy.sqrt(new_res**2 - cur_res**2))
 
     def get_resolution(self):
         """ Get the energy resolution
@@ -465,6 +517,32 @@ class RadialSmear(Smear):
         """
         super(RadialSmear, self).__init__("radial")
         self._resolution = 100.  # mm
+
+    def calc_smear_resoluton(self, new_res, cur_res=None):
+        """Calculates the value of resolution required to smear a data set
+          which has already been smeared with a resolution of cur_res to
+          achieve a new resolution of new_res.
+
+        Args:
+          new_res (float): The value of resolution wanted for the smeared PDF.
+          cur_res (float, optional): Current value of resolution the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_res is smaller than cur_sigma. Can't smear to
+            higher resolutions (smaller sigmas)
+
+        Returns:
+          float: The value of resolution needed to smear the current
+            PDF to obtain a new resolution: new_res.
+        """
+        if not cur_res:
+            cur_res = self.get_resolution()
+        if cur_res > new_res:
+            raise ValueError("New resolution must be larger than the"
+                             "current resolution. cur_res: %s. new_res: %s."
+                             % (cur_res, new_res))
+        return numpy.fabs(numpy.sqrt(new_res**2 - cur_res**2))
 
     def get_resolution(self):
         """Gets the position resolution.
