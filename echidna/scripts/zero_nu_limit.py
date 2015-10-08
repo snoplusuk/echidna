@@ -73,7 +73,6 @@ if __name__ == "__main__":
 
     roi = (2.46, 2.68)  # Define ROI - as used by Andy
 
-
     # Create signal spectrum
     Te130_0n2b = store.load(args.signal)
     Te130_0n2b.scale(200.)
@@ -85,18 +84,49 @@ if __name__ == "__main__":
     shrunk = Te130_0n2b.sum()
     scaling = shrunk/unshrunk
 
-    Te130_0n2b = store.load(args.signal)
+    # Set decay converter
+    atm_weight_iso = 129.9062244
+    atm_weight_nat = 127.603
+    abundance = 0.3408
+
+    phase_space = 3.69e-14  # Kotila & Iachello 2012
+    matrix_element = 4.03
+
+    converter = decay.DBIsotope(
+        "Te130", atm_weight_iso, atm_weight_nat, abundance, phase_space,
+        matrix_element, roi_efficiency=scaling)
+
+    Te130_0n2b = store.load(args.signal)  # Reload spectrum
 
     # Create background spectra
     Te130_2n2b = store.load(args.two_nu)
-    B8_Solar = store.load(args.b8_solar)
+    Te130_2n2b.scale(1.e6)
+    unshrunk = Te130_2n2b.sum()
+    Te130_2n2b = store.load(args.two_nu)
+    Te130_2n2b.scale(1.e6)
+    shrink_dict = {"energy_mc_low": roi[0], "energy_mc_high": roi[1]}
+    Te130_2n2b.shrink(**shrink_dict)
+    shrunk = Te130_2n2b.sum()
+    scaling = shrunk / unshrunk
 
+    # Set decay converter
+    phase_space = 1.529e-18  # Kotila & Iachello 2012
+    matrix_element = 3.31  # Barea et al. 2013
+
+    two_nu_converter = decay.DBIsotope(
+        "Te130_2n2b", atm_weight_iso, atm_weight_nat, abundance, phase_space,
+        matrix_element, roi_efficiency=scaling)
+
+    Te130_2n2b = store.load(args.two_nu)  # Reload spectra
+    B8_Solar = store.load(args.b8_solar)
 
     # 1/ Set limit with no penalty term
     # Create dictionary of backgrounds and priors
-    Te130_2n2b_prior = 37.396e6  # Based on NEMO-3 T_1/2, for 10 years
-    # from integrating whole spectrum scaled to Valentina's number
-    B8_Solar_prior = 12529.9691
+    two_nu_half_life = 6.9e20  # NEMO-3
+    Te130_2n2b_prior = two_nu_converter.half_life_to_counts(two_nu_half_life,
+                                                            roi_cut=False)
+    # Using Valentina's numbers (SNO+-doc-507)
+    B8_Solar_prior = 1270. * 5.  # 1270 events/year for 5 year livetime
     fixed_backgrounds = {Te130_2n2b._name: [Te130_2n2b, Te130_2n2b_prior],
                          B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
@@ -122,17 +152,6 @@ if __name__ == "__main__":
     # Calculate confidence limit
     sig_num_decays = set_limit.get_limit_no_float()
 
-    # Set decay converter
-    atm_weight_iso = 129.9062244
-    atm_weight_nat = 127.603
-    abundance = 0.3408
-    phase_space = 3.69e-14
-    matrix_element = 4.03
-
-    converter = decay.DBIsotope(
-        "Te130", atm_weight_iso, atm_weight_nat, abundance, phase_space,
-        matrix_element, roi_efficiency=scaling)
-
     half_life = converter.counts_to_half_life(sig_num_decays)
     print "90% CL with no penalty at: " + str(sig_num_decays) + " ROI counts"
     print "90% CL with no penalty at: " + str(half_life) + " y"
@@ -143,7 +162,6 @@ if __name__ == "__main__":
     # Reload background spectra
     Te130_2n2b = store.load(args.two_nu)
     B8_Solar = store.load(args.b8_solar)
-
 
     fixed_backgrounds = {B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     fixed = limit_setting.make_fixed_background(fixed_backgrounds,
