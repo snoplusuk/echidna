@@ -51,17 +51,52 @@ def main(args):
     print "events:", B8_Solar.sum()
     floating_backgrounds.append(B8_Solar)
 
+    # DBIsotope converter information - constant across modes
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
+    Xe136_atm_weight = 135.907219
+    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    Xe134_atm_weight = 133.90539450
+    # We want the atomic weight of the enriched Xenon
+    XeEn_atm_weight = 0.9093*Xe136_atm_weight + 0.0889*Xe134_atm_weight
+    # Xenon @ Periodic Table of Chemical Elements,
+    # http://www/webqc.org/periodictable-Xenon-Xe.html, 05/07/2015
+    Xe136_abundance = 0.089
+    loading = 0.0244  # PRC 86, 021601 (2012)
+    ib_radius = 1540.  # mm, PRC 86, 021601 (2012)
+    scint_density = 7.5628e-7  # kg/mm^3, calculated by A Back 2015-07-28
+
+    # Make a list of associated nuclear physics info
+    nuclear_params = []
+    # n=1:
+    phase_space = 6.02e-16
+    matrix_element = 2.57  # Averaged
+    nuclear_params.append((phase_space, matrix_element))
+    # n=2:
+    phase_space = None
+    matrix_element = None
+    nuclear_params.append((phase_space, matrix_element))
+    # n=3:
+    phase_space = 1.06e-17  # Assuming two Majorons emitted
+    matrix_element = 1.e-3
+    nuclear_params.append((phase_space, matrix_element))
+    # n=7:
+    phase_space = 4.54e-17
+    matrix_element = 1.e-3
+    nuclear_params.append((phase_space, matrix_element))
+
+    livetime = 112.3 / 365.25  # y, KamLAND-Zen 112.3 live days
+
     # Apply FV and livetime cuts
-    fv_radius = 1200.0  # 1.2m PRC 86, 021601 (2012)
+    fv_radius = 1200.  # 1.2m PRC 86, 021601 (2012)
     livetime = 1.0
     for spectrum in signals:
-        spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
-        spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
+        spectrum.shrink(radial3_mc_low=0.0,
+                        radial3_mc_high=(fv_radius/ib_radius)**3)  # shrink to FV
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_truth")  # shrink to ROI
     for spectrum in floating_backgrounds:
-        spectrum.cut(time_low=0.0, time_high=livetime)  # cut to livetime
-        spectrum.shrink(radial_low=0.0, radial_high=fv_radius)  # shrink to FV
-        spectrum.shrink_to_roi(0.5, 3.0, "energy_mc")  # shrink to ROI
+        spectrum.shrink(radial3_mc_low=0.0,
+                        radial3_mc_high=(fv_radius/ib_radius)**3)  # shrink to FV
+        spectrum.shrink_to_roi(0.5, 3.0, "energy_truth")  # shrink to ROI
 
     # Signal configuration
     signal_configs_np = []  # no penalty term
@@ -109,7 +144,18 @@ def main(args):
     # Xe136_2n2b
     # Based on KLZ T_1/2, for 1 years
     # Since we used cut method to cut to livetime
-    Xe136_2n2b_prior = 1.132e6
+    phase_space = 1.433e-18
+    matrix_element = 2.76
+    half_life = 2.30e+21
+    converter = decay.DBIsotope(
+        "Xe136", Xe136_atm_weight, XeEn_atm_weight, Xe136_abundance,
+        phase_space, matrix_element,
+        loading=loading, fv_radius=fv_radius,
+        outer_radius=fv_radius,  # made FV cut when filling
+        scint_density=scint_density,
+        roi_efficiency=Xe136_2n2b.get_roi("energy_truth").get("efficiency"))
+    Xe136_2n2b_prior = converter.half_life_to_counts(half_life,
+                                                     livetime=livetime)
 
     # No penalty term
     Xe136_2n2b_counts_np = numpy.array([Xe136_2n2b_prior])
@@ -140,43 +186,9 @@ def main(args):
     B8_Solar_config = limit_config.LimitConfig(B8_Solar_prior,
                                                B8_Solar_counts, sigma)
 
-    # DBIsotope converter information - constant across modes
-    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
-    Xe136_atm_weight = 135.907219
-    # Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
-    Xe134_atm_weight = 133.90539450
-    # We want the atomic weight of the enriched Xenon
-    XeEn_atm_weight = 0.9093*Xe136_atm_weight + 0.0889*Xe134_atm_weight
-    # Xenon @ Periodic Table of Chemical Elements,
-    # http://www/webqc.org/periodictable-Xenon-Xe.html, 05/07/2015
-    Xe136_abundance = 0.089
-    loading = 0.0244  # PRC 86, 021601 (2012)
-    ib_radius = 1540.  # mm, PRC 86, 021601 (2012)
-    scint_density = 7.5628e-7  # kg/mm^3, calculated by A Back 2015-07-28
-
-    # Make a list of associated nuclear physics info
-    nuclear_params = []
-    # n=1:
-    phase_space = 6.02e-16
-    matrix_element = 2.57  # Averaged
-    nuclear_params.append((phase_space, matrix_element))
-    # n=2:
-    phase_space = None
-    matrix_element = None
-    nuclear_params.append((phase_space, matrix_element))
-    # n=1:
-    phase_space = 1.06e-17  # Assuming two Majorons emitted
-    matrix_element = 1.e-3
-    nuclear_params.append((phase_space, matrix_element))
-    # n=1:
-    phase_space = 4.54e-17
-    matrix_element = 1.e-3
-    nuclear_params.append((phase_space, matrix_element))
 
     # chi squared calculator
     calculator = chi_squared.ChiSquared()
-
-    livetime = 112.3 / 365.25  # y, KamLAND-Zen 112.3 live days
 
     # Set output location
     output_dir = echidna.__echidna_base__ + "/results/snoplus/"
@@ -198,7 +210,7 @@ def main(args):
 
         # Set converter
         phase_space, matrix_element = nuclear_param
-        roi_efficiency = signal.get_roi(0).get("efficiency")
+        roi_efficiency = signal.get_roi("energy_truth").get("efficiency")
         converter = decay.DBIsotope(
             "Xe136", Xe136_atm_weight, XeEn_atm_weight, Xe136_abundance,
             phase_space, matrix_element, loading=loading, fv_radius=fv_radius,
@@ -244,7 +256,7 @@ def main(args):
 
         # Set converter
         phase_space, matrix_element = nuclear_param
-        roi_efficiency = signal.get_roi(0).get("efficiency")
+        roi_efficiency = signal.get_roi("energy_truth").get("efficiency")
         converter = decay.DBIsotope(
             "Xe136", Xe136_atm_weight, XeEn_atm_weight, Xe136_abundance,
             phase_space, matrix_element, loading=loading, fv_radius=fv_radius,
