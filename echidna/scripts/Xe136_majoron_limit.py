@@ -172,8 +172,8 @@ def main(args):
                                                  Xe136_2n2b_counts, sigma)
 
     # B8_Solar
-    # Assume same rate as SNO+ for now
-    B8_Solar_prior = 1252.99691
+    # Assume same rate as SNO+ for now (fom SNO+-doc-507)
+    B8_Solar_prior = 1270. * livetime  # 1270 events/year over livetime
     # No penalty term
     B8_Solar_counts_np = numpy.array([B8_Solar_prior])
     B8_Solar_config_np = limit_config.LimitConfig(B8_Solar_prior,
