@@ -125,8 +125,8 @@ if __name__ == "__main__":
     two_nu_half_life = 6.9e20  # NEMO-3
     Te130_2n2b_prior = two_nu_converter.half_life_to_counts(two_nu_half_life,
                                                             roi_cut=False)
-    # Using Valentina's numbers (SNO+-doc-507)
-    B8_Solar_prior = 1270. * 5.  # 1270 events/year for 5 year livetime
+    # Using Valentina's numbers (SNO+-doc-507v27)
+    B8_Solar_prior = 1021. * 5.  # 1021 events/year for 5 year livetime
     fixed_backgrounds = {Te130_2n2b._name: [Te130_2n2b, Te130_2n2b_prior],
                          B8_Solar._name: [B8_Solar, B8_Solar_prior]}
     # Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting
