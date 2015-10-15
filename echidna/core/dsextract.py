@@ -92,7 +92,7 @@ class EnergyExtractMC(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -165,7 +165,7 @@ class EnergyExtractMC(Extractor):
         '''Check whether energy of an ntuple MC is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -181,7 +181,7 @@ class EnergyExtractMC(Extractor):
         '''Get energy value from an ntuple MC
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: True quenched energy
@@ -215,7 +215,7 @@ class EnergyExtractReco(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -254,7 +254,7 @@ class EnergyExtractReco(Extractor):
         '''Check whether energy of a DS::EV is valid
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -272,7 +272,7 @@ class EnergyExtractReco(Extractor):
         '''Get energy value from a DS::EV
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
 
         Returns:
           float: Reconstructed energy
@@ -283,7 +283,7 @@ class EnergyExtractReco(Extractor):
         '''Check whether energy of an ntuple EV is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -298,7 +298,7 @@ class EnergyExtractReco(Extractor):
         '''Get energy value from an ntuple EV
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: Reconstructed energy
@@ -332,7 +332,7 @@ class EnergyExtractTruth(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -378,7 +378,7 @@ class EnergyExtractTruth(Extractor):
         '''Check whether energy of a DS::MC is valid
 
         Args:
-          mc (:class:`RAT.DS.MC`) entry
+          mc (:class:`RAT.DS.MC`): entry
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -394,7 +394,7 @@ class EnergyExtractTruth(Extractor):
         '''Get energy value from a DS::MC
 
         Args:
-          mc (:class:`RAT.DS.MC`) entry
+          mc (:class:`RAT.DS.MC`): entry
 
         Returns:
           float: True energy
@@ -405,7 +405,7 @@ class EnergyExtractTruth(Extractor):
         '''Check whether energy of an ntuple MC is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -421,7 +421,7 @@ class EnergyExtractTruth(Extractor):
         '''Get energy value from an ntuple MC
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: True energy
@@ -455,7 +455,7 @@ class RadialExtractMC(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -501,7 +501,7 @@ class RadialExtractMC(Extractor):
         '''Check whether radius of a DS::MC is valid
 
         Args:
-          mc (:class:`RAT.DS.MC`) event
+          mc (:class:`RAT.DS.MC`): event
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -517,7 +517,7 @@ class RadialExtractMC(Extractor):
         '''Get radius value from a DS::MC
 
         Args:
-          mc (:class:`RAT.DS.MC`) event
+          mc (:class:`RAT.DS.MC`): event
 
         Returns:
           float: True radius
@@ -528,7 +528,7 @@ class RadialExtractMC(Extractor):
         '''Check whether energy of an ntuple MC is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -544,7 +544,7 @@ class RadialExtractMC(Extractor):
         '''Get radius value from an ntuple MC
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: True radius
@@ -580,7 +580,7 @@ class RadialExtractReco(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -619,7 +619,7 @@ class RadialExtractReco(Extractor):
         '''Check whether radius of a DS::EV is valid
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -637,7 +637,7 @@ class RadialExtractReco(Extractor):
         '''Get radius value from a DS::EV
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
 
         Returns:
           float: Reconstructed radius
@@ -648,7 +648,7 @@ class RadialExtractReco(Extractor):
         '''Check whether radius of an ntuple EV is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -663,7 +663,7 @@ class RadialExtractReco(Extractor):
         '''Get radius value from an ntuple EV
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: Reconstructed radius
@@ -705,7 +705,7 @@ class Radial3ExtractMC(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -751,7 +751,7 @@ class Radial3ExtractMC(Extractor):
         '''Check whether radius of a DS::MC is valid
 
         Args:
-          mc (:class:`RAT.DS.MC`) event
+          mc (:class:`RAT.DS.MC`): event
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -767,7 +767,7 @@ class Radial3ExtractMC(Extractor):
         '''Get radius value from a DS::MC
 
         Args:
-          mc (:class:`RAT.DS.MC`) event
+          mc (:class:`RAT.DS.MC`): event
 
         Returns:
           float: True :math:`(radius/outer_radius)^3`
@@ -779,7 +779,7 @@ class Radial3ExtractMC(Extractor):
         '''Check whether energy of an ntuple MC is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -795,7 +795,7 @@ class Radial3ExtractMC(Extractor):
         '''Get radius value from an ntuple MC
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: True :math:`(radius/outer_radius)^3`
@@ -842,7 +842,7 @@ class Radial3ExtractReco(Extractor):
         """ Applies the fiducial volume (fv) cut to an ntuple entry.
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -881,7 +881,7 @@ class Radial3ExtractReco(Extractor):
         '''Check whether radius of a DS::EV is valid
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
           ds (:class:`RAT.DS`): Data Structure entry
 
         Returns:
@@ -899,7 +899,7 @@ class Radial3ExtractReco(Extractor):
         '''Get radius value from a DS::EV
 
         Args:
-          ev (:class:`RAT.DS.EV`) event
+          ev (:class:`RAT.DS.EV`): event
 
         Returns:
           float: Reconstructed :math:`(radius/outer_radius)^3`
@@ -911,7 +911,7 @@ class Radial3ExtractReco(Extractor):
         '''Check whether radius of an ntuple EV is valid
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           bool: Validity boolean
@@ -926,7 +926,7 @@ class Radial3ExtractReco(Extractor):
         '''Get radius value from an ntuple EV
 
         Args:
-          entry (:class:`ROOT.TChain`) chain entry
+          entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
           float: Reconstructed :math:`(radius/outer_radius)^3`
