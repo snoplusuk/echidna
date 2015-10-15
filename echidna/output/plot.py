@@ -1,23 +1,49 @@
 import matplotlib.pyplot as plt
 import numpy
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def _produce_axis(spectra, dimension):
-    """ This method produces an array that represents the axis between low and
-    high with bins.
+    """ This method produces an array that represents the axis.
+
+    The array is formed of the value at the bin-centre for each bin
+    along the specified dimension.
 
     Args:
-      spectra (:class:`echidna.core.spectra.Spectra`): The spectra you wish to
-        produce the axis from.
+      spectra (:class:`echidna.core.spectra.Spectra`): The spectra you
+        wish to produce the axis from.
       dimension (string): The dimension you wish to produce the axis for.
 
     Returns:
-      list: The values for the axis.
+      :class:`numpy.array`: The values for the axis.
     """
-    parameter = spectra.get_config().get_par(dimension)
-    return [parameter._low + x * (parameter._high - parameter._low) /
-            parameter._bins
-            for x in range(parameter._bins)]
+    par = spectra.get_config().get_par(dimension)
+    width = par.get_width()
+    print ("plot._produce_axis: (%.6f, %.6f, %.6f)" %
+           (par._low, par._high, width))
+    return numpy.arange(par._low, par._high, width) + 0.5*width
+
+
+def _produce_bins(spectra, dimension):
+    """ This method produces an array that represents the bin boundaries.
+
+    The array is formed of the value at each bin boundary from par._low
+    to par._high along the specified dimension. The length of the array
+    of bin boundaries is one greater than the length of the axis array.
+
+    Args:
+      spectra (:class:`echidna.core.spectra.Spectra`): The spectra you
+        wish to produce the bin boundaries from.
+      dimension (string): The dimension you wish to produce the bin
+        boundaries for.
+
+    Returns:
+      :class:`numpy.array`: The values for the axis.
+    """
+    par = spectra.get_config().get_par(dimension)
+    print ("plot._produce_bins: (%.6f, %.6f, %.6f)" %
+           (par._low, par._high, par._bins+1))
+    return numpy.linspace(par._low, par._high, par._bins+1)
 
 
 def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
@@ -40,13 +66,18 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     """
     fig = plt.figure(fig_num)
     axis = fig.add_subplot(1, 1, 1)
-    x = _produce_axis(spectra, dimension)
+
     par = spectra.get_config().get_par(dimension)
     width = par.get_width()
-    plt.xlabel("%s (%s)" % (dimension, par.get_unit()))
-    plt.ylabel("Count per %f %s bin" % (width, par.get_unit()))
+    # Define array of bin boundaries (1 more than number of bins)
+    bins = _produce_bins(spectra, dimension)
+    # Define array of bin centres
+    x = _produce_axis(spectra, dimension)
+
     data = spectra.project(dimension)
-    axis.bar(x, data, width=width)
+    axis.hist(x, bins, weights=data, histtype="step")
+    plt.xlabel("%s (%s)" % (dimension, par.get_unit()))
+    plt.ylabel("Count per %.2g %s bin" % (width, par.get_unit()))
     if show_plot:
         plt.show()
     return fig
@@ -54,7 +85,7 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
 
 def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
                   log_y=False, per_bin=False, limit=None, title=None,
-                  text=None):
+                  text=None, calculator=None):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -94,14 +125,14 @@ def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
       matplotlib.pyplot.figure: Plot of the signal and backgrounds.
     """
     fig = plt.figure(fig_num)
-    ax = fig.add_subplot(3, 1, (1, 2))
+    axis = fig.add_subplot(3, 1, (1, 2))
+
     # All spectra should have same width
     first_spectra = True
     for value in spectra_dict.values():
         spectra = value.get("spectra")
         par = spectra.get_config().get_par(dimension)
         if first_spectra:
-            width = par.get_width()
             low = par._low
             high = par._high
             bins = par._bins
@@ -120,50 +151,77 @@ def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
                 raise AssertionError("Spectra " + spectra._name + " has "
                                      "incorrect dimension %s bins"
                                      % dimension)
+    # Define x-axis
     x = _produce_axis(spectra, dimension)
     x_label = "%s (%s)" % (dimension, par.get_unit())
+
+    # Define bins
+    bins = _produce_bins(spectra, dimension)
+
+    # Define empty arrays for summed background and summed total
     summed_background = numpy.zeros(shape=shape)
     summed_total = numpy.zeros(shape=shape)
-    hist_range = (x[0]-0.5*width, x[-1]+0.5*width)
+
     for value in spectra_dict.values():
         spectra = value.get("spectra")
-        ax.hist(x, bins=len(x), weights=spectra.project(dimension),
-                range=hist_range, histtype="step", label=value.get("label"),
-                color=spectra.get_style().get("color"), log=log_y)
+        data = spectra.project(dimension)
+        # Set label
+        if value.get("label"):
+            label = value.get("label")
+        elif spectra.get_style().get("label"):
+            label = spectra.get_style().get("label")
+        else:  # Use spectrum name
+            label = spectra._name
+        # Set color
+        if value.get("color"):
+            color = value.get("color")
+        elif spectra.get_style().get("color"):
+            color = spectra.get_style().get("color")
+        else:  # None uses default line color sequence
+            color = None
+        axis.hist(x, bins=bins, weights=data, histtype="step",
+                  label=label, color=color, log=log_y)
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
-        else:
-            summed_total = summed_total + spectra.project(dimension)
-    ax.hist(x, bins=len(x), weights=summed_background, range=hist_range,
-            histtype="step", color="DarkSlateGray", linestyle="dashed",
-            label="Summed background", log=log)
+        summed_total = summed_total + spectra.project(dimension)
+    axis.hist(x, bins=bins, weights=summed_background,
+              histtype="step", color="DarkSlateGray",
+              linestyle="dashed", label="Summed background", log=log_y)
     y = summed_background
     yerr = numpy.sqrt(y)
-    ax.fill_between(x, y-yerr, y+yerr, facecolor="DarkSlateGray", alpha=0.5,
-                    label="Summed background, standard error")
-    summed_total = summed_total + summed_background
-    ax.hist(x, bins=len(x), weights=summed_total, range=hist_range,
-            histtype="step", color="black", label="Sum", log=log_y)
+    axis.fill_between(x, y-yerr, y+yerr, facecolor="DarkSlateGray",
+                      alpha=0.5, label="Summed background, standard error")
+    axis.hist(x, bins=bins, weights=summed_total, histtype="step",
+              color="black", label="Sum", log=log_y)
 
     # Plot limit
     if limit:
-        ax.hist(x, bins=len(x), weights=limit.project(dimension),
-                range=hist_range, histtype="step", color="LightGrey",
-                label="KamLAND-Zen limit", log=log_y)
+        # Set color
+        if limit.get_style().get("color"):
+            color = limit.get_style().get("color")
+        else:
+            color = "LightGrey"
+        # Set label
+        if limit.get_style().get("label"):
+            label = limit.get_style().get("label")
+        else:
+            label = "limit"
+        axis.hist(x, bins=bins, weights=limit.project(dimension),
+                  histtype="step", color=color, label=label, log=log_y)
 
     # Shrink current axis by 20%
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width, box.height*0.8])
+    box = axis.get_position()
+    axis.set_position([box.x0, box.y0, box.width, box.height*0.8])
     plt.legend(loc="upper right", bbox_to_anchor=(1.0, 1.25), fontsize="8")
-    plt.ylabel("Count per %f %s bin" % (par.get_width(), par.get_unit()))
+    plt.ylabel("Count per %.2g %s bin" % (par.get_width(), par.get_unit()))
     plt.ylim(ymin=0.1)
 
     # Plot chi squared per bin, if required
     if calculator:
-        ax2 = fig.add_subplot(3, 1, 3, sharex=ax)
+        axis2 = fig.add_subplot(3, 1, 3, sharex=axis)
         chi_squared_per_bin = calculator.get_chi_squared_per_bin()
-        ax2.hist(x, bins=len(x), weights=chi_squared_per_bin,
-                 range=hist_range, histtype="step")  # same x axis as above
+        axis2.hist(x, bins=bins, weights=chi_squared_per_bin,
+                   histtype="step")  # same x axis as above
         plt.ylabel("$\chi^2$ per %f %s bin"
                    % (par.get_width(), par.get_unit()))
 
@@ -179,7 +237,7 @@ def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
     return fig
 
 
-def plot_surface(spectra, dimension1, dimension2):
+def plot_surface(spectra, dimension1, dimension2, show_plot=True):
     """ Plot the two dimensions from spectra as a 2D histogram
 
     Args:
@@ -204,11 +262,11 @@ def plot_surface(spectra, dimension1, dimension2):
     par1 = spectra.get_config().get_par(dimension1)
     par2 = spectra.get_config().get_par(dimension2)
     if index1 < index2:
-        axis.set_xlabel("%s (%f)" % (dimension2, par2.get_unit()))
-        axis.set_ylabel("%s (%f)" % (dimension1, par1.get_unit()))
+        axis.set_xlabel("%s (%s)" % (dimension2, par2.get_unit()))
+        axis.set_ylabel("%s (%s)" % (dimension1, par1.get_unit()))
     else:
-        axis.set_xlabel("%s (%f)" % (dimension1, par1.get_unit()))
-        axis.set_ylabel("%s (%f)" % (dimension2, par2.get_unit()))
+        axis.set_xlabel("%s (%s)" % (dimension1, par1.get_unit()))
+        axis.set_ylabel("%s (%s)" % (dimension2, par2.get_unit()))
     axis.set_zlabel("Counts per bin")
     print len(x), len(y), data.shape
     # `plot_surface` expects `x` and `y` data to be 2D
