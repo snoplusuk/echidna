@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy
-from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.ticker import FixedLocator
+from matplotlib.colors import BoundaryNorm
 
 
 def _produce_axis(spectra, dimension):
@@ -19,8 +20,6 @@ def _produce_axis(spectra, dimension):
     """
     par = spectra.get_config().get_par(dimension)
     width = par.get_width()
-    print ("plot._produce_axis: (%.6f, %.6f, %.6f)" %
-           (par._low, par._high, width))
     return numpy.arange(par._low, par._high, width) + 0.5*width
 
 
@@ -41,8 +40,6 @@ def _produce_bins(spectra, dimension):
       :class:`numpy.array`: The values for the axis.
     """
     par = spectra.get_config().get_par(dimension)
-    print ("plot._produce_bins: (%.6f, %.6f, %.6f)" %
-           (par._low, par._high, par._bins+1))
     return numpy.linspace(par._low, par._high, par._bins+1)
 
 
@@ -237,7 +234,8 @@ def spectral_plot(spectra_dict, dimension, fig_num=1, show_plot=True,
     return fig
 
 
-def plot_surface(spectra, dimension1, dimension2, show_plot=True):
+def plot_surface(spectra, dimension1, dimension2,
+                 fig_num=1, show_plot=True, **kwargs):
     """ Plot the two dimensions from spectra as a 2D histogram
 
     Args:
@@ -248,8 +246,8 @@ def plot_surface(spectra, dimension1, dimension2, show_plot=True):
     Returns:
       matplotlib.pyplot.figure: Plot of the surface of the two dimensions.
     """
-    fig = plt.figure()
-    axis = fig.add_subplot(111, projection='3d')
+    fig = plt.figure(num=fig_num)
+    axis = fig.add_subplot(111)
     index1 = spectra.get_config().get_index(dimension1)
     index2 = spectra.get_config().get_index(dimension2)
     if index1 < index2:
@@ -267,12 +265,27 @@ def plot_surface(spectra, dimension1, dimension2, show_plot=True):
     else:
         axis.set_xlabel("%s (%s)" % (dimension1, par1.get_unit()))
         axis.set_ylabel("%s (%s)" % (dimension2, par2.get_unit()))
-    axis.set_zlabel("Counts per bin")
-    print len(x), len(y), data.shape
+
     # `plot_surface` expects `x` and `y` data to be 2D
     X, Y = numpy.meshgrid(x, y)
-    print X.shape, Y.shape
-    axis.plot_surface(X, Y, data)
+
+    # Set sensible levels, pick the desired colormap and define normalization
+    if kwargs.get("color_scheme") is None:
+        color_scheme = "hot_r"  # default
+    else:
+        color_scheme = kwargs.get("color_scheme")
+    color_map = plt.get_cmap(color_scheme)
+    linear = numpy.linspace(numpy.sqrt(data.min()),
+                            numpy.sqrt(data.max()), num=100)
+    locator = FixedLocator(linear**2)
+    levels = locator.tick_values(data.min(), data.max())
+    norm = BoundaryNorm(levels, ncolors=color_map.N)
+
+    # Plot color map
+    color_map = axis.pcolormesh(X, Y, data, cmap=color_map, norm=norm)
+    color_bar = fig.colorbar(color_map)
+    color_bar.set_label("Counts per bin")
+
     if show_plot:
         plt.show()
     return fig
