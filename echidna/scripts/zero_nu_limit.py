@@ -71,7 +71,8 @@ if __name__ == "__main__":
                         help="Supply paths for B8_Solar hdf5 files")
     args = parser.parse_args()
 
-    roi = (2.46, 2.68)  # Define ROI - as used by Andy
+    # REF: SNO+-doc-2593-v9 (as used by Andy)
+    roi = (2.46, 2.68)
 
     # Create signal spectrum
     Te130_0n2b = store.load(args.signal)
@@ -85,11 +86,15 @@ if __name__ == "__main__":
     scaling = shrunk/unshrunk
 
     # Set decay converter
+
+    # REF: SNO+-doc-1728-v2 (all three values)
     atm_weight_iso = 129.9062244
     atm_weight_nat = 127.603
     abundance = 0.3408
 
-    phase_space = 3.69e-14  # Kotila & Iachello 2012
+    # REF: J. Kotila & F. Iachello, Phys. Rev. C 85, 034316- (2012)
+    phase_space = 3.69e-14
+    # REF: J. Barea et al. Phys. Rev. C 87, 014315- (2013)
     matrix_element = 4.03
 
     converter = decay.DBIsotope(
@@ -110,8 +115,11 @@ if __name__ == "__main__":
     scaling = shrunk / unshrunk
 
     # Set decay converter
-    phase_space = 1.529e-18  # Kotila & Iachello 2012
-    matrix_element = 3.31  # Barea et al. 2013
+
+    # REF: J. Kotila & F. Iachello, Phys. Rev. C 85, 034316- (2012)
+    phase_space = 1.529e-18
+    # REF: J. Barea et al. Phys. Rev. C 87, 014315- (2013)
+    matrix_element = 3.31
 
     two_nu_converter = decay.DBIsotope(
         "Te130_2n2b", atm_weight_iso, atm_weight_nat, abundance, phase_space,
@@ -122,10 +130,12 @@ if __name__ == "__main__":
 
     # 1/ Set limit with no penalty term
     # Create dictionary of backgrounds and priors
-    two_nu_half_life = 6.9e20  # NEMO-3
+
+    # REF: R. Arnold et al. (NEMO-3 Collaboration), PRL 107, 062504 (2011)
+    two_nu_half_life = 7.0e20
     Te130_2n2b_prior = two_nu_converter.half_life_to_counts(two_nu_half_life,
                                                             roi_cut=False)
-    # Using Valentina's numbers (SNO+-doc-507v27)
+    # REF: SNO+-doc-507v27 - Valentina's Numbers
     B8_Solar_prior = 1021. * 5.  # 1021 events/year for 5 year livetime
     fixed_backgrounds = {Te130_2n2b._name: [Te130_2n2b, Te130_2n2b_prior],
                          B8_Solar._name: [B8_Solar, B8_Solar_prior]}
@@ -180,14 +190,15 @@ if __name__ == "__main__":
     set_limit.configure_signal(Te130_0n2b_penalty_config)
 
     # Set config for Te130_2n2b
-    # Floating range:
+    # Sigma of rate:
+    # REF: R. Arnold et al. (NEMO-3 Collaboration), Phys. Rev. Lett. 107,
+    # 062504 (2011), via SNO+-doc-3000-v1 (Andy's doc on systematics)
+    Te130_2n2b_sigma = 0.203 * Te130_2n2b_prior
+    # Floating range (+/- 1 sigma):
     Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
                                        1.203*Te130_2n2b_prior, 51)
-    # Sigma of rate:
-    # Used in penalty term (20.3%, Andy's doc on systematics)
-    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
-        Te130_2n2b_prior, Te130_2n2b_counts, sigma)
+        Te130_2n2b_prior, Te130_2n2b_counts, Te130_2n2b_sigma)
     set_limit.configure_background(Te130_2n2b._name,
                                    Te130_2n2b_penalty_config,
                                    plot_systematic=True)
@@ -227,25 +238,23 @@ if __name__ == "__main__":
     Te130_0n2b_penalty_config = limit_config.LimitConfig(Te130_0n2b_prior,
                                                          Te130_0n2b_counts)
     set_limit.configure_signal(Te130_0n2b_penalty_config)
-
-    # Set config for Te130_2n2b
-    Te130_2n2b_counts = numpy.linspace(0.797*Te130_2n2b_prior,
-                                       1.203*Te130_2n2b_prior, 51)
-    # Sigma of rate:
-    # Used in penalty term (20.3%, Andy's doc on systematics)
-    sigma = 0.203 * Te130_2n2b_prior
     Te130_2n2b_penalty_config = limit_config.LimitConfig(
-        Te130_2n2b_prior, Te130_2n2b_counts, sigma)
+        Te130_2n2b_prior, Te130_2n2b_counts, Te130_2n2b_sigma)
     set_limit.configure_background(Te130_2n2b._name,
                                    Te130_2n2b_penalty_config,
                                    plot_systematic=True)
     # Set config for B8_Solar
+    # Sigma of rate:
+    # REF: R. Arnold et al. (NEMO-3 Collaboration), Phys. Rev. Lett. 107,
+    # 062504 (2011), via SNO+-doc-3000-v1 (Andy's doc on systematics)
+    B8_Solar_sigma = 0.04 * B8_Solar_prior
+    # Floating range (+/- 1 sigma):
     B8_Solar_counts = numpy.linspace(0.96*B8_Solar_prior,
                                      1.04*B8_Solar_prior, 11)
     # 11 bins to make sure midpoint (no variation from prior) is included
-    sigma = 0.04 * B8_Solar_prior  # 4% To use in penalty term
     B8_Solar_penalty_config = limit_config.LimitConfig(B8_Solar_prior,
-                                                       B8_Solar_counts, sigma)
+                                                       B8_Solar_counts,
+                                                       B8_Solar_sigma)
     set_limit.configure_background(B8_Solar._name, B8_Solar_penalty_config,
                                    plot_systematic=True)
     # Set chi squared calculator
