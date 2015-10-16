@@ -31,10 +31,8 @@ def _bipo_ntuple(spectrum, chain, extractors):
     fill_kwargs = {}
     for entry in chain:
         # check_next means previous event has evIndex = 1 & passes fill checks
-        print "evIndex", entry.evIndex
         if check_next and entry.evIndex < 1:
             try:
-                print "Filling"
                 spectrum.fill(**fill_kwargs)
                 spectrum._raw_events += 1
             except ValueError:
@@ -81,14 +79,14 @@ def _root_mix(spectrum, dsreader, extractors, bipo):
             for var, extractor in extractors.iteritems():
                 var_type = var.split("_")[-1]
                 if var_type == "reco":
-                    if extractor.get_valid_root(ev):
+                    if extractor.get_valid_root(ev, ds):
                         fill_kwargs[extractor._name] = \
                             extractor.get_value_root(ev)
                     else:
                         fill = False
                         break
                 else:  # mc or truth
-                    if extractor.get_valid_root(mc):
+                    if extractor.get_valid_root(mc, ds):
                         fill_kwargs[extractor._name] = \
                             extractor.get_value_root(mc)
                     else:
@@ -125,7 +123,7 @@ def _root_ev(spectrum, dsreader, extractors, bipo):
             fill_kwargs = {}
             fill = True
             for var, extractor in extractors.iteritems():
-                if extractor.get_valid_root(ev):
+                if extractor.get_valid_root(ev, ds):
                     fill_kwargs[extractor._name] = extractor.get_value_root(ev)
                 else:
                     fill = False
@@ -160,7 +158,7 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
             # Only bipos with 1 ev survive bipo cut
             continue
         for var, extractor in extractors.iteritems():
-            if extractor.get_valid_root(mc):
+            if extractor.get_valid_root(mc, ds):
                 fill_kwargs[extractor._name] = extractor.get_value_root(mc)
             else:
                 fill = False
