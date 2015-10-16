@@ -331,7 +331,7 @@ class EnergySmearRes(Smear):
         """
         if not cur_res:
             cur_res = self.get_resolution()
-        if cur_res > new_res:
+        if new_res < cur_res:
             raise ValueError("New resolution must be larger than the"
                              "current resolution. cur_res: %s. new_res: %s."
                              % (cur_res, new_res))
@@ -538,7 +538,7 @@ class RadialSmear(Smear):
         """
         if not cur_res:
             cur_res = self.get_resolution()
-        if cur_res > new_res:
+        if new_res < cur_res:
             raise ValueError("New resolution must be larger than the"
                              "current resolution. cur_res: %s. new_res: %s."
                              % (cur_res, new_res))
