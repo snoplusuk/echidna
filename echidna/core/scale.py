@@ -98,7 +98,7 @@ class Scale(object):
                 else:
                     old_bin2 = n_bins - 1
                     area2 = 0.  # This will set scale2 == 0
-                    area1 = 0.
+                    area1 = 1.
             scale1 = area1 / (area1 + area2)
             scale2 = area2 / (area1 + area2)
             # Prepare array split. Is there a better way to do this not using
