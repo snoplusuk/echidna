@@ -65,6 +65,8 @@ class Scale(object):
             if x/sf < low or x/sf > par._high:
                 continue  # Trying to scale values outside range (Unknown)
             y = interpolation(x/sf)
+            if y <= 0.:
+                continue
             old_bin1 = par.get_bin(x/sf)
             old_bin_centre1 = par.get_bin_centre(old_bin1)
             if par.get_bin_centre(old_bin1) > x/sf:
@@ -91,8 +93,8 @@ class Scale(object):
                                         interpolation(x_low1)))
                     x_high2 = x/sf + 0.5*step
                     area2 = numpy.fabs((x_high2 - x_high1) *
-                                       (interpolation(x_high2)
-                                        - interpolation(x_high1)))
+                                       (interpolation(x_high2) -
+                                        interpolation(x_high1)))
                 else:
                     old_bin2 = n_bins - 1
                     area2 = 0.  # This will set scale2 == 0
@@ -111,13 +113,13 @@ class Scale(object):
                     else:
                         cur_slice += str(bin) + ":,"
                     if old_bin1 < n_bins - 1:
-                        old_slice1 += (str(old_bin1) + ":" + str(old_bin1 + 1)
-                                       + ",")
+                        old_slice1 += (str(old_bin1) + ":" +
+                                       str(old_bin1 + 1) + ",")
                     else:
                         old_slice1 += str(old_bin1) + ":,"
                     if old_bin2 < n_bins - 1:
-                        old_slice2 += (str(old_bin2) + ":" + str(old_bin2 + 1)
-                                       + ",")
+                        old_slice2 += (str(old_bin2) + ":" +
+                                       str(old_bin2 + 1) + ",")
                     else:
                         old_slice2 += str(old_bin2) + ":,"
                 else:
@@ -133,8 +135,6 @@ class Scale(object):
             unscaled_sum2 = float(old_data2.sum())
             # Check to see if there is data to scale and counts is positive
             if unscaled_sum1 <= 0. and unscaled_sum2 <= 0.:
-                continue
-            elif y <= 0.:
                 continue
             elif unscaled_sum1 <= 0.:
                 fill_cmd = ("scaled_spec._data" + cur_slice + "+= old_data2 * "
