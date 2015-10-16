@@ -1,3 +1,15 @@
+"""
+Examples:
+  To smear an already smeared spectrum with a light yield of 200 to a
+  a light yield of 190 then the following lines are required::
+
+    >>> smearer = smear.SmearEnergySmearLY()
+    >>> ly = smearer.calc_smear_ly(190., cur_ly=200.)
+    >>> smearer.set_resolution(ly)
+    >>> smeared_spec = smearer.weighted_smear(spectrum)
+
+.. note:: Similar methods are available in all other smearing classes.
+"""
 import numpy as np
 import itertools
 import echidna.core.spectra as spectra
