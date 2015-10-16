@@ -93,6 +93,9 @@ class EnergyExtractMC(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -118,6 +121,9 @@ class EnergyExtractMC(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
@@ -216,6 +222,9 @@ class EnergyExtractReco(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -239,6 +248,9 @@ class EnergyExtractReco(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if ev.GetDefaultFitVertex().GetPosition().Mag() < \
@@ -333,6 +345,9 @@ class EnergyExtractTruth(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -358,6 +373,9 @@ class EnergyExtractTruth(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
@@ -456,6 +474,9 @@ class RadialExtractMC(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -481,6 +502,9 @@ class RadialExtractMC(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
@@ -581,6 +605,9 @@ class RadialExtractReco(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -604,6 +631,9 @@ class RadialExtractReco(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if ev.GetDefaultFitVertex().GetPosition().Mag() < \
@@ -674,19 +704,19 @@ class RadialExtractReco(Extractor):
 
 
 class Radial3ExtractMC(Extractor):
-    ''' True :math:`(radius/outer_radius)^3` radial extraction methods.
+    ''' True :math:`(radius/outer\_radius)^3` radial extraction methods.
 
     Args:
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
       outer_radius (float, optional): The fixed radius used in calculating
-        :math:`(radius/outer_radius)^3`. If None then the av_radius in
+        :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
 
     Attributes:
       _outer_radius (float): The fixed radius used in calculating
-        :math:`(radius/outer_radius)^3`.
+        :math:`(radius/outer\_radius)^3`.
       _reco_pos (bool): If true then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
@@ -706,6 +736,9 @@ class Radial3ExtractMC(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
@@ -731,6 +764,9 @@ class Radial3ExtractMC(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._reco_pos:  # Default is to use MC info for the cut
             if mc.GetMCParticle(0).GetPosition().Mag() < self._fv_radius:
@@ -770,7 +806,7 @@ class Radial3ExtractMC(Extractor):
           mc (:class:`RAT.DS.MC`): event
 
         Returns:
-          float: True :math:`(radius/outer_radius)^3`
+          float: True :math:`(radius/outer\_radius)^3`
         '''
         return (mc.GetMCParticle(0).GetPosition().Mag() /
                 self._outer_radius) ** 3
@@ -798,7 +834,7 @@ class Radial3ExtractMC(Extractor):
           entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
-          float: True :math:`(radius/outer_radius)^3`
+          float: True :math:`(radius/outer\_radius)^3`
         '''
         return (numpy.fabs(numpy.sqrt((entry.mcPosx)**2 +
                                       (entry.mcPosy)**2 +
@@ -815,7 +851,7 @@ class Radial3ExtractReco(Extractor):
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
       outer_radius (float, optional): The fixed radius used in calculating
-        :math:`(radius/outer_radius)^3`. If None then the av_radius in
+        :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
       mc_pos (bool, optional): If true then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
@@ -823,7 +859,7 @@ class Radial3ExtractReco(Extractor):
 
     Attributes:
       _outer_radius (float: The fixed radius used in calculating
-        :math:`(radius/outer_radius)^3`.
+        :math:`(radius/outer\_radius)^3`.
       _mc_pos (bool): If true then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
     '''
@@ -843,6 +879,9 @@ class Radial3ExtractReco(Extractor):
 
         Args:
           entry (:class:`ROOT.TChain`): chain entry
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if numpy.fabs(numpy.sqrt((entry.posx)**2 +
@@ -866,6 +905,9 @@ class Radial3ExtractReco(Extractor):
         Raises:
           ValueError: If reconstruced position cut is used on an mc event
             which has multiple evs.
+
+        Returns:
+          bool: Indicates pass or fail of cut
         """
         if not self._mc_pos:  # Default is to use reco info for the cut
             if ev.GetDefaultFitVertex().GetPosition().Mag() < \
@@ -902,7 +944,7 @@ class Radial3ExtractReco(Extractor):
           ev (:class:`RAT.DS.EV`): event
 
         Returns:
-          float: Reconstructed :math:`(radius/outer_radius)^3`
+          float: Reconstructed :math:`(radius/outer\_radius)^3`
         '''
         return (ev.GetDefaultFitVertex().GetPosition().Mag() /
                 self._outer_radius) ** 3
@@ -929,7 +971,7 @@ class Radial3ExtractReco(Extractor):
           entry (:class:`ROOT.TChain`): chain entry
 
         Returns:
-          float: Reconstructed :math:`(radius/outer_radius)^3`
+          float: Reconstructed :math:`(radius/outer\_radius)^3`
         '''
         return (numpy.fabs(numpy.sqrt((entry.posx)**2 +
                                       (entry.posy)**2 +
