@@ -96,6 +96,29 @@ class SpectraParameter(object):
         """
         return round(x/self.get_width())*self.get_width()
 
+    def get_bin_centre(self, bin):
+        """ Calculates the central value of a given bin
+
+        Args:
+          bin (int): Bin number.
+
+        Raises:
+          TypeError: If bin is not int
+          ValueError: If bin is less than zero
+          ValueError: If bin is greater than the number of bins - 1
+
+        Returns:
+          float: value of bin centre
+        """
+        if type(bin) != int:
+            raise TypeError("Must pass an integer value")
+        if bin < 0:
+            raise ValueError("Bin number (%s) must be zero or positive" % bin)
+        if bin > self._bins - 1:
+            raise ValueError("Bin number (%s) is out of range. Max = %s"
+                             % (bin, self._bins))
+        return self._low + (bin + 0.5)*self.get_width()
+
     def get_bin_centres(self):
         """ Returns the bin centres of the parameter
 
