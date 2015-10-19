@@ -5,7 +5,7 @@ echidna is a limit setting and spectrum fitting tool. It aims to create a fast, 
 
 The image below is taken from a presentation on echidna and aims to summarise the full package and workflow in a single image.
 
-![overview](https://cloud.githubusercontent.com/assets/1931666/10453599/6673622a-71a5-11e5-971a-5be98a6bbe7a.png)
+![overview](https://cloud.githubusercontent.com/assets/1931666/10580055/8822a4c6-7673-11e5-8dfe-a30fddf41a74.png)
 
 Downloading echidna
 -------------------
