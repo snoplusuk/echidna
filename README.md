@@ -1,7 +1,11 @@
 echidna
 =======
 
-echidna is a limit setting and spectrum fitting tool. It aims to create a fast, flexible and user friendly platform providing the tools for a variety of limit-setting and fitting based analyses. For a more detailed description, installation guide and some tutorials, please see the [User manual](https://github.com/snoplusuk/echidna/wiki#user-manual)
+echidna is a limit setting and spectrum fitting tool. It aims to create a fast, flexible and user friendly platform providing the tools for a variety of limit-setting and fitting based analyses. For a more detailed description, installation guide and some tutorials, please see the [User manual](https://github.com/snoplusuk/echidna/wiki#user-manual).
+
+The image below is taken from a presentation on echidna and aims to summarise the full package and workflow in a single image.
+
+![overview](https://cloud.githubusercontent.com/assets/1931666/10580055/8822a4c6-7673-11e5-8dfe-a30fddf41a74.png)
 
 Downloading echidna
 -------------------
