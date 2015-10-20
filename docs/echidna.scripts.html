@@ -104,6 +104,26 @@ and 7), with KamLAND-Zen.</p>
 <p>This will create the hdf5 file <code class="docutils literal"><span class="pre">combined.hdf5</span></code>.
 There is no limit to the number of files you can combine.</p>
 </div>
+<div class="section" id="module-echidna.scripts.dump_scaled">
+<span id="echidna-scripts-dump-scaled-module"></span><h2>echidna.scripts.dump_scaled module<a class="headerlink" href="#module-echidna.scripts.dump_scaled" title="Permalink to this headline">¶</a></h2>
+<p>Example scaling script</p>
+<dl class="docutils">
+<dt>This script:</dt>
+<dd><ul class="first last simple">
+<li>Reads in mc spectra from hdf5</li>
+<li>Scales spectra</li>
+<li>Scaled spectrum is saved to the same directory with <code class="docutils literal"><span class="pre">_scaled</span></code>
+added to the file name</li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To scale energy_mc of the hdf5 file <code class="docutils literal"><span class="pre">example.hdf5</span></code> by a factor 1.1:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python dump_scaled.py -d energy_mc -f /path/to/example.hdf5 -s 1.1
+</pre></div>
+</div>
+<p>This will create the scaled hdf5 file <code class="docutils literal"><span class="pre">/path/to/example_scaled.hdf5</span></code>.</p>
+</div>
 <div class="section" id="module-echidna.scripts.dump_smeared">
 <span id="echidna-scripts-dump-smeared-module"></span><h2>echidna.scripts.dump_smeared module<a class="headerlink" href="#module-echidna.scripts.dump_smeared" title="Permalink to this headline">¶</a></h2>
 <p>Example smearing script</p>
@@ -472,6 +492,7 @@ spectra.</p>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.Xe136_majoron_limit">echidna.scripts.Xe136_majoron_limit module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.combine_hdf5">echidna.scripts.combine_hdf5 module</a></li>
+<li><a class="reference internal" href="#module-echidna.scripts.dump_scaled">echidna.scripts.dump_scaled module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_smeared">echidna.scripts.dump_smeared module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_spectra_ntuple">echidna.scripts.dump_spectra_ntuple module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_spectra_root">echidna.scripts.dump_spectra_root module</a></li>

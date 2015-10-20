@@ -52,6 +52,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
 
 
 <div class="viewcode-block" id="SpectraParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter">[docs]</a><span class="k">class</span> <span class="nc">SpectraParameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -144,6 +145,60 @@
 <span class="sd">          float: The value of the closest bin edge to x</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin_centre"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centre">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the central value of a given bin</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          bin (int): Bin number.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If bin is not int</span>
+<span class="sd">          ValueError: If bin is less than zero</span>
+<span class="sd">          ValueError: If bin is greater than the number of bins - 1</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: value of bin centre</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Must pass an integer value&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) must be zero or positive&quot;</span> <span class="o">%</span> <span class="nb">bin</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) is out of range. Max = </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="nb">bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin_centres"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centres">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the bin centres of the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Bin centres of parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the bin index which contains value x.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          x (float): Value you wish to find the bin index for.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If x is less than parameter lower bounds</span>
+<span class="sd">          ValueError: If x is more than parameter upper bounds</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Bin index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is below parameter lower bound </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is above parameter upper bound </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
 
 </div></div>
 <div class="viewcode-block" id="SpectraConfig"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig">[docs]</a><span class="k">class</span> <span class="nc">SpectraConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -738,7 +793,22 @@
         <span class="n">flattened</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">compression_pairs</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">p</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">flattened</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Spectra.interpolate1d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.interpolate1d">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Interpolates a given dimension of a spectra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dimension (string): Dimension you want to interpolate.</span>
+<span class="sd">          kind (string): Method of interpolation.</span>
+<span class="sd">            See :class:`scipy.interpolate.interp1d` for available methods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`scipy.interpolate.interp1d`: Interpolation function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_bin_centres</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>

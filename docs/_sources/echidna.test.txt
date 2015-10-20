@@ -28,6 +28,14 @@ echidna.test.test_limit_setting module
     :undoc-members:
     :show-inheritance:
 
+echidna.test.test_scale module
+------------------------------
+
+.. automodule:: echidna.test.test_scale
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.test.test_smear module
 ------------------------------
 

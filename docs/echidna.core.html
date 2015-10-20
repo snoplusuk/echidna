@@ -897,6 +897,84 @@ Unknown dimension type (not mc, truth or reco).</li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-echidna.core.scale">
+<span id="echidna-core-scale-module"></span><h2>echidna.core.scale module<a class="headerlink" href="#module-echidna.core.scale" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.core.scale.Scale">
+<em class="property">class </em><code class="descclassname">echidna.core.scale.</code><code class="descname">Scale</code><a class="reference internal" href="_modules/echidna/core/scale.html#Scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.scale.Scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A class for scaling the parameter space of a spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>_scale_factor</strong> (<em>float</em>) &#8211; The factor you want to scale a parameter by.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.scale.Scale.get_scale_factor">
+<code class="descname">get_scale_factor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/scale.html#Scale.get_scale_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.scale.Scale.get_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the scale factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The scale factor.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.scale.Scale.scale">
+<code class="descname">scale</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dimension</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/scale.html#Scale.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.scale.Scale.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scales a given spectrum&#8217;s dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<em>float</em>) &#8211; The spectrum you want to scale.</li>
+<li><strong>dimension</strong> (<em>string</em>) &#8211; The dimension of the spectrum you want to scale.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; To passed to the interpolation function in
+<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The scaled spectrum.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.scale.Scale.set_scale_factor">
+<code class="descname">set_scale_factor</code><span class="sig-paren">(</span><em>scale_factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/scale.html#Scale.set_scale_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.scale.Scale.set_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the scale factor.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Args:</dt>
+<dd>scale_factor (float): Value you wish to set the scale factor to.</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If scale_factor is zero or below.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-echidna.core.smear">
 <span id="echidna-core-smear-module"></span><h2>echidna.core.smear module<a class="headerlink" href="#module-echidna.core.smear" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -1630,6 +1708,28 @@ the given dimension.</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="echidna.core.spectra.Spectra.interpolate1d">
+<code class="descname">interpolate1d</code><span class="sig-paren">(</span><em>dimension</em>, <em>kind='cubic'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.interpolate1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.interpolate1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolates a given dimension of a spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dimension</strong> (<em>string</em>) &#8211; Dimension you want to interpolate.</li>
+<li><strong>kind</strong> (<em>string</em>) &#8211; Method of interpolation.
+See <code class="xref py py-class docutils literal"><span class="pre">scipy.interpolate.interp1d</span></code> for available methods.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">scipy.interpolate.interp1d</span></code>: Interpolation function.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="echidna.core.spectra.Spectra.project">
 <code class="descname">project</code><span class="sig-paren">(</span><em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#Spectra.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.Spectra.project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Project the histogram along an axis for a given dimension.
@@ -1993,6 +2093,80 @@ containing the parameters in the file called filename.</td>
 </tbody>
 </table>
 <dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.get_bin">
+<code class="descname">get_bin</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the bin index which contains value x.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> (<em>float</em>) &#8211; Value you wish to find the bin index for.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If x is less than parameter lower bounds</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If x is more than parameter upper bounds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Bin index</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.get_bin_centre">
+<code class="descname">get_bin_centre</code><span class="sig-paren">(</span><em>bin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_bin_centre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_bin_centre" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the central value of a given bin</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>bin</strong> (<em>int</em>) &#8211; Bin number.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If bin is not int</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If bin is less than zero</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If bin is greater than the number of bins - 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">value of bin centre</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.spectra.SpectraParameter.get_bin_centres">
+<code class="descname">get_bin_centres</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_bin_centres"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_bin_centres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the bin centres of the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: Bin centres of parameter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="echidna.core.spectra.SpectraParameter.get_unit">
 <code class="descname">get_unit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/spectra.html#SpectraParameter.get_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.spectra.SpectraParameter.get_unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the default unit for a given parameter</p>
@@ -2099,6 +2273,7 @@ Unknown variable type passed as a kwarg.</td>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-echidna.core.dsextract">echidna.core.dsextract module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum module</a></li>
+<li><a class="reference internal" href="#module-echidna.core.scale">echidna.core.scale module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.smear">echidna.core.smear module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.spectra">echidna.core.spectra module</a></li>
 <li><a class="reference internal" href="#module-echidna.core">Module contents</a></li>

@@ -20,6 +20,14 @@ echidna.scripts.combine_hdf5 module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.dump_scaled module
+----------------------------------
+
+.. automodule:: echidna.scripts.dump_scaled
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.scripts.dump_smeared module
 -----------------------------------
 
