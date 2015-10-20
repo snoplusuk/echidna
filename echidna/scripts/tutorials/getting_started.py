@@ -12,9 +12,9 @@ This script:
    `scale`
 
 Examples:
-  To run type (from the base directory):
+  To run type (from the base directory)::
 
-      $ python echidna/scripts/tutorials/getting_started.py
+    $ python echidna/scripts/tutorials/getting_started.py
 """
 
 
