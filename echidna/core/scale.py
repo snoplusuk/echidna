@@ -74,11 +74,13 @@ class Scale(object):
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
                     x_high1 = x/sf + 0.5*step
-                    area1 = (x_high1 - x_low1)*(interpolation(x_high1) -
-                                                interpolation(x_low1))
+                    area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
+                                       (interpolation(x_high1) +
+                                        interpolation(x_low1)))
                     x_low2 = x/sf - 0.5*step
-                    area2 = (x_low1 - x_low2)*(interpolation(x_low1) -
-                                               interpolation(x_low2))
+                    area2 = numpy.fabs(0.5 * (x_low1 - x_low2) *
+                                       (interpolation(x_low1) +
+                                        interpolation(x_low2)))
                 else:
                     old_bin2 = 0
                     area2 = 0.  # This will set scale2 == 0
@@ -88,12 +90,12 @@ class Scale(object):
                 if old_bin2 < n_bins:
                     x_low1 = x/sf - 0.5*step
                     x_high1 = old_bin_centre1 + 0.5*step  # Equals x_low2
-                    area1 = numpy.fabs((x_high1 - x_low1) *
-                                       (interpolation(x_high1) -
+                    area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
+                                       (interpolation(x_high1) +
                                         interpolation(x_low1)))
                     x_high2 = x/sf + 0.5*step
-                    area2 = numpy.fabs((x_high2 - x_high1) *
-                                       (interpolation(x_high2) -
+                    area2 = numpy.fabs(0.5 * (x_high2 - x_high1) *
+                                       (interpolation(x_high2) +
                                         interpolation(x_high1)))
                 else:
                     old_bin2 = n_bins - 1
