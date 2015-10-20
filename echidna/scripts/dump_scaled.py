@@ -1,4 +1,4 @@
-""" Example scaleing script
+""" Example scaling script
 
 This script:
   * Reads in mc spectra from hdf5
