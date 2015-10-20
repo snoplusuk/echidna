@@ -52,8 +52,22 @@ import echidna.core.spectra as spectra
 
 # In[ ]:
 
-config = spectra.SpectraConfig.load_from_file("echidna/config/example.yml")
+import echidna
+config = spectra.SpectraConfig.load_from_file(echidna.__echidna_base__ +
+                                              "/echidna/config/example.yml")
 print config.get_pars()
+
+
+# Note we used the `__echidna_base__` member of the `echidna` module here.
+# This module has two special members for denoting the base directory (the
+# outermost directory of the git repository) and the home directory (the
+# `echidna` directory inside the base directory. The following lines show the
+# current location of these directories:
+
+# In[ ]:
+
+print echidna.__echidna_base__
+print echidna.__echidna_home__
 
 
 # Finally before creating the spectrum, we should define the number of events
