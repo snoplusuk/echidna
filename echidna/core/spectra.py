@@ -2,6 +2,7 @@ import collections
 import numpy
 import yaml
 import copy
+from scipy import interpolate
 
 
 class SpectraParameter(object):
@@ -94,6 +95,60 @@ class SpectraParameter(object):
           float: The value of the closest bin edge to x
         """
         return round(x/self.get_width())*self.get_width()
+
+    def get_bin_centre(self, bin):
+        """ Calculates the central value of a given bin
+
+        Args:
+          bin (int): Bin number.
+
+        Raises:
+          TypeError: If bin is not int
+          ValueError: If bin is less than zero
+          ValueError: If bin is greater than the number of bins - 1
+
+        Returns:
+          float: value of bin centre
+        """
+        if type(bin) != int:
+            raise TypeError("Must pass an integer value")
+        if bin < 0:
+            raise ValueError("Bin number (%s) must be zero or positive" % bin)
+        if bin > self._bins - 1:
+            raise ValueError("Bin number (%s) is out of range. Max = %s"
+                             % (bin, self._bins))
+        return self._low + (bin + 0.5)*self.get_width()
+
+    def get_bin_centres(self):
+        """ Returns the bin centres of the parameter
+
+        Returns:
+          :class:`numpy.ndarray`: Bin centres of parameter.
+        """
+        return numpy.arange(self._low+self.get_width()*0.5,
+                            self._high+self.get_width()*0.5,
+                            self.get_width())
+
+    def get_bin(self, x):
+        """ Gets the bin index which contains value x.
+
+        Args:
+          x (float): Value you wish to find the bin index for.
+
+        Raises:
+          ValueError: If x is less than parameter lower bounds
+          ValueError: If x is more than parameter upper bounds
+
+        Returns:
+          int: Bin index
+        """
+        if x < self._low:
+            raise ValueError("%s is below parameter lower bound %s"
+                             % (x, self._low))
+        if x > self._high:
+            raise ValueError("%s is above parameter upper bound %s"
+                             % (x, self._high))
+        return int((x - self._low) / self.get_width())
 
 
 class SpectraConfig(object):
@@ -689,3 +744,18 @@ class Spectra(object):
         self._data = self._data.reshape(flattened)
         for i in range(len(new_bins)):
             self._data = self._data.sum(-1*(i+1))
+
+    def interpolate1d(self, dimension, kind='cubic'):
+        """ Interpolates a given dimension of a spectra.
+
+        Args:
+          dimension (string): Dimension you want to interpolate.
+          kind (string): Method of interpolation.
+            See :class:`scipy.interpolate.interp1d` for available methods.
+
+        Returns:
+          :class:`scipy.interpolate.interp1d`: Interpolation function.
+        """
+        x = self._config.get_par(dimension).get_bin_centres()
+        y = self.project(dimension)
+        return interpolate.interp1d(x, y, kind=kind, bounds_error=False)
