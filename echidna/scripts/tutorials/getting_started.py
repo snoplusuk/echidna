@@ -163,8 +163,9 @@ plt.show()
 
 # In[ ]:
 
-fig_2 = plot_root.plot_projection(spectrum, "radial_mc")
-del fig_2
+fig_2, can = plot_root.plot_projection(spectrum, "radial_mc",
+                                       graphical=True, fig_num=2)
+
 
 # We can also project onto two dimensions and plot a surface:
 
