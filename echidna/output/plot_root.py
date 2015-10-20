@@ -1,9 +1,10 @@
 from echidna.util import root_help
 from echidna.output import root_style
-from ROOT import TH1D, TH2D
+import ROOT
+from ROOT import TH1D, TH2D, TCanvas
 
 
-def plot_projection(spectra, dimension, graphical=True):
+def plot_projection(spectra, dimension, graphical=True, fig_num=1):
     """ Plot the spectra as projected onto the dimension.
 
     Args:
@@ -12,7 +13,10 @@ def plot_projection(spectra, dimension, graphical=True):
       graphical (bool, optional): Displays plot if True. Default is True.
 
     Returns:
-      :class:`ROOT.TH1D`: Plot of the dimension.
+      (:class:`ROOT.TH1D`): Root histogram of the projection onto
+        the given dimension.
+      (:class:`ROOT.TCanvas`): Root canvas object containing plot of
+        histogram.
     """
     plot = TH1D(dimension, "; %s; Count per bin" % dimension,
                 int(spectra.get_config().get_par(dimension)._bins),
@@ -21,10 +25,12 @@ def plot_projection(spectra, dimension, graphical=True):
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index + 1, datum)
+    can = TCanvas("Figure " + str(fig_num), "Figure " + str(fig_num))
     if graphical:
+        can.cd()
         plot.Draw()
         raw_input("Return to quit")
-    return plot
+    return plot, can
 
 
 def plot_surface(spectra, dimension1, dimension2, graphical=True):
@@ -37,7 +43,10 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
       graphical (bool, optional): Displays plot if True. Default is True.
 
     Returns:
-      (:class:`ROOT.TH2D`): Plot of the spectra.
+      (:class:`ROOT.TH2D`): Root 2D histogram of the spectra surface
+        projection.
+      (:class:`ROOT.TCanvas`): Root canvas object containing plot of
+        histogram.
     """
     plot = TH2D("%s:%s" % (dimension1, dimension2),
                 "%s;%s;Count per bin" % (dimension1, dimension2),
@@ -51,10 +60,12 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
             plot.SetBinContent(index_x + 1, index_y + 1, datum)
+    can = TCanvas("Figure " + str(fig_num), "Figure " + str(fig_num))
     if graphical:
+        can.cd()
         plot.Draw("COLZ")
         raw_input("Return to quit")
-    return plot
+    return plot, can
 
 
 def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
@@ -111,8 +122,7 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
             par = spectra.get_config().get_par(dimension+"_"+dim_type)
             low = par._low
             high = par._high
-            energy_bins = par._bins
-            width = par.get_width()
+            bins = par._bins
             shape = (bins)  # Shape for summed arrays
             root_labels = "; %s (%s); Counts" % (dimension, par.get_unit())
             summed_background = ROOT.TH1F("summed_background", root_labels,

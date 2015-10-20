@@ -18,7 +18,7 @@ BOLD_FONT = {"size": 22, "weight": "bold"}
 
 
 def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
-                          n_atoms=None, peanalty=None, effective_mass=False,
+                          n_atoms=None, penalty=None, effective_mass=False,
                           half_life=False, save_as=None, show=False, **kwargs):
     """ Plot the chi squared as a function of signal counts
 

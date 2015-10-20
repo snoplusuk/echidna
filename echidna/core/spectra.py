@@ -391,7 +391,9 @@ class Spectra(object):
         # Calculate efficiency
         integral_roi = self.sum()  # Integral of spectrum over ROI
         efficiency = float(integral_roi) / float(integral_full)
-        self._rois[dimension] = {"low": lower_limit, "high": upper_limit,
+        par = self.get_config().get_par(dimension)
+        self._rois[dimension] = {"low": par._low,
+                                 "high": par._high,
                                  "efficiency": efficiency}
 
     def get_roi(self, dimension):
