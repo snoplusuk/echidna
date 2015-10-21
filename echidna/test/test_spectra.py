@@ -91,8 +91,12 @@ class TestSpectra(unittest.TestCase):
             radius = random.uniform(radial_low, radial_high)
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
         self.assertTrue(test_spectra.sum() == test_decays)
-        count = 150
+        count = 150  # int
         test_spectra.scale(count)
+        count = 110  # int --> int(110) / int(150) = 0
+        test_spectra.scale(count)
+        # Check sum != 0.0
+        self.assertNotEqual(test_spectra.sum(), 0.0)
         self.assertTrue(test_spectra.sum() == count,
                         msg="Spectra sum: %s, scaling %s"
                         % (test_spectra.sum(), count))

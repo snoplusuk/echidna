@@ -324,7 +324,7 @@ class Spectra(object):
         self._style = {"color": "blue"}  # default style for plotting
         self._rois = {}
         self._name = name
-        self._num_decays = num_decays
+        self._num_decays = float(num_decays)
 
     def get_config(self):
         """ Get the config of the spectra.
@@ -493,7 +493,8 @@ class Spectra(object):
           num_decays (float): Number of decays this spectra should represent.
         """
         self._data = numpy.multiply(self._data, num_decays / self._num_decays)
-        self._num_decays = num_decays
+        # Make sure self._num_decays stays as a float
+        self._num_decays = float(num_decays)
 
     def shrink(self, **kwargs):
         """ Shrink the data such that it only contains values between low and
