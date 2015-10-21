@@ -1,4 +1,5 @@
 import echidna.core.spectra as spectra
+import numpy
 
 
 class Shift(object):
@@ -43,7 +44,7 @@ class Shift(object):
         """
         shift = self.get_shift()
         step = spectrum.get_config().get_par(dimension).get_width()
-        if shift % step == 0.:
+        if numpy.isclose(shift % step, 0.):
             # shift size multiple of step size. Interpolation not required.
             return self.shift_by_bin(spectrum, dimension)
         preshift_sum = spectrum.sum()
@@ -170,7 +171,7 @@ class Shift(object):
         """
         shift = self.get_shift()
         step = spectrum.get_config().get_par(dimension).get_width()
-        if shift % step != 0.:
+        if not numpy.isclose(shift % step, 0.):
             raise ValueError("Shift (%s) must be a multiple of bin width (%s)"
                              % (shift, step))
         shifted_spec = spectra.Spectra(spectrum._name+"_shift" +

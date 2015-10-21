@@ -70,6 +70,8 @@ class TestShift(unittest.TestCase):
             radius = np.random.random() * \
                 test_spectra.get_config().get_par("radial_mc")._high
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
+        mean_energy, sigma_energy, integral = self.fit_gaussian_energy(
+            test_spectra)
         # First test interpolation shift
         shifter = shift.Shift()
         shift_e = 0.111
@@ -90,11 +92,11 @@ class TestShift(unittest.TestCase):
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
         # Now test shift by bin
-        self.assertRaises("ValueError", shifter.shift_by_bin, (test_spectra,
-                                                               "energy_mc"))
+        self.assertRaises(ValueError, shifter.shift_by_bin, test_spectra,
+                          "energy_mc")
         shift_e = 0.2
         shifter.set_shift(shift_e)
-        shifted_spectra = shifter.shift(test_spectra, "energy_mc")
+        shifted_spectra = shifter.shift_by_bin(test_spectra, "energy_mc")
         mean, sigma, integral = self.fit_gaussian_energy(shifted_spectra)
         expected_mean = mean_energy+shift_e
         expected_sigma = sigma_energy
@@ -109,4 +111,3 @@ class TestShift(unittest.TestCase):
         self.assertAlmostEqual(integral/float(test_decays), 1.0,
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
-

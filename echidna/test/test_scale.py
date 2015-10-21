@@ -68,6 +68,8 @@ class TestScale(unittest.TestCase):
             radius = np.random.random() * \
                 test_spectra.get_config().get_par("radial_mc")._high
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
+        mean_energy, sigma_energy, integral = self.fit_gaussian_energy(
+            test_spectra)
         scaler = scale.Scale()
         self.assertRaises(ValueError, scaler.set_scale_factor, -1.1)
         scale_factor = 1.1
@@ -84,6 +86,6 @@ class TestScale(unittest.TestCase):
                         expected_sigma > 0.99*sigma,
                         msg="Expected sigma %s, fitted sigma %s"
                         % (expected_sigma, sigma))
-        self.assertAlmostEqual(integral/float(test_decays), 1.0,
+        self.assertAlmostEqual(scaled_spectra.sum()/float(test_decays), 1.0,
                                msg="Input decays %s, integral of spectra %s"
-                               % (test_decays, integral))
+                               % (test_decays, scaled_spectra.sum()))
