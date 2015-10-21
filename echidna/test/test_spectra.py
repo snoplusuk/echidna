@@ -97,8 +97,6 @@ class TestSpectra(unittest.TestCase):
         test_spectra.scale(count)
         # Check sum != 0.0
         self.assertNotEqual(test_spectra.sum(), 0.0)
-        # Check num_decays is converted to float
-        self.assertIsInstance(test_spectra._num_decays, float)
         self.assertTrue(test_spectra.sum() == count,
                         msg="Spectra sum: %s, scaling %s"
                         % (test_spectra.sum(), count))

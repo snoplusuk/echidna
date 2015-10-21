@@ -492,12 +492,17 @@ class Spectra(object):
         Args:
           num_decays (float): Number of decays this spectra should represent.
 
-        .. warning:: Regardless of initial type (often initially of type
-          :class:`int`), :attr:`self._num_decays` will always become
-          type :class:`float` after calling :meth:`scale`.
+        .. warning:: Since :attr:`_num_decays` is set to equal the
+          :obj:`num_decays` supplied here, after calling :meth:`scale`,
+          the type of :attr:`_num_decays` will match the type of
+          :obj:`num_decays` supplied. E.g.::
+
+            >>> spectrum.scale(100)
+            >>> isinstance(spectrum._num_decays, int)  # True
+            >>> spectrum.scale(100.)
+            >>> isinstance(spectrum._num_decays, float)  # True
+
         """
-        if isinstance(num_decays, int):  # convert to float
-            num_decays = float(num_decays)
         # Cast self._num_decays as float
         self._data = numpy.multiply(self._data,
                                     num_decays / float(self._num_decays))
