@@ -78,7 +78,7 @@ class TestSpectra(unittest.TestCase):
 
         This creates a spectra and then scales it.
         """
-        test_decays = 10  # should be a float
+        test_decays = 10
         config_path = "echidna/config/example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
