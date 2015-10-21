@@ -78,7 +78,7 @@ class TestSpectra(unittest.TestCase):
 
         This creates a spectra and then scales it.
         """
-        test_decays = 10
+        test_decays = 10  # should be a float
         config_path = "echidna/config/example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
@@ -91,8 +91,14 @@ class TestSpectra(unittest.TestCase):
             radius = random.uniform(radial_low, radial_high)
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
         self.assertTrue(test_spectra.sum() == test_decays)
-        count = 150
+        count = 150  # int
         test_spectra.scale(count)
+        count = 110  # int --> int(110) / int(150) = 0
+        test_spectra.scale(count)
+        # Check sum != 0.0
+        self.assertNotEqual(test_spectra.sum(), 0.0)
+        # Check num_decays is converted to float
+        self.assertIsInstance(test_spectra._num_decays, float)
         self.assertTrue(test_spectra.sum() == count,
                         msg="Spectra sum: %s, scaling %s"
                         % (test_spectra.sum(), count))
