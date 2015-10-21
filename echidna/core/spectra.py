@@ -324,7 +324,7 @@ class Spectra(object):
         self._style = {"color": "blue"}  # default style for plotting
         self._rois = {}
         self._name = name
-        self._num_decays = num_decays
+        self._num_decays = float(num_decays)
 
     def get_config(self):
         """ Get the config of the spectra.
@@ -491,22 +491,10 @@ class Spectra(object):
 
         Args:
           num_decays (float): Number of decays this spectra should represent.
-
-        .. warning:: Since :attr:`_num_decays` is set to equal the
-          :obj:`num_decays` supplied here, after calling :meth:`scale`,
-          the type of :attr:`_num_decays` will match the type of
-          :obj:`num_decays` supplied. E.g.::
-
-            >>> spectrum.scale(100)
-            >>> isinstance(spectrum._num_decays, int)  # True
-            >>> spectrum.scale(100.)
-            >>> isinstance(spectrum._num_decays, float)  # True
-
         """
-        # Cast self._num_decays as float
-        self._data = numpy.multiply(self._data,
-                                    num_decays / float(self._num_decays))
-        self._num_decays = num_decays
+        self._data = numpy.multiply(self._data, num_decays / self._num_decays)
+        # Make sure self._num_decays stays as a float
+        self._num_decays = float(num_decays)
 
     def shrink(self, **kwargs):
         """ Shrink the data such that it only contains values between low and
