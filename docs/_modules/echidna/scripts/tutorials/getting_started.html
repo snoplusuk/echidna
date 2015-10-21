@@ -1,0 +1,484 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.scripts.tutorials.getting_started &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.scripts.tutorials.getting_started</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Tutorial 1: Getting Started - full tutorial</span>
+
+<span class="sd">Please see https://github.com/snoplusuk/echidna/wiki/GettingStarted for</span>
+<span class="sd">a full explanation of the commands in this tutorial.</span>
+
+<span class="sd">This script:</span>
+<span class="sd"> * Creates :class:`echidna.core.spectra.Spectra` instance</span>
+<span class="sd"> * Fills `Spectra`</span>
+<span class="sd"> * Plots `Spectra`</span>
+<span class="sd"> * Applies cuts and smears `Spectra`</span>
+<span class="sd"> * Other `Spectra` manipulations e.g. `shrink_to_roi`, `rebin` and</span>
+<span class="sd">   `scale`</span>
+
+<span class="sd">Examples:</span>
+<span class="sd">  To run type (from the base directory)::</span>
+
+<span class="sd">    $ python echidna/scripts/tutorials/getting_started.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../echidna.scripts.tutorials.html#echidna.scripts.tutorials.getting_started.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Function to run tutorial script.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+    <span class="c"># # Tutorial 1: Getting started with echidna</span>
+
+    <span class="c"># This guide tutorial aims to get you started with some basic tasks you can</span>
+    <span class="c"># accomplish using echidna.</span>
+
+    <span class="c"># ## Spectra creation</span>
+
+    <span class="c"># The `Spectra` class is echidna&#39;s most fundamental class. It holds the</span>
+    <span class="c"># core data structure and provides much of the core functionality required.</span>
+    <span class="c"># Coincidentally, this guide will be centred around this class, how to</span>
+    <span class="c"># create it and then some manipulations of the class.</span>
+
+    <span class="c"># We&#39;ll begin with how to create an instance of the `Spectra` class. It is</span>
+    <span class="c"># part of the `echidna.core.spectra` module, so we will import this and</span>
+    <span class="c"># make a `Spectra` instance.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+
+    <span class="c"># Now we need a config file to create the spectrum from. There is an</span>
+    <span class="c"># example config file in `echidna/config`. If we look at the contents of</span>
+    <span class="c"># this yaml file, we see it tells the `Spectra` class to create a data</span>
+    <span class="c"># structure to hold two parameters:</span>
+
+    <span class="c">#  * `energy_mc`, with lower limit 0, upper limit 10 and 1000 bins</span>
+    <span class="c">#  * `radial_mc`, with lower limit 0, upper limit 15000 and 1500 bins</span>
+
+    <span class="c"># This config should be fine for us. We can load it using the</span>
+    <span class="c"># `load_from_file` method of the `SpectraConfig` class:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="kn">import</span> <span class="nn">echidna</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span>
+        <span class="n">echidna</span><span class="o">.</span><span class="n">__echidna_base__</span> <span class="o">+</span> <span class="s">&quot;/echidna/config/example.yml&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()</span>
+
+    <span class="c"># Note we used the `__echidna_base__` member of the `echidna` module here.</span>
+    <span class="c"># This module has two special members for denoting the base directory (the</span>
+    <span class="c"># outermost directory of the git repository) and the home directory (the</span>
+    <span class="c"># `echidna` directory inside the base directory. The following lines show</span>
+    <span class="c"># the current location of these directories:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">echidna</span><span class="o">.</span><span class="n">__echidna_base__</span>
+    <span class="k">print</span> <span class="n">echidna</span><span class="o">.</span><span class="n">__echidna_home__</span>
+
+    <span class="c"># Finally before creating the spectrum, we should define the number of</span>
+    <span class="c"># events it should represent:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">num_decays</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;spectrum&quot;</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">spectrum</span>
+
+    <span class="c"># And there you have it, we&#39;ve created a `Spectra` object.</span>
+
+    <span class="c"># ## Filling the spectrum</span>
+
+    <span class="c"># Ok, so we now have a spectrum, let&#39;s fill it with some events. We&#39;ll</span>
+    <span class="c"># generate random energies from a Gaussian distribution and random</span>
+    <span class="c"># positions from a Uniform distribution. Much of echidna is built using</span>
+    <span class="c"># the `numpy` and `SciPy` packages and we will use them here to generate</span>
+    <span class="c"># the random numbers. We&#39;ll also generate a third random number to</span>
+    <span class="c"># simulate some form rudimentary detector efficiency.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="c"># Import numpy</span>
+    <span class="kn">import</span> <span class="nn">numpy</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="c"># Generate random energies from a Gaussin with mean (mu) and sigma (sigma)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c"># MeV</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.15</span>  <span class="c"># MeV</span>
+
+    <span class="c"># Generate random radial position from a Uniform distribution</span>
+    <span class="n">outer_radius</span> <span class="o">=</span> <span class="mi">5997</span>  <span class="c"># Radius of SNO+ AV</span>
+
+    <span class="c"># Detector efficiency</span>
+    <span class="n">efficiency</span> <span class="o">=</span> <span class="mf">0.9</span>  <span class="c"># 90%</span>
+
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_decays</span><span class="p">):</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">)</span>
+        <span class="n">event_detected</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">efficiency</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_detected</span><span class="p">:</span>  <span class="c"># Fill spectrum with values</span>
+            <span class="n">spectrum</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+
+    <span class="c"># This will have filled our `Spectra` class with the events. Make sure to</span>
+    <span class="c"># use the exact parameter names that were printed out above, as kewyord</span>
+    <span class="c"># arguments. To check we can now use the `sum` method. This returns the</span>
+    <span class="c"># total number of events stored in the spectrum at a given time - the</span>
+    <span class="c"># integral of the spectrum.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c"># The value returned by `sum`, should roughly equal:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">num_decays</span> <span class="o">*</span> <span class="n">efficiency</span>
+
+    <span class="c"># We can also inspect the raw data structure. This is saved in the `_data`ashleyrback/getting_started</span>
+    <span class="c"># member of the `Spectra` class:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="c"># **Note: you probably won&#39;t see any entries in the above. For large</span>
+    <span class="c"># arrays, numpy only prints the first three and last three entries. Since</span>
+    <span class="c"># our energy range is in the middle, all our events are in the** `...`</span>
+    <span class="c"># **part at the  moment. But we will see entries printed out later when we</span>
+    <span class="c"># apply some cuts.**</span>
+
+    <span class="c"># ## Plotting</span>
+
+    <span class="c"># Another useful way to inspect the `Spectra` created is to plot it.</span>
+    <span class="c"># Support is available within echidna to plot using either `ROOT` or</span>
+    <span class="c"># `matplotlib` and there are some useful plotting functions available in</span>
+    <span class="c"># the `plot` and `plot_root` modules.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="kn">import</span> <span class="nn">echidna.output.plot</span> <span class="kn">as</span> <span class="nn">plot</span>
+    <span class="kn">import</span> <span class="nn">echidna.output.plot_root</span> <span class="kn">as</span> <span class="nn">plot_root</span>
+
+    <span class="c"># To plot the projection of the spectrum on the `energy_mc` axis:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">fig_1</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">,</span>
+                                 <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c"># and to plot the projection on the `radial_mc` axis, this time using root:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">fig_2</span><span class="p">,</span> <span class="n">can</span> <span class="o">=</span> <span class="n">plot_root</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="s">&quot;radial_mc&quot;</span><span class="p">,</span>
+                                           <span class="n">graphical</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c"># We can also project onto two dimensions and plot a surface:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">fig_3</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">,</span> <span class="s">&quot;radial_mc&quot;</span><span class="p">,</span>
+                              <span class="n">fig_num</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c"># ## Convolution and cuts</span>
+
+    <span class="c"># The ability to smear the event, along a parameter axis, is built into</span>
+    <span class="c"># echidna in the `smear` module. There are three classes in the module that</span>
+    <span class="c"># allow us to create a smearer for different scenarios. There are two</span>
+    <span class="c"># smearers for energy-based parameters, `EnergySmearRes` and</span>
+    <span class="c"># `EnergySmearLY`, which allow smearing by energy resolution (e.g.</span>
+    <span class="c"># $\frac{5\%}{\sqrt{(E[MeV])}}$ and light yield (e.g. 200 NHit/Mev)</span>
+    <span class="c"># respectively. Then additionally the `RadialSmear` class handles smearing</span>
+    <span class="c"># along the axis of any radial based parameter.</span>
+
+    <span class="c"># We will go through an example of how to smear our spectrum by a fixed</span>
+    <span class="c"># energy resolution of 5%. There are two main smearing algorithms:</span>
+    <span class="c"># &quot;weighted smear&quot; and &quot;random smear&quot;. The &quot;random smear&quot; algorithm takes</span>
+    <span class="c"># each event in each bin and randomly assigns it a new energy from the</span>
+    <span class="c"># Gaussian distribution for that bin - it is fast but not very accurate</span>
+    <span class="c"># for low statistics. The &quot;weighted smear&quot; algorithm is slower but much</span>
+    <span class="c"># more accurate, as re-weights each bin by taking into account all other</span>
+    <span class="c"># nearby bins within a pre-defined range. We will use the &quot;weighted smear&quot;</span>
+    <span class="c"># method in this example.</span>
+
+    <span class="c"># First to speed the smearing process, we will apply some loose cuts.</span>
+    <span class="c"># Although, fewer bins means faster smearing, you should be wary of cutting</span>
+    <span class="c"># the spectrum too tightly before smearing as you may end up cutting bins</span>
+    <span class="c"># that would have influenced the smearing. Cuts can be applied using the</span>
+    <span class="c"># `shrink` method. (Confusingly there is also a `cut` method which is</span>
+    <span class="c"># almost identical to the `shrink` method, but updates the number of</span>
+    <span class="c"># events the spectrum represents, after the cut is applied. Unless you are</span>
+    <span class="c"># sure this is what you want to do, it is probably better to use the</span>
+    <span class="c"># `shrink` method.) To shrink over multiple parameters, it is best to</span>
+    <span class="c"># construct a dictionary of `_low` and `_high` values for each parameter</span>
+    <span class="c"># and then pass this to the shrink method.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">shrink_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;energy_mc_low&quot;</span><span class="p">:</span> <span class="n">mu</span> <span class="o">-</span> <span class="mf">5.</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
+                   <span class="s">&quot;energy_mc_high&quot;</span><span class="p">:</span> <span class="n">mu</span> <span class="o">+</span> <span class="mf">5.</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
+                   <span class="s">&quot;radial_mc_low&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                   <span class="s">&quot;radial_mc_high&quot;</span><span class="p">:</span> <span class="mi">3500</span><span class="p">}</span>
+    <span class="n">spectrum</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">shrink_dict</span><span class="p">)</span>
+
+    <span class="c"># Using the `sum` method, we can check to see how many events were cut.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c"># Import the smear class:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="kn">import</span> <span class="nn">echidna.core.smear</span> <span class="kn">as</span> <span class="nn">smear</span>
+
+    <span class="c"># and create the smearer object.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">smearer</span> <span class="o">=</span> <span class="n">smear</span><span class="o">.</span><span class="n">EnergySmearRes</span><span class="p">()</span>
+
+    <span class="c"># By default the &quot;weighted smear&quot; method considers all bins within a</span>
+    <span class="c"># $\pm 5\sigma$ range. For the sake of speed, we will reduce this to 3</span>
+    <span class="c"># here. Also set the energy resolution - 0.05 for 5%.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">smearer</span><span class="o">.</span><span class="n">set_num_sigma</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">smearer</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="c"># To smear our original spectrum and create the new `Spectra` object</span>
+    <span class="c"># `smeared_spectrum`:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">smeared_spectrum</span> <span class="o">=</span> <span class="n">smearer</span><span class="o">.</span><span class="n">weighted_smear</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+
+    <span class="c"># this should hopefully only create a couple of seconds.</span>
+
+    <span class="c"># The following code shows how to make a simple script, using matplotlib,</span>
+    <span class="c"># to overlay the original and smeared spectra.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+    <span class="k">def</span> <span class="nf">overlay_spectra</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="n">smeared</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overlay original and smeared spectra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          original (echidna.core.spectra.Spectra): Original spectrum.</span>
+<span class="sd">          smeared (echidna.core.spectra.Spectra): Smeared spectrum.</span>
+<span class="sd">          dimension (string, optional): Dimension to project onto.</span>
+<span class="sd">            Default is &quot;energy_mc&quot;.</span>
+<span class="sd">          fignum (int, optional): Figure number, if producing multiple</span>
+<span class="sd">            figures. Default is 1.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          matplotlib.figure.Figure: Figure showing overlaid spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="n">fig_num</span><span class="p">)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">par</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+
+        <span class="c"># Define array of bin boundaries (1 more than number of bins)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span> <span class="n">par</span><span class="o">.</span><span class="n">_bins</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c"># Define array of bin centres</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span>
+
+        <span class="c"># Overlay two spectra using projection as weight</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">original</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">),</span>
+                <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;stepfilled&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;RoyalBlue&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">original</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">smeared</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">),</span>
+                <span class="n">histtype</span><span class="o">=</span><span class="s">&quot;stepfilled&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;Red&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">smeared</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+
+        <span class="c"># Add label/style</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper right&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">dimension</span> <span class="o">+</span> <span class="s">&quot; [&quot;</span> <span class="o">+</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Events per &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">par</span><span class="o">.</span><span class="n">get_unit</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot; bin&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fig</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">fig_4</span> <span class="o">=</span> <span class="n">overlay_spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">smeared_spectrum</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c"># ## Other spectra manipulations</span>
+
+    <span class="c"># We now have a nice smeared version of our original spectrum. To prepare</span>
+    <span class="c"># the spectrum for a final analysis there are a few final manipulations we</span>
+    <span class="c"># may wish to do.</span>
+
+    <span class="c"># ### Region of Interest (ROI)</span>
+
+    <span class="c"># There is a special version of the `shrink` method called `shrink_to_roi`</span>
+    <span class="c"># that can be used for ROI cuts. It saves some useful information about the</span>
+    <span class="c"># ROI in the `Spectra` class instance, including the efficiency i.e.</span>
+    <span class="c"># integral of spectrum after cut divided by integral of spectrum before</span>
+    <span class="c"># cut.</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">+</span> <span class="mf">1.45</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>  <span class="c"># To get nice shape for rebinning</span>
+    <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">shrink_to_roi</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">roi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">get_roi</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+
+    <span class="c"># ### Rebin</span>
+
+    <span class="c"># Our spectrum is still quite finely binned, perhaps we want to bin it in</span>
+    <span class="c"># 50 keV bins instead of 10 keV bins. The `rebin` method can be used to</span>
+    <span class="c"># acheive this.</span>
+
+    <span class="c"># The `rebin` method requires us to specify the new shape (tuple) of the</span>
+    <span class="c"># data. With just two dimensions this is trivial, but with more dimensions,</span>
+    <span class="c"># it may be better to use a construct such as:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">dimension</span> <span class="o">=</span> <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+    <span class="n">old_shape</span> <span class="o">=</span> <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">reduction_factor</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c"># how many bins to combine into a single bin</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">j</span> <span class="o">/</span> <span class="n">reduction_factor</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">dimension</span> <span class="k">else</span> <span class="n">j</span>
+                      <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">old_shape</span><span class="p">)])</span>
+    <span class="k">print</span> <span class="n">old_shape</span>
+    <span class="k">print</span> <span class="n">new_shape</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">rebin</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+
+    <span class="c"># ### Scaling</span>
+
+    <span class="c"># Finally, we &quot;simulated&quot; 1000 events, but we most likely want to scale</span>
+    <span class="c"># this down for to represent the number of events expected in our analysis.</span>
+    <span class="c"># The `Spectra` class has a `scale` method to accomplish this. Remember</span>
+    <span class="c"># that the `scale` method should always be supplied with the number of</span>
+    <span class="c"># events the full spectrum (i.e. before any cuts using `shrink` or</span>
+    <span class="c"># `shrink_to_roi`) should represent. Lets assume that our spectrum should</span>
+    <span class="c"># actually represent 104.25 events:</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">104.25</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c"># ## Putting it all together</span>
+
+    <span class="c"># After creating, filling, convolving and various other manipulations what</span>
+    <span class="c"># does our final spectrum look like?</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="k">print</span> <span class="n">smeared_spectrum</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="c"># In[ ]:</span>
+
+    <span class="n">fig_5</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">smeared_spectrum</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">,</span>
+                                 <span class="n">fig_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>  <span class="c"># run tutorial</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

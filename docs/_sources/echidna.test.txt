@@ -36,6 +36,14 @@ echidna.test.test_scale module
     :undoc-members:
     :show-inheritance:
 
+echidna.test.test_shift module
+------------------------------
+
+.. automodule:: echidna.test.test_shift
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.test.test_smear module
 ------------------------------
 

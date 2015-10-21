@@ -121,8 +121,8 @@
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Supply paths for B8_Solar hdf5 files&quot;</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
-    <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.46</span><span class="p">,</span> <span class="mf">2.68</span><span class="p">)</span>  <span class="c"># Define ROI - as used by Andy</span>
-
+    <span class="c"># REF: SNO+-doc-2593-v9 (as used by Andy)</span>
+    <span class="n">roi</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.46</span><span class="p">,</span> <span class="mf">2.68</span><span class="p">)</span>
 
     <span class="c"># Create signal spectrum</span>
     <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
@@ -135,18 +135,58 @@
     <span class="n">shrunk</span> <span class="o">=</span> <span class="n">Te130_0n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">scaling</span> <span class="o">=</span> <span class="n">shrunk</span><span class="o">/</span><span class="n">unshrunk</span>
 
-    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="c"># Set decay converter</span>
+
+    <span class="c"># REF: SNO+-doc-1728-v2 (all three values)</span>
+    <span class="n">atm_weight_iso</span> <span class="o">=</span> <span class="mf">129.9062244</span>
+    <span class="n">atm_weight_nat</span> <span class="o">=</span> <span class="mf">127.603</span>
+    <span class="n">abundance</span> <span class="o">=</span> <span class="mf">0.3408</span>
+
+    <span class="c"># REF: J. Kotila &amp; F. Iachello, Phys. Rev. C 85, 034316- (2012)</span>
+    <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">3.69e-14</span>
+    <span class="c"># REF: J. Barea et al. Phys. Rev. C 87, 014315- (2013)</span>
+    <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">4.03</span>
+
+    <span class="n">converter</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">DBIsotope</span><span class="p">(</span>
+        <span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">atm_weight_iso</span><span class="p">,</span> <span class="n">atm_weight_nat</span><span class="p">,</span> <span class="n">abundance</span><span class="p">,</span> <span class="n">phase_space</span><span class="p">,</span>
+        <span class="n">matrix_element</span><span class="p">,</span> <span class="n">roi_efficiency</span><span class="o">=</span><span class="n">scaling</span><span class="p">)</span>
+
+    <span class="n">Te130_0n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>  <span class="c"># Reload spectrum</span>
 
     <span class="c"># Create background spectra</span>
     <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
-    <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">1.e6</span><span class="p">)</span>
+    <span class="n">unshrunk</span> <span class="o">=</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">1.e6</span><span class="p">)</span>
+    <span class="n">shrink_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;energy_mc_low&quot;</span><span class="p">:</span> <span class="n">roi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;energy_mc_high&quot;</span><span class="p">:</span> <span class="n">roi</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+    <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">shrink_dict</span><span class="p">)</span>
+    <span class="n">shrunk</span> <span class="o">=</span> <span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">scaling</span> <span class="o">=</span> <span class="n">shrunk</span> <span class="o">/</span> <span class="n">unshrunk</span>
 
+    <span class="c"># Set decay converter</span>
+
+    <span class="c"># REF: J. Kotila &amp; F. Iachello, Phys. Rev. C 85, 034316- (2012)</span>
+    <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">1.529e-18</span>
+    <span class="c"># REF: J. Barea et al. Phys. Rev. C 87, 014315- (2013)</span>
+    <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">3.31</span>
+
+    <span class="n">two_nu_converter</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">DBIsotope</span><span class="p">(</span>
+        <span class="s">&quot;Te130_2n2b&quot;</span><span class="p">,</span> <span class="n">atm_weight_iso</span><span class="p">,</span> <span class="n">atm_weight_nat</span><span class="p">,</span> <span class="n">abundance</span><span class="p">,</span> <span class="n">phase_space</span><span class="p">,</span>
+        <span class="n">matrix_element</span><span class="p">,</span> <span class="n">roi_efficiency</span><span class="o">=</span><span class="n">scaling</span><span class="p">)</span>
+
+    <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>  <span class="c"># Reload spectra</span>
+    <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
 
     <span class="c"># 1/ Set limit with no penalty term</span>
     <span class="c"># Create dictionary of backgrounds and priors</span>
-    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="mf">37.396e6</span>  <span class="c"># Based on NEMO-3 T_1/2, for 10 years</span>
-    <span class="c"># from integrating whole spectrum scaled to Valentina&#39;s number</span>
-    <span class="n">B8_Solar_prior</span> <span class="o">=</span> <span class="mf">12529.9691</span>
+
+    <span class="c"># REF: R. Arnold et al. (NEMO-3 Collaboration), PRL 107, 062504 (2011)</span>
+    <span class="n">two_nu_half_life</span> <span class="o">=</span> <span class="mf">7.0e20</span>
+    <span class="n">Te130_2n2b_prior</span> <span class="o">=</span> <span class="n">two_nu_converter</span><span class="o">.</span><span class="n">half_life_to_counts</span><span class="p">(</span><span class="n">two_nu_half_life</span><span class="p">,</span>
+                                                            <span class="n">roi_cut</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="c"># REF: SNO+-doc-507v27 - Valentina&#39;s Numbers</span>
+    <span class="n">B8_Solar_prior</span> <span class="o">=</span> <span class="mf">1021.</span> <span class="o">*</span> <span class="mf">5.</span>  <span class="c"># 1021 events/year for 5 year livetime</span>
     <span class="n">fixed_backgrounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">Te130_2n2b</span><span class="p">,</span> <span class="n">Te130_2n2b_prior</span><span class="p">],</span>
                          <span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">B8_Solar</span><span class="p">,</span> <span class="n">B8_Solar_prior</span><span class="p">]}</span>
     <span class="c"># Create fixed spectrum. Pre-shrink here if pre-shrinking in LimitSetting</span>
@@ -172,17 +212,6 @@
     <span class="c"># Calculate confidence limit</span>
     <span class="n">sig_num_decays</span> <span class="o">=</span> <span class="n">set_limit</span><span class="o">.</span><span class="n">get_limit_no_float</span><span class="p">()</span>
 
-    <span class="c"># Set decay converter</span>
-    <span class="n">atm_weight_iso</span> <span class="o">=</span> <span class="mf">129.9062244</span>
-    <span class="n">atm_weight_nat</span> <span class="o">=</span> <span class="mf">127.603</span>
-    <span class="n">abundance</span> <span class="o">=</span> <span class="mf">0.3408</span>
-    <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">3.69e-14</span>
-    <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">4.03</span>
-
-    <span class="n">converter</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">DBIsotope</span><span class="p">(</span>
-        <span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">atm_weight_iso</span><span class="p">,</span> <span class="n">atm_weight_nat</span><span class="p">,</span> <span class="n">abundance</span><span class="p">,</span> <span class="n">phase_space</span><span class="p">,</span>
-        <span class="n">matrix_element</span><span class="p">,</span> <span class="n">roi_efficiency</span><span class="o">=</span><span class="n">scaling</span><span class="p">)</span>
-
     <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span>
     <span class="k">print</span> <span class="s">&quot;90% CL with no penalty at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sig_num_decays</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; ROI counts&quot;</span>
     <span class="k">print</span> <span class="s">&quot;90% CL with no penalty at: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">half_life</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; y&quot;</span>
@@ -193,7 +222,6 @@
     <span class="c"># Reload background spectra</span>
     <span class="n">Te130_2n2b</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">two_nu</span><span class="p">)</span>
     <span class="n">B8_Solar</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">b8_solar</span><span class="p">)</span>
-
 
     <span class="n">fixed_backgrounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="p">[</span><span class="n">B8_Solar</span><span class="p">,</span> <span class="n">B8_Solar_prior</span><span class="p">]}</span>
     <span class="n">fixed</span> <span class="o">=</span> <span class="n">limit_setting</span><span class="o">.</span><span class="n">make_fixed_background</span><span class="p">(</span><span class="n">fixed_backgrounds</span><span class="p">,</span>
@@ -212,14 +240,15 @@
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
 
     <span class="c"># Set config for Te130_2n2b</span>
-    <span class="c"># Floating range:</span>
+    <span class="c"># Sigma of rate:</span>
+    <span class="c"># REF: R. Arnold et al. (NEMO-3 Collaboration), Phys. Rev. Lett. 107,</span>
+    <span class="c"># 062504 (2011), via SNO+-doc-3000-v1 (Andy&#39;s doc on systematics)</span>
+    <span class="n">Te130_2n2b_sigma</span> <span class="o">=</span> <span class="mf">0.203</span> <span class="o">*</span> <span class="n">Te130_2n2b_prior</span>
+    <span class="c"># Floating range (+/- 1 sigma):</span>
     <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.797</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
                                        <span class="mf">1.203</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
-    <span class="c"># Sigma of rate:</span>
-    <span class="c"># Used in penalty term (20.3%, Andy&#39;s doc on systematics)</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.203</span> <span class="o">*</span> <span class="n">Te130_2n2b_prior</span>
     <span class="n">Te130_2n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span>
-        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">Te130_2n2b_sigma</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
                                    <span class="n">Te130_2n2b_penalty_config</span><span class="p">,</span>
                                    <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -259,25 +288,23 @@
     <span class="n">Te130_0n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">Te130_0n2b_prior</span><span class="p">,</span>
                                                          <span class="n">Te130_0n2b_counts</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_signal</span><span class="p">(</span><span class="n">Te130_0n2b_penalty_config</span><span class="p">)</span>
-
-    <span class="c"># Set config for Te130_2n2b</span>
-    <span class="n">Te130_2n2b_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.797</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span>
-                                       <span class="mf">1.203</span><span class="o">*</span><span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
-    <span class="c"># Sigma of rate:</span>
-    <span class="c"># Used in penalty term (20.3%, Andy&#39;s doc on systematics)</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.203</span> <span class="o">*</span> <span class="n">Te130_2n2b_prior</span>
     <span class="n">Te130_2n2b_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span>
-        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="n">Te130_2n2b_prior</span><span class="p">,</span> <span class="n">Te130_2n2b_counts</span><span class="p">,</span> <span class="n">Te130_2n2b_sigma</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">Te130_2n2b</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
                                    <span class="n">Te130_2n2b_penalty_config</span><span class="p">,</span>
                                    <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="c"># Set config for B8_Solar</span>
+    <span class="c"># Sigma of rate:</span>
+    <span class="c"># REF: R. Arnold et al. (NEMO-3 Collaboration), Phys. Rev. Lett. 107,</span>
+    <span class="c"># 062504 (2011), via SNO+-doc-3000-v1 (Andy&#39;s doc on systematics)</span>
+    <span class="n">B8_Solar_sigma</span> <span class="o">=</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">B8_Solar_prior</span>
+    <span class="c"># Floating range (+/- 1 sigma):</span>
     <span class="n">B8_Solar_counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.96</span><span class="o">*</span><span class="n">B8_Solar_prior</span><span class="p">,</span>
                                      <span class="mf">1.04</span><span class="o">*</span><span class="n">B8_Solar_prior</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
     <span class="c"># 11 bins to make sure midpoint (no variation from prior) is included</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">B8_Solar_prior</span>  <span class="c"># 4% To use in penalty term</span>
     <span class="n">B8_Solar_penalty_config</span> <span class="o">=</span> <span class="n">limit_config</span><span class="o">.</span><span class="n">LimitConfig</span><span class="p">(</span><span class="n">B8_Solar_prior</span><span class="p">,</span>
-                                                       <span class="n">B8_Solar_counts</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+                                                       <span class="n">B8_Solar_counts</span><span class="p">,</span>
+                                                       <span class="n">B8_Solar_sigma</span><span class="p">)</span>
     <span class="n">set_limit</span><span class="o">.</span><span class="n">configure_background</span><span class="p">(</span><span class="n">B8_Solar</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">B8_Solar_penalty_config</span><span class="p">,</span>
                                    <span class="n">plot_systematic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="c"># Set chi squared calculator</span>

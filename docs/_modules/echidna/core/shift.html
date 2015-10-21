@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.core.shift &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.core.shift</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="Shift"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.shift.Shift">[docs]</a><span class="k">class</span> <span class="nc">Shift</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A class for shifting the parameter space of a spectra.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _shift (float): The factor you want to shift a parameter by.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise the Shift class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span> <span class="o">=</span> <span class="mf">0.</span>
+
+<div class="viewcode-block" id="Shift.get_shift"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.shift.Shift.get_shift">[docs]</a>    <span class="k">def</span> <span class="nf">get_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the shift factor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The shift factor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span>
+</div>
+<div class="viewcode-block" id="Shift.set_shift"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.shift.Shift.set_shift">[docs]</a>    <span class="k">def</span> <span class="nf">set_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the shift factor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          shift (float): Value you wish to set the shift factor to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Shift.shift"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.shift.Shift.shift">[docs]</a>    <span class="k">def</span> <span class="nf">shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shifts a given spectrum&#39;s dimension using interpolation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (float): The spectrum you want to shift.</span>
+<span class="sd">          dimension (string): The dimension of the spectrum you want to shift.</span>
+<span class="sd">          kwargs (dict): To passed to the interpolation function in</span>
+<span class="sd">            :class:`echidna.core.spectra.Spectra`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The shifted spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_shift</span><span class="p">()</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">shift</span> <span class="o">%</span> <span class="n">step</span><span class="p">,</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="c"># shift size multiple of step size. Interpolation not required.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift_by_bin</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+        <span class="n">preshift_sum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">interpolation</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">interpolate1d</span><span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">shifted_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_shift&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">shift</span><span class="p">),</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="n">n_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_bins</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c"># Trying to shift values outside range (Unknown)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">interpolation</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c"># Cant have negative num_events</span>
+                <span class="k">continue</span>
+            <span class="n">old_bin1</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_bin</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span>
+            <span class="n">old_bin_centre1</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_bin_centre</span><span class="p">(</span><span class="n">old_bin1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">old_bin_centre1</span> <span class="o">&gt;</span> <span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">:</span>
+                <span class="n">old_bin2</span> <span class="o">=</span> <span class="n">old_bin1</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">old_bin2</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">x_low1</span> <span class="o">=</span> <span class="n">old_bin_centre1</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>  <span class="c"># Equals x_high2</span>
+                    <span class="n">x_high1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">shift</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>
+                    <span class="n">area1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_high1</span> <span class="o">-</span> <span class="n">x_low1</span><span class="p">)</span> <span class="o">*</span>
+                                       <span class="p">(</span><span class="n">interpolation</span><span class="p">(</span><span class="n">x_high1</span><span class="p">)</span> <span class="o">+</span>
+                                        <span class="n">interpolation</span><span class="p">(</span><span class="n">x_low1</span><span class="p">)))</span>
+                    <span class="n">x_low2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">shift</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>
+                    <span class="n">area2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_low1</span> <span class="o">-</span> <span class="n">x_low2</span><span class="p">)</span> <span class="o">*</span>
+                                       <span class="p">(</span><span class="n">interpolation</span><span class="p">(</span><span class="n">x_low1</span><span class="p">)</span> <span class="o">+</span>
+                                        <span class="n">interpolation</span><span class="p">(</span><span class="n">x_low2</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">old_bin2</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">area2</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c"># This will set scale2 == 0</span>
+                    <span class="n">area1</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">old_bin2</span> <span class="o">=</span> <span class="n">old_bin1</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">old_bin2</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="p">:</span>
+                    <span class="n">x_low1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">shift</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>
+                    <span class="n">x_high1</span> <span class="o">=</span> <span class="n">old_bin_centre1</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>  <span class="c"># Equals x_low2</span>
+                    <span class="n">area1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_high1</span> <span class="o">-</span> <span class="n">x_low1</span><span class="p">)</span> <span class="o">*</span>
+                                       <span class="p">(</span><span class="n">interpolation</span><span class="p">(</span><span class="n">x_high1</span><span class="p">)</span> <span class="o">+</span>
+                                        <span class="n">interpolation</span><span class="p">(</span><span class="n">x_low1</span><span class="p">)))</span>
+                    <span class="n">x_high2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">shift</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">step</span>
+                    <span class="n">area2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_high2</span> <span class="o">-</span> <span class="n">x_high1</span><span class="p">)</span> <span class="o">*</span>
+                                       <span class="p">(</span><span class="n">interpolation</span><span class="p">(</span><span class="n">x_high2</span><span class="p">)</span> <span class="o">+</span>
+                                        <span class="n">interpolation</span><span class="p">(</span><span class="n">x_high1</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">old_bin2</span> <span class="o">=</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">area2</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c"># This will set scale2 == 0</span>
+                    <span class="n">area1</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="n">scale1</span> <span class="o">=</span> <span class="n">area1</span> <span class="o">/</span> <span class="p">(</span><span class="n">area1</span> <span class="o">+</span> <span class="n">area2</span><span class="p">)</span>
+            <span class="n">scale2</span> <span class="o">=</span> <span class="n">area2</span> <span class="o">/</span> <span class="p">(</span><span class="n">area1</span> <span class="o">+</span> <span class="n">area2</span><span class="p">)</span>
+            <span class="c"># Prepare array split. Is there a better way to do this not using</span>
+            <span class="c"># eval and exec?</span>
+            <span class="n">cur_slice</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+            <span class="n">old_slice1</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+            <span class="n">old_slice2</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+            <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dim</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">bin</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">cur_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">cur_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="k">if</span> <span class="n">old_bin1</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">old_slice1</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">old_bin1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">old_bin1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">old_slice1</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_bin1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="k">if</span> <span class="n">old_bin2</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">old_slice2</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">old_bin2</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">old_bin2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">old_slice2</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_bin2</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:,&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cur_slice</span> <span class="o">+=</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="n">old_slice1</span> <span class="o">+=</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="n">old_slice2</span> <span class="o">+=</span> <span class="s">&quot;:,&quot;</span>
+            <span class="n">cur_slice</span> <span class="o">=</span> <span class="n">cur_slice</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span>
+            <span class="n">old_slice1</span> <span class="o">=</span> <span class="n">old_slice1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span>
+            <span class="n">old_slice2</span> <span class="o">=</span> <span class="n">old_slice2</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span>
+            <span class="n">old_data1</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s">&quot;spectrum._data&quot;</span><span class="o">+</span><span class="n">old_slice1</span><span class="p">)</span>
+            <span class="n">unshifted_sum1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">old_data1</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">old_data2</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s">&quot;spectrum._data&quot;</span><span class="o">+</span><span class="n">old_slice2</span><span class="p">)</span>
+            <span class="n">unshifted_sum2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">old_data2</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="c"># Check to see if there is data to shift</span>
+            <span class="k">if</span> <span class="n">unshifted_sum1</span> <span class="o">&lt;=</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">unshifted_sum2</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">unshifted_sum1</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">fill_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;shifted_spec._data&quot;</span> <span class="o">+</span> <span class="n">cur_slice</span> <span class="o">+</span> <span class="s">&quot; += &quot;</span>
+                            <span class="s">&quot;old_data2 * (y / unshifted_sum2)&quot;</span><span class="p">)</span>
+                <span class="k">exec</span><span class="p">(</span><span class="n">fill_cmd</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">unshifted_sum2</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">fill_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;shifted_spec._data&quot;</span> <span class="o">+</span> <span class="n">cur_slice</span> <span class="o">+</span> <span class="s">&quot; += &quot;</span>
+                            <span class="s">&quot;old_data1 * (y / unshifted_sum1)&quot;</span><span class="p">)</span>
+                <span class="k">exec</span><span class="p">(</span><span class="n">fill_cmd</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fill_cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;shifted_spec._data&quot;</span> <span class="o">+</span> <span class="n">cur_slice</span> <span class="o">+</span> <span class="s">&quot;+=&quot;</span>
+                            <span class="s">&quot;old_data1 * scale1 * (y / unshifted_sum1) +&quot;</span>
+                            <span class="s">&quot;old_data2 * scale2 * (y / unshifted_sum2)&quot;</span><span class="p">)</span>
+                <span class="k">exec</span><span class="p">(</span><span class="n">fill_cmd</span><span class="p">)</span>
+        <span class="c"># renormalise to prescale number of counts</span>
+        <span class="n">shifted_spec</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">shifted_spec</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">shifted_spec</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">preshift_sum</span><span class="p">)</span>
+        <span class="n">shifted_spec</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span>
+        <span class="k">return</span> <span class="n">shifted_spec</span>
+</div>
+<div class="viewcode-block" id="Shift.shift_by_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.shift.Shift.shift_by_bin">[docs]</a>    <span class="k">def</span> <span class="nf">shift_by_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shifts a given spectrum&#39;s dimension by shifting bins.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (float): The spectrum you want to shift.</span>
+<span class="sd">          dimension (string): The dimension of the spectrum you want to shift.</span>
+<span class="sd">          kwargs (dict): To passed to the interpolation function in</span>
+<span class="sd">            :class:`echidna.core.spectra.Spectra`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The shifted spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_shift</span><span class="p">()</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">shift</span> <span class="o">%</span> <span class="n">step</span><span class="p">,</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Shift (</span><span class="si">%s</span><span class="s">) must be a multiple of bin width (</span><span class="si">%s</span><span class="s">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
+        <span class="n">shifted_spec</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s">&quot;_shift&quot;</span> <span class="o">+</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">shift</span><span class="p">),</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">,</span>
+                                       <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+        <span class="n">n_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span>
+        <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c"># Trying to shift values outside range (Unknown)</span>
+            <span class="n">old_bin</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_bin</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span>
+                                                                       <span class="n">shift</span><span class="p">)</span>
+            <span class="c"># Prepare array split. Is there a better way to do this not using</span>
+            <span class="c"># eval and exec?</span>
+            <span class="n">cur_slice</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+            <span class="n">old_slice</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span>
+            <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dim</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">bin</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">cur_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">cur_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="k">if</span> <span class="n">old_bin</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">old_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_bin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;,&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">old_slice</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_bin</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:,&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cur_slice</span> <span class="o">+=</span> <span class="s">&quot;:,&quot;</span>
+                    <span class="n">old_slice</span> <span class="o">+=</span> <span class="s">&quot;:,&quot;</span>
+            <span class="n">cur_slice</span> <span class="o">=</span> <span class="n">cur_slice</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span>
+            <span class="n">old_slice</span> <span class="o">=</span> <span class="n">old_slice</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span>
+            <span class="n">old_data</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s">&quot;spectrum._data&quot;</span><span class="o">+</span><span class="n">old_slice</span><span class="p">)</span>
+            <span class="n">unshifted_sum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">old_data</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="c"># Check to see if there is data</span>
+            <span class="k">if</span> <span class="n">unshifted_sum</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">fill_cmd</span> <span class="o">=</span> <span class="s">&quot;shifted_spec._data&quot;</span> <span class="o">+</span> <span class="n">cur_slice</span> <span class="o">+</span> <span class="s">&quot;+= old_data&quot;</span>
+                <span class="k">exec</span><span class="p">(</span><span class="n">fill_cmd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shifted_spec</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

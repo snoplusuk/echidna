@@ -65,23 +65,47 @@
 <dl class="function">
 <dt id="echidna.output.plot._produce_axis">
 <code class="descclassname">echidna.output.plot.</code><code class="descname">_produce_axis</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#_produce_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot._produce_axis" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method produces an array that represents the axis between low and
-high with bins.</p>
+<dd><p>This method produces an array that represents the axis.</p>
+<p>The array is formed of the value at the bin-centre for each bin
+along the specified dimension.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectra you wish to
-produce the axis from.</li>
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectra you
+wish to produce the axis from.</li>
 <li><strong>dimension</strong> (<em>string</em>) &#8211; The dimension you wish to produce the axis for.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The values for the axis.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>: The values for the axis.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.output.plot._produce_bins">
+<code class="descclassname">echidna.output.plot.</code><code class="descname">_produce_bins</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#_produce_bins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot._produce_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method produces an array that represents the bin boundaries.</p>
+<p>The array is formed of the value at each bin boundary from par._low
+to par._high along the specified dimension. The length of the array
+of bin boundaries is one greater than the length of the axis array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The spectra you
+wish to produce the bin boundaries from.</li>
+<li><strong>dimension</strong> (<em>string</em>) &#8211; The dimension you wish to produce the bin
+boundaries for.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>: The values for the axis.</p>
 </td>
 </tr>
 </tbody>
@@ -118,7 +142,7 @@ Default is 1.</li>
 
 <dl class="function">
 <dt id="echidna.output.plot.plot_surface">
-<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension1</em>, <em>dimension2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_surface" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot.</code><code class="descname">plot_surface</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension1</em>, <em>dimension2</em>, <em>fig_num=1</em>, <em>show_plot=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#plot_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.plot_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the two dimensions from spectra as a 2D histogram</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -140,7 +164,7 @@ Default is 1.</li>
 
 <dl class="function">
 <dt id="echidna.output.plot.spectral_plot">
-<code class="descclassname">echidna.output.plot.</code><code class="descname">spectral_plot</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>dimension</em>, <em>fig_num=1</em>, <em>show_plot=True</em>, <em>log_y=False</em>, <em>per_bin=False</em>, <em>limit=None</em>, <em>title=None</em>, <em>text=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#spectral_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.spectral_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot.</code><code class="descname">spectral_plot</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>dimension</em>, <em>fig_num=1</em>, <em>show_plot=True</em>, <em>log_y=False</em>, <em>per_bin=False</em>, <em>limit=None</em>, <em>title=None</em>, <em>text=None</em>, <em>calculator=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot.html#spectral_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot.spectral_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce spectral plot.</p>
 <p>For a given signal, produce a plot showing the signal and relevant
 backgrounds. Backgrounds are automatically summed to create the
@@ -238,7 +262,7 @@ saved with in .png format.</li>
 
 <dl class="function">
 <dt id="echidna.output.plot_chi_squared.chi_squared_vs_signal">
-<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em>, <em>converter=None</em>, <em>fig_num=1</em>, <em>n_atoms=None</em>, <em>peanalty=None</em>, <em>effective_mass=False</em>, <em>half_life=False</em>, <em>save_as=None</em>, <em>show=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot_chi_squared.</code><code class="descname">chi_squared_vs_signal</code><span class="sig-paren">(</span><em>signal_config</em>, <em>converter=None</em>, <em>fig_num=1</em>, <em>n_atoms=None</em>, <em>penalty=None</em>, <em>effective_mass=False</em>, <em>half_life=False</em>, <em>save_as=None</em>, <em>show=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_chi_squared.html#chi_squared_vs_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_chi_squared.chi_squared_vs_signal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the chi squared as a function of signal counts</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -483,7 +507,7 @@ Default is False.</li>
 
 <dl class="function">
 <dt id="echidna.output.plot_root.plot_projection">
-<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em>, <em>graphical=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_projection" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">echidna.output.plot_root.</code><code class="descname">plot_projection</code><span class="sig-paren">(</span><em>spectra</em>, <em>dimension</em>, <em>graphical=True</em>, <em>fig_num=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/output/plot_root.html#plot_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.output.plot_root.plot_projection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the spectra as projected onto the dimension.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -496,7 +520,15 @@ Default is False.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">ROOT.TH1D</span></code>: Plot of the dimension.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><dl class="docutils">
+<dt>(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TH1D</span></code>): Root histogram of the projection onto</dt>
+<dd><p class="first last">the given dimension.</p>
+</dd>
+<dt>(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TCanvas</span></code>): Root canvas object containing plot of</dt>
+<dd><p class="first last">histogram.</p>
+</dd>
+</dl>
+</p>
 </td>
 </tr>
 </tbody>
@@ -519,7 +551,15 @@ Default is False.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TH2D</span></code>): Plot of the spectra.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><dl class="docutils">
+<dt>(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TH2D</span></code>): Root 2D histogram of the spectra surface</dt>
+<dd><p class="first last">projection.</p>
+</dd>
+<dt>(<code class="xref py py-class docutils literal"><span class="pre">ROOT.TCanvas</span></code>): Root canvas object containing plot of</dt>
+<dd><p class="first last">histogram.</p>
+</dd>
+</dl>
+</p>
 </td>
 </tr>
 </tbody>

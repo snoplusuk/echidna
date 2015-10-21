@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="up" title="echidna package" href="echidna.html" />
-    <link rel="next" title="echidna.test package" href="echidna.test.html" />
+    <link rel="next" title="echidna.scripts.tutorials package" href="echidna.scripts.tutorials.html" />
     <link rel="prev" title="echidna.output package" href="echidna.output.html" /> 
   </head>
   <body role="document">
@@ -40,7 +40,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="echidna.test.html" title="echidna.test package"
+          <a href="echidna.scripts.tutorials.html" title="echidna.scripts.tutorials package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="echidna.output.html" title="echidna.output package"
@@ -57,6 +57,19 @@
             
   <div class="section" id="echidna-scripts-package">
 <h1>echidna.scripts package<a class="headerlink" href="#echidna-scripts-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="echidna.scripts.tutorials.html">echidna.scripts.tutorials package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.tutorials.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.tutorials.html#module-echidna.scripts.tutorials.getting_started">echidna.scripts.tutorials.getting_started module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.tutorials.html#module-echidna.scripts.tutorials">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -80,6 +93,24 @@ and 7), with KamLAND-Zen.</p>
 <dt id="echidna.scripts.Xe136_majoron_limit.main">
 <code class="descclassname">echidna.scripts.Xe136_majoron_limit.</code><code class="descname">main</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/scripts/Xe136_majoron_limit.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.scripts.Xe136_majoron_limit.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Script to set 90% CL on all four Majoron-emitting modes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>dict</em>) &#8211; Dictionary of command line arguments from argparse.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Expects <code class="xref py py-obj docutils literal"><span class="pre">args</span></code> dict to contain:</p>
+<ul class="last simple">
+<li><code class="xref py py-attr docutils literal"><span class="pre">signals</span></code> - list of 4 paths (strings)</li>
+<li><code class="xref py py-attr docutils literal"><span class="pre">two_nu</span></code> - path (string)</li>
+<li><code class="xref py py-attr docutils literal"><span class="pre">b8_solar</span></code> - path (string)</li>
+<li><code class="xref py py-attr docutils literal"><span class="pre">verbose</span></code> - print progress and timing information (bool)</li>
+</ul>
+</div>
 </dd></dl>
 
 </div>
@@ -123,6 +154,26 @@ added to the file name</li>
 </pre></div>
 </div>
 <p>This will create the scaled hdf5 file <code class="docutils literal"><span class="pre">/path/to/example_scaled.hdf5</span></code>.</p>
+</div>
+<div class="section" id="module-echidna.scripts.dump_shifted">
+<span id="echidna-scripts-dump-shifted-module"></span><h2>echidna.scripts.dump_shifted module<a class="headerlink" href="#module-echidna.scripts.dump_shifted" title="Permalink to this headline">¶</a></h2>
+<p>Example shifting script</p>
+<dl class="docutils">
+<dt>This script:</dt>
+<dd><ul class="first last simple">
+<li>Reads in mc spectra from hdf5</li>
+<li>Shifts spectra</li>
+<li>Shifted spectrum is saved to the same directory with <code class="docutils literal"><span class="pre">_shifted</span></code>
+added to the file name</li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To shift energy_mc of the hdf5 file <code class="docutils literal"><span class="pre">example.hdf5</span></code> by 0.1 MeV:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python dump_shifted.py -d energy_mc -f /path/to/example.hdf5 -s 0.1
+</pre></div>
+</div>
+<p>This will create the shifted hdf5 file <code class="docutils literal"><span class="pre">/path/to/example_shifted.hdf5</span></code>.</p>
 </div>
 <div class="section" id="module-echidna.scripts.dump_smeared">
 <span id="echidna-scripts-dump-smeared-module"></span><h2>echidna.scripts.dump_smeared module<a class="headerlink" href="#module-echidna.scripts.dump_smeared" title="Permalink to this headline">¶</a></h2>
@@ -489,10 +540,12 @@ spectra.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">echidna.scripts package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.Xe136_majoron_limit">echidna.scripts.Xe136_majoron_limit module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.combine_hdf5">echidna.scripts.combine_hdf5 module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_scaled">echidna.scripts.dump_scaled module</a></li>
+<li><a class="reference internal" href="#module-echidna.scripts.dump_shifted">echidna.scripts.dump_shifted module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_smeared">echidna.scripts.dump_smeared module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_spectra_ntuple">echidna.scripts.dump_spectra_ntuple module</a></li>
 <li><a class="reference internal" href="#module-echidna.scripts.dump_spectra_root">echidna.scripts.dump_spectra_root module</a></li>
@@ -509,8 +562,8 @@ spectra.</p>
   <p class="topless"><a href="echidna.output.html"
                         title="previous chapter">echidna.output package</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="echidna.test.html"
-                        title="next chapter">echidna.test package</a></p>
+  <p class="topless"><a href="echidna.scripts.tutorials.html"
+                        title="next chapter">echidna.scripts.tutorials package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -545,7 +598,7 @@ spectra.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="echidna.test.html" title="echidna.test package"
+          <a href="echidna.scripts.tutorials.html" title="echidna.scripts.tutorials package"
              >next</a> |</li>
         <li class="right" >
           <a href="echidna.output.html" title="echidna.output package"

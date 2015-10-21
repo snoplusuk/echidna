@@ -27,7 +27,7 @@
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="up" title="echidna package" href="echidna.html" />
     <link rel="next" title="echidna.util package" href="echidna.util.html" />
-    <link rel="prev" title="echidna.scripts package" href="echidna.scripts.html" /> 
+    <link rel="prev" title="echidna.scripts.tutorials package" href="echidna.scripts.tutorials.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -43,7 +43,7 @@
           <a href="echidna.util.html" title="echidna.util package"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="echidna.scripts.html" title="echidna.scripts package"
+          <a href="echidna.scripts.tutorials.html" title="echidna.scripts.tutorials package"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">echidna  documentation</a> &raquo;</li>
           <li><a href="echidna.html" accesskey="U">echidna package</a> &raquo;</li> 
@@ -215,6 +215,67 @@ The scaled spectra is fitted with a Gaussian and the extracted
 mean and sigma are checked against expected values within 1 %.
 Integral of scaled spectrum is checked against original number of
 entries.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.test.test_shift">
+<span id="echidna-test-test-shift-module"></span><h2>echidna.test.test_shift module<a class="headerlink" href="#module-echidna.test.test_shift" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.test.test_shift.TestShift">
+<em class="property">class </em><code class="descclassname">echidna.test.test_shift.</code><code class="descname">TestShift</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="echidna.test.test_shift.TestShift.fit_gaussian_energy">
+<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a gausian to the energy of a spectrum.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be fitted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
+integral (float) of the spectrum.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_shift.TestShift.gaussian">
+<code class="descname">gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>*p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift.gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift.gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>A gaussian used for fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>float</em>) &#8211; Position the gaussian is calculated at.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Value of gaussian at x for given parameters</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_shift.TestShift.test_shift">
+<code class="descname">test_shift</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift.test_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift.test_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the variable shifting method.</p>
+<p>Creates a Gaussian spectra with mean energy 2.5 MeV and sigma 0.2 MeV.
+Radial values of the spectra have a uniform distribution.
+The &#8220;energy_mc&#8221; of the spectra is then shifted by 0.111 MeV.
+The shifted spectra is fitted with a Gaussian and the extracted
+mean and sigma are checked against expected values within 1 %.
+Integral of shifted spectrum is checked against original number of
+entries.
+This is then repeated for a shift of 0.2 MeV to test the shift_by_bin
+method.</p>
 </dd></dl>
 
 </dd></dl>
@@ -421,6 +482,7 @@ entries.</p>
 <li><a class="reference internal" href="#module-echidna.test.test_chi_squared">echidna.test.test_chi_squared module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_limit_setting">echidna.test.test_limit_setting module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_scale">echidna.test.test_scale module</a></li>
+<li><a class="reference internal" href="#module-echidna.test.test_shift">echidna.test.test_shift module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_smear">echidna.test.test_smear module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_spectra">echidna.test.test_spectra module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_store">echidna.test.test_store module</a></li>
@@ -430,8 +492,8 @@ entries.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="echidna.scripts.html"
-                        title="previous chapter">echidna.scripts package</a></p>
+  <p class="topless"><a href="echidna.scripts.tutorials.html"
+                        title="previous chapter">echidna.scripts.tutorials package</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="echidna.util.html"
                         title="next chapter">echidna.util package</a></p>
@@ -472,7 +534,7 @@ entries.</p>
           <a href="echidna.util.html" title="echidna.util package"
              >next</a> |</li>
         <li class="right" >
-          <a href="echidna.scripts.html" title="echidna.scripts package"
+          <a href="echidna.scripts.tutorials.html" title="echidna.scripts.tutorials package"
              >previous</a> |</li>
         <li><a href="index.html">echidna  documentation</a> &raquo;</li>
           <li><a href="echidna.html" >echidna package</a> &raquo;</li> 

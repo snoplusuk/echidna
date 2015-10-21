@@ -141,8 +141,12 @@
             <span class="n">radius</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">radial_low</span><span class="p">,</span> <span class="n">radial_high</span><span class="p">)</span>
             <span class="n">test_spectra</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">test_decays</span><span class="p">)</span>
-        <span class="n">count</span> <span class="o">=</span> <span class="mi">150</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">150</span>  <span class="c"># int</span>
         <span class="n">test_spectra</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">110</span>  <span class="c"># int --&gt; int(110) / int(150) = 0</span>
+        <span class="n">test_spectra</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+        <span class="c"># Check sum != 0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mf">0.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">count</span><span class="p">,</span>
                         <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Spectra sum: </span><span class="si">%s</span><span class="s">, scaling </span><span class="si">%s</span><span class="s">&quot;</span>
                         <span class="o">%</span> <span class="p">(</span><span class="n">test_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">count</span><span class="p">))</span>

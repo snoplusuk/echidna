@@ -48,6 +48,18 @@
           <div class="body" role="main">
             
   <h1>Source code for echidna.core.smear</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Examples:</span>
+<span class="sd">  To smear an already smeared spectrum with a light yield of 200 to a</span>
+<span class="sd">  a light yield of 190 then the following lines are required::</span>
+
+<span class="sd">    &gt;&gt;&gt; smearer = smear.SmearEnergySmearLY()</span>
+<span class="sd">    &gt;&gt;&gt; ly = smearer.calc_smear_ly(190., cur_ly=200.)</span>
+<span class="sd">    &gt;&gt;&gt; smearer.set_resolution(ly)</span>
+<span class="sd">    &gt;&gt;&gt; smeared_spec = smearer.weighted_smear(spectrum)</span>
+
+<span class="sd">.. note:: Similar methods are available in all other smearing classes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
@@ -155,6 +167,32 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearLY</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_light_yield&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="mf">200.</span>  <span class="c"># NHits/MeV</span>
 
+<div class="viewcode-block" id="EnergySmearLY.calc_smear_ly"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.calc_smear_ly">[docs]</a>    <span class="k">def</span> <span class="nf">calc_smear_ly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_ly</span><span class="p">,</span> <span class="n">cur_ly</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the value of light yield (ly) required to smear a</span>
+<span class="sd">          data set which has already been smeared with a light yield of cur_ly</span>
+<span class="sd">          to achieve a smeared data set with a new light yield of new_ly.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          new_ly (float): The value of light yield wanted for the smeared PDF.</span>
+<span class="sd">          cur_ly (float, optional): Current value of light yield the PDF</span>
+<span class="sd">            has been convolved with from the true value PDF.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If new_ly is smaller than cur_sigma. Can&#39;t smear to</span>
+<span class="sd">            higher light yields (smaller sigmas)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of light yield needed to smear the current</span>
+<span class="sd">            PDF to obtain a new light yield: new_ly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cur_ly</span><span class="p">:</span>
+            <span class="n">cur_ly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">new_ly</span> <span class="o">&gt;</span> <span class="n">cur_ly</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;New light yield must be smaller than the&quot;</span>
+                             <span class="s">&quot;current light yield. cur_ly: </span><span class="si">%s</span><span class="s">. new_ly: </span><span class="si">%s</span><span class="s">.&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">cur_ly</span><span class="p">,</span> <span class="n">new_ly</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_ly</span><span class="o">*</span><span class="n">cur_ly</span><span class="o">/</span><span class="p">(</span><span class="n">cur_ly</span><span class="o">-</span><span class="n">new_ly</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="EnergySmearLY.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Returns the light yield.</span>
 
@@ -335,6 +373,32 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearRes</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_resolution&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c"># 5%/sqrt(MeV)</span>
 
+<div class="viewcode-block" id="EnergySmearRes.calc_smear_resoluton"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.calc_smear_resoluton">[docs]</a>    <span class="k">def</span> <span class="nf">calc_smear_resoluton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_res</span><span class="p">,</span> <span class="n">cur_res</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the value of resolution required to smear a data set</span>
+<span class="sd">          which has already been smeared with a resolution of cur_res to</span>
+<span class="sd">          achieve a new resolution of new_res.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          new_res (float): The value of resolution wanted for the smeared PDF.</span>
+<span class="sd">          cur_res (float, optional): Current value of resolution the PDF</span>
+<span class="sd">            has been convolved with from the true value PDF.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If new_res is smaller than cur_sigma. Can&#39;t smear to</span>
+<span class="sd">            higher resolutions (smaller sigmas)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of resolution needed to smear the current</span>
+<span class="sd">            PDF to obtain a new resolution with sigma value new_res.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cur_res</span><span class="p">:</span>
+            <span class="n">cur_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">new_res</span> <span class="o">&lt;</span> <span class="n">cur_res</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;New resolution must be larger than the&quot;</span>
+                             <span class="s">&quot;current resolution. cur_res: </span><span class="si">%s</span><span class="s">. new_res: </span><span class="si">%s</span><span class="s">.&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">cur_res</span><span class="p">,</span> <span class="n">new_res</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">new_res</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">cur_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+</div>
 <div class="viewcode-block" id="EnergySmearRes.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the energy resolution</span>
 
@@ -516,6 +580,32 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">RadialSmear</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="mf">100.</span>  <span class="c"># mm</span>
 
+<div class="viewcode-block" id="RadialSmear.calc_smear_resoluton"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.calc_smear_resoluton">[docs]</a>    <span class="k">def</span> <span class="nf">calc_smear_resoluton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_res</span><span class="p">,</span> <span class="n">cur_res</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the value of resolution required to smear a data set</span>
+<span class="sd">          which has already been smeared with a resolution of cur_res to</span>
+<span class="sd">          achieve a new resolution of new_res.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          new_res (float): The value of resolution wanted for the smeared PDF.</span>
+<span class="sd">          cur_res (float, optional): Current value of resolution the PDF</span>
+<span class="sd">            has been convolved with from the true value PDF.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If new_res is smaller than cur_sigma. Can&#39;t smear to</span>
+<span class="sd">            higher resolutions (smaller sigmas)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of resolution needed to smear the current</span>
+<span class="sd">            PDF to obtain a new resolution: new_res.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cur_res</span><span class="p">:</span>
+            <span class="n">cur_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">new_res</span> <span class="o">&lt;</span> <span class="n">cur_res</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;New resolution must be larger than the&quot;</span>
+                             <span class="s">&quot;current resolution. cur_res: </span><span class="si">%s</span><span class="s">. new_res: </span><span class="si">%s</span><span class="s">.&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">cur_res</span><span class="p">,</span> <span class="n">new_res</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">new_res</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">cur_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+</div>
 <div class="viewcode-block" id="RadialSmear.get_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gets the position resolution.</span>
 

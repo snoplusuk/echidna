@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>echidna.test.test_scale &mdash; echidna  documentation</title>
+    <title>echidna.test.test_shift &mdash; echidna  documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -47,17 +47,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for echidna.test.test_scale</h1><div class="highlight"><pre>
+  <h1>Source code for echidna.test.test_shift</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">echidna.core.scale</span> <span class="kn">as</span> <span class="nn">scale</span>
+<span class="kn">import</span> <span class="nn">echidna.core.shift</span> <span class="kn">as</span> <span class="nn">shift</span>
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
 
 
-<div class="viewcode-block" id="TestScale"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_scale.TestScale">[docs]</a><span class="k">class</span> <span class="nc">TestScale</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestShift"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift">[docs]</a><span class="k">class</span> <span class="nc">TestShift</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 
-<div class="viewcode-block" id="TestScale.gaussian"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_scale.TestScale.gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">):</span>
+<div class="viewcode-block" id="TestShift.gaussian"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A gaussian used for fitting.</span>
 
 <span class="sd">        Args:</span>
@@ -73,7 +73,7 @@
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">A</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="TestScale.fit_gaussian_energy"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_scale.TestScale.fit_gaussian_energy">[docs]</a>    <span class="k">def</span> <span class="nf">fit_gaussian_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+<div class="viewcode-block" id="TestShift.fit_gaussian_energy"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.fit_gaussian_energy">[docs]</a>    <span class="k">def</span> <span class="nf">fit_gaussian_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Fits a gausian to the energy of a spectrum.</span>
 
 <span class="sd">        Args:</span>
@@ -95,16 +95,18 @@
         <span class="n">coeff</span><span class="p">,</span> <span class="n">var_mtrx</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gaussian</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">pars0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">coeff</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="TestScale.test_scale"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_scale.TestScale.test_scale">[docs]</a>    <span class="k">def</span> <span class="nf">test_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Tests the variable scaling method.</span>
+<div class="viewcode-block" id="TestShift.test_shift"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.test_shift">[docs]</a>    <span class="k">def</span> <span class="nf">test_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Tests the variable shifting method.</span>
 
 <span class="sd">        Creates a Gaussian spectra with mean energy 2.5 MeV and sigma 0.2 MeV.</span>
 <span class="sd">        Radial values of the spectra have a uniform distribution.</span>
-<span class="sd">        The &quot;energy_mc&quot; of the spectra is then scaled by a factor by 1.1.</span>
-<span class="sd">        The scaled spectra is fitted with a Gaussian and the extracted</span>
+<span class="sd">        The &quot;energy_mc&quot; of the spectra is then shifted by 0.111 MeV.</span>
+<span class="sd">        The shifted spectra is fitted with a Gaussian and the extracted</span>
 <span class="sd">        mean and sigma are checked against expected values within 1 %.</span>
-<span class="sd">        Integral of scaled spectrum is checked against original number of</span>
+<span class="sd">        Integral of shifted spectrum is checked against original number of</span>
 <span class="sd">        entries.</span>
+<span class="sd">        This is then repeated for a shift of 0.2 MeV to test the shift_by_bin</span>
+<span class="sd">        method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
         <span class="n">test_decays</span> <span class="o">=</span> <span class="mi">10000</span>
@@ -120,14 +122,14 @@
             <span class="n">test_spectra</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
         <span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma_energy</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gaussian_energy</span><span class="p">(</span>
             <span class="n">test_spectra</span><span class="p">)</span>
-        <span class="n">scaler</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">Scale</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">scaler</span><span class="o">.</span><span class="n">set_scale_factor</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.1</span><span class="p">)</span>
-        <span class="n">scale_factor</span> <span class="o">=</span> <span class="mf">1.1</span>
-        <span class="n">scaler</span><span class="o">.</span><span class="n">set_scale_factor</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span>
-        <span class="n">scaled_spectra</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">test_spectra</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
-        <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gaussian_energy</span><span class="p">(</span><span class="n">scaled_spectra</span><span class="p">)</span>
-        <span class="n">expected_mean</span> <span class="o">=</span> <span class="n">mean_energy</span><span class="o">*</span><span class="n">scale_factor</span>
-        <span class="n">expected_sigma</span> <span class="o">=</span> <span class="n">sigma_energy</span><span class="o">*</span><span class="n">scale_factor</span>
+        <span class="c"># First test interpolation shift</span>
+        <span class="n">shifter</span> <span class="o">=</span> <span class="n">shift</span><span class="o">.</span><span class="n">Shift</span><span class="p">()</span>
+        <span class="n">shift_e</span> <span class="o">=</span> <span class="mf">0.111</span>
+        <span class="n">shifter</span><span class="o">.</span><span class="n">set_shift</span><span class="p">(</span><span class="n">shift_e</span><span class="p">)</span>
+        <span class="n">shifted_spectra</span> <span class="o">=</span> <span class="n">shifter</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">test_spectra</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gaussian_energy</span><span class="p">(</span><span class="n">shifted_spectra</span><span class="p">)</span>
+        <span class="n">expected_mean</span> <span class="o">=</span> <span class="n">mean_energy</span><span class="o">+</span><span class="n">shift_e</span>
+        <span class="n">expected_sigma</span> <span class="o">=</span> <span class="n">sigma_energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">expected_mean</span> <span class="o">&lt;</span> <span class="mf">1.01</span><span class="o">*</span><span class="n">mean</span> <span class="ow">and</span>
                         <span class="n">expected_mean</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="o">*</span><span class="n">mean</span><span class="p">,</span>
                         <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Expected mean energy </span><span class="si">%s</span><span class="s">, fitted mean energy </span><span class="si">%s</span><span class="s">&quot;</span>
@@ -136,9 +138,29 @@
                         <span class="n">expected_sigma</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
                         <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Expected sigma </span><span class="si">%s</span><span class="s">, fitted sigma </span><span class="si">%s</span><span class="s">&quot;</span>
                         <span class="o">%</span> <span class="p">(</span><span class="n">expected_sigma</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">scaled_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">test_decays</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">integral</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">test_decays</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span>
                                <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Input decays </span><span class="si">%s</span><span class="s">, integral of spectra </span><span class="si">%s</span><span class="s">&quot;</span>
-                               <span class="o">%</span> <span class="p">(</span><span class="n">test_decays</span><span class="p">,</span> <span class="n">scaled_spectra</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span></div></div>
+                               <span class="o">%</span> <span class="p">(</span><span class="n">test_decays</span><span class="p">,</span> <span class="n">integral</span><span class="p">))</span>
+        <span class="c"># Now test shift by bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">shifter</span><span class="o">.</span><span class="n">shift_by_bin</span><span class="p">,</span> <span class="n">test_spectra</span><span class="p">,</span>
+                          <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+        <span class="n">shift_e</span> <span class="o">=</span> <span class="mf">0.2</span>
+        <span class="n">shifter</span><span class="o">.</span><span class="n">set_shift</span><span class="p">(</span><span class="n">shift_e</span><span class="p">)</span>
+        <span class="n">shifted_spectra</span> <span class="o">=</span> <span class="n">shifter</span><span class="o">.</span><span class="n">shift_by_bin</span><span class="p">(</span><span class="n">test_spectra</span><span class="p">,</span> <span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gaussian_energy</span><span class="p">(</span><span class="n">shifted_spectra</span><span class="p">)</span>
+        <span class="n">expected_mean</span> <span class="o">=</span> <span class="n">mean_energy</span><span class="o">+</span><span class="n">shift_e</span>
+        <span class="n">expected_sigma</span> <span class="o">=</span> <span class="n">sigma_energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">expected_mean</span> <span class="o">&lt;</span> <span class="mf">1.01</span><span class="o">*</span><span class="n">mean</span> <span class="ow">and</span>
+                        <span class="n">expected_mean</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="o">*</span><span class="n">mean</span><span class="p">,</span>
+                        <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Expected mean energy </span><span class="si">%s</span><span class="s">, fitted mean energy </span><span class="si">%s</span><span class="s">&quot;</span>
+                        <span class="o">%</span> <span class="p">(</span><span class="n">expected_mean</span><span class="p">,</span> <span class="n">mean</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">expected_sigma</span> <span class="o">&lt;</span> <span class="mf">1.01</span><span class="o">*</span><span class="n">sigma</span> <span class="ow">and</span>
+                        <span class="n">expected_sigma</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="o">*</span><span class="n">sigma</span><span class="p">,</span>
+                        <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Expected sigma </span><span class="si">%s</span><span class="s">, fitted sigma </span><span class="si">%s</span><span class="s">&quot;</span>
+                        <span class="o">%</span> <span class="p">(</span><span class="n">expected_sigma</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">integral</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">test_decays</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span>
+                               <span class="n">msg</span><span class="o">=</span><span class="s">&quot;Input decays </span><span class="si">%s</span><span class="s">, integral of spectra </span><span class="si">%s</span><span class="s">&quot;</span>
+                               <span class="o">%</span> <span class="p">(</span><span class="n">test_decays</span><span class="p">,</span> <span class="n">integral</span><span class="p">))</span></div></div>
 </pre></div>
 
           </div>

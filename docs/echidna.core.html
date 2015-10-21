@@ -64,19 +64,75 @@
 <span id="echidna-core-dsextract-module"></span><h2>echidna.core.dsextract module<a class="headerlink" href="#module-echidna.core.dsextract" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="echidna.core.dsextract.EnergyExtractMC">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>reco_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <p>Quenched energy extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
 events which have a radial position greater than the radius of the
-fiducial volume. If None no cut is applied.</td>
+fiducial volume. If None no cut is applied.</li>
+<li><strong>reco_pos</strong> (<em>bool, optional</em>) &#8211; If true then position cuts will be made on
+reconstructed position. If False (default) then MC position is used
+for cuts.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_reco_pos</strong> (<em>bool</em>) &#8211; If true then position cuts will be made on</p>
+</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractMC.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; Monte Carlo entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractMC.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -85,9 +141,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -95,17 +153,23 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractMC.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether energy of a DS::MC is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -119,9 +183,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True quenched energy</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True quenched energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -149,19 +215,76 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.EnergyExtractReco">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>mc_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <p>Reconstructed energy extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
 events which have a radial position greater than the radius of the
-fiducial volume. If None no cut is applied.</td>
+fiducial volume. If None no cut is applied.</li>
+<li><strong>mc_pos</strong> (<em>bool, optional</em>) &#8211; If true then  MC position is used for cuts.
+If False (default) then position cuts will be made on reconstructed
+position.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_mc_pos</strong> (<em>bool</em>) &#8211; If true then MC position is used for cuts.
+If False then position cuts will be made on reconstructed position.</p>
+</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractReco.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; Event entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractReco.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -170,9 +293,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -180,15 +305,23 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractReco.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether energy of a DS::EV is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -202,9 +335,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -218,9 +353,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -230,19 +367,75 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.EnergyExtractTruth">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractTruth</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">EnergyExtractTruth</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>reco_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <p>True MC energy extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
 events which have a radial position greater than the radius of the
-fiducial volume. If None no cut is applied.</td>
+fiducial volume. If None no cut is applied.</li>
+<li><strong>reco_pos</strong> (<em>bool, optional</em>) &#8211; If true then position cuts will be made on
+reconstructed position. If False (default) then MC position is used
+for cuts.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_reco_pos</strong> (<em>bool</em>) &#8211; If true then position cuts will be made on</p>
+</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.EnergyExtractTruth.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; Monte Carlo entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractTruth.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -251,9 +444,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -261,15 +456,23 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.EnergyExtractTruth.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#EnergyExtractTruth.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.EnergyExtractTruth.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether energy of a DS::MC is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -283,9 +486,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -299,9 +504,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True energy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -340,9 +547,9 @@ fiducial volume. If None no cut is applied.</li>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.Radial3ExtractMC">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em>, <em>reco_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
-<p>True <span class="math">\((radius/outer_radius)^3\)</span> radial extraction methods.</p>
+<p>True <span class="math">\((radius/outer\_radius)^3\)</span> radial extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -352,17 +559,67 @@ fiducial volume. If None no cut is applied.</li>
 events which have a radial position greater than the radius of the
 fiducial volume. If None no cut is applied.</li>
 <li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
-<span class="math">\((radius/outer_radius)^3\)</span>. If None then the av_radius in
+<span class="math">\((radius/outer\_radius)^3\)</span>. If None then the av_radius in
 <a class="reference internal" href="echidna.calc.html#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a> is used in the calculation.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
-<span class="math">\((radius/outer_radius)^3\)</span>.</p>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_outer_radius</strong> (<em>float</em>) &#8211; The fixed radius used in calculating
+<span class="math">\((radius/outer\_radius)^3\)</span>.</li>
+<li><strong>_reco_pos</strong> (<em>bool</em>) &#8211; If true then position cuts will be made on</li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractMC.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; Monte Carlo entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.Radial3ExtractMC.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -371,9 +628,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -381,15 +640,23 @@ fiducial volume. If None no cut is applied.</li>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.Radial3ExtractMC.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether radius of a DS::MC is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; event</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -403,9 +670,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer_radius)^3\)</span></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer\_radius)^3\)</span></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -419,9 +688,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer_radius)^3\)</span></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; event</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True <span class="math">\((radius/outer\_radius)^3\)</span></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -431,7 +702,7 @@ fiducial volume. If None no cut is applied.</li>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.Radial3ExtractReco">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">Radial3ExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>outer_radius=None</em>, <em>mc_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <dl class="docutils">
 <dt>Reconstructed <span class="math">\((radius/outer_radius)^3\)</span> radial extraction</dt>
@@ -446,17 +717,67 @@ fiducial volume. If None no cut is applied.</li>
 events which have a radial position greater than the radius of the
 fiducial volume. If None no cut is applied.</li>
 <li><strong>outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
-<span class="math">\((radius/outer_radius)^3\)</span>. If None then the av_radius in
+<span class="math">\((radius/outer\_radius)^3\)</span>. If None then the av_radius in
 <a class="reference internal" href="echidna.calc.html#module-echidna.calc.constants" title="echidna.calc.constants"><code class="xref py py-class docutils literal"><span class="pre">echidna.calc.constants</span></code></a> is used in the calculation.</li>
+<li><strong>mc_pos</strong> &#8211; If true then  MC position is used for cuts.
+If False (default) then position cuts will be made on reconstructed
+position.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_outer_radius</strong> (<em>float, optional</em>) &#8211; The fixed radius used in calculating
-<span class="math">\((radius/outer_radius)^3\)</span>.</p>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_mc_pos</strong> (<em>bool</em>) &#8211; If true then MC position is used for cuts.
+If False then position cuts will be made on reconstructed position.</p>
 </td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.Radial3ExtractReco.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; Event entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.Radial3ExtractReco.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -465,9 +786,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -475,15 +798,23 @@ fiducial volume. If None no cut is applied.</li>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.Radial3ExtractReco.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#Radial3ExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.Radial3ExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether radius of a DS::EV is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -497,9 +828,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer_radius)^3\)</span></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer\_radius)^3\)</span></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -513,9 +846,11 @@ fiducial volume. If None no cut is applied.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer_radius)^3\)</span></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed <span class="math">\((radius/outer\_radius)^3\)</span></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -525,19 +860,75 @@ fiducial volume. If None no cut is applied.</li>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.RadialExtractMC">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractMC</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>reco_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <p>True radial extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
 events which have a radial position greater than the radius of the
-fiducial volume. If None no cut is applied.</td>
+fiducial volume. If None no cut is applied.</li>
+<li><strong>reco_pos</strong> (<em>bool, optional</em>) &#8211; If true then position cuts will be made on
+reconstructed position. If False (default) then MC position is used
+for cuts.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_reco_pos</strong> (<em>bool</em>) &#8211; If true then position cuts will be made on</p>
+</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractMC.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; Monte Carlo entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.RadialExtractMC.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -546,9 +937,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -556,15 +949,23 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.RadialExtractMC.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>mc</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractMC.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractMC.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether radius of a DS::MC is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; event</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -578,9 +979,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -594,9 +997,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mc</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.MC</span></code>) &#8211; event</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True radius</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -606,19 +1011,76 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="class">
 <dt id="echidna.core.dsextract.RadialExtractReco">
-<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">echidna.core.dsextract.</code><code class="descname">RadialExtractReco</code><span class="sig-paren">(</span><em>fv_radius=None</em>, <em>mc_pos=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#echidna.core.dsextract.Extractor" title="echidna.core.dsextract.Extractor"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.dsextract.Extractor</span></code></a></p>
 <p>Reconstructed radial extraction methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fv_radius</strong> (<em>float, optional</em>) &#8211; Fiducial radius. Applies a cut to remove
 events which have a radial position greater than the radius of the
-fiducial volume. If None no cut is applied.</td>
+fiducial volume. If None no cut is applied.</li>
+<li><strong>mc_pos</strong> (<em>bool, optional</em>) &#8211; If true then  MC position is used for cuts.
+If False (default) then position cuts will be made on reconstructed
+position.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>_mc_pos</strong> (<em>bool</em>) &#8211; If true then MC position is used for cuts.
+If False then position cuts will be made on reconstructed position.</p>
+</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.fv_cut_ntuple">
+<code class="descname">fv_cut_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.fv_cut_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.fv_cut_ntuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to an ntuple entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Indicates pass or fail of cut</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.dsextract.RadialExtractReco.fv_cut_root">
+<code class="descname">fv_cut_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.fv_cut_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.fv_cut_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the fiducial volume (fv) cut to a root entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; Event entry</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If reconstruced position cut is used on an mc event
+which has multiple evs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicates pass or fail of cut</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.dsextract.RadialExtractReco.get_valid_ntuple">
 <code class="descname">get_valid_ntuple</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_valid_ntuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_valid_ntuple" title="Permalink to this definition">¶</a></dt>
@@ -627,9 +1089,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
@@ -637,15 +1101,23 @@ fiducial volume. If None no cut is applied.</td>
 
 <dl class="method">
 <dt id="echidna.core.dsextract.RadialExtractReco.get_valid_root">
-<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_valid_root</code><span class="sig-paren">(</span><em>ev</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/dsextract.html#RadialExtractReco.get_valid_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.dsextract.RadialExtractReco.get_valid_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether radius of a DS::EV is valid</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Validity boolean</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</li>
+<li><strong>ds</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS</span></code>) &#8211; Data Structure entry</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity boolean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -659,9 +1131,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<code class="xref py py-class docutils literal"><span class="pre">ROOT.TChain</span></code>) &#8211; chain entry</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -675,9 +1149,11 @@ fiducial volume. If None no cut is applied.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ev</strong> (<code class="xref py py-class docutils literal"><span class="pre">RAT.DS.EV</span></code>) &#8211; event</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Reconstructed radius</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
 </tbody>
 </table>
@@ -975,8 +1451,115 @@ If scale_factor is zero or below.</td>
 </dd></dl>
 
 </div>
+<div class="section" id="module-echidna.core.shift">
+<span id="echidna-core-shift-module"></span><h2>echidna.core.shift module<a class="headerlink" href="#module-echidna.core.shift" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.core.shift.Shift">
+<em class="property">class </em><code class="descclassname">echidna.core.shift.</code><code class="descname">Shift</code><a class="reference internal" href="_modules/echidna/core/shift.html#Shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.shift.Shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A class for shifting the parameter space of a spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>_shift</strong> (<em>float</em>) &#8211; The factor you want to shift a parameter by.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.core.shift.Shift.get_shift">
+<code class="descname">get_shift</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/shift.html#Shift.get_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.shift.Shift.get_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the shift factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The shift factor.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.shift.Shift.set_shift">
+<code class="descname">set_shift</code><span class="sig-paren">(</span><em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/shift.html#Shift.set_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.shift.Shift.set_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the shift factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shift</strong> (<em>float</em>) &#8211; Value you wish to set the shift factor to.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.shift.Shift.shift">
+<code class="descname">shift</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dimension</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/shift.html#Shift.shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.shift.Shift.shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shifts a given spectrum&#8217;s dimension using interpolation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<em>float</em>) &#8211; The spectrum you want to shift.</li>
+<li><strong>dimension</strong> (<em>string</em>) &#8211; The dimension of the spectrum you want to shift.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; To passed to the interpolation function in
+<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The shifted spectrum.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.core.shift.Shift.shift_by_bin">
+<code class="descname">shift_by_bin</code><span class="sig-paren">(</span><em>spectrum</em>, <em>dimension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/shift.html#Shift.shift_by_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.shift.Shift.shift_by_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shifts a given spectrum&#8217;s dimension by shifting bins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<em>float</em>) &#8211; The spectrum you want to shift.</li>
+<li><strong>dimension</strong> (<em>string</em>) &#8211; The dimension of the spectrum you want to shift.</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211; To passed to the interpolation function in
+<a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The shifted spectrum.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-echidna.core.smear">
 <span id="echidna-core-smear-module"></span><h2>echidna.core.smear module<a class="headerlink" href="#module-echidna.core.smear" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Examples</p>
+<p>To smear an already smeared spectrum with a light yield of 200 to a
+a light yield of 190 then the following lines are required:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">smearer</span> <span class="o">=</span> <span class="n">smear</span><span class="o">.</span><span class="n">SmearEnergySmearLY</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ly</span> <span class="o">=</span> <span class="n">smearer</span><span class="o">.</span><span class="n">calc_smear_ly</span><span class="p">(</span><span class="mf">190.</span><span class="p">,</span> <span class="n">cur_ly</span><span class="o">=</span><span class="mf">200.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smearer</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ly</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smeared_spec</span> <span class="o">=</span> <span class="n">smearer</span><span class="o">.</span><span class="n">weighted_smear</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Similar methods are available in all other smearing classes.</p>
+</div>
 <dl class="class">
 <dt id="echidna.core.smear.EnergySmearLY">
 <em class="property">class </em><code class="descclassname">echidna.core.smear.</code><code class="descname">EnergySmearLY</code><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY" title="Permalink to this definition">¶</a></dt>
@@ -994,6 +1577,41 @@ MeV.</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearLY.calc_smear_ly">
+<code class="descname">calc_smear_ly</code><span class="sig-paren">(</span><em>new_ly</em>, <em>cur_ly=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.calc_smear_ly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.calc_smear_ly" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the value of light yield (ly) required to smear a</dt>
+<dd>data set which has already been smeared with a light yield of cur_ly
+to achieve a smeared data set with a new light yield of new_ly.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>new_ly</strong> (<em>float</em>) &#8211; The value of light yield wanted for the smeared PDF.</li>
+<li><strong>cur_ly</strong> (<em>float, optional</em>) &#8211; Current value of light yield the PDF
+has been convolved with from the true value PDF.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If new_ly is smaller than cur_sigma. Can&#8217;t smear to
+higher light yields (smaller sigmas)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The value of light yield needed to smear the current
+PDF to obtain a new light yield: new_ly.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.smear.EnergySmearLY.get_resolution">
 <code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearLY.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearLY.get_resolution" title="Permalink to this definition">¶</a></dt>
@@ -1130,6 +1748,41 @@ e.g. 0.05 for <span class="math">\(\sigma = 5\%/\sqrt{E[MeV]}\)</span>.</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.smear.EnergySmearRes.calc_smear_resoluton">
+<code class="descname">calc_smear_resoluton</code><span class="sig-paren">(</span><em>new_res</em>, <em>cur_res=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.calc_smear_resoluton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.calc_smear_resoluton" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the value of resolution required to smear a data set</dt>
+<dd>which has already been smeared with a resolution of cur_res to
+achieve a new resolution of new_res.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>new_res</strong> (<em>float</em>) &#8211; The value of resolution wanted for the smeared PDF.</li>
+<li><strong>cur_res</strong> (<em>float, optional</em>) &#8211; Current value of resolution the PDF
+has been convolved with from the true value PDF.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If new_res is smaller than cur_sigma. Can&#8217;t smear to
+higher resolutions (smaller sigmas)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The value of resolution needed to smear the current
+PDF to obtain a new resolution with sigma value new_res.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.smear.EnergySmearRes.get_resolution">
 <code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#EnergySmearRes.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.EnergySmearRes.get_resolution" title="Permalink to this definition">¶</a></dt>
@@ -1268,6 +1921,41 @@ If par is not in the specta config.</p>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="echidna.core.smear.RadialSmear.calc_smear_resoluton">
+<code class="descname">calc_smear_resoluton</code><span class="sig-paren">(</span><em>new_res</em>, <em>cur_res=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.calc_smear_resoluton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.calc_smear_resoluton" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the value of resolution required to smear a data set</dt>
+<dd>which has already been smeared with a resolution of cur_res to
+achieve a new resolution of new_res.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>new_res</strong> (<em>float</em>) &#8211; The value of resolution wanted for the smeared PDF.</li>
+<li><strong>cur_res</strong> (<em>float, optional</em>) &#8211; Current value of resolution the PDF
+has been convolved with from the true value PDF.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If new_res is smaller than cur_sigma. Can&#8217;t smear to
+higher resolutions (smaller sigmas)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The value of resolution needed to smear the current
+PDF to obtain a new resolution: new_res.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="echidna.core.smear.RadialSmear.get_resolution">
 <code class="descname">get_resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/core/smear.html#RadialSmear.get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.core.smear.RadialSmear.get_resolution" title="Permalink to this definition">¶</a></dt>
@@ -2274,6 +2962,7 @@ Unknown variable type passed as a kwarg.</td>
 <li><a class="reference internal" href="#module-echidna.core.dsextract">echidna.core.dsextract module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.scale">echidna.core.scale module</a></li>
+<li><a class="reference internal" href="#module-echidna.core.shift">echidna.core.shift module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.smear">echidna.core.smear module</a></li>
 <li><a class="reference internal" href="#module-echidna.core.spectra">echidna.core.spectra module</a></li>
 <li><a class="reference internal" href="#module-echidna.core">Module contents</a></li>

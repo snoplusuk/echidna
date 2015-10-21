@@ -28,6 +28,14 @@ echidna.core.scale module
     :undoc-members:
     :show-inheritance:
 
+echidna.core.shift module
+-------------------------
+
+.. automodule:: echidna.core.shift
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.core.smear module
 -------------------------
 

@@ -374,7 +374,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;color&quot;</span><span class="p">:</span> <span class="s">&quot;blue&quot;</span><span class="p">}</span>  <span class="c"># default style for plotting</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">num_decays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_decays</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Spectra.get_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the config of the spectra.</span>
@@ -441,7 +441,9 @@
         <span class="c"># Calculate efficiency</span>
         <span class="n">integral_roi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Integral of spectrum over ROI</span>
         <span class="n">efficiency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_roi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_full</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;low&quot;</span><span class="p">:</span> <span class="n">lower_limit</span><span class="p">,</span> <span class="s">&quot;high&quot;</span><span class="p">:</span> <span class="n">upper_limit</span><span class="p">,</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;low&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span>
+                                 <span class="s">&quot;high&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span>
                                  <span class="s">&quot;efficiency&quot;</span><span class="p">:</span> <span class="n">efficiency</span><span class="p">}</span>
 </div>
 <div class="viewcode-block" id="Spectra.get_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
@@ -541,7 +543,8 @@
 <span class="sd">          num_decays (float): Number of decays this spectra should represent.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">num_decays</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="n">num_decays</span>
+        <span class="c"># Make sure self._num_decays stays as a float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_decays</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Spectra.shrink"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink">[docs]</a>    <span class="k">def</span> <span class="nf">shrink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Shrink the data such that it only contains values between low and</span>

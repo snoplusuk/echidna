@@ -1,6 +1,13 @@
 echidna.scripts package
 =======================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    echidna.scripts.tutorials
+
 Submodules
 ----------
 
@@ -24,6 +31,14 @@ echidna.scripts.dump_scaled module
 ----------------------------------
 
 .. automodule:: echidna.scripts.dump_scaled
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.scripts.dump_shifted module
+-----------------------------------
+
+.. automodule:: echidna.scripts.dump_shifted
     :members:
     :undoc-members:
     :show-inheritance:

@@ -123,27 +123,86 @@
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
+<span class="sd">      reco_pos (bool, optional): If true then position cuts will be made on</span>
+<span class="sd">        reconstructed position. If False (default) then MC position is used</span>
+<span class="sd">        for cuts.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _reco_pos (bool): If true then position cuts will be made on</span>
+<span class="sd">      reconstructed position. If False then MC position is used for cuts.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reco_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergyExtractMC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span> <span class="o">=</span> <span class="n">reco_pos</span>
 
-<div class="viewcode-block" id="EnergyExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergyExtractMC.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractMC.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractMC.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractMC.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): Monte Carlo entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+        <span class="c"># Reco cut on MC value requires 1 ev else which position to use?</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can only mix cuts for 1 mc = 1 ev&quot;</span><span class="p">)</span>
+        <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether energy of a DS::MC is valid</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          mc (:class:`RAT.DS.MC`): entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes particle count and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails particle count</span>
 </div>
@@ -162,19 +221,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether energy of an ntuple MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">mc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                          <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                          <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> \
-                                          <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="c"># MC has associated trigger or vice versa and no fid v applied</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># No associated trigger with mc or vice versa</span>
@@ -183,7 +237,7 @@
         <span class="sd">&#39;&#39;&#39;Get energy value from an ntuple MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: True quenched energy</span>
@@ -198,18 +252,72 @@
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
+<span class="sd">      mc_pos (bool, optional): If true then  MC position is used for cuts.</span>
+<span class="sd">        If False (default) then position cuts will be made on reconstructed</span>
+<span class="sd">        position.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _mc_pos (bool): If true then MC position is used for cuts.</span>
+<span class="sd">        If False then position cuts will be made on reconstructed position.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mc_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergyExtractReco</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_reco&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span> <span class="o">=</span> <span class="n">mc_pos</span>
 
-<div class="viewcode-block" id="EnergyExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergyExtractReco.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractReco.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractReco.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractReco.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): Event entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether energy of a DS::EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
@@ -218,10 +326,7 @@
                 <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ContainsEnergy</span><span class="p">()</span> \
                 <span class="ow">and</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ValidEnergy</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fit checks and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fit checks</span>
 </div>
@@ -229,7 +334,7 @@
         <span class="sd">&#39;&#39;&#39;Get energy value from a DS::EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Reconstructed energy</span>
@@ -240,18 +345,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether energy of an ntuple EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">energy</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes scintFit, has energy and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails scintFit or no energy</span>
 </div>
@@ -259,7 +360,7 @@
         <span class="sd">&#39;&#39;&#39;Get energy value from an ntuple EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Reconstructed energy</span>
@@ -274,27 +375,86 @@
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
+<span class="sd">      reco_pos (bool, optional): If true then position cuts will be made on</span>
+<span class="sd">        reconstructed position. If False (default) then MC position is used</span>
+<span class="sd">        for cuts.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _reco_pos (bool): If true then position cuts will be made on</span>
+<span class="sd">      reconstructed position. If False then MC position is used for cuts.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reco_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergyExtractTruth</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_truth&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span> <span class="o">=</span> <span class="n">reco_pos</span>
 
-<div class="viewcode-block" id="EnergyExtractTruth.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractTruth.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergyExtractTruth.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractTruth.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractTruth.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractTruth.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): Monte Carlo entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+        <span class="c"># Reco cut on MC value requires 1 ev else which position to use?</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can only mix cuts for 1 mc = 1 ev&quot;</span><span class="p">)</span>
+        <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="EnergyExtractTruth.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.EnergyExtractTruth.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether energy of a DS::MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          mc (:class:`RAT.DS.MC`) entry</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes particle count and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails particle count</span>
 </div>
@@ -302,7 +462,7 @@
         <span class="sd">&#39;&#39;&#39;Get energy value from a DS::MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          mc (:class:`RAT.DS.MC`) entry</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: True energy</span>
@@ -313,18 +473,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether energy of an ntuple MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">mc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="c"># MC has associated trigger or vice versa and no fid v applied</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># No associated trigger with mc or vice versa</span>
@@ -333,7 +489,7 @@
         <span class="sd">&#39;&#39;&#39;Get energy value from an ntuple MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          entry (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: True energy</span>
@@ -348,27 +504,86 @@
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
+<span class="sd">      reco_pos (bool, optional): If true then position cuts will be made on</span>
+<span class="sd">        reconstructed position. If False (default) then MC position is used</span>
+<span class="sd">        for cuts.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _reco_pos (bool): If true then position cuts will be made on</span>
+<span class="sd">      reconstructed position. If False then MC position is used for cuts.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reco_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RadialExtractMC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial_mc&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span> <span class="o">=</span> <span class="n">reco_pos</span>
 
-<div class="viewcode-block" id="RadialExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">):</span>
+<div class="viewcode-block" id="RadialExtractMC.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractMC.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+</div>
+<div class="viewcode-block" id="RadialExtractMC.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractMC.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): Monte Carlo entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+        <span class="c"># Reco cut on MC value requires 1 ev else which position to use?</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can only mix cuts for 1 mc = 1 ev&quot;</span><span class="p">)</span>
+        <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="RadialExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether radius of a DS::MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.MC`) event</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): event</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes particle count and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails particle count</span>
 </div>
@@ -376,7 +591,7 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from a DS::MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.MC`) event</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): event</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: True radius</span>
@@ -387,18 +602,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether energy of an ntuple MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">mc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="c"># MC has associated trigger or vice versa and no fid v applied</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># No associated trigger with mc or vice versa</span>
@@ -407,7 +618,7 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from an ntuple MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: True radius</span>
@@ -424,18 +635,72 @@
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
+<span class="sd">      mc_pos (bool, optional): If true then  MC position is used for cuts.</span>
+<span class="sd">        If False (default) then position cuts will be made on reconstructed</span>
+<span class="sd">        position.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _mc_pos (bool): If true then MC position is used for cuts.</span>
+<span class="sd">        If False then position cuts will be made on reconstructed position.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mc_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RadialExtractReco</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial_reco&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span> <span class="o">=</span> <span class="n">mc_pos</span>
 
-<div class="viewcode-block" id="RadialExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<div class="viewcode-block" id="RadialExtractReco.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractReco.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="RadialExtractReco.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractReco.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): Event entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="RadialExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.RadialExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether radius of a DS::EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
@@ -443,6 +708,8 @@
         <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">DefaultFitVertexExists</span><span class="p">()</span> <span class="ow">and</span> \
                 <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ContainsPosition</span><span class="p">()</span> \
                 <span class="ow">and</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ValidPosition</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="bp">False</span>
 </div>
@@ -450,7 +717,7 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from a DS::EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Reconstructed radius</span>
@@ -461,18 +728,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether radius of an ntuple EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes scintFit and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails scintFit</span>
 </div>
@@ -480,7 +743,7 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from an ntuple EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Reconstructed radius</span>
@@ -491,22 +754,24 @@
 
 </div></div>
 <div class="viewcode-block" id="Radial3ExtractMC"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractMC">[docs]</a><span class="k">class</span> <span class="nc">Radial3ExtractMC</span><span class="p">(</span><span class="n">Extractor</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; True :math:`(radius/outer_radius)^3` radial extraction methods.</span>
+    <span class="sd">&#39;&#39;&#39; True :math:`(radius/outer\_radius)^3` radial extraction methods.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">      fv_radius (float, optional): Fiducial radius. Applies a cut to remove</span>
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
 <span class="sd">      outer_radius (float, optional): The fixed radius used in calculating</span>
-<span class="sd">        :math:`(radius/outer_radius)^3`. If None then the av_radius in</span>
+<span class="sd">        :math:`(radius/outer\_radius)^3`. If None then the av_radius in</span>
 <span class="sd">        :class:`echidna.calc.constants` is used in the calculation.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">      _outer_radius (float, optional): The fixed radius used in calculating</span>
-<span class="sd">        :math:`(radius/outer_radius)^3`.</span>
+<span class="sd">      _outer_radius (float): The fixed radius used in calculating</span>
+<span class="sd">        :math:`(radius/outer\_radius)^3`.</span>
+<span class="sd">      _reco_pos (bool): If true then position cuts will be made on</span>
+<span class="sd">      reconstructed position. If False then MC position is used for cuts.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reco_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Radial3ExtractMC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial3_mc&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
@@ -514,21 +779,73 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">outer_radius</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span> <span class="o">=</span> <span class="n">reco_pos</span>
 
-<div class="viewcode-block" id="Radial3ExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">):</span>
+<div class="viewcode-block" id="Radial3ExtractMC.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractMC.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+</div>
+<div class="viewcode-block" id="Radial3ExtractMC.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractMC.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): Monte Carlo entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reco_pos</span><span class="p">:</span>  <span class="c"># Default is to use MC info for the cut</span>
+            <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Failed reconstruction</span>
+        <span class="c"># Reco cut on MC value requires 1 ev else which position to use?</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEVCount</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can only mix cuts for 1 mc = 1 ev&quot;</span><span class="p">)</span>
+        <span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetEV</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="Radial3ExtractMC.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractMC.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether radius of a DS::MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.MC`) event</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): event</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticleCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes particle count and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails particle count</span>
 </div>
@@ -536,10 +853,10 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from a DS::MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.MC`) event</span>
+<span class="sd">          mc (:class:`RAT.DS.MC`): event</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          float: True :math:`(radius/outer_radius)^3`</span>
+<span class="sd">          float: True :math:`(radius/outer\_radius)^3`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">/</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span>
@@ -548,18 +865,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether energy of an ntuple MC is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">mc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="c"># MC has associated trigger or vice versa and no fid v applied</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># No associated trigger with mc or vice versa</span>
@@ -568,10 +881,10 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from an ntuple MC</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          float: True :math:`(radius/outer_radius)^3`</span>
+<span class="sd">          float: True :math:`(radius/outer\_radius)^3`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
                                       <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
@@ -588,15 +901,20 @@
 <span class="sd">        events which have a radial position greater than the radius of the</span>
 <span class="sd">        fiducial volume. If None no cut is applied.</span>
 <span class="sd">      outer_radius (float, optional): The fixed radius used in calculating</span>
-<span class="sd">        :math:`(radius/outer_radius)^3`. If None then the av_radius in</span>
+<span class="sd">        :math:`(radius/outer\_radius)^3`. If None then the av_radius in</span>
 <span class="sd">        :class:`echidna.calc.constants` is used in the calculation.</span>
+<span class="sd">      mc_pos (bool, optional): If true then  MC position is used for cuts.</span>
+<span class="sd">        If False (default) then position cuts will be made on reconstructed</span>
+<span class="sd">        position.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">      _outer_radius (float, optional): The fixed radius used in calculating</span>
-<span class="sd">        :math:`(radius/outer_radius)^3`.</span>
+<span class="sd">      _outer_radius (float: The fixed radius used in calculating</span>
+<span class="sd">        :math:`(radius/outer\_radius)^3`.</span>
+<span class="sd">      _mc_pos (bool): If true then MC position is used for cuts.</span>
+<span class="sd">        If False then position cuts will be made on reconstructed position.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mc_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialise the class</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Radial3ExtractReco</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;radial3_reco&quot;</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">)</span>
@@ -604,12 +922,59 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">outer_radius</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span> <span class="o">=</span> <span class="n">mc_pos</span>
 
-<div class="viewcode-block" id="Radial3ExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<div class="viewcode-block" id="Radial3ExtractReco.fv_cut_ntuple"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractReco.fv_cut_ntuple">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_ntuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to an ntuple entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                                  <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mcPosz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="Radial3ExtractReco.fv_cut_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractReco.fv_cut_root">[docs]</a>    <span class="k">def</span> <span class="nf">fv_cut_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies the fiducial volume (fv) cut to a root entry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): Event entry</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If reconstruced position cut is used on an mc event</span>
+<span class="sd">            which has multiple evs.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          bool: Indicates pass or fail of cut</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_pos</span><span class="p">:</span>  <span class="c"># Default is to use reco info for the cut</span>
+            <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+            <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetMC</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mc</span><span class="o">.</span><span class="n">GetMCParticle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
+        <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+</div>
+<div class="viewcode-block" id="Radial3ExtractReco.get_valid_root"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.dsextract.Radial3ExtractReco.get_valid_root">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check whether radius of a DS::EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
+<span class="sd">          ds (:class:`RAT.DS`): Data Structure entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
@@ -618,10 +983,7 @@
                 <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ContainsEnergy</span><span class="p">()</span> \
                 <span class="ow">and</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">ValidEnergy</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">&lt;</span> \
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_root</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fit checks and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fit checks</span>
 </div>
@@ -629,10 +991,10 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from a DS::EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`RAT.DS.EV`) event</span>
+<span class="sd">          ev (:class:`RAT.DS.EV`): event</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          float: Reconstructed :math:`(radius/outer_radius)^3`</span>
+<span class="sd">          float: Reconstructed :math:`(radius/outer\_radius)^3`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">GetDefaultFitVertex</span><span class="p">()</span><span class="o">.</span><span class="n">GetPosition</span><span class="p">()</span><span class="o">.</span><span class="n">Mag</span><span class="p">()</span> <span class="o">/</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span>
@@ -641,18 +1003,14 @@
         <span class="sd">&#39;&#39;&#39;Check whether radius of an ntuple EV is valid</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          bool: Validity boolean</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">scintFit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                                         <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posz</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes fiducial volume cut</span>
-                <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails fiducial volume cut</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fv_cut_ntuple</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>  <span class="c"># Passes scintFit and no fid v cut</span>
         <span class="k">return</span> <span class="bp">False</span>  <span class="c"># Fails scintFit</span>
 </div>
@@ -660,10 +1018,10 @@
         <span class="sd">&#39;&#39;&#39;Get radius value from an ntuple EV</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          ev (:class:`ROOT.TChain`) chain entry</span>
+<span class="sd">          entry (:class:`ROOT.TChain`): chain entry</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          float: Reconstructed :math:`(radius/outer_radius)^3`</span>
+<span class="sd">          float: Reconstructed :math:`(radius/outer\_radius)^3`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">posx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
                                       <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">posy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
