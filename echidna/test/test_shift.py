@@ -1,11 +1,11 @@
 import unittest
-import echidna.core.scale as scale
+import echidna.core.shift as shift
 import echidna.core.spectra as spectra
 import numpy as np
 from scipy.optimize import curve_fit
 
 
-class TestScale(unittest.TestCase):
+class TestShift(unittest.TestCase):
 
     def gaussian(self, x, *p):
         """ A gaussian used for fitting.
@@ -45,16 +45,18 @@ class TestScale(unittest.TestCase):
         coeff, var_mtrx = curve_fit(self.gaussian, energies, entries, p0=pars0)
         return coeff[1], np.fabs(coeff[2]), np.array(entries).sum()
 
-    def test_scale(self):
-        """ Tests the variable scaling method.
+    def test_shift(self):
+        """ Tests the variable shifting method.
 
         Creates a Gaussian spectra with mean energy 2.5 MeV and sigma 0.2 MeV.
         Radial values of the spectra have a uniform distribution.
-        The "energy_mc" of the spectra is then scaled by a factor by 1.1.
-        The scaled spectra is fitted with a Gaussian and the extracted
+        The "energy_mc" of the spectra is then shifted by 0.111 MeV.
+        The shifted spectra is fitted with a Gaussian and the extracted
         mean and sigma are checked against expected values within 1 %.
-        Integral of scaled spectrum is checked against original number of
+        Integral of shifted spectrum is checked against original number of
         entries.
+        This is then repeated for a shift of 0.2 MeV to test the shift_by_bin
+        method.
         """
         np.random.seed()
         test_decays = 10000
@@ -70,14 +72,14 @@ class TestScale(unittest.TestCase):
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
         mean_energy, sigma_energy, integral = self.fit_gaussian_energy(
             test_spectra)
-        scaler = scale.Scale()
-        self.assertRaises(ValueError, scaler.set_scale_factor, -1.1)
-        scale_factor = 1.1
-        scaler.set_scale_factor(scale_factor)
-        scaled_spectra = scaler.scale(test_spectra, "energy_mc")
-        mean, sigma, integral = self.fit_gaussian_energy(scaled_spectra)
-        expected_mean = mean_energy*scale_factor
-        expected_sigma = sigma_energy*scale_factor
+        # First test interpolation shift
+        shifter = shift.Shift()
+        shift_e = 0.111
+        shifter.set_shift(shift_e)
+        shifted_spectra = shifter.shift(test_spectra, "energy_mc")
+        mean, sigma, integral = self.fit_gaussian_energy(shifted_spectra)
+        expected_mean = mean_energy+shift_e
+        expected_sigma = sigma_energy
         self.assertTrue(expected_mean < 1.01*mean and
                         expected_mean > 0.99*mean,
                         msg="Expected mean energy %s, fitted mean energy %s"
@@ -86,6 +88,26 @@ class TestScale(unittest.TestCase):
                         expected_sigma > 0.99*sigma,
                         msg="Expected sigma %s, fitted sigma %s"
                         % (expected_sigma, sigma))
-        self.assertAlmostEqual(scaled_spectra.sum()/float(test_decays), 1.0,
+        self.assertAlmostEqual(integral/float(test_decays), 1.0,
                                msg="Input decays %s, integral of spectra %s"
-                               % (test_decays, scaled_spectra.sum()))
+                               % (test_decays, integral))
+        # Now test shift by bin
+        self.assertRaises(ValueError, shifter.shift_by_bin, test_spectra,
+                          "energy_mc")
+        shift_e = 0.2
+        shifter.set_shift(shift_e)
+        shifted_spectra = shifter.shift_by_bin(test_spectra, "energy_mc")
+        mean, sigma, integral = self.fit_gaussian_energy(shifted_spectra)
+        expected_mean = mean_energy+shift_e
+        expected_sigma = sigma_energy
+        self.assertTrue(expected_mean < 1.01*mean and
+                        expected_mean > 0.99*mean,
+                        msg="Expected mean energy %s, fitted mean energy %s"
+                        % (expected_mean, mean))
+        self.assertTrue(expected_sigma < 1.01*sigma and
+                        expected_sigma > 0.99*sigma,
+                        msg="Expected sigma %s, fitted sigma %s"
+                        % (expected_sigma, sigma))
+        self.assertAlmostEqual(integral/float(test_decays), 1.0,
+                               msg="Input decays %s, integral of spectra %s"
+                               % (test_decays, integral))
