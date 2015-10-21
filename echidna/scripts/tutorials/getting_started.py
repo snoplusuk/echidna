@@ -57,7 +57,7 @@ def main():
 
     import echidna
     config = spectra.SpectraConfig.load_from_file(
-        echidna.__echidna_base__ + "/echidna/config/example.yml")
+        echidna.__echidna_base__ + "/echidna/config/spectra_example.yml")
     print config.get_pars()
 
     # Note we used the `__echidna_base__` member of the `echidna` module here.

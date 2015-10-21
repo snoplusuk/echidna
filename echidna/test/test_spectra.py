@@ -12,7 +12,7 @@ class TestSpectra(unittest.TestCase):
         Basically tests bin positioning makes sense.
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy_high = test_spectra.get_config().get_par("energy_mc")._high
@@ -47,7 +47,7 @@ class TestSpectra(unittest.TestCase):
         This creates projected spectra alongside the actual spectra.
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
@@ -79,7 +79,7 @@ class TestSpectra(unittest.TestCase):
         This creates a spectra and then scales it.
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy_high = test_spectra.get_config().get_par("energy_mc")._high
@@ -106,7 +106,7 @@ class TestSpectra(unittest.TestCase):
 
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy_high = test_spectra.get_config().get_par("energy_mc")._high
@@ -140,7 +140,7 @@ class TestSpectra(unittest.TestCase):
 
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         old_energy_width = test_spectra.get_config().get_par("energy_mc")\
