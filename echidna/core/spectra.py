@@ -624,6 +624,26 @@ class Spectra(object):
                 projection = projection.sum(0)
         return projection
 
+    def nd_project(self, dimensions):
+        """ Project the histogram along an arbitary number of axes.
+
+        Args:
+          dimensions (str): List of axes to project onto
+
+        Returns:
+          :class:`numpy.ndarray`: The nd projection of the histogram.
+        """
+        axes = []
+        for dim in dimesnsions:
+            axes.append(self._config.get_index(dim))
+        if len(axes) == len(self._config.get_pars()):
+            return copy.copy(self._data)
+        projection = copy.copy(self._data)
+        for i_axis in range(len(self._config.get_pars())):
+            if i_axis not in axes:
+                projection = projection.sum(i_axis)
+        return projection
+
     def surface(self, dimension1, dimension2):
         """ Project the histogram along two axes for the given dimensions.
         Note that the dimensions must be one of the named parameters in
