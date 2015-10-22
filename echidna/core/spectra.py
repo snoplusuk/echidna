@@ -31,20 +31,18 @@ class FitParameter(Parameter):
       sigma (float): The sigma of the parameter
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
-      step (float): Value to set the size of the step between low and high
-        of the parameter
+      bins (int): The number of steps between low and high values
 
     Attributes:
-      name (str): The name of this parameter
-      prior (float): The prior of the parameter
-      sigma (float): The sigma of the parameter
-      low (float): The lower limit to float the parameter from
-      high (float): The higher limit to float the parameter from
-      step (float): Value to set the size of the step between low and high
-        of the parameter
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
     """
 
-    def __init__(self, name, prior, sigma, low, high, step):
+    def __init__(self, name, prior, sigma, low, high, bins):
         """Initialise FitParameter class
         """
         super(SpectraParameter, self).__init__("fit")
@@ -53,7 +51,7 @@ class FitParameter(Parameter):
         self._sigma = float(sigma)
         self._low = float(low)
         self._high = float(high)
-        self._step = float(step)
+        self._bins = int(bins)
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -69,7 +67,7 @@ class FitParameter(Parameter):
             * sigma (float): Value to set the sigma to of the parameter
             * low (float): Value to set the lower limit to of the parameter
             * high (float): Value to set the higher limit to of the parameter
-            * step (float): Value to set the size of the step between low and
+            * bins (float): Value to set the size of the bins between low and
               high of the parameter
 
         Raises:
@@ -84,8 +82,8 @@ class FitParameter(Parameter):
                 self._low = float(kwargs[kw])
             elif kw == "high":
                 self._high = float(kwargs[kw])
-            elif kw == "step":
-                self._step = float(kwargs[kw])
+            elif kw == "bins":
+                self._bins = float(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
@@ -329,7 +327,7 @@ class FitConfig(Config):
                     config['systematics'][v]['sigma'],
                     config['parameters'][v]['low'],
                     config['parameters'][v]['high'],
-                    config['parameters'][v]['step'])
+                    config['parameters'][v]['bins'])
             elif v == 'parameters':
                 for dim in config['systematics'][v]:
                     for syst in config['systematics'][v][dim]:
@@ -339,7 +337,7 @@ class FitConfig(Config):
                             config['systematics'][v][dim][syst]['sigma'],
                             config['systematics'][v][dim][syst]['low'],
                             config['systematics'][v][dim][syst]['high'],
-                            config['systematics'][v][dim][syst]['step'],
+                            config['systematics'][v][dim][syst]['bins'],
                             )
             else:
                 raise IndexError("Unknown subsection in config %s", % v)
