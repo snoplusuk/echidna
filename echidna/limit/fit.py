@@ -204,7 +204,8 @@ class Fit(object):
         if not self._floating_backgrounds:
             observed = self._data.nd_project(data_pars)
             expected = self._fixed_background.nd_project(fixed_pars)
-            return self._method.compute_statistic(observed, expected)
+            return self._method.compute_statistic(observed.ravel(),
+                                                  expected.ravel())
         if not floating_pars:
             floating_pars = []
             for background in self._floating_background:
