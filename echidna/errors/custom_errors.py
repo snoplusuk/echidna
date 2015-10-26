@@ -3,3 +3,8 @@ class CompatibilityError(Exception):
     compatible.
     """
     pass
+
+class LimitError(Exception):
+    """ Exception raised when a limit has not been found.
+    """
+    pass

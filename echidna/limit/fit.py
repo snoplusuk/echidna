@@ -31,6 +31,8 @@ class Fit(object):
         A spectrum containing all fixed backgrounds.
       _floating_backgrounds (list): one :class:`echidna.core.spectra.Spectra`
         for each background to float.
+      _signal (:class:`echidna.core.spectra.Spectra`):
+        A spectrum of the signal that you are fitting.
     """
     def __init__(self, roi, method, data, fixed_background=None,
                  floating_backgrounds=None, shrink=True):
@@ -39,6 +41,7 @@ class Fit(object):
         self._data = data
         self._fixed_background = fixed_background
         self._floating_backgrounds = floating_backgrounds
+        self._signal = None
         self._data = data
         if shrink:
             self.shrink_all()
@@ -55,6 +58,8 @@ class Fit(object):
             raise CompatibilityError("Must have fixed or floating backgrounds")
         if self._fixed_background:
             self.check_spectra(self._fixed_background)
+        if self._signal:
+            self.check_spectra(self._signal)
         if self._floating_backgrounds:
             for background in self._floating_backgrounds:
                 self.check_fit_config(background)
@@ -183,8 +188,17 @@ class Fit(object):
             pars.append(par)
         return pars
 
+    def get_signal(self):
+        """ Gets the signal you are fitting.
+
+        Returns:
+          :class:`echidna.core.spectra.Spectra`: The fixed background you are
+            fitting.
+        """
+        return self._signal
+
     def get_statistic(self, data_pars=None, fixed_pars=None,
-                      floating_pars=None):
+                      floating_pars=None, signal_pars=None):
         """ Gets the value of the test statistic used for fitting.
 
         Args:
@@ -204,6 +218,10 @@ class Fit(object):
         if not self._floating_backgrounds:
             observed = self._data.nd_project(data_pars)
             expected = self._fixed_background.nd_project(fixed_pars)
+            if self._signal:
+                if not signal_pars:
+                    signal_pars = self.get_roi_pars(self._signal)
+                expected += self._signal.nd_project(signal_pars)
             return self._method.compute_statistic(observed.ravel(),
                                                   expected.ravel())
         if not floating_pars:
@@ -213,6 +231,11 @@ class Fit(object):
         for background in self._floating_background:
             for systematic in background.get_fit_config().get_pars():
                 return None
+
+    def remove_signal(self):
+        """
+        """
+        self._signal = None
 
     def set_data(self, data, shrink=True):
         """ Sets the data you want to fit.
@@ -282,13 +305,32 @@ class Fit(object):
         self.check_roi(roi)
         self._roi = roi
 
+    def set_signal(self, signal, shrink=True):
+        """ Sets the signal you want to fit.
+
+        Args:
+          signal (:class:`echidna.core.spectra.Spectra`):
+            The signal spectrum you want to fit.
+          shrink (bool, optional): If set to True (default) :meth:`shrink`
+            method is called on the spectra shrinking it to the ROI.
+        """
+        if shrink:
+            self.shrink_spectra(signal)
+        else:
+            self.check_spectra(signal)
+        self._signal = signal
+
     def shrink_all(self):
         """ Shrinks all the spectra used in the fit to the roi.
         """
         self.shrink_spectra(self._data)
-        self.shrink_spectra(self._fixed_background)
-        for background in self._floating_backgrounds:
-            self.shrink_spectra(background)
+        if self._fixed_background:
+            self.shrink_spectra(self._fixed_background)
+        if self._signal:
+            self.shrink_spectra(self._signal)
+        if self._floating_backgrounds:
+            for background in self._floating_backgrounds:
+                self.shrink_spectra(background)
 
     def shrink_spectra(self, spectra):
         """ Shrinks the spectra used in the fit to the roi.

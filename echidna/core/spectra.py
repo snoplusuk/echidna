@@ -20,6 +20,14 @@ class Parameter(object):
         """
         self._type = type_name
 
+    def get_width(self):
+        """Get the width of the binning for the parameter
+
+        Returns:
+          float: Bin width.
+        """
+        return (self._high - self._low) / float(self._bins)
+
 
 class FitParameter(Parameter):
     """Simple data container that holds information for a fit parameter
@@ -142,13 +150,6 @@ class SpectraParameter(object):
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
-    def get_width(self):
-        """Get the width of the binning for the parameter
-
-        Returns:
-          float: Bin width.
-        """
-        return (self._high - self._low) / float(self._bins)
 
     def get_unit(self):
         """Get the default unit for a given parameter
@@ -342,6 +343,13 @@ class FitConfig(Config):
             else:
                 raise IndexError("Unknown subsection in config %s", % v)
         return cls(parameters)
+
+    def get_rates(self):
+        """
+        """
+        return numpy.arange(self.get_par("rate")._low,
+                            self.get_par("rate")._high,
+                            self.get_par("rate").get_width())
 
 
 class SpectraConfig(Config):
