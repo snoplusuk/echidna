@@ -5,6 +5,89 @@ import copy
 from scipy import interpolate
 
 
+class Parameter(object):
+    """ The base class for creating parameter classes.
+
+    Args:
+      type_name (string): The type of the parameter.
+
+    Attributes:
+      _type (string): The type of the parameter.
+    """
+
+    def __init__(self, type_name):
+        """ Initialise config class
+        """
+        self._type = type_name
+
+
+class FitParameter(Parameter):
+    """Simple data container that holds information for a fit parameter
+    (i.e. a systematic to float).
+
+    Args:
+      name (str): The name of this parameter
+      prior (float): The prior of the parameter
+      sigma (float): The sigma of the parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
+
+    Attributes:
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
+    """
+
+    def __init__(self, name, prior, sigma, low, high, bins):
+        """Initialise FitParameter class
+        """
+        super(SpectraParameter, self).__init__("fit")
+        self._name = name
+        self._prior = float(prior)
+        self._sigma = float(sigma)
+        self._low = float(low)
+        self._high = float(high)
+        self._bins = int(bins)
+
+    def set_par(self, **kwargs):
+        """Set a fitting parameter's values after initialisation.
+
+        Args:
+          kwargs (dict): keyword arguments
+
+        .. note::
+
+          Keyword arguments include:
+
+            * prior (float): Value to set the prior to of the parameter
+            * sigma (float): Value to set the sigma to of the parameter
+            * low (float): Value to set the lower limit to of the parameter
+            * high (float): Value to set the higher limit to of the parameter
+            * bins (float): Value to set the size of the bins between low and
+              high of the parameter
+
+        Raises:
+          TypeError: Unknown variable type passed as a kwarg.
+        """
+        for kw in kwargs:
+            if kw == "prior":
+                self._prior = float(kwargs[kw])
+            if kw == "sigma":
+                self._sigma = float(kwargs[kw])
+            if kw == "low":
+                self._low = float(kwargs[kw])
+            elif kw == "high":
+                self._high = float(kwargs[kw])
+            elif kw == "bins":
+                self._bins = float(kwargs[kw])
+            else:
+                raise TypeError("Unhandled parameter name / type %s" % kw)
+
+
 class SpectraParameter(object):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).
@@ -26,6 +109,7 @@ class SpectraParameter(object):
     def __init__(self, name, low, high, bins):
         """Initialise SpectraParameter class
         """
+        super(SpectraParameter, self).__init__("spectra")
         self._name = name
         self._high = high
         self._low = low
@@ -151,52 +235,29 @@ class SpectraParameter(object):
         return int((x - self._low) / self.get_width())
 
 
-class SpectraConfig(object):
-    """Configuration container for Spectra objects.  Able to load
-    directly with a set list of SpectraParameters or from yaml
-    configuration files.
+class Config(object):
+    """ The base class for creating config classes.
 
     Args:
-      parameters (:class:`collections.OrderedDict`): List of
-        SpectraParameter objects
+      name (string): The name of the config type.
 
     Attributes:
-      _parameters (:class:`collections.OrderedDict`): List of
-        SpectraParameter objects
+      _name (string): The name of the config type.
     """
 
-    def __init__(self, parameters):
-        """Initialise SpectraConfig class
+    def __init__(self, name):
+        """ Initialise config class
         """
-        self._parameters = parameters
-
-    @classmethod
-    def load_from_file(cls, filename):
-        """Initialise SpectraConfig class from a config file (classmethod).
-
-        Args:
-          filename (str) path to config file
-
-        Returns:
-          :class:`echidna.core.spectra.SpectraConfig`: A config object
-            containing the parameters in the file called filename.
-        """
-        config = yaml.load(open(filename, 'r'))
-        parameters = collections.OrderedDict()
-        for v in config['parameters']:
-            parameters[v] = SpectraParameter(v, config['parameters'][v]['low'],
-                                             config['parameters'][v]['high'],
-                                             config['parameters'][v]['bins'])
-        return cls(parameters)
+        self._name = name
 
     def get_par(self, name):
-        """Get a named SpectraParameter.
+        """Get a named FitParameter.
 
         Args:
           name (string): Name of the parameter.
 
         Returns:
-          :class:`echidna.core.spectra.SpectraParameter`: Named parameter.
+          :class:`echidna.core.spectra.Parameter`: Named parameter.
         """
         return self._parameters[name]
 
@@ -224,6 +285,103 @@ class SpectraConfig(object):
             if p == parameter:
                 return i
         raise IndexError("Unknown parameter %s" % parameter)
+
+
+class FitConfig(Config):
+    """Configuration container for floating systematics and fitting Spectra
+      objects.  Able to load directly with a set list of FitParameters or
+      from yaml configuration files.
+
+    Args:
+      parameters (:class:`collections.OrderedDict`): List of
+        FitParameter objects
+
+    Attributes:
+      _parameters (:class:`collections.OrderedDict`): List of
+        FitParameter objects
+    """
+
+    def __init__(self, parameters):
+        """Initialise FitConfig class
+        """
+        super(FitConfig, self).__init__("fit")
+        self._parameters = parameters
+
+    @classmethod
+    def load_from_file(cls, filename):
+        """Initialise FitConfig class from a config file (classmethod).
+
+        Args:
+          filename (str) path to config file
+
+        Returns:
+          :class:`echidna.core.spectra.FitConfig`: A config object
+            containing the parameters in the file called filename.
+        """
+        config = yaml.load(open(filename, 'r'))
+        parameters = collections.OrderedDict()
+        for v in config['sytematics']:
+            if v == 'rate':
+                parameters[v] = FitParameter(
+                    v, config['systematics'][v]['prior'],
+                    config['systematics'][v]['sigma'],
+                    config['parameters'][v]['low'],
+                    config['parameters'][v]['high'],
+                    config['parameters'][v]['bins'])
+            elif v == 'parameters':
+                for dim in config['systematics'][v]:
+                    for syst in config['systematics'][v][dim]:
+                        name = dim + "_" + syst
+                        parameters[name] = FitParameter(
+                            name, config['systematics'][v][dim][syst]['prior'],
+                            config['systematics'][v][dim][syst]['sigma'],
+                            config['systematics'][v][dim][syst]['low'],
+                            config['systematics'][v][dim][syst]['high'],
+                            config['systematics'][v][dim][syst]['bins'],
+                            )
+            else:
+                raise IndexError("Unknown subsection in config %s", % v)
+        return cls(parameters)
+
+
+class SpectraConfig(Config):
+    """Configuration container for Spectra objects.  Able to load
+    directly with a set list of SpectraParameters or from yaml
+    configuration files.
+
+    Args:
+      parameters (:class:`collections.OrderedDict`): List of
+        SpectraParameter objects
+
+    Attributes:
+      _parameters (:class:`collections.OrderedDict`): List of
+        SpectraParameter objects
+    """
+
+    def __init__(self, parameters):
+        """Initialise SpectraConfig class
+        """
+        super(SpectraConfig, self).__init__("spectra")
+        self._parameters = parameters
+
+    @classmethod
+    def load_from_file(cls, filename):
+        """Initialise SpectraConfig class from a config file (classmethod).
+
+        Args:
+          filename (str) path to config file
+
+        Returns:
+          :class:`echidna.core.spectra.SpectraConfig`: A config object
+            containing the parameters in the file called filename.
+        """
+        config = yaml.load(open(filename, 'r'))
+        parameters = collections.OrderedDict()
+        for v in config['parameters']:
+            parameters[v] = SpectraParameter(v, config['parameters'][v]['low'],
+                                             config['parameters'][v]['high'],
+                                             config['parameters'][v]['bins'])
+        return cls(parameters)
 
     def get_dims(self):
         """Get list of dimension names.
@@ -308,7 +466,7 @@ class Spectra(object):
       _rois (dict): Dictionary containing the details of any ROI, along
         any axis, which has been defined.
     """
-    def __init__(self, name, num_decays, spectra_config):
+    def __init__(self, name, num_decays, spectra_config, fit_config=None):
         """ Initialise the spectra data container.
         """
         self._config = spectra_config
@@ -318,6 +476,7 @@ class Spectra(object):
             bins.append(self._config.get_par(v)._bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
+        self._fit_config = fit_config
         # Flag for indicating bipo cut. HDF5 does not support bool so
         # 0 = no cut and 1 = cut
         self._bipo = 0
@@ -334,6 +493,27 @@ class Spectra(object):
             the spectra.
         """
         return self._config
+
+    def get_fit_config(self):
+        """ Get the config of the spectra.
+
+        Returns:
+          :class:`echidna.core.spectra.SpectraConfig`: The config of
+            the spectra.
+        """
+        return self._fit_config
+
+    def set_fit_config(self, config):
+        """ Get the config of the spectra.
+
+        Args:
+          config (:class:`echidna.core.spectra.FitConfig`): The fit config to
+            assign to the spectra.
+        """
+        if isinstance(config, FitConfig):
+            self._fit_config = config
+        else:
+            raise TypeError("Invalid config type: %s" type(config))
 
     def fill(self, weight=1.0, **kwargs):
         """ Fill the bin with weight.  Note that values for all named

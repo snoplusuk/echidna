@@ -76,7 +76,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 10000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
@@ -119,7 +119,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 50000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
@@ -162,7 +162,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 10000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
@@ -205,7 +205,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 50000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
@@ -248,7 +248,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 10000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         radius = 1000.  # mm
@@ -289,7 +289,7 @@ class TestSmear(unittest.TestCase):
         entries.
         """
         test_decays = 50000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         radius = 1000.  # mm

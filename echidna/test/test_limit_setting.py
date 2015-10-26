@@ -16,7 +16,7 @@ class TestLimitSetting(unittest.TestCase):
         """ Sets up the signal and background for limit setting.
         """
         self._n_events = 1e5
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config1 = spectra.SpectraConfig.load_from_file(config_path)
         config2 = spectra.SpectraConfig.load_from_file(config_path)
         config3 = spectra.SpectraConfig.load_from_file(config_path)

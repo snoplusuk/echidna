@@ -58,7 +58,7 @@ class TestScale(unittest.TestCase):
         """
         np.random.seed()
         test_decays = 10000
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         mean_energy = 2.5  # MeV

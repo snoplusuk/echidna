@@ -12,7 +12,7 @@ class TestStore(unittest.TestCase):
 
         """
         test_decays = 10
-        config_path = "echidna/config/example.yml"
+        config_path = "echidna/config/spectra_example.yml"
         config = spectra.SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy_high = test_spectra.get_config().get_par("energy_mc")._high
