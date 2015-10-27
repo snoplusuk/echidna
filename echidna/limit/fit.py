@@ -33,16 +33,36 @@ class Fit(object):
         for each background to float.
       _signal (:class:`echidna.core.spectra.Spectra`):
         A spectrum of the signal that you are fitting.
+      _checked (bool): If True then the fit class is ready to be used.
     """
-    def __init__(self, roi, method, data, fixed_background=None,
-                 floating_backgrounds=None, shrink=True):
+    def __init__(self, roi, method, data=None, fixed_background=None,
+                 floating_backgrounds=None, signal=None, shrink=True):
+        self._checked = False
         self.set_roi(roi)
         self._method = method
         self._data = data
+        if self._data:
+            self._data_pars = self.get_roi_pars(self._data)
+        else:
+            self._data_pars = None
         self._fixed_background = fixed_background
+        if self._fixed_background:
+            self._fixed_pars = self.get_roi_pars(self._fixed_background)
+        else:
+            self._fixed_pars = None
         self._floating_backgrounds = floating_backgrounds
-        self._signal = None
-        self._data = data
+        if self._floating_backgrounds:
+            floating_pars = []
+            for background in self._floating_backgrounds:
+                self._floating_pars.append(self.get_roi_pars(background))
+            self._floating_pars = floating_pars
+        else:
+            self._floating_pars = None
+        self._signal = signal
+        if self._signal:
+            self._signal_pars = self.get_roi_pars(self._signal)
+        else:
+            self._signal_pars = None
         if shrink:
             self.shrink_all()
         self.check_all_spectra()
@@ -66,16 +86,48 @@ class Fit(object):
 
     def check_all_spectra(self):
         """ Ensures that all spectra can be used for fitting.
+
+        Raises:
+          CompatibilityError: If the data spectra exists and its roi pars have
+            not been set.
+          CompatibilityError: If the fixed background spectra exists and its
+            roi pars have not been set.
+          CompatibilityError: If the signal spectra exists and its
+            roi pars have not been set.
+          CompatibilityError: If the floating backgrounds spectra exists and 
+            their roi pars have not been set.
+          CompatibilityError: If the floating backgrounds spectra exists and 
+            their roi pars have not been set.
+          CompatibilityError: If the floating backgrounds spectra exists and 
+            length of their roi pars is different to the number of floating
+            backgrounds.
         """
-        self.check_spectra(self._data)
+        if self._data:
+            if not self._data_pars:
+                raise CompatibilityError("data roi pars have not been set.")
+            self.check_spectra(self._data)
         if self._fixed_background:
+            if not self._fixed_pars:
+                raise CompatibilityError("fixed background roi pars have not "
+                                         "been set.")
             self.check_spectra(self._fixed_background)
         if self._signal:
+            if not self._signal_pars:
+                raise CompatibilityError("signal roi pars have not been set.")
             self.check_spectra(self._signal)
         if self._floating_backgrounds:
+            if not self._floating_pars:
+                raise CompatibilityError("floating background roi pars have "
+                                         "not been set.")
+            if len(self._floating_pars) != len(self._floating_backgrounds):
+                raise CompatibilityError("Different number of sets of roi "
+                                         "pars as the number of floating "
+                                         "backgrounds.")
             for background in self._floating_backgrounds:
                 self.check_fit_config(background)
                 self.check_spectra(background)
+        if self._signal:
+            self.check_spectra(self._signal)
 
     def check_fit_config(self, spectra):
         """ Checks that a spectra has a fit config.
@@ -89,6 +141,23 @@ class Fit(object):
         """
         if not spectra.get_fit_config():
             raise CompatibilityError("%s has no fit config" % spectra._name)
+
+    def check_fitter(self):
+        """ Checks that the Fit class is ready to be used for fitting.
+
+        Raises:
+          CompatibilityError: If no data spectrum is present.
+          CompatibilityError: If no fixed or floating backgrounds spectra are
+            present.
+        """
+        if not self._data:
+            raise CompatibilityError("No data spectrum exists in the fitter.")
+        if not self._fixed_backgrounds and not self._floating_backgrounds:
+            raise CompatibilityError("No fixed or floating backgrounds exist "
+                                     "in the fitter.")
+        self.check_all_spectra()
+        self._checked = True
+
 
     def check_roi(self, roi):
         """ Checks the ROI used to fit.
@@ -209,37 +278,22 @@ class Fit(object):
         """
         return self._signal
 
-    def get_statistic(self, data_pars=None, fixed_pars=None,
-                      floating_pars=None, signal_pars=None):
+    def get_statistic(self):
         """ Gets the value of the test statistic used for fitting.
 
-        Args:
-          data_pars (list, optional): Of data spectra parameters which
-            contain the roi.
-          fixed_pars (list, optional): Of fixed background spectra parameters
-            which contain the roi.
-          floating_pars (list, optional): Of lists each of which contains the
-            spectra parameters which contain the roi for the background to
-            float. The order of the list must be the same order as the
-            floating_backgrounds.
+        Returns:
+          float or :class:`numpy.array`: The resulting test statisic(s)
+            dependent upon what method is used to compute the statistic.
         """
-        if not data_pars:
-            data_pars = self.get_roi_pars(self._data)
-        if not fixed_pars:
-            fixed_pars = self.get_roi_pars(self._fixed_background)
+        if not self._checked:
+            self.check_fitter()
         if not self._floating_backgrounds:
-            observed = self._data.nd_project(data_pars)
-            expected = self._fixed_background.nd_project(fixed_pars)
+            observed = self._data.nd_project(self._data_pars)
+            expected = self._fixed_background.nd_project(self._fixed_pars)
             if self._signal:
-                if not signal_pars:
-                    signal_pars = self.get_roi_pars(self._signal)
-                expected += self._signal.nd_project(signal_pars)
+                expected += self._signal.nd_project(self._signal_pars)
             return self._method.compute_statistic(observed.ravel(),
                                                   expected.ravel())
-        if not floating_pars:
-            floating_pars = []
-            for background in self._floating_background:
-                floating_pars.append(self.get_roi_pars(background))
         for background in self._floating_background:
             for systematic in background.get_fit_config().get_pars():
                 return None
@@ -275,7 +329,7 @@ class Fit(object):
             self.set_fixed_background(total_spectrum)
 
     def remove_signal(self):
-        """
+        """ Removes the signal spectra from the class. 
         """
         self._signal = None
 
@@ -293,6 +347,7 @@ class Fit(object):
         else:
             self.check_spectra(data)
         self._data = data
+        self._data_pars = self.get_roi_pars(data)
 
     def set_fixed_background(self, fixed_background, shrink=True):
         """ Sets the fixed background you want to fit.
@@ -308,6 +363,7 @@ class Fit(object):
         else:
             self.check_spectra(fixed_background)
         self._fixed_background = fixed_background
+        self._fixed_pars = self.get_roi_pars(fixed_background)
 
     def set_floating_backgrounds(self, floating_background, shrink=True):
         """ Sets the floating backgrounds you want to fit.
@@ -318,13 +374,16 @@ class Fit(object):
           shrink (bool, optional): If set to True (default), :meth:`shrink`
             method is called on the spectra shrinking it to the ROI.
         """
+        floating_pars = []
         for background in floating_backgrounds:
             self.check_fit_config(background)
             if shrink:
                 self.shrink_spectra(background)
             else:
                 self.check_spectra(background)
+            floating_pars.append(self.get_roi_pars(background))
         self._floating_backgrounds = floating_backgrounds
+        self._floating_pars = floating_pars
 
     def set_method(self, method):
         """ Sets the method you want to use to calculate test statistics in
@@ -346,6 +405,7 @@ class Fit(object):
         """
         self.check_roi(roi)
         self._roi = roi
+        self._checked = False  # Must redo checks for a new roi
 
     def set_signal(self, signal, shrink=True):
         """ Sets the signal you want to fit.
@@ -361,6 +421,7 @@ class Fit(object):
         else:
             self.check_spectra(signal)
         self._signal = signal
+        self._signal_pars = self.get_roi_pars(signal)
 
     def shrink_all(self):
         """ Shrinks all the spectra used in the fit to the roi.
@@ -388,5 +449,3 @@ class Fit(object):
             par_high = dim + "_" + dim_type + "_high"
             shrink[par_low], shrink[par_high] = self._roi[dim]
         spectra.shrink(**shrink)
-
-
