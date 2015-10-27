@@ -53,7 +53,7 @@ class FitParameter(Parameter):
     def __init__(self, name, prior, sigma, low, high, bins):
         """Initialise FitParameter class
         """
-        super(SpectraParameter, self).__init__("fit")
+        super(FitParameter, self).__init__("fit")
         self._name = name
         self._prior = float(prior)
         self._sigma = float(sigma)
@@ -321,14 +321,14 @@ class FitConfig(Config):
         """
         config = yaml.load(open(filename, 'r'))
         parameters = collections.OrderedDict()
-        for v in config['sytematics']:
+        for v in config['systematics']:
             if v == 'rate':
                 parameters[v] = FitParameter(
                     v, config['systematics'][v]['prior'],
                     config['systematics'][v]['sigma'],
-                    config['parameters'][v]['low'],
-                    config['parameters'][v]['high'],
-                    config['parameters'][v]['bins'])
+                    config['systematics'][v]['low'],
+                    config['systematics'][v]['high'],
+                    config['systematics'][v]['bins'])
             elif v == 'parameters':
                 for dim in config['systematics'][v]:
                     for syst in config['systematics'][v][dim]:
@@ -341,7 +341,7 @@ class FitConfig(Config):
                             config['systematics'][v][dim][syst]['bins'],
                             )
             else:
-                raise IndexError("Unknown subsection in config %s", % v)
+                raise IndexError("Unknown subsection in config %s" % v)
         return cls(parameters)
 
     def get_rates(self):
@@ -521,7 +521,7 @@ class Spectra(object):
         if isinstance(config, FitConfig):
             self._fit_config = config
         else:
-            raise TypeError("Invalid config type: %s" type(config))
+            raise TypeError("Invalid config type: %s" % type(config))
 
     def fill(self, weight=1.0, **kwargs):
         """ Fill the bin with weight.  Note that values for all named

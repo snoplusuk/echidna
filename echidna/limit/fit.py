@@ -47,15 +47,27 @@ class Fit(object):
             self.shrink_all()
         self.check_all_spectra()
 
+    def append_fixed_background(self, spectra_dict, shrink=True)
+        ''' Appends the fixed background with more spectra.
+
+        Args:
+          spectra_dict (dict): Dictionary containing spectra as keys and
+            prior counts as values.
+          shrink (bool, optional): If set to True (default), :meth:`shrink`
+            method is called on the spectra shrinking it to the ROI.
+        '''
+        for spectrum, scaling in spectra_dict.iteritems():
+            # Copy so original spectra is unchanged
+            spectrum = copy.deepcopy(spectrum)
+            if shrink:
+                self.shrink_spectra(spectrum)
+            spectrum.scale(scaling)
+            self._fixed_background.add(spectrum)
+
     def check_all_spectra(self):
         """ Ensures that all spectra can be used for fitting.
-
-        Raises:
-          CompatibilityError: If there is no fixed or floating backgrounds
         """
         self.check_spectra(self._data)
-        if not self._fixed_background and not self._floating_backgrounds:
-            raise CompatibilityError("Must have fixed or floating backgrounds")
         if self._fixed_background:
             self.check_spectra(self._fixed_background)
         if self._signal:
@@ -232,6 +244,36 @@ class Fit(object):
             for systematic in background.get_fit_config().get_pars():
                 return None
 
+    def make_fixed_background(self, spectra_dict, shrink=True)
+        ''' Makes a spectrum for fixed backgrounds and stores it in the class.
+
+        Args:
+          spectra_dict (dict): Dictionary containing spectra as keys and
+            prior counts as values.
+          shrink (bool, optional): If set to True (default), :meth:`shrink`
+            method is called on the spectra shrinking it to the ROI.
+        '''
+        first = True
+        for spectrum, scaling in spectra_dict.iteritems():
+            # Copy so original spectra is unchanged
+            spectrum = copy.deepcopy(spectrum)
+            if first:
+                first = False
+                if shrink:
+                    self.shrink_spectra(spectrum)
+                spectrum.scale(scaling)
+                total_spectrum = spectrum
+                total_spectrum._name = "Fixed Background"
+            else:
+                if shrink:
+                    self.shrink_spectra(spectrum)
+                spectrum.scale(scaling)
+                total_spectrum.add(spectrum)
+        if shrink:
+            self._fixed_background = total_spectrum  # No need to check
+        else:
+            self.set_fixed_background(total_spectrum)
+
     def remove_signal(self):
         """
         """
@@ -348,46 +390,3 @@ class Fit(object):
         spectra.shrink(**shrink)
 
 
-def make_fixed_background(spectra_dict, roi=None):
-    ''' Makes a spectrum for fixed backgrounds. If pre-shrinking spectra to the
-      ROI in the LimitSetting class you *must* also pre-shrink here.
-
-    Args:
-      spectra (dictionary): Dictionary containing spectra name as keys and
-        a list containing the spectra object as index 0 and prior counts as
-        index 1 as values.
-      roi (tuple, optional): Region Of Interest of the form
-        (energy_lower, energy_upper). If a ROI is passed then the spectra will
-        be shrunk
-
-    Returns: Spectrum containing all fixed backgrounds.
-    '''
-    first = True
-    for spectra_name, spectra_list in spectra_dict.iteritems():
-        spectrum = spectra_list[0]
-        scaling = spectra_list[1]
-        if first:
-            first = False
-            if roi:
-                energy_low, energy_high = roi
-                par = "energy_" + \
-                    spectrum.get_config().get_dim_type("energy")
-                par_low = par + "_low"
-                par_high = par + "_high"
-                shrink_dict = {par_low: energy_low, par_high: energy_high}
-                spectrum.shrink(**shrink_dict)
-            spectrum.scale(scaling)
-            total_spectrum = copy.deepcopy(spectrum)
-            total_spectrum._name = "Fixed Background"
-        else:
-            if roi:
-                energy_low, energy_high = roi
-                par = "energy_" + \
-                    spectrum.get_config().get_dim_type("energy")
-                par_low = par + "_low"
-                par_high = par + "_high"
-                shrink_dict = {par_low: energy_low, par_high: energy_high}
-                spectrum.shrink(**shrink_dict)
-            spectrum.scale(scaling)
-            total_spectrum.add(spectrum)
-    return total_spectrum
