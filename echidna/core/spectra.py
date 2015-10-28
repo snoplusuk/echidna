@@ -96,7 +96,7 @@ class FitParameter(Parameter):
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
 
-class SpectraParameter(object):
+class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).
 
@@ -642,7 +642,7 @@ class Spectra(object):
           :class:`numpy.ndarray`: The nd projection of the histogram.
         """
         axes = []
-        for dim in dimesnsions:
+        for dim in dimensions:
             axes.append(self._config.get_index(dim))
         if len(axes) == len(self._config.get_pars()):
             return copy.copy(self._data)

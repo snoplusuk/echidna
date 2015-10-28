@@ -112,7 +112,7 @@ class BakerCousinsChi(TestStatistic):
         statistic is returned for the entire array.
     """
     def __init__(self, per_bin=False):
-        super(ChiSquared, self).__init__("baker_cousins", per_bin)
+        super(BakerCousinsChi, self).__init__("baker_cousins", per_bin)
 
     def _compute(self, observed, expected):
         """ Calculates the chi-squared.
@@ -178,7 +178,7 @@ class BakerCousinsLL(TestStatistic):
         statistic is returned for the entire array.
     """
     def __init__(self, per_bin=False):
-        super(ChiSquared, self).__init__("baker_cousins", per_bin)
+        super(BakerCousinsLL, self).__init__("baker_cousins", per_bin)
 
     def _compute(self, observed, expected):
         """ Calculates the log likelihood.
@@ -241,7 +241,7 @@ class Neyman(TestStatistic):
         statistic is returned for the entire array.
     """
     def __init__(self, per_bin=False):
-        super(ChiSquared, self).__init__("neyman", per_bin)
+        super(Neyman, self).__init__("neyman", per_bin)
 
     def _compute(self, observed, expected, per_bin=False):
         """ Calculates chi squared.
@@ -304,7 +304,7 @@ class Pearson(TestStatistic):
         statistic is returned for the entire array.
     """
     def __init__(self):
-        super(ChiSquared, self).__init__("pearson")
+        super(Pearson, self).__init__("pearson")
 
     def _compute(self, observed, expected, per_bin=False):
         """ Calculates chi squared.

@@ -22,12 +22,10 @@ class Limit(object):
       _fitter (:class:`echidna.limit.fit.Fitter`): The fitter used to set a
         a limit with.
     """
-    def __init__(self, signal, fitter, shrink=True):        
+    def __init__(self, signal, fitter, shrink=True):
         self._fitter = fitter
         self._fitter.check_fit_config(signal)
-        if shrink = True:
-            self._fitter.shrink_spectra(self._signal)
-        self._fitter.check_spectra(signal)
+        self._fitter.set_signal(signal, shrink=shrink)
         self._signal = signal
 
     def get_array_limit(self, array, limit=2.71):
@@ -80,7 +78,7 @@ class Limit(object):
         for scale in self._signal.get_fit_config().get_rates():
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
-                self._fitter.set_signal(signal, shrink=False)
+                self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
             stat = self._fitter.get_statistic()

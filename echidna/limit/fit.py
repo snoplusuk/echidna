@@ -67,7 +67,7 @@ class Fit(object):
             self.shrink_all()
         self.check_all_spectra()
 
-    def append_fixed_background(self, spectra_dict, shrink=True)
+    def append_fixed_background(self, spectra_dict, shrink=True):
         ''' Appends the fixed background with more spectra.
 
         Args:
@@ -94,11 +94,11 @@ class Fit(object):
             roi pars have not been set.
           CompatibilityError: If the signal spectra exists and its
             roi pars have not been set.
-          CompatibilityError: If the floating backgrounds spectra exists and 
+          CompatibilityError: If the floating backgrounds spectra exists and
             their roi pars have not been set.
-          CompatibilityError: If the floating backgrounds spectra exists and 
+          CompatibilityError: If the floating backgrounds spectra exists and
             their roi pars have not been set.
-          CompatibilityError: If the floating backgrounds spectra exists and 
+          CompatibilityError: If the floating backgrounds spectra exists and
             length of their roi pars is different to the number of floating
             backgrounds.
         """
@@ -152,12 +152,11 @@ class Fit(object):
         """
         if not self._data:
             raise CompatibilityError("No data spectrum exists in the fitter.")
-        if not self._fixed_backgrounds and not self._floating_backgrounds:
+        if not self._fixed_background and not self._floating_backgrounds:
             raise CompatibilityError("No fixed or floating backgrounds exist "
                                      "in the fitter.")
         self.check_all_spectra()
         self._checked = True
-
 
     def check_roi(self, roi):
         """ Checks the ROI used to fit.
@@ -180,8 +179,8 @@ class Fit(object):
                 raise CompatibilityError("%s entry (%s) in roi must contain a"
                                          " low and high value in a tuple or"
                                          " list" % (dim, self._roi[dim]))
-            if self._roi[dim][0] > self._roi[dim][1]:  # Make sure low is first
-                self._roi[dim] = self._roi[dim][::-1]  # Reverses list/tuple
+            if roi[dim][0] > roi[dim][1]:  # Make sure low is first
+                roi[dim] = roi[dim][::-1]  # Reverses list/tuple
 
     def check_spectra(self, spectra):
         """ Checks the spectra you want to fit.
@@ -298,7 +297,7 @@ class Fit(object):
             for systematic in background.get_fit_config().get_pars():
                 return None
 
-    def make_fixed_background(self, spectra_dict, shrink=True)
+    def make_fixed_background(self, spectra_dict, shrink=True):
         ''' Makes a spectrum for fixed backgrounds and stores it in the class.
 
         Args:
@@ -325,11 +324,12 @@ class Fit(object):
                 total_spectrum.add(spectrum)
         if shrink:
             self._fixed_background = total_spectrum  # No need to check
+            self._fixed_pars = self.get_roi_pars(total_spectrum)
         else:
             self.set_fixed_background(total_spectrum)
 
     def remove_signal(self):
-        """ Removes the signal spectra from the class. 
+        """ Removes the signal spectra from the class.
         """
         self._signal = None
 
@@ -426,7 +426,8 @@ class Fit(object):
     def shrink_all(self):
         """ Shrinks all the spectra used in the fit to the roi.
         """
-        self.shrink_spectra(self._data)
+        if self._data:
+            self.shrink_spectra(self._data)
         if self._fixed_background:
             self.shrink_spectra(self._fixed_background)
         if self._signal:
