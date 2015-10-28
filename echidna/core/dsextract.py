@@ -1010,7 +1010,7 @@ class ZRadial3ExtractMC(Extractor):
     def __init__(self, fv_radius=None, outer_radius=None, reco_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius)
+        super(ZRadial3ExtractMC, self).__init__("zradial3_mc", fv_radius)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
@@ -1140,7 +1140,7 @@ class ZRadial3ExtractMC(Extractor):
                     self._outer_radius) ** 3
 
 
-class Radial3ExtractReco(Extractor):
+class ZRadial3ExtractReco(Extractor):
     ''' Reconstructed :math:``(z/\lvert z \rvert)(radius/outer\_radius)^3`
       radial extraction methods.
 
@@ -1166,7 +1166,7 @@ class Radial3ExtractReco(Extractor):
     def __init__(self, fv_radius=None, outer_radius=None, mc_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius)
+        super(ZRadial3ExtractReco, self).__init__("zradial3_reco", fv_radius)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
