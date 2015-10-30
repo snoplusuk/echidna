@@ -40,18 +40,24 @@ class FitParameter(Parameter):
       _low (float): The lower limit to float the parameter from
       _high (float): The higher limit to float the parameter from
       _bins (int): The number of steps between low and high values
+      _values (:class:`numpy.array`): Array of parameter values to
+        test in fit.
+      _best_fit (float): Best-fit value calculated by fit.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
         """Initialise FitParameter class
         """
-        super(SpectraParameter, self).__init__("fit")
+        super(FitParameter, self).__init__("fit")
         self._name = name
         self._prior = float(prior)
         self._sigma = float(sigma)
         self._low = float(low)
         self._high = float(high)
         self._bins = int(bins)
+        self._values = None  # Initially
+        self._current_value = None  # Initially
+        self._best_fit = None  # Initially
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -87,6 +93,80 @@ class FitParameter(Parameter):
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
+    def set_best_fit(self, best_fit):
+        """ Set value for :attr:`_best_fit`.
+
+        Args:
+          best_fit (float): Best fit value for parameter
+        """
+        self._best_fit = best_fit
+
+    def get_values(self):
+        """
+        Returns:
+          (:class:`numpy.array`): Array of parameter values to test in
+            fit. Stored in :attr:`_values`.
+        """
+        if self._values is None:  # Generate array of values
+            self._values = numpy.linspace(self._low, self._high, self._bins)
+        return self._values
+
+    def get_value_at(self, index):
+        """ Access the parameter value at a given index in the array.
+
+        Args:
+          index (int): Index of parameter value requested.
+
+        Returns:
+          float: Parameter value at the given index.
+        """
+        return self.get_values()[index]
+
+    def get_value_index(self, value):
+        """ Get the index corresponding to a given parameter value.
+
+        Args:
+          value (float): Parameter value for which to get corresponding
+            index.
+
+        Returns:
+          int: Index of corresponding to the given parameter value.
+
+        .. warning:: If there are multiple occurences of ``value`` in
+          the array of parameter values, only the index of the first
+          occurence will be returned.
+        """
+        indices = numpy.where(self.get_values() == value)[0]
+        if len(indices) == 0:
+            raise ValueError("No value %.2g found in parameter values " +
+                             "for parameter %s." % (value, self._name))
+        return indices[0]
+
+    def get_current_value(self):
+        """
+        Returns:
+          float: Current value of fit parameter - stored in
+            :attr:`_current_value`
+        """
+        if self._current_value is None:
+            raise ValueError("Current value not yet set " +
+                             "for parameter " + self._name)
+        return self._current_value
+
+    def get_best_fit(self):
+        """
+        Returns:
+          float: Best fit value of parameter - stored in
+            :attr:`_best_fit`.
+
+        Raises:
+          ValueError: If the value of :attr:`_best_fit` has not yet
+            been set.
+        """
+        if self._best_fit is None:
+            raise ValueError("Best fit value for parameter" +
+                             self._name + " has not been set")
+        return self._best_fit
 
 class SpectraParameter(object):
     """Simple data container that holds information for a Spectra parameter
@@ -250,6 +330,14 @@ class Config(object):
         """
         self._name = name
 
+    def get_name(self):
+        """
+        Returns:
+          string: Name of :class:`Config` class instance - stored in
+            :attr:`_name`.
+        """
+        return self._name
+
     def get_par(self, name):
         """Get a named FitParameter.
 
@@ -260,6 +348,19 @@ class Config(object):
           :class:`echidna.core.spectra.Parameter`: Named parameter.
         """
         return self._parameters[name]
+
+    def get_par_by_index(self, index):
+        """ Get parameter corresponding to given index
+
+        Args:
+          index (int): Index of parameter.
+
+        Returns:
+          :class:`echidna.core.spectra.Parameter`: Corresponding
+            parameter.
+        """
+        name = self.get_pars()[index]
+        return self.get_par(name)
 
     def get_pars(self):
         """Get list of all parameter names in the config.
@@ -320,7 +421,7 @@ class FitConfig(Config):
         """
         config = yaml.load(open(filename, 'r'))
         parameters = collections.OrderedDict()
-        for v in config['sytematics']:
+        for v in config['systematics']:
             if v == 'rate':
                 parameters[v] = FitParameter(
                     v, config['systematics'][v]['prior'],
@@ -340,7 +441,7 @@ class FitConfig(Config):
                             config['systematics'][v][dim][syst]['bins'],
                             )
             else:
-                raise IndexError("Unknown subsection in config %s", % v)
+                raise IndexError("Unknown subsection in config %s" % v)
         return cls(parameters)
 
 
@@ -513,7 +614,7 @@ class Spectra(object):
         if isinstance(config, FitConfig):
             self._fit_config = config
         else:
-            raise TypeError("Invalid config type: %s" type(config))
+            raise TypeError("Invalid config type: %s" % type(config))
 
     def fill(self, weight=1.0, **kwargs):
         """ Fill the bin with weight.  Note that values for all named

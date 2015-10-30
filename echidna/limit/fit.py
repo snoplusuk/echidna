@@ -87,7 +87,7 @@ class Fit(object):
         """
         if not isinstance(roi, dict):
             raise TypeError("roi must be a dictionary of parameter values")
-        for dim in roi:
+        for dim in roi:FitResults
             if not isinstance(roi[dim], (tuple, list)):
                 raise TypeError("roi must be a dictionary of tuples or lists")
             if len(roi[dim]) != 2:
@@ -214,6 +214,43 @@ class Fit(object):
             for systematic in background.get_fit_config().get_pars():
                 return None
 
+    def _funct(self, *args):
+        """ **INCOMPLETE METHOD**. Callable to pass to minimiser.
+
+        Args:
+          args (list): List of fit parameter values to test in the
+            current iteration.
+
+        Returns:
+          float: Value of the test statistic given the current values
+            of the fit parameters.
+
+        Raises:
+          ValueError: If :attr:`_floating_backgrounds` is None. This
+            method requires at least one floating background.
+
+        .. note:: This method should not be called directly, it is
+          intended to be passed to an appropriate minimiser and
+          called from within the minimisation algorithm.
+
+        .. note:: This method should not be used if there are no
+          floating backgrounds.
+        """
+        if self._floating_backgrounds is None:
+            raise ValueError("The _funct method can only be used " +
+                             "with at least one floating background")
+            # TODO: Insert code to do the following:
+            #   * Collect parameter values from *args and match up with
+            #     correct FitParameter instance.
+            #   * Each fit parameter should then perform an action on one
+            #     or multiple spectra, using this value.
+            #   * Once all spectra have been modified appropriately using
+            #     the parameter values. Sum all spectra and produce
+            #     expected and observed arrays
+            #   * Pass to TestStatistic.compute_statistic and return
+            #     result.
+            pass
+
     def set_data(self, data, shrink=True):
         """ Sets the data you want to fit.
 
@@ -244,7 +281,7 @@ class Fit(object):
             self.check_spectra(fixed_background)
         self._fixed_background = fixed_background
 
-    def set_floating_backgrounds(self, floating_background, shrink=True):
+    def set_floating_backgrounds(self, floating_backgrounds, shrink=True):
         """ Sets the floating backgrounds you want to fit.
 
         Args:
