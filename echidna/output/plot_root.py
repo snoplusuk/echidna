@@ -30,7 +30,7 @@ def plot_projection(spectra, dimension, graphical=True, fig_num=1):
         can.cd()
         plot.Draw()
         raw_input("Return to quit")
-    return plot, can
+    return plot
 
 
 def plot_surface(spectra, dimension1, dimension2, graphical=True):

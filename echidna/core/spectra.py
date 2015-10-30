@@ -20,6 +20,14 @@ class Parameter(object):
         """
         self._type = type_name
 
+    def get_width(self):
+        """Get the width of the binning for the parameter
+
+        Returns:
+          float: Bin width.
+        """
+        return (self._high - self._low) / float(self._bins)
+
 
 class FitParameter(Parameter):
     """Simple data container that holds information for a fit parameter
@@ -168,7 +176,7 @@ class FitParameter(Parameter):
                              self._name + " has not been set")
         return self._best_fit
 
-class SpectraParameter(object):
+class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).
 
@@ -222,13 +230,6 @@ class SpectraParameter(object):
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
-    def get_width(self):
-        """Get the width of the binning for the parameter
-
-        Returns:
-          float: Bin width.
-        """
-        return (self._high - self._low) / float(self._bins)
 
     def get_unit(self):
         """Get the default unit for a given parameter
@@ -426,9 +427,9 @@ class FitConfig(Config):
                 parameters[v] = FitParameter(
                     v, config['systematics'][v]['prior'],
                     config['systematics'][v]['sigma'],
-                    config['parameters'][v]['low'],
-                    config['parameters'][v]['high'],
-                    config['parameters'][v]['bins'])
+                    config['systematics'][v]['low'],
+                    config['systematics'][v]['high'],
+                    config['systematics'][v]['bins'])
             elif v == 'parameters':
                 for dim in config['systematics'][v]:
                     for syst in config['systematics'][v][dim]:
@@ -443,6 +444,13 @@ class FitConfig(Config):
             else:
                 raise IndexError("Unknown subsection in config %s" % v)
         return cls(parameters)
+
+    def get_rates(self):
+        """
+        """
+        return numpy.arange(self.get_par("rate")._low,
+                            self.get_par("rate")._high,
+                            self.get_par("rate").get_width())
 
 
 class SpectraConfig(Config):
@@ -735,7 +743,7 @@ class Spectra(object):
           :class:`numpy.ndarray`: The nd projection of the histogram.
         """
         axes = []
-        for dim in dimesnsions:
+        for dim in dimensions:
             axes.append(self._config.get_index(dim))
         if len(axes) == len(self._config.get_pars()):
             return copy.copy(self._data)
