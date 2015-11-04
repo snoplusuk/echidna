@@ -1,8 +1,10 @@
-import collections
 import numpy
+from scipy import interpolate
+
+import collections
 import yaml
 import copy
-from scipy import interpolate
+import abc
 
 
 class Parameter(object):
@@ -51,6 +53,8 @@ class FitParameter(Parameter):
       _values (:class:`numpy.array`): Array of parameter values to
         test in fit.
       _best_fit (float): Best-fit value calculated by fit.
+      _spectra_specific (bool): Flag to show parameter applies to only
+        a specific :class:`Spectra` instance.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
@@ -66,6 +70,7 @@ class FitParameter(Parameter):
         self._values = None  # Initially
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
+        self._spectra_specific = False
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -100,6 +105,14 @@ class FitParameter(Parameter):
                 self._bins = float(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
+
+    def set_current_value(self, value):
+        """ Set value for :attr:`_current_value`.
+
+        Args:
+          value (float): Current value of fit parameter
+        """
+        self._current_value = value
 
     def set_best_fit(self, best_fit):
         """ Set value for :attr:`_best_fit`.
@@ -176,6 +189,292 @@ class FitParameter(Parameter):
                              self._name + " has not been set")
         return self._best_fit
 
+    @abc.abstractmethod
+    def apply_to(self, spectrum):
+        """ Applies current value of fit parameter to spectrum.
+
+        Args:
+          spectrum (:class:`Spectra`): Spectrum to which current value
+            of parameter should be applied.
+
+        Returns:
+          (:class:`Spectra`): Modified spectrum.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of rate parameter %s "
+                             "has not been set" % self._name)
+        pass
+
+
+class RateParameter(FitParameter):
+    """ Data container that holds information for a rate parameter that
+    is included in the fit.
+
+    Args:
+      name (str): The name of this parameter
+      prior (float): The prior of the parameter
+      sigma (float): The sigma of the parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
+
+    Attributes:
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
+      _values (:class:`numpy.array`): Array of parameter values to
+        test in fit.
+      _best_fit (float): Best-fit value calculated by fit.
+      _spectra_specific (bool): Flag to show parameter applies to only
+        a specific :class:`Spectra` instance.
+    """
+
+    def __init__(self, name, prior, sigma, low, high, bins):
+        super(RateParameter, self).__init__(name, prior, sigma,
+                                            low, high, bins)
+
+    def apply_to(self, spectrum):
+        """ Scales spectrum to current value of rate parameter.
+
+        Args:
+          spectrum (:class:`Spectra`): Spectrum which should be scaled
+            to current rate value.
+
+        Returns:
+          (:class:`Spectra`): Scaled spectrum.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of rate parameter %s "
+                             "has not been set" % self._name)
+        spectrum.scale(self._current_value)
+        return spectrum
+
+
+class ResolutionParameter(FitParameter):
+    """ Data container that holds information for a resulution parameter
+    that is included in the fit.
+
+    Args:
+      name (str): The name of this parameter
+      prior (float): The prior of the parameter
+      sigma (float): The sigma of the parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
+
+    Attributes:
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
+      _values (:class:`numpy.array`): Array of parameter values to
+        test in fit.
+      _best_fit (float): Best-fit value calculated by fit.
+      _spectra_specific (bool): Flag to show parameter applies to only
+        a specific :class:`Spectra` instance.
+    """
+
+    def __init__(self, name, prior, sigma, low, high, bins):
+        super(ResolutionParameter, self).__init__(name, prior, sigma,
+                                                  low, high, bins)
+
+    def apply_to(self, spectrum):
+        """ Smears spectrum to current value of resolution.
+
+        Args:
+          spectrum (:class:`Spectra`): Spectrum which should be smeared.
+
+        Returns:
+          (:class:`Spectra`): Smeared spectrum.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of rate parameter %s "
+                             "has not been set" % self._name)
+        NotImplementedError("ResolutionParameter.apply_to not yet implemented")
+
+    def get_pre_convolved_name(self, name):
+        """ Returns name for pre-made version of spectrum.
+
+        .. note:: Returns a name of the form
+          ``TeLoaded_Te130_0n2b_lyXX`` where ``TeLoaded_Te130_0n2b``
+          is the original name of the spectrum and ``XX`` is the
+          current value of this parameter.
+
+        Args:
+          name (string): Original name of :class:`Spectra` object.
+
+        Returns:
+          string: Name of :class:`Spectra` object, correctly appended
+            with current resolution value.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of resolution parameter %s "
+                             "has not been set" % self._name)
+        name = name + ("_ly%.2f" % self._current_value)
+        return name
+
+
+class ScaleParameter(FitParameter):
+    """ Data container that holds information for a scale parameter
+    that is included in the fit.
+
+    Args:
+      name (str): The name of this parameter
+      prior (float): The prior of the parameter
+      sigma (float): The sigma of the parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
+
+    Attributes:
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
+      _values (:class:`numpy.array`): Array of parameter values to
+        test in fit.
+      _best_fit (float): Best-fit value calculated by fit.
+      _spectra_specific (bool): Flag to show parameter applies to only
+        a specific :class:`Spectra` instance.
+    """
+
+    def __init__(self, name, prior, sigma, low, high, bins):
+        super(ScaleParameter, self).__init__(name, prior, sigma,
+                                             low, high, bins)
+
+    def apply_to(self, spectrum):
+        """ Convolves spectrum with current value of scale parameter.
+
+        Args:
+          spectrum (:class:`Spectra`): Spectrum to be convolved.
+
+        Returns:
+          (:class:`Spectra`): Convolved spectrum.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of scale parameter %s "
+                             "has not been set" % self._name)
+        NotImplementedError("ScaleParameter.apply_to not yet implemented")
+
+    def get_pre_convolved_name(self, name):
+        """ Returns name for pre-made version of spectrum.
+
+        .. note:: Returns a name of the form
+          ``TeLoaded_Te130_0n2b_sfXX`` where ``TeLoaded_Te130_0n2b``
+          is the original name of the spectrum and ``XX`` is the
+          current value of this parameter.
+
+        Args:
+          name (string): Original name of :class:`Spectra` object.
+
+        Returns:
+          string: Name of :class:`Spectra` object, correctly appended
+            with current scale value.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of scale parameter %s "
+                             "has not been set" % self._name)
+        name = name + ("_sf%.2f" % self._current_value)
+        return name
+
+
+class ShiftParameter(FitParameter):
+    """ Data container that holds information for a shift parameter
+    that is included in the fit.
+
+    Args:
+      name (str): The name of this parameter
+      prior (float): The prior of the parameter
+      sigma (float): The sigma of the parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
+
+    Attributes:
+      _name (str): The name of this parameter
+      _prior (float): The prior of the parameter
+      _sigma (float): The sigma of the parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
+      _values (:class:`numpy.array`): Array of parameter values to
+        test in fit.
+      _best_fit (float): Best-fit value calculated by fit.
+      _spectra_specific (bool): Flag to show parameter applies to only
+        a specific :class:`Spectra` instance.
+    """
+
+    def __init__(self, name, prior, sigma, low, high, bins):
+        super(ShiftParameter, self).__init__(name, prior, sigma,
+                                             low, high, bins)
+
+    def apply_to(self, spectrum):
+        """ Convolves spectrum with current value of shift parameter.
+
+        Args:
+          spectrum (:class:`Spectra`): Spectrum to be convolved.
+
+        Returns:
+          (:class:`Spectra`): Convolved spectrum.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of shift parameter %s "
+                             "has not been set" % self._name)
+        NotImplementedError("ShiftParameter.apply_to not yet implemented")
+
+    def get_pre_convolved_name(self, name):
+        """ Returns name for pre-made version of spectrum.
+
+        .. note:: Returns a name of the form
+          ``TeLoaded_Te130_0n2b_shiftXX`` where ``TeLoaded_Te130_0n2b``
+          is the original name of the spectrum and ``XX`` is the
+          current value of this parameter.
+
+        Args:
+          name (string): Original name of :class:`Spectra` object.
+
+        Returns:
+          string: Name of :class:`Spectra` object, correctly appended
+            with current scale value.
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of scale parameter %s "
+                             "has not been set" % self._name)
+        name = name + ("_sf%.2f" % self._current_value)
+        return name
+
+
 class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).
@@ -229,7 +528,6 @@ class SpectraParameter(Parameter):
                 self._bins = int(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
-
 
     def get_unit(self):
         """Get the default unit for a given parameter
@@ -414,10 +712,10 @@ class FitConfig(Config):
         """Initialise FitConfig class from a config file (classmethod).
 
         Args:
-          filename (str) path to config file
+          filename (str): path to config file
 
         Returns:
-          :class:`echidna.core.spectra.FitConfig`: A config object
+          (:class:`echidna.core.spectra.FitConfig`): A config object
             containing the parameters in the file called filename.
         """
         config = yaml.load(open(filename, 'r'))
@@ -445,12 +743,20 @@ class FitConfig(Config):
                 raise IndexError("Unknown subsection in config %s" % v)
         return cls(parameters)
 
-    def get_rates(self):
+    def get_global_pars(self):
+        """ Generates a list of only global fit parameters.
+
+        Returns:
+          list: List of fit parameters where the attribute
+            :attr:`echidna.core.spectra.FitParameter._spectra_specific`
+            is ``False``.
         """
-        """
-        return numpy.arange(self.get_par("rate")._low,
-                            self.get_par("rate")._high,
-                            self.get_par("rate").get_width())
+        pars = []
+        for parameter in self.get_pars():
+            par = self.get_par(parameter)
+            if not par._spectra_specific:
+                pars.append(parameter)
+        return pars
 
 
 class SpectraConfig(Config):
@@ -585,6 +891,10 @@ class Spectra(object):
             bins.append(self._config.get_par(v)._bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
+        # Set all pars in fit config as spectra_specific
+        for parameter in fit_config.get_pars():
+            par = fit_config.get_par(parameter)
+            par._spectra_specific = True
         self._fit_config = fit_config
         # Flag for indicating bipo cut. HDF5 does not support bool so
         # 0 = no cut and 1 = cut
@@ -951,7 +1261,7 @@ class Spectra(object):
         """ Adds a spectrum to current spectra object.
 
         Args:
-          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum to add.
+          spectrum (:class:`Spectra`): Spectrum to add.
 
         Raises:
           ValueError: spectrum has different dimenstions to the current

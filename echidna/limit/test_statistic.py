@@ -243,7 +243,7 @@ class Neyman(TestStatistic):
     def __init__(self, per_bin=False):
         super(Neyman, self).__init__("neyman", per_bin)
 
-    def _compute(self, observed, expected, per_bin=False):
+    def _compute(self, observed, expected):
         """ Calculates chi squared.
 
         Args:
@@ -306,7 +306,7 @@ class Pearson(TestStatistic):
     def __init__(self):
         super(Pearson, self).__init__("pearson")
 
-    def _compute(self, observed, expected, per_bin=False):
+    def _compute(self, observed, expected):
         """ Calculates chi squared.
 
         Args:
@@ -314,8 +314,6 @@ class Pearson(TestStatistic):
             events
           expected (:class:`numpy.array`/float): Number of expected
             events
-          per_bin (bool, optional): If True updates :attr:`_per_bin`
-            with value calculated for each bin.
 
         Raises:
           ValueError: If arrays are different lengths.
@@ -333,8 +331,6 @@ class Pearson(TestStatistic):
                 bin_value = expected[i]
             else:
                 bin_value = (observed[i] - expected[i])**2 / expected[i]
-            if per_bin:
-                self._per_bin[i] = bin_value
             total += bin_value
         return total
 
@@ -342,26 +338,23 @@ class Pearson(TestStatistic):
         """ Gets chi squared for each bin.
 
         Args:
-          observed (:class:`numpy.array`): Array of number of observed events
-          expected (:class:`numpy.array`): Array of number of expected events
-
-        Raises:
-          ValueError: If arrays are different lengths.
+          observed (:class:`numpy.array`/float): Number of observed
+            events
+          expected (:class:`numpy.array`/float): Number of expected
+            events
 
         Returns:
           :class:`numpy.array`: Of the chi squared in each bin.
         """
         # Chosen due to backgrounds with low rates in ROI
-        epsilon = 1e-34  # Limit of zero
-        total = 0
+        epsilon = 1e-34  # In the limit of zero
+        stats = []
         for i in range(len(observed)):
-            if expected[i] < epsilon:
-                expected[i] = epsilon
             if observed[i] < epsilon:
-                bin_value = expected[i]
+                expected[i] = epsilon
+            if expected[i] < epsilon:
+                bin_value = observed[i]
             else:
-                bin_value = (observed[i] - expected[i])**2 / expected[i]
-            if per_bin:
-                self._per_bin[i] = bin_value
-            total += bin_value
-        return total
+                bin_value = (expected[i] - observed[i])**2 / observed[i]
+            stats.append(bin_value)
+        return numpy.array(stats)

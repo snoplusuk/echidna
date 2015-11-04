@@ -1,7 +1,7 @@
 import numpy
 import copy
 
-from echidna.errors.custom_errors import LimitError
+from echidna.errors.custom_errors import LimitError, CompatibilityError
 
 
 class Limit(object):
@@ -100,7 +100,7 @@ class Limit(object):
         for scale in signal_config.get_rates():
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
-                self._fitter.set_signal(signal, shrink=False)
+                self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
             stats.append(self._fitter.get_statistic())

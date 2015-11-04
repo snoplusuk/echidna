@@ -1,7 +1,12 @@
 import numpy
-import copy
 
+import echidna.output.store as store
+from echidna.limit.fit_results import FitResults
+from echidna.limit.minimiser import GridSearch
 from echidna.errors.custom_errors import CompatibilityError
+
+import copy
+import os
 
 
 class Fit(object):
@@ -10,21 +15,31 @@ class Fit(object):
     Args:
       roi (dictionary): Region Of Interest you want to fit in. The format of
         roi is e.g. {"energy": (2.4, 2.6), "radial3": (0., 0.2)}
-      method (:class:`TBC`): Method for calculating test statistics.
+      test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An
+        appropriate class for calculating test statistics.
       data (:class:`echidna.core.spectra.Spectra`): Data spectrum you want to
         fit.
       fixed_background (:class:`echidna.core.spectra.Spectra`, optional):
         A spectrum containing all fixed backgrounds.
       floating_backgrounds (list, optional): one
         :class:`echidna.core.spectra.Spectra` for each background to float.
+      signal (:class:`echidna.core.spectra.Spectra`):
+        A spectrum of the signal that you are fitting.
       shrink (bool, optional): If set to True (default),
         :meth:`shrink` method is called on all spectra shrinking them to
         the ROI.
+      minimiser (:class:`echidna.limit.minimiser.Minimiser`): Object to
+        handle the minimisation.
+      use_pre_made (bool): Flag whether to load a pre-made spectrum
+        for each systematic value, or apply convolutions on the fly.
+      pre_made_dir (string): Directory in which pre-made convolved
+        spectra are stored.
 
     Attributes:
       _roi (dictionary): Region Of Interest you want to fit in. The format of
         roi is e.g. {"energy": (2.4, 2.6), "radial3": (0., 0.2)}
-      _method (:class:`TBC`): Method for calculating test statistics.
+      _test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An
+        appropriate class for calculating test statistics.
       _data (:class:`echidna.core.spectra.Spectra`): Data spectrum you want to
         fit.
       _fixed_background (:class:`echidna.core.spectra.Spectra`):
@@ -33,13 +48,22 @@ class Fit(object):
         for each background to float.
       _signal (:class:`echidna.core.spectra.Spectra`):
         A spectrum of the signal that you are fitting.
+      _minimiser (:class:`echidna.limit.minimiser.Minimiser)`: Object to
+        handle the minimisation.
       _checked (bool): If True then the fit class is ready to be used.
+      _use_pre_made (bool): Flag whether to load a pre-made spectrum
+        for each systematic value, or apply convolutions on the fly.
+      _pre_made_dir (string): Directory in which pre-made convolved
+        spectra are stored.
     """
-    def __init__(self, roi, method, data=None, fixed_background=None,
-                 floating_backgrounds=None, signal=None, shrink=True):
+    def __init__(self, roi, test_statistic, fit_config, data=None,
+                 fixed_background=None, floating_backgrounds=None,
+                 signal=None, shrink=True, minimiser=None, fit_results=None,
+                 use_pre_made=True, pre_made_dir=None):
         self._checked = False
         self.set_roi(roi)
-        self._method = method
+        self._test_statistic = test_statistic
+        self._fit_config = fit_config
         self._data = data
         if self._data:
             self._data_pars = self.get_roi_pars(self._data)
@@ -66,6 +90,16 @@ class Fit(object):
         if shrink:
             self.shrink_all()
         self.check_all_spectra()
+        if minimiser is None:  # Use default (GridSearch)
+            minimiser = GridSearch(fit_config, fit_config.get_name())
+        self._minimiser = minimiser
+        # create fit results object - not required if using GridSearch.
+        if (fit_results is None and
+                not isinstance(self._minimiser, GridSearch)):
+            fit_results = FitResults(fit_config, fit_config.get_name())
+        self._fit_results = fit_results  # Still None for GridSearch
+        self._use_pre_made = use_pre_made
+        self._pre_made_dir = pre_made_dir
 
     def append_fixed_background(self, spectra_dict, shrink=True):
         ''' Appends the fixed background with more spectra.
@@ -234,14 +268,15 @@ class Fit(object):
         """
         return self._floating_backgrounds
 
-    def get_method(self):
-        """ Gets the method you are using to calculate the test statistic you
-          are using to fit.
+    def get_test_statistic(self):
+        """ Gets the class instance you are using to calculate the test
+        statistic used in the fit.
 
         Returns:
-          :class:`TBC`: The method used to calculate test statistics.
+          (:class:`echidna.limit.test_statistic.TestStatistic`): The class
+            instance used to calculate test statistics.
         """
-        return self._method
+        return self._test_statistic
 
     def get_roi(self):
         """ Gets the region of interest (roi)
@@ -277,7 +312,7 @@ class Fit(object):
         """
         return self._signal
 
-    def get_statistic(self):
+    def fit(self):
         """ Gets the value of the test statistic used for fitting.
 
         Returns:
@@ -286,19 +321,20 @@ class Fit(object):
         """
         if not self._checked:
             self.check_fitter()
-        if not self._floating_backgrounds:
+        if not self._floating_backgrounds:  # Use fixed only
             observed = self._data.nd_project(self._data_pars)
             expected = self._fixed_background.nd_project(self._fixed_pars)
             if self._signal:
                 expected += self._signal.nd_project(self._signal_pars)
-            return self._method.compute_statistic(observed.ravel(),
-                                                  expected.ravel())
-        for background in self._floating_background:
-            for systematic in background.get_fit_config().get_pars():
-                return None
+            return self._test_statistic.compute_statistic(observed.ravel(),
+                                                          expected.ravel())
+        else:  # Pass to minimiser
+            if self._minimiser is None:
+                raise AttributeError("Minimiser is not set.")
+            return self._minimiser.minimise(self._funct)
 
     def _funct(self, *args):
-        """ **INCOMPLETE METHOD**. Callable to pass to minimiser.
+        """ Callable to pass to minimiser.
 
         Args:
           args (list): List of fit parameter values to test in the
@@ -322,17 +358,80 @@ class Fit(object):
         if self._floating_backgrounds is None:
             raise ValueError("The _funct method can only be used " +
                              "with at least one floating background")
-            # TODO: Insert code to do the following:
-            #   * Collect parameter values from *args and match up with
-            #     correct FitParameter instance.
-            #   * Each fit parameter should then perform an action on one
-            #     or multiple spectra, using this value.
-            #   * Once all spectra have been modified appropriately using
-            #     the parameter values. Sum all spectra and produce
-            #     expected and observed arrays
-            #   * Pass to TestStatistic.compute_statistic and return
-            #     result.
-            pass
+
+        # Update parameter current values
+        for index, value in enumerate(args):
+            par = self._fit_config.get_par_by_index(index)
+            par.set_current_value(value)
+
+        # Loop over all floating backgrounds
+        observed = self._data.nd_project(self._data_pars)
+        expected = self._fixed_background.nd_project(self._fixed_pars)
+        global_pars = self._fit_config.get_gloal_pars()
+        for spectrum in self._floating_backgrounds:
+            # Apply global parameters first
+            if self._use_pre_made:  # Load pre-made spectrum from file
+                spectrum = self.load_pre_made(spectrum, global_pars)
+                expected = numpy.add(expected,
+                                     spectrum.nd_project(self._floating_pars))
+            else:
+                for parameter in global_pars:
+                    par = self._fit_congfig.get_par()
+                    spectrum = par.apply_to(spectrum)
+                    expected = numpy.add(
+                        expected, spectrum.nd_project(self._floating_pars))
+
+            # Apply spectrum-specific parameters
+            for parameter in spectrum.get_fit_config().get_pars():
+                par = spectrum.get_fit_config().get_par(parameter)
+                spectrum = par.apply_to(spectrum)
+                expected = numpy.add(expected,
+                                     spectrum.nd_project(self._floating_pars))
+
+            # Add signal, if required
+            if self._signal:
+                expected += self._signal.nd_project(self._signal_pars)
+            return self._test_statistic.compute_statistic(observed.ravel(),
+                                                          expected.ravel())
+
+    def load_pre_made(self, spectrum, global_pars):
+        """ Load pre-made convolved spectra.
+
+        This method is used to load a pre-made spectra convolved with
+        certain resolution, energy-scale or shift values, or a
+        combination of two or more at given values.
+
+        The method loads the loads the correct spectra from HDF5s,
+        stored in the given directory.
+
+        Args:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum
+            to convolve.
+
+        Returns:
+          spectrum (:class:`echidna.core.spectra.Spectra`): Convolved
+            spectrum, ready for applying further systematics or fitting.
+        """
+        # Locate spectrum to load from HDF5
+        # Directory should be set beforehand
+        if self._pre_made_dir is None:
+            raise AttributeError("Pre-made directory is not set.")
+
+        # Start with base spectrum name
+        filename = spectrum.get_name()
+        # Add current value of each global parameter
+        for parameter in global_pars:
+            par = self._fit_config.get_par(parameter)
+            filename = par.get_pre_convolved_name(filename)
+        filename += ".hdf5"  # Convert to hdf5 filename
+
+        # Load spectrum from hdf5
+        spectrum = store.load(self._pre_made_dir + filename)
+
+        # Apply correct ROI cuts
+        spectrum.shrink(self._floating_pars)
+
+        return spectrum
 
     def make_fixed_background(self, spectra_dict, shrink=True):
         ''' Makes a spectrum for fixed backgrounds and stores it in the class.
@@ -402,7 +501,7 @@ class Fit(object):
         self._fixed_background = fixed_background
         self._fixed_pars = self.get_roi_pars(fixed_background)
 
-    def set_floating_backgrounds(self, floating_background, shrink=True):
+    def set_floating_backgrounds(self, floating_backgrounds, shrink=True):
         """ Sets the floating backgrounds you want to fit.
 
         Args:
@@ -422,15 +521,15 @@ class Fit(object):
         self._floating_backgrounds = floating_backgrounds
         self._floating_pars = floating_pars
 
-    def set_method(self, method):
+    def set_test_statistic(self, test_statistic):
         """ Sets the method you want to use to calculate test statistics in
           the fit.
 
         Args:
-          method (:class:`TBC`): The method you want to calculate test
-            statistics with in the fit.
+          test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`):
+            An appropriate class for calculating test statistics.
         """
-        self._method = method
+        self._test_statistic = test_statistic
 
     def set_roi(self, roi):
         """ Sets the region of interest you want to fit in.
@@ -459,6 +558,20 @@ class Fit(object):
             self.check_spectra(signal)
         self._signal = signal
         self._signal_pars = self.get_roi_pars(signal)
+
+    def set_pre_made_dir(self, directory):
+        """ Sets the directory in which pre-made convolved spectra are
+        stored.
+
+        Args:
+          directory (string): Directory in which pre-made spectra are
+            located.
+        """
+        # Check that it is a valid directory
+        if not os.path.isdir(directory):
+            raise ValueError("Supplied directory %s is not a valid path."
+                             % directory)
+        self._pre_made_dir = directory
 
     def shrink_all(self):
         """ Shrinks all the spectra used in the fit to the roi.
