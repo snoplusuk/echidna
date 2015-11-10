@@ -372,27 +372,27 @@ class Fit(object):
             # Apply global parameters first
             if self._use_pre_made:  # Load pre-made spectrum from file
                 spectrum = self.load_pre_made(spectrum, global_pars)
-                expected = numpy.add(expected,
-                                     spectrum.nd_project(self._floating_pars))
             else:
                 for parameter in global_pars:
                     par = self._fit_congfig.get_par()
                     spectrum = par.apply_to(spectrum)
-                    expected = numpy.add(
-                        expected, spectrum.nd_project(self._floating_pars))
 
             # Apply spectrum-specific parameters
             for parameter in spectrum.get_fit_config().get_pars():
                 par = spectrum.get_fit_config().get_par(parameter)
                 spectrum = par.apply_to(spectrum)
-                expected = numpy.add(expected,
-                                     spectrum.nd_project(self._floating_pars))
 
-            # Add signal, if required
-            if self._signal:
-                expected += self._signal.nd_project(self._signal_pars)
-            return self._test_statistic.compute_statistic(observed.ravel(),
-                                                          expected.ravel())
+            # Spectrum should now be fully convolved/scaled
+            # Shrink to roi
+            self.shrink_spectra(spectrum)
+            # and then add projection to expected spectrum
+            expected += spectrum.nd_project(self._floating_pars)
+
+        # Add signal, if required
+        if self._signal:
+            expected += self._signal.nd_project(self._signal_pars)
+        return self._test_statistic.compute_statistic(observed.ravel(),
+                                                      expected.ravel())
 
     def load_pre_made(self, spectrum, global_pars):
         """ Load pre-made convolved spectra.
