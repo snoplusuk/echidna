@@ -1,0 +1,22 @@
+systematics:
+        parameters:
+                energy:
+                        x:
+                                prior: 4.0
+                                sigma: 0.1
+                                low: 3.0       
+                                high: 5.0
+                                bins: 21
+                        y:
+                                prior: -2.5
+                                sigma: 0.1
+                                low: -5.0
+                                high: 0.0
+                                bins: 51
+                        z:
+                                prior: 0.5
+                                sigma: 0.1
+                                low: 0.0
+                                high: 1.0
+                                bins: 11
+
