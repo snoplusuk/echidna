@@ -1,5 +1,10 @@
 """ Module to hold classes for various test statistics that can be used
 for fitting.
+
+.. note:: All forms of chi-squared are as defined in::
+
+  * REF: S. Baker & R. D. Cousins, Nucl. Inst. and Meth. in Phys.
+    Res. 211, 437-442 (1984)
 """
 import numpy
 import abc
@@ -27,7 +32,7 @@ class TestStatistic(object):
     """
     __metaclass__ = abc.ABCMeta  # Only required for python 2
 
-    def __init__(self, name, per_bin):
+    def __init__(self, name, per_bin=False):
         self._name = name
         self._per_bin = per_bin
 
@@ -60,8 +65,8 @@ class TestStatistic(object):
                             "expected 1-D array" % str(expected.shape))
         if len(observed) != len(expected):
             raise ValueError(
-                "Number of bins mismatch, expecting %d bins, found %d"
-                % (observed.shape[0], self.get_spectra_par()._bins))
+                "Number of bins mismatch, for observed with %d bins, "
+                "and expected with %d bins" % (len(observed), len(expected)))
         if not self._per_bin:
             return self._compute(observed, expected)
         else:
@@ -114,6 +119,7 @@ class BakerCousinsChi(TestStatistic):
     def __init__(self, per_bin=False):
         super(BakerCousinsChi, self).__init__("baker_cousins", per_bin)
 
+    @classmethod
     def _compute(self, observed, expected):
         """ Calculates the chi-squared.
 
@@ -126,6 +132,11 @@ class BakerCousinsChi(TestStatistic):
         Returns:
           float: Calculated chi squared.
         """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
         epsilon = 1e-34  # In the limit of zero
         total = 0
         for i in range(len(observed)):
@@ -139,6 +150,7 @@ class BakerCousinsChi(TestStatistic):
             total += bin_value
         return 2. * total
 
+    @classmethod
     def _get_stats(self, observed, expected):
         """ Gets chi squared for each bin.
 
@@ -180,6 +192,7 @@ class BakerCousinsLL(TestStatistic):
     def __init__(self, per_bin=False):
         super(BakerCousinsLL, self).__init__("baker_cousins", per_bin)
 
+    @classmethod
     def _compute(self, observed, expected):
         """ Calculates the log likelihood.
 
@@ -192,6 +205,11 @@ class BakerCousinsLL(TestStatistic):
         Returns:
           float: Calculated Neyman's chi squared
         """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
         epsilon = 1e-34  # In the limit of zero
         total = 0
         for i in range(len(observed)):
@@ -205,6 +223,7 @@ class BakerCousinsLL(TestStatistic):
             total += bin_value
         return total
 
+    @classmethod
     def _get_stats(self, observed, expected):
         """ Gets chi squared for each bin.
 
@@ -243,6 +262,7 @@ class Neyman(TestStatistic):
     def __init__(self, per_bin=False):
         super(Neyman, self).__init__("neyman", per_bin)
 
+    @classmethod
     def _compute(self, observed, expected):
         """ Calculates chi squared.
 
@@ -255,12 +275,17 @@ class Neyman(TestStatistic):
         Returns:
           float: Calculated Neyman's chi squared
         """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
         # Chosen due to backgrounds with low rates in ROI
         epsilon = 1e-34  # In the limit of zero
         total = 0
         for i in range(len(observed)):
             if observed[i] < epsilon:
-                expected[i] = epsilon
+                observed[i] = epsilon
             if expected[i] < epsilon:
                 bin_value = observed[i]
             else:
@@ -268,6 +293,7 @@ class Neyman(TestStatistic):
             total += bin_value
         return total
 
+    @classmethod
     def _get_stats(self, observed, expected):
         """ Gets chi squared for each bin.
 
@@ -285,7 +311,7 @@ class Neyman(TestStatistic):
         stats = []
         for i in range(len(observed)):
             if observed[i] < epsilon:
-                expected[i] = epsilon
+                observed[i] = epsilon
             if expected[i] < epsilon:
                 bin_value = observed[i]
             else:
@@ -303,9 +329,10 @@ class Pearson(TestStatistic):
         as an :class:`numpy.array`. If False (default) one value for the
         statistic is returned for the entire array.
     """
-    def __init__(self):
-        super(Pearson, self).__init__("pearson")
+    def __init__(self, per_bin=False):
+        super(Pearson, self).__init__("pearson", per_bin)
 
+    @classmethod
     def _compute(self, observed, expected):
         """ Calculates chi squared.
 
@@ -321,6 +348,11 @@ class Pearson(TestStatistic):
         Returns:
           float: Calculated Pearson's chi squared
         """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
         # Chosen due to backgrounds with low rates in ROI
         epsilon = 1e-34  # Limit of zero
         total = 0
@@ -334,6 +366,7 @@ class Pearson(TestStatistic):
             total += bin_value
         return total
 
+    @classmethod
     def _get_stats(self, observed, expected):
         """ Gets chi squared for each bin.
 
@@ -350,11 +383,11 @@ class Pearson(TestStatistic):
         epsilon = 1e-34  # In the limit of zero
         stats = []
         for i in range(len(observed)):
-            if observed[i] < epsilon:
-                expected[i] = epsilon
             if expected[i] < epsilon:
-                bin_value = observed[i]
+                expected[i] = epsilon
+            if observed[i] < epsilon:
+                bin_value = expected[i]
             else:
-                bin_value = (expected[i] - observed[i])**2 / observed[i]
+                bin_value = (observed[i] - expected[i])**2 / expected[i]
             stats.append(bin_value)
         return numpy.array(stats)
