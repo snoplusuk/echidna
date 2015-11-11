@@ -75,7 +75,8 @@ class TestGridSearch(unittest.TestCase):
         fit_z = 0.5
 
         # Test default grid search, with numpy
-        self._default_grid_search.minimise(funct)
+        minimum = self._default_grid_search.minimise(funct)
+        self.assertIsInstance(minimum, float)
         results = self._default_grid_search.get_summary()
         self.assertAlmostEqual(results.get("energy_x"), fit_x)
         self.assertAlmostEqual(results.get("energy_y"), fit_y)
