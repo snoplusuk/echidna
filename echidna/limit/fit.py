@@ -391,8 +391,20 @@ class Fit(object):
         # Add signal, if required
         if self._signal:
             expected += self._signal.nd_project(self._signal_pars)
-        return self._test_statistic.compute_statistic(observed.ravel(),
-                                                      expected.ravel())
+
+        # Calculate value of test statistic
+        test_statistic = self._test_statistic.compute_statistic(
+            observed.ravel(), expected.ravel())
+
+        # Add penalty terms
+        for parameter in self._fit_config.get_pars():
+            par = self._fit_config.get_par(parameter)
+            current_value = par.get_current_value()
+            prior = par.get_prior()
+            sigma = par.get_sigma()
+            test_statistic += self._test_statistic.get_penalty_term(
+                current_value, prior, sigma)
+        return test_statistic
 
     def load_pre_made(self, spectrum, global_pars):
         """ Load pre-made convolved spectra.

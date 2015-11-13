@@ -174,6 +174,26 @@ class FitParameter(Parameter):
                              "for parameter " + self._name)
         return self._current_value
 
+    def get_prior(self):
+        """
+        Returns:
+          float: Prior value of fit parameter - stored in
+            :attr:`_prior`
+        """
+        if self._current_value is None:
+            raise ValueError("Prior value not yet set " +
+                             "for parameter " + self._name)
+        return self._prior
+
+    def get_sigma(self):
+        """
+        Returns:
+          float: Sigma of fit parameter - stored in :attr:`_sigma`
+        """
+        if self._current_value is None:
+            raise ValueError("Sigma not yet set for parameter " + self._name)
+        return self._current_value
+
     def get_best_fit(self):
         """
         Returns:

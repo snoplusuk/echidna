@@ -106,6 +106,21 @@ class TestStatistic(object):
         """
         return None
 
+    @abc.abstractmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for this test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return None
+
 
 class BakerCousinsChi(TestStatistic):
     """ Test statistic class for calculating the Baker-Cousins chi-squared test
@@ -179,6 +194,21 @@ class BakerCousinsChi(TestStatistic):
             stats.append(2.*bin_value)
         return numpy.array(stats)
 
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the BakerCousinsChi test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return ((current_value - prior)/sigma) ** 2
+
 
 class BakerCousinsLL(TestStatistic):
     """ Test statistic class for calculating the Baker-Cousins log likelihood
@@ -249,6 +279,21 @@ class BakerCousinsLL(TestStatistic):
             stats.append(bin_value)
         return numpy.array(stats)
 
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the BakerCousinsLL test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return 0.5 * ((current_value - prior)/sigma) ** 2
+
 
 class Neyman(TestStatistic):
     """ Test statistic class for calculating the Neyman chi-squared test
@@ -318,6 +363,21 @@ class Neyman(TestStatistic):
                 bin_value = (expected[i] - observed[i])**2 / observed[i]
             stats.append(bin_value)
         return numpy.array(stats)
+
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the Neyman chi squared test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return ((current_value - prior)/sigma) ** 2
 
 
 class Pearson(TestStatistic):
@@ -391,3 +451,18 @@ class Pearson(TestStatistic):
                 bin_value = (observed[i] - expected[i])**2 / expected[i]
             stats.append(bin_value)
         return numpy.array(stats)
+
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the Pearson chi squared test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return ((current_value - prior)/sigma) ** 2
