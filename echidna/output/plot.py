@@ -47,7 +47,7 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     return fig
 
 def spectral_plot(spectra_dict, dimension=0, fig_num=1,
-                  show_plot=True, **kwargs):
+                  show_plot=True, errors=None, **kwargs):
     """ Produce spectral plot.
 
     For a given signal, produce a plot showing the signal and relevant
@@ -162,21 +162,39 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1,
         log=True
     else:
         log=False
-    for value in spectra_dict.values():
+    for key, value in spectra_dict.iteritems():
         spectra = value.get("spectra")
-        ax.hist(x, bins=len(x), weights=spectra.project(dimension),
-                range=hist_range, histtype="step", label=value.get("label"),
-                color=spectra.get_style().get("color"), log=log)
+        y = spectra.project(dimension)
+        if value.get("type") is "data":
+            data = y
+            continue
+        else:
+            ax.hist(x, bins=len(x), weights=y,
+                    range=hist_range, histtype="stepfilled",
+                    label=value.get("label"), alpha=0.5,
+                    color=spectra.get_style().get("color"), log=log)
+            if errors and errors.get(key) is not None:
+                if isinstance(errors.get(key), dict):
+                    pos = errors.get(key).get("errors").get("pos")
+                    neg = errors.get(key).get("errors").get("neg")
+                    ax.fill_between(x, y + neg, y + pos,
+                                    facecolor=spectra.get_style().get("color"),
+                                    alpha=0.2, label=value.get("label"))
+                else:
+                    yerrs = errors.get("key")
+                    ax.fill_between(x, y - yerrs, y + yerrs,
+                                    facecolor=spectra.get_style().get("color"),
+                                    alpha=0.2, label=value.get("label"))
         if value.get("type") is "background":
             summed_background = summed_background + spectra.project(dimension)
         else:
             summed_total = summed_total + spectra.project(dimension)
     ax.hist(x, bins=len(x), weights=summed_background, range=hist_range,
-            histtype="step", color="DarkSlateGray", linestyle="dashed",
+            histtype="step", color="FireBrick", linestyle="dashed",
             label="Summed background", log=log)
     y = summed_background
     yerr = numpy.sqrt(y)
-    ax.fill_between(x, y-yerr, y+yerr, facecolor="DarkSlateGray", alpha=0.5,
+    ax.fill_between(x, y-yerr, y+yerr, facecolor="FireBrick", alpha=0.5,
                     label="Summed background, standard error")
     summed_total = summed_total + summed_background
     ax.hist(x, bins=len(x), weights=summed_total, range=hist_range,
@@ -187,8 +205,12 @@ def spectral_plot(spectra_dict, dimension=0, fig_num=1,
     if kwargs.get("limit") is not None:
         limit = kwargs.get("limit")
         ax.hist(x, bins=len(x), weights=limit.project(dimension),
-                range=hist_range, histtype="step", color="LightGrey",
-                label="KamLAND-Zen limit", log=log)
+                range=hist_range, histtype="stepfilled", color="LightGrey",
+                alpha=0.5, label="KamLAND-Zen limit", log=log)
+
+    # Plot data
+    if data is not None:
+        ax.plot(x, data, "b+", label="data")
 
     # Shrink current axis by 20%
     box = ax.get_position()

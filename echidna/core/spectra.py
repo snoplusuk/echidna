@@ -224,8 +224,8 @@ class Spectra(object):
         energy_low_bin = 0
         energy_high_bin = self._energy_bins
         if(energy_low is not None and energy_high is not None):
-            energy_low_bin = (energy_low - self._energy_low) / self._energy_width
-            energy_high_bin = (energy_high - self._energy_low) / self._energy_width
+            energy_low_bin = numpy.rint((energy_low - self._energy_low) / self._energy_width)
+            energy_high_bin = numpy.rint((energy_high - self._energy_low) / self._energy_width)
             self._energy_low = energy_low
             self._energy_high = energy_high
             self._energy_bins = int(energy_high_bin - energy_low_bin)
@@ -233,8 +233,8 @@ class Spectra(object):
         radial_low_bin = 0
         radial_high_bin = self._radial_bins
         if(radial_low is not None and radial_high is not None):
-            radial_low_bin = (radial_low - self._radial_low) / self._radial_width
-            radial_high_bin = (radial_high - self._radial_low) / self._radial_width
+            radial_low_bin = numpy.rint((radial_low - self._radial_low) / self._radial_width)
+            radial_high_bin = numpy.rint((radial_high - self._radial_low) / self._radial_width)
             self._radial_low = radial_low
             self._radial_high = radial_high
             self._radial_bins = int(radial_high_bin - radial_low_bin)
@@ -242,8 +242,8 @@ class Spectra(object):
         time_low_bin = 0
         time_high_bin = self._time_bins
         if(time_low is not None and time_high is not None):
-            time_low_bin = (time_low - self._time_low) / self._time_width
-            time_high_bin = (time_high - self._time_low) / self._time_width
+            time_low_bin = numpy.rint((time_low - self._time_low) / self._time_width)
+            time_high_bin = numpy.rint((time_high - self._time_low) / self._time_width)
             self._time_low = time_low
             self._time_high = time_high
             self._time_bins = int(time_high_bin - time_low_bin)

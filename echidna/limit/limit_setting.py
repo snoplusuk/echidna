@@ -1,10 +1,11 @@
 import numpy
+import matplotlib.pyplot as plt
 
 import echidna
 from echidna.errors.custom_errors import CompatibilityError
 import echidna.utilities as utilities
-import echidna.output.plot_root as plot
-import echidna.core.spectra as spectra
+import echidna.output.plot as plot
+#import echidna.core.spectra as spectra
 
 
 class SystAnalyser(object):
@@ -269,6 +270,9 @@ class LimitSetting(object):
                 if self._floating_backgrounds:
                     for background in self._floating_backgrounds:
                         background.shrink_to_roi(energy_low, energy_high, 0)
+                if self._data:
+                    self._data.shrink_to_roi(energy_low, energy_high, 0)
+
         else:
             self._roi = None
         if kwargs.get("verbose"):
@@ -425,25 +429,24 @@ class LimitSetting(object):
             no bin to be found, raising IndexError.
         """
         if self._floating_backgrounds is None:
-            return self.get_limit_no_float(limit_chi_squared)
+            return self.get_limit_no_float(limit_chi_squared, **kwargs)
         if self._signal_config is None:
             raise TypeError("signal configuration not set")
         if (len(self._background_configs) != len(self._floating_backgrounds)):
             raise KeyError("missing configuration for one or more backgrounds")
         if self._calculator is None:
             raise TypeError("chi squared calculator not set")
-        if self._data is None:
-            observed = numpy.zeros(shape=[self._signal._energy_bins],
-                                   dtype=float)
-            if self._fixed_background:
-                observed += self._fixed_background.project(0)
-            for background in self._floating_backgrounds:
+        expected = numpy.zeros(shape=[self._signal._energy_bins], dtype=float)
+        if self._fixed_background:
+                expected += self._fixed_background.project(0)
+        for background in self._floating_backgrounds:
                 config = self._background_configs.get(background._name)
                 background.scale(config._prior_count)
-                observed += background.project(0)
-            self._observed = observed
+                expected += background.project(0)
+        if self._data is None:
+            self._observed = expected
         else:  # _data is not None
-            self._observed = self._data
+            self._observed = self._data.project(0)
 
         # Set-up debug output
         if kwargs.get("debug") == 1:
@@ -453,22 +456,28 @@ class LimitSetting(object):
             debug_pdf = PdfPages(path + filename)
             print "DEBUG: Writing debug file to " + path + filename
         self._signal_config.reset_chi_squareds()
+
+        chi_zero = self._calculator.get_chi_squared(self._observed, expected)
+        print chi_zero
+
         fig_num = 0
         for signal_count in self._signal_config.get_count():
             for syst_analyser in self._syst_analysers.values():
                 syst_analyser._layer = 1  # reset layers
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
-                self._signal_config.add_chi_squared(
-                    self._get_chi_squared(self._floating_backgrounds,
-                                          len(self._floating_backgrounds)),
-                    signal_count, self._signal.sum())
+                chi_squared = self._get_chi_squared(
+                    self._floating_backgrounds, len(self._floating_backgrounds))
+                chi_squared -= chi_zero
+                self._signal_config.add_chi_squared(chi_squared, signal_count,
+                                                    self._signal.sum())
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
 
             if kwargs.get("debug") == 1:
                 spectra = {}
+                errors = {}
                 for background in self._floating_backgrounds:
                     config = self._background_configs.get(background._name)
                     try:
@@ -480,16 +489,30 @@ class LimitSetting(object):
                                                  "style": background._style,
                                                  "type": "background",
                                                  "label": background._name}
+                spectra["fixed_background"] = {"spectra": self._fixed_background,
+                                               "style": {"color": "DarkSlateGray"},
+                                               "type": "fixed",
+                                               "label": "fixed background"}
                 spectra[self._signal._name] = {"spectra": self._signal,
                                                "style": self._signal._style,
                                                "type": "signal",
                                                "label": self._signal._name}
-                current_chi_squared = numpy.sum(self._calculator.get_chi_squared_per_bin())
-                plot_text = ["$\chi^2$ = %.2g" % current_chi_squared]
+                pos_err = utilities.get_array_errors(self._signal.project(0),
+                                                     log10=True)
+                neg_err = utilities.get_array_errors(self._signal.project(0),
+                                                     lin_err=-0.01, log10=True)
+                errors[self._signal._name] = {"errors": {"pos": pos_err,
+                                                         "neg": neg_err},
+                                              "style": self._signal._style,
+                                              "label": self._signal._name+" errors"}
+                if self._data:
+                    spectra["data"] = {"spectra": self._data,
+                                       "type": "data", "label": "Data"}
+                plot_text = ["$\chi^2$ = %.2g" % chi_squared]
                 plot_text.append("Livetime = %.1f years" % self._signal._time_high)
                 title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
-                spectral_plot = plot.spectral_plot(spectra, 0, fig_num,
-                                                   show_plot=False,
+                spectral_plot = plot.spectral_plot(spectra, 0, fig_num, False,
+                                                   errors=errors,
                                                    per_bin=self._calculator,
                                                    title=title,
                                                    text=plot_text,
@@ -512,7 +535,7 @@ class LimitSetting(object):
             raise IndexError("unable to calculate confidence limit - " +
                              str(detail))
 
-    def get_limit_no_float(self, limit_chi_squared=2.71):
+    def get_limit_no_float(self, limit_chi_squared=2.71, **kwargs):
         """ Get signal counts at limit.
 
         Args:
@@ -541,23 +564,93 @@ class LimitSetting(object):
             raise TypeError("signal configuration not set")
         if self._calculator is None:
             raise TypeError("chi squared calculator not set")
+        self._expected = self._fixed_background.project(0)
         if self._data is None:
-            self._observed = self._fixed_background.project(0)
+            self._observed = self._expected
         else:
-            self._observed = self._data
+            self._observed = self._data.project(0)
+        # Set-up debug output
+        if kwargs.get("debug") == 1:
+            from matplotlib.backends.backend_pdf import PdfPages
+            path = echidna.__echidna_base__ + "/debug/"
+            filename = self._signal._name + "_debug.pdf"
+            debug_pdf = PdfPages(path + filename)
+            print "DEBUG: Writing debug file to " + path + filename
+
         self._signal_config.reset_chi_squareds()
+        chi_zero = self._calculator.get_chi_squared(self._observed,
+                                                    self._expected)
+        per_bin0 = self._calculator.get_chi_squared_per_bin()
+        per_bin0 = numpy.multiply(per_bin0, 0.5)
+        fig_num = 0
         for signal_count in self._signal_config.get_count():
             with utilities.Timer() as t:  # set timer
                 self._signal.scale(signal_count)
-                expected = self._observed + self._signal.project(0)
-                self._signal_config.add_chi_squared(
-                    self._calculator.get_chi_squared(self._observed, expected),
-                    signal_count, self._signal.sum())
+                expected = self._expected + self._signal.project(0)
+
+                fig1 = plt.figure()
+                x = numpy.arange(self._signal._energy_low,
+                                 self._signal._energy_high,
+                                 self._signal._energy_width)
+                y1 = self._observed
+                y2 = expected
+                plt.plot(x, y1, "b+", label="data")
+                plt.hist(x, bins=len(x)-1, weights=y2, histtype="step", color= "black")
+                plt.legend()
+                debug_pdf.savefig(fig1)
+                fig1.clear()
+
+                chi_squared = self._calculator.get_chi_squared(self._observed,
+                                                               expected,
+                                                               chi_zeros=per_bin0)
+                self._signal_config.add_chi_squared(chi_squared, signal_count,
+                                                    self._signal.sum())
             if self._verbose:
                 print ("Calculations for %.4f signal counts took %.03f "
                        "seconds." % (signal_count, t._interval))
+            if kwargs.get("debug") == 1:
+                spectra = {}
+                errors = {}
+                spectra["fixed_background"] = {"spectra": self._fixed_background,
+                                               "style": {"color": "DarkSlateGray"},
+                                               "type": "background",
+                                               "label": "fixed background"}
+                spectra[self._signal._name] = {"spectra": self._signal,
+                                               "style": self._signal._style,
+                                               "type": "signal",
+                                               "label": self._signal._name}
+                pos_err = utilities.get_array_errors(self._signal.project(0),
+                                                     log10=True)
+                neg_err = utilities.get_array_errors(self._signal.project(0),
+                                                     lin_err=-0.01, log10=True)
+                errors[self._signal._name] = {"errors": {"pos": pos_err,
+                                                         "neg": neg_err},
+                                              "style": self._signal._style,
+                                              "label": self._signal._name+" errors"}
+                if self._data:
+                    spectra["data"] = {"spectra": self._data,
+                                       "type": "data", "label": "Data"}
+                current_chi_squared = self._signal_config.get_chi_squareds()[0][-1]
+                plot_text = ["$\chi^2$ = %.2g" % chi_squared]
+                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
+                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
+                spectral_plot = plot.spectral_plot(spectra, 0, fig_num, False,
+                                                   errors=errors,
+                                                   per_bin=self._calculator,
+                                                   title=title,
+                                                   text=plot_text,
+                                                   log_y=True,
+                                                   limit=self._target.get("spectrum"))
+                debug_pdf.savefig(spectral_plot)
+                spectral_plot.clear()
+                #fig_num += 1
+        if kwargs.get("debug") == 1:
+            debug_pdf.close()
         try:
-            return self._signal_config.get_first_bin_above(limit_chi_squared)
+            if self._signal_config.get_counts_down():  # Use get_last_bin_above
+                return self._signal_config.get_last_bin_above(limit_chi_squared)
+            else:
+                return self._signal_config.get_first_bin_above(limit_chi_squared)
         except IndexError as detail:
             raise IndexError("unable to calculate confidence limit - " +
                              str(detail))

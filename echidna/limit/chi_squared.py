@@ -71,7 +71,7 @@ class ChiSquared(object):
         """
         return self._chi_squared_per_bin
 
-    def get_chi_squared(self, observed, expected, **kwargs):
+    def get_chi_squared(self, observed, expected, chi_zeros=None, **kwargs):
         """ Calculate the chi squared comparing observed to expected.
 
         Args:
@@ -121,7 +121,8 @@ class ChiSquared(object):
         elif (self._form == "neyman"):
             chi_squared = neyman_chi_squared(observed, expected)
         else:  # (self._form == "poisson_likelihood")
-            ll, ll_per_bin = log_likelihood(observed, expected, per_bin=True)
+            ll, ll_per_bin = log_likelihood(observed, expected,
+                                            per_bin=True, chi_zeros=chi_zeros)
             self._chi_squared_per_bin = 2.0 * ll_per_bin
             chi_squared = 2.0 * ll
 
@@ -205,7 +206,7 @@ def neyman_chi_squared(observed, expected):
     return total
 
 
-def log_likelihood(observed, expected, per_bin=False):
+def log_likelihood(observed, expected, per_bin=False, chi_zeros=None):
     """ Calculates the (Baker-Cousins) log likelihood.
 
     .. note::
@@ -234,6 +235,8 @@ def log_likelihood(observed, expected, per_bin=False):
     """
     # Create chi-squared per bin array
     ll_per_bin = numpy.zeros((0))
+    if chi_zeros is None:
+        chi_zeros = numpy.zeros(shape=len(observed))
     if len(observed) != len(expected):
         raise ValueError("Arrays are different lengths")
     # Chosen due to backgrounds with low rates in ROI
@@ -246,6 +249,8 @@ def log_likelihood(observed, expected, per_bin=False):
             ll = expected[i]
         else:
             ll = expected[i]-observed[i]+observed[i]*numpy.log(observed[i]/expected[i])
+        # Subtract chi-zero
+        ll -= chi_zeros[i]
         total += ll
         ll_per_bin = numpy.append(ll_per_bin, [ll], axis=0)
     if per_bin:
