@@ -260,7 +260,9 @@ class FitParameter(Parameter):
             raise ValueError("Current value of fit parameter %s "
                              "has not been set" % self._name)
         directory += "_%s/" % self._name
-        filename += ("_%.6f" % self._current_value)
+        value_string = "%f" % self._current_value
+        # Strip leading/trailling zeros in filename
+        filename += ("_%s" % value_string.strip("0"))
         return directory, filename
 
     @abc.abstractmethod
