@@ -12,15 +12,27 @@ class Parameter(object):
 
     Args:
       type_name (string): The type of the parameter.
+      name (str): The name of this parameter
+      low (float): The lower limit to float the parameter from
+      high (float): The higher limit to float the parameter from
+      bins (int): The number of steps between low and high values
 
     Attributes:
       _type (string): The type of the parameter.
+      _name (str): The name of this parameter
+      _low (float): The lower limit to float the parameter from
+      _high (float): The higher limit to float the parameter from
+      _bins (int): The number of steps between low and high values
     """
 
-    def __init__(self, type_name):
+    def __init__(self, type_name, name, low, high, bins):
         """ Initialise config class
         """
         self._type = type_name
+        self._name = name
+        self._low = float(low)
+        self._high = float(high)
+        self._bins = int(bins)
 
     def get_width(self):
         """Get the width of the binning for the parameter
@@ -44,12 +56,8 @@ class FitParameter(Parameter):
       bins (int): The number of steps between low and high values
 
     Attributes:
-      _name (str): The name of this parameter
       _prior (float): The prior of the parameter
       _sigma (float): The sigma of the parameter
-      _low (float): The lower limit to float the parameter from
-      _high (float): The higher limit to float the parameter from
-      _bins (int): The number of steps between low and high values
       _values (:class:`numpy.array`): Array of parameter values to
         test in fit.
       _best_fit (float): Best-fit value calculated by fit.
@@ -60,13 +68,9 @@ class FitParameter(Parameter):
     def __init__(self, name, prior, sigma, low, high, bins):
         """Initialise FitParameter class
         """
-        super(FitParameter, self).__init__("fit")
-        self._name = name
+        super(FitParameter, self).__init__("fit", name, low, high, bins)
         self._prior = float(prior)
         self._sigma = float(sigma)
-        self._low = float(low)
-        self._high = float(high)
-        self._bins = int(bins)
         self._values = None  # Initially
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
@@ -290,19 +294,6 @@ class RateParameter(FitParameter):
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
       bins (int): The number of steps between low and high values
-
-    Attributes:
-      _name (str): The name of this parameter
-      _prior (float): The prior of the parameter
-      _sigma (float): The sigma of the parameter
-      _low (float): The lower limit to float the parameter from
-      _high (float): The higher limit to float the parameter from
-      _bins (int): The number of steps between low and high values
-      _values (:class:`numpy.array`): Array of parameter values to
-        test in fit.
-      _best_fit (float): Best-fit value calculated by fit.
-      _spectra_specific (bool): Flag to show parameter applies to only
-        a specific :class:`Spectra` instance.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
@@ -340,19 +331,6 @@ class ResolutionParameter(FitParameter):
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
       bins (int): The number of steps between low and high values
-
-    Attributes:
-      _name (str): The name of this parameter
-      _prior (float): The prior of the parameter
-      _sigma (float): The sigma of the parameter
-      _low (float): The lower limit to float the parameter from
-      _high (float): The higher limit to float the parameter from
-      _bins (int): The number of steps between low and high values
-      _values (:class:`numpy.array`): Array of parameter values to
-        test in fit.
-      _best_fit (float): Best-fit value calculated by fit.
-      _spectra_specific (bool): Flag to show parameter applies to only
-        a specific :class:`Spectra` instance.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
@@ -376,30 +354,6 @@ class ResolutionParameter(FitParameter):
                              "has not been set" % self._name)
         NotImplementedError("ResolutionParameter.apply_to not yet implemented")
 
-    def get_pre_convolved_name(self, name):
-        """ Returns name for pre-made version of spectrum.
-
-        .. note:: Returns a name of the form
-          ``TeLoaded_Te130_0n2b_lyXX`` where ``TeLoaded_Te130_0n2b``
-          is the original name of the spectrum and ``XX`` is the
-          current value of this parameter.
-
-        Args:
-          name (string): Original name of :class:`Spectra` object.
-
-        Returns:
-          string: Name of :class:`Spectra` object, correctly appended
-            with current resolution value.
-
-        Raises:
-          ValueError: If :attr:`_current_value` is not set.
-        """
-        if self._current_value is None:
-            raise ValueError("Current value of resolution parameter %s "
-                             "has not been set" % self._name)
-        name = name + ("_ly%.2f" % self._current_value)
-        return name
-
 
 class ScaleParameter(FitParameter):
     """ Data container that holds information for a scale parameter
@@ -412,19 +366,6 @@ class ScaleParameter(FitParameter):
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
       bins (int): The number of steps between low and high values
-
-    Attributes:
-      _name (str): The name of this parameter
-      _prior (float): The prior of the parameter
-      _sigma (float): The sigma of the parameter
-      _low (float): The lower limit to float the parameter from
-      _high (float): The higher limit to float the parameter from
-      _bins (int): The number of steps between low and high values
-      _values (:class:`numpy.array`): Array of parameter values to
-        test in fit.
-      _best_fit (float): Best-fit value calculated by fit.
-      _spectra_specific (bool): Flag to show parameter applies to only
-        a specific :class:`Spectra` instance.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
@@ -448,30 +389,6 @@ class ScaleParameter(FitParameter):
                              "has not been set" % self._name)
         NotImplementedError("ScaleParameter.apply_to not yet implemented")
 
-    def get_pre_convolved_name(self, name):
-        """ Returns name for pre-made version of spectrum.
-
-        .. note:: Returns a name of the form
-          ``TeLoaded_Te130_0n2b_sfXX`` where ``TeLoaded_Te130_0n2b``
-          is the original name of the spectrum and ``XX`` is the
-          current value of this parameter.
-
-        Args:
-          name (string): Original name of :class:`Spectra` object.
-
-        Returns:
-          string: Name of :class:`Spectra` object, correctly appended
-            with current scale value.
-
-        Raises:
-          ValueError: If :attr:`_current_value` is not set.
-        """
-        if self._current_value is None:
-            raise ValueError("Current value of scale parameter %s "
-                             "has not been set" % self._name)
-        name = name + ("_sf%.2f" % self._current_value)
-        return name
-
 
 class ShiftParameter(FitParameter):
     """ Data container that holds information for a shift parameter
@@ -484,19 +401,6 @@ class ShiftParameter(FitParameter):
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
       bins (int): The number of steps between low and high values
-
-    Attributes:
-      _name (str): The name of this parameter
-      _prior (float): The prior of the parameter
-      _sigma (float): The sigma of the parameter
-      _low (float): The lower limit to float the parameter from
-      _high (float): The higher limit to float the parameter from
-      _bins (int): The number of steps between low and high values
-      _values (:class:`numpy.array`): Array of parameter values to
-        test in fit.
-      _best_fit (float): Best-fit value calculated by fit.
-      _spectra_specific (bool): Flag to show parameter applies to only
-        a specific :class:`Spectra` instance.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins):
@@ -520,30 +424,6 @@ class ShiftParameter(FitParameter):
                              "has not been set" % self._name)
         NotImplementedError("ShiftParameter.apply_to not yet implemented")
 
-    def get_pre_convolved_name(self, name):
-        """ Returns name for pre-made version of spectrum.
-
-        .. note:: Returns a name of the form
-          ``TeLoaded_Te130_0n2b_shiftXX`` where ``TeLoaded_Te130_0n2b``
-          is the original name of the spectrum and ``XX`` is the
-          current value of this parameter.
-
-        Args:
-          name (string): Original name of :class:`Spectra` object.
-
-        Returns:
-          string: Name of :class:`Spectra` object, correctly appended
-            with current scale value.
-
-        Raises:
-          ValueError: If :attr:`_current_value` is not set.
-        """
-        if self._current_value is None:
-            raise ValueError("Current value of scale parameter %s "
-                             "has not been set" % self._name)
-        name = name + ("_sf%.2f" % self._current_value)
-        return name
-
 
 class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
@@ -554,23 +434,13 @@ class SpectraParameter(Parameter):
       low (float): The lower limit of this parameter
       high (float): The upper limit of this parameter
       bins (int): The number of bins for this parameter
-
-    Attributes:
-      _name (str): The name of this parameter
-      _low (float): The lower limit of this parameter
-      _high (float): The upper limit of this parameter
-      _bins (int): The number of bins for this parameter
-      _dimension (int): The position in the data array for this parameter.
     """
 
     def __init__(self, name, low, high, bins):
         """Initialise SpectraParameter class
         """
-        super(SpectraParameter, self).__init__("spectra")
-        self._name = name
-        self._high = high
-        self._low = low
-        self._bins = bins
+        super(SpectraParameter, self).__init__("spectra", name, low, high,
+                                               bins)
 
     def set_par(self, **kwargs):
         """Set a limit / binning parameter after initialisation.
@@ -612,11 +482,6 @@ class SpectraParameter(Parameter):
             return "MeV"
         if self._name.split('_')[0] == "radial":
             return "mm"
-        if self._name.split('_')[0] == "time":
-            return "years"
-        else:
-            raise Exception("%s is an unknown parameter"
-                            % self._name.split('_')[0])
 
     def round(self, x):
         """ Round the value to nearest bin edge
@@ -692,12 +557,23 @@ class Config(object):
 
     Attributes:
       _name (string): The name of the config type.
+      _parameters (:class:`collections.OrderedDict`): Dictionary of parameters.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, parameters):
         """ Initialise config class
         """
         self._name = name
+        self._parameters = parameters
+
+    def add_par(self, par):
+        """ Add parameter to the config.
+
+        Args:
+          par (:class:`echidna.core.spectra.Parameter`): The parameter you want
+            to add.
+        """
+        self._parameters[par._name] = par
 
     def get_name(self):
         """
@@ -737,7 +613,7 @@ class Config(object):
         Returns:
           list: List of parameter names
         """
-        return sorted(self._parameters.keys())
+        return self._parameters.keys()
 
     def get_index(self, parameter):
         """Return the index of a parameter within the existing set
@@ -757,7 +633,7 @@ class Config(object):
         raise IndexError("Unknown parameter %s" % parameter)
 
 
-class FitConfig(Config):
+class GlobalFitConfig(Config):
     """Configuration container for floating systematics and fitting Spectra
       objects.  Able to load directly with a set list of FitParameters or
       from yaml configuration files.
@@ -765,17 +641,128 @@ class FitConfig(Config):
     Args:
       parameters (:class:`collections.OrderedDict`): List of
         FitParameter objects
+    """
 
-    Attributes:
-      _parameters (:class:`collections.OrderedDict`): List of
+    def __init__(self, parameters):
+        """Initialise FitConfig class
+        """
+        super(GlobalFitConfig, self).__init__("global_fit", parameters)
+
+    def add_par(self, par, par_type):
+        """ Add parameter to the global fit config.
+
+        Args:
+          par (:class:`echidna.core.spectra.FitParameter`): Parameter you want
+            to add.
+          par_type (string): The type of parameter (global or spectra).
+        """
+        if par_type != 'global' or par_type != 'spectra':
+            raise IndexError("%s is an invalid par_type. Must be 'global' or "
+                             "'spectra'." % par_type)
+        self._parameters[par._name] = {'par': par, 'type': par_type}
+
+    def get_par(self, name):
+        """ Get requested parameter:
+
+        Args:
+          name (string): Name of the parameter
+
+        Returns:
+          :class:`echidna.core.spectra.FitParameter`: The requested parameter.
+        """
+        return self._parameters[name]['par']
+
+    def get_global_pars(self):
+        """ Gets the parameters which are applied to all spectra
+          simultaneously.
+
+        Returns:
+          list: Of :class:`echidna.core.spectra.FitParameter` objects.
+        """
+        pars = []
+        for name in self._parameters:
+            if self._parameters[name]['type'] == 'global':
+                pars.append(self._parameters[name]['par'])
+        return pars
+
+    def get_spectra_pars(self):
+        """ Gets the parameters that are applied to individual spectra.
+
+        Returns:
+          list: Of :class:`echidna.core.spectra.FitParameter` objects.
+        """
+        pars = []
+        for name in self._parameters:
+            if self._parameters[name]['type'] == 'spectra':
+                pars.append(self._parameters[name]['par'])
+        return pars
+
+    @classmethod
+    def load_from_file(cls, filename):
+        """Initialise GlobalFitConfig class from a config file (classmethod).
+
+        Args:
+          filename (str): path to config file
+
+        Returns:
+          (:class:`echidna.core.spectra.GlobalFitConfig`): A config object
+            containing the parameters in the file called filename.
+        """
+        config = yaml.load(open(filename, 'r'))
+        parameters = collections.OrderedDict()
+        for dim in config['parameters']:
+            for syst in config['parameters'][dim]:
+                name = dim + "_" + syst
+                if syst == 'resolution' or syst == 'resolution_ly':
+                        parameters[name] = {'par': ResolutionParameter(
+                                name,
+                                config['parameters'][dim][syst]['prior'],
+                                config['parameters'][dim][syst]['sigma'],
+                                config['parameters'][dim][syst]['low'],
+                                config['parameters'][dim][syst]['high'],
+                                config['parameters'][dim][syst]['bins'],
+                                ),
+                                            'type': 'global'}
+                if syst == 'shift':
+                        parameters[name] = {'par': ShiftParameter(
+                                name,
+                                config['parameters'][dim][syst]['prior'],
+                                config['parameters'][dim][syst]['sigma'],
+                                config['parameters'][dim][syst]['low'],
+                                config['parameters'][dim][syst]['high'],
+                                config['parameters'][dim][syst]['bins'],
+                                ),
+                                            'type': 'global'}
+                if syst == 'scale':
+                        parameters[name] = {'par': ScaleParameter(
+                                name,
+                                config['parameters'][dim][syst]['prior'],
+                                config['parameters'][dim][syst]['sigma'],
+                                config['parameters'][dim][syst]['low'],
+                                config['parameters'][dim][syst]['high'],
+                                config['parameters'][dim][syst]['bins'],
+                                ),
+                                            'type': 'global'}
+                else:
+                    raise IndexError("%s is not a global fit systematic."
+                                     % syst)
+        return cls(parameters)
+
+
+class SpectraFitConfig(Config):
+    """Configuration container for floating systematics and fitting Spectra
+      objects.  Able to load directly with a set list of FitParameters or
+      from yaml configuration files.
+
+    Args:
+      parameters (:class:`collections.OrderedDict`): List of
         FitParameter objects
     """
 
     def __init__(self, parameters):
         """Initialise FitConfig class
         """
-        super(FitConfig, self).__init__("fit")
-        self._parameters = parameters
+        super(FitConfig, self).__init__("spectra_fit")
 
     @classmethod
     def load_from_file(cls, filename):
@@ -790,43 +777,17 @@ class FitConfig(Config):
         """
         config = yaml.load(open(filename, 'r'))
         parameters = collections.OrderedDict()
-        for v in config['systematics']:
-            if v == 'rate':
-                parameters[v] = FitParameter(
-                    v, config['systematics'][v]['prior'],
-                    config['systematics'][v]['sigma'],
-                    config['systematics'][v]['low'],
-                    config['systematics'][v]['high'],
-                    config['systematics'][v]['bins'])
-            elif v == 'parameters':
-                for dim in config['systematics'][v]:
-                    for syst in config['systematics'][v][dim]:
-                        name = dim + "_" + syst
-                        parameters[name] = FitParameter(
-                            name, config['systematics'][v][dim][syst]['prior'],
-                            config['systematics'][v][dim][syst]['sigma'],
-                            config['systematics'][v][dim][syst]['low'],
-                            config['systematics'][v][dim][syst]['high'],
-                            config['systematics'][v][dim][syst]['bins'],
-                            )
+        for syst in config['parameters']:
+            if syst == 'rate':
+                parameters[syst] = RateParameter(
+                    syst, config['parameters'][syst]['prior'],
+                    config['parameters'][syst]['sigma'],
+                    config['parameters'][syst]['low'],
+                    config['parameters'][syst]['high'],
+                    config['parameters'][syst]['bins'])
             else:
-                raise IndexError("Unknown subsection in config %s" % v)
+                raise IndexError("Unknown systematic in config %s" % v)
         return cls(parameters)
-
-    def get_global_pars(self):
-        """ Generates a list of only global fit parameters.
-
-        Returns:
-          list: List of fit parameters where the attribute
-            :attr:`echidna.core.spectra.FitParameter._spectra_specific`
-            is ``False``.
-        """
-        pars = []
-        for parameter in self.get_pars():
-            par = self.get_par(parameter)
-            if not par._spectra_specific:
-                pars.append(parameter)
-        return pars
 
 
 class SpectraConfig(Config):
