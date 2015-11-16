@@ -59,7 +59,7 @@ class Fit(object):
     def __init__(self, roi, test_statistic, fit_config, data=None,
                  fixed_background=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
-                 use_pre_made=True, pre_made_dir=None):
+                 use_pre_made=True, pre_made_base_dir=None):
         self._checked = False
         self.set_roi(roi)
         self._test_statistic = test_statistic
@@ -99,7 +99,7 @@ class Fit(object):
             fit_results = FitResults(fit_config, fit_config.get_name())
         self._fit_results = fit_results  # Still None for GridSearch
         self._use_pre_made = use_pre_made
-        self._pre_made_dir = pre_made_dir
+        self._pre_made_base_dir = pre_made_base_dir
 
     def append_fixed_background(self, spectra_dict, shrink=True):
         ''' Appends the fixed background with more spectra.
@@ -425,23 +425,20 @@ class Fit(object):
             spectrum, ready for applying further systematics or fitting.
         """
         # Locate spectrum to load from HDF5
-        # Directory should be set beforehand
-        if self._pre_made_dir is None:
+        # Base directory should be set beforehand
+        if self._pre_made_base_dir is None:
             raise AttributeError("Pre-made directory is not set.")
 
         # Start with base spectrum name
         filename = spectrum.get_name()
+        directory = self._pre_made_base_dir
+
         # Add current value of each global parameter
         for parameter in global_pars:
             par = self._fit_config.get_par(parameter)
-            filename = par.get_pre_convolved_name(filename)
-        filename += ".hdf5"  # Convert to hdf5 filename
-
+            directory, filename = par.get_pre_convolved(directory, filename)
         # Load spectrum from hdf5
-        spectrum = store.load(self._pre_made_dir + filename)
-
-        # Apply correct ROI cuts
-        spectrum.shrink(self._floating_pars)
+        spectrum = store.load(directory + filename + ".hdf5")
 
         return spectrum
 

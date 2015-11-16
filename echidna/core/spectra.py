@@ -209,6 +209,56 @@ class FitParameter(Parameter):
                              self._name + " has not been set")
         return self._best_fit
 
+    def get_pre_convolved(self, directory, filename):
+        """ Appends the name and current value of a the :class:`FitParameter`
+
+        .. note:: Before any calls to this function, the base directory
+          should be of the form::
+
+              ../hyphen-separated-dimensions/spectrum_name/
+
+          and a base filename of the form ``spectrum_name``.
+
+        .. note:: Each call to this method, then appends the name of
+          the :class:`FitParamter` to the ``directory`` and its current
+          value to the ``filename``. So for three :class:`FitParameters``,
+          after three calls to this method, the directory should be e.g.::
+
+              ../energy_mc-radial3_mc/Te130_0n2b/syst1/syst2/syst3/
+
+          and the filename might be::
+
+              Te130_0n2b_250.0_0.012_1.07
+
+        .. note:: To construct the full path to pass to
+          :funct:`echidna.output.store.load`, the ``directory`` and
+          ``filename`` returned by the last call to this method,
+          should be added together, and appended with ``".hdf5"``.
+
+              path = director + filename + ".hdf5"
+
+        Args:
+          directory (string): Current or base directory containing
+            pre-convolved :class:`Spectra` object
+          name (string): Current or base name of :class:`Spectra`
+            object
+
+        Returns:
+          string: Directory containing pre-convolved :class:`Spectra`,
+            appended with name of this :class:`FitParameter`
+          string: Name of pre-convolved :class:`Spectra`, appended with
+            current value of this :class:`FitParameter`
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of fit parameter %s "
+                             "has not been set" % self._name)
+        directory += "_%s/" % self._name
+        filename += ("_%.6f" % self._current_value)
+        return directory, filename
+
     @abc.abstractmethod
     def apply_to(self, spectrum):
         """ Applies current value of fit parameter to spectrum.
