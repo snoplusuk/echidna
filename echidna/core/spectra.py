@@ -646,7 +646,7 @@ class GlobalFitConfig(Config):
     """
 
     def __init__(self, parameters):
-        """Initialise FitConfig class
+        """Initialise GlobalFitConfig class
         """
         super(GlobalFitConfig, self).__init__("global_fit", parameters)
 
@@ -715,36 +715,26 @@ class GlobalFitConfig(Config):
         for dim in config['parameters']:
             for syst in config['parameters'][dim]:
                 name = dim + "_" + syst
+                prior = config['parameters'][dim][syst]['prior'],
+                sigma = config['parameters'][dim][syst]['sigma'],
+                low = config['parameters'][dim][syst]['low'],
+                high = config['parameters'][dim][syst]['high'],
+                bins = config['parameters'][dim][syst]['bins'],
                 if syst == 'resolution' or syst == 'resolution_ly':
-                        parameters[name] = {'par': ResolutionParameter(
-                                name,
-                                config['parameters'][dim][syst]['prior'],
-                                config['parameters'][dim][syst]['sigma'],
-                                config['parameters'][dim][syst]['low'],
-                                config['parameters'][dim][syst]['high'],
-                                config['parameters'][dim][syst]['bins'],
-                                ),
-                                            'type': 'global'}
+                    parameters[name] = {'par': ResolutionParameter(name, prior,
+                                                                   sigma, low,
+                                                                   high, bins),
+                                        'type': 'global'}
                 if syst == 'shift':
-                        parameters[name] = {'par': ShiftParameter(
-                                name,
-                                config['parameters'][dim][syst]['prior'],
-                                config['parameters'][dim][syst]['sigma'],
-                                config['parameters'][dim][syst]['low'],
-                                config['parameters'][dim][syst]['high'],
-                                config['parameters'][dim][syst]['bins'],
-                                ),
-                                            'type': 'global'}
+                    parameters[name] = {'par': ShiftParameter(name, prior,
+                                                              sigma, low,
+                                                              high, bins),
+                                        'type': 'global'}
                 if syst == 'scale':
-                        parameters[name] = {'par': ScaleParameter(
-                                name,
-                                config['parameters'][dim][syst]['prior'],
-                                config['parameters'][dim][syst]['sigma'],
-                                config['parameters'][dim][syst]['low'],
-                                config['parameters'][dim][syst]['high'],
-                                config['parameters'][dim][syst]['bins'],
-                                ),
-                                            'type': 'global'}
+                    parameters[name] = {'par': ScaleParameter(name, prior,
+                                                              sigma, low,
+                                                              high, bins),
+                                        'type': 'global'}
                 else:
                     raise IndexError("%s is not a global fit systematic."
                                      % syst)
@@ -762,19 +752,19 @@ class SpectraFitConfig(Config):
     """
 
     def __init__(self, parameters):
-        """Initialise FitConfig class
+        """Initialise SpectraFitConfig class
         """
-        super(FitConfig, self).__init__("spectra_fit")
+        super(SpectraFitConfig, self).__init__("spectra_fit")
 
     @classmethod
     def load_from_file(cls, filename):
-        """Initialise FitConfig class from a config file (classmethod).
+        """Initialise SpectraFitConfig class from a config file (classmethod).
 
         Args:
           filename (str): path to config file
 
         Returns:
-          (:class:`echidna.core.spectra.FitConfig`): A config object
+          (:class:`echidna.core.spectra.SpectraFitConfig`): A config object
             containing the parameters in the file called filename.
         """
         config = yaml.load(open(filename, 'r'))
@@ -788,7 +778,7 @@ class SpectraFitConfig(Config):
                     config['parameters'][syst]['high'],
                     config['parameters'][syst]['bins'])
             else:
-                raise IndexError("Unknown systematic in config %s" % v)
+                raise IndexError("Unknown systematic in config %s" % syst)
         return cls(parameters)
 
 
@@ -959,10 +949,10 @@ class Spectra(object):
         """ Get the config of the spectra.
 
         Args:
-          config (:class:`echidna.core.spectra.FitConfig`): The fit config to
-            assign to the spectra.
+          config (:class:`echidna.core.spectra.SpectraFitConfig`): The fit
+            config to assign to the spectra.
         """
-        if isinstance(config, FitConfig):
+        if isinstance(config, SpectraFitConfig):
             self._fit_config = config
         else:
             raise TypeError("Invalid config type: %s" % type(config))
