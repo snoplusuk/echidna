@@ -39,22 +39,23 @@ def get_array_errors(array, lin_err=0.01, frac_err=None,
                      log=False, log10=False):
     shape = array.shape
     array = array.ravel()
-    if log:
-        array = numpy.log(array)
-    elif log10:
-        array = numpy.log10(array)
     errors = numpy.zeros(array.shape)
     for index, value in enumerate(array):
+        if log:
+            value = numpy.log(value)
+        elif log10:
+            value = numpy.log10(value)
         if lin_err:
             error = value + lin_err
         elif frac_err:
             error = value * frac_err
         else:
             raise ValueError("Must provide either lin_err or frac_err")
+        if log:
+            error = numpy.exp(error)
+        elif log10:
+            error = numpy.power(10., error)
         errors[index] = error
-    if log:
-        errors = numpy.exp(errors)
-    elif log10:
-        errors = numpy.power(10., errors)
+    errors = errors - array
     errors.reshape(shape)
     return errors

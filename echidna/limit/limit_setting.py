@@ -485,39 +485,42 @@ class LimitSetting(object):
                         background.scale(count)
                     except AssertionError:  # _limit_count is None
                         pass
-                    spectra[background._name] = {"spectra": background,
-                                                 "style": background._style,
-                                                 "type": "background",
-                                                 "label": background._name}
-                spectra["fixed_background"] = {"spectra": self._fixed_background,
-                                               "style": {"color": "DarkSlateGray"},
-                                               "type": "fixed",
-                                               "label": "fixed background"}
-                spectra[self._signal._name] = {"spectra": self._signal,
-                                               "style": self._signal._style,
-                                               "type": "signal",
-                                               "label": self._signal._name}
+                    spectra[background._name] = {
+                        "spectra": background,
+                        "style": background._style,
+                        "type": "background",
+                        "label": background._name}
+                spectra["fixed_background"] = {
+                    "spectra": self._fixed_background,
+                    "style": {"color": "DarkSlateGray"},
+                    "type": "fixed",
+                    "label": "fixed background"}
+                spectra[self._signal._name] = {
+                    "spectra": self._signal,
+                    "style": self._signal._style,
+                    "type": "signal",
+                    "label": self._signal._name}
                 pos_err = utilities.get_array_errors(self._signal.project(0),
                                                      log10=True)
                 neg_err = utilities.get_array_errors(self._signal.project(0),
                                                      lin_err=-0.01, log10=True)
-                errors[self._signal._name] = {"errors": {"pos": pos_err,
-                                                         "neg": neg_err},
-                                              "style": self._signal._style,
-                                              "label": self._signal._name+" errors"}
+                errors[self._signal._name] = {
+                    "errors": {"pos": pos_err,
+                               "neg": neg_err},
+                    "style": self._signal._style,
+                    "label": self._signal._name+" errors"}
                 if self._data:
                     spectra["data"] = {"spectra": self._data,
                                        "type": "data", "label": "Data"}
                 plot_text = ["$\chi^2$ = %.2g" % chi_squared]
-                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
-                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
-                spectral_plot = plot.spectral_plot(spectra, 0, fig_num, False,
-                                                   errors=errors,
-                                                   per_bin=self._calculator,
-                                                   title=title,
-                                                   text=plot_text,
-                                                   log_y=True,
-                                                   limit=self._target.get("spectrum"))
+                plot_text.append("Livetime = %.1f years" %
+                                 self._signal._time_high)
+                title = (self._signal._name + " @ %.2g counts" %
+                         self._signal._data.sum())
+                spectral_plot = plot.spectral_plot(
+                    spectra, 0, fig_num, False, per_bin=self._calculator,
+                    title=title, text=plot_text, log_y=True,
+                    limit=self._target.get("spectrum"))
                 debug_pdf.savefig(spectral_plot)
                 spectral_plot.clear()
                 fig_num += 1
@@ -594,15 +597,16 @@ class LimitSetting(object):
                                  self._signal._energy_width)
                 y1 = self._observed
                 y2 = expected
-                plt.plot(x, y1, "b+", label="data")
-                plt.hist(x, bins=len(x)-1, weights=y2, histtype="step", color= "black")
-                plt.legend()
-                debug_pdf.savefig(fig1)
-                fig1.clear()
+                if kwargs.get("debug") == 1:
+                    plt.plot(x, y1, "b+", label="data")
+                    plt.hist(x, bins=len(x)-1, weights=y2,
+                             histtype="step", color="black")
+                    plt.legend()
+                    debug_pdf.savefig(fig1)
+                    fig1.clear()
 
-                chi_squared = self._calculator.get_chi_squared(self._observed,
-                                                               expected,
-                                                               chi_zeros=per_bin0)
+                chi_squared = self._calculator.get_chi_squared(
+                    self._observed, expected, chi_zeros=per_bin0)
                 self._signal_config.add_chi_squared(chi_squared, signal_count,
                                                     self._signal.sum())
             if self._verbose:
@@ -611,36 +615,37 @@ class LimitSetting(object):
             if kwargs.get("debug") == 1:
                 spectra = {}
                 errors = {}
-                spectra["fixed_background"] = {"spectra": self._fixed_background,
-                                               "style": {"color": "DarkSlateGray"},
-                                               "type": "background",
-                                               "label": "fixed background"}
-                spectra[self._signal._name] = {"spectra": self._signal,
-                                               "style": self._signal._style,
-                                               "type": "signal",
-                                               "label": self._signal._name}
+                spectra["fixed_background"] = {
+                    "spectra": self._fixed_background,
+                    "style": {"color": "DarkSlateGray"},
+                    "type": "background",
+                    "label": "fixed background"}
+                spectra[self._signal._name] = {
+                    "spectra": self._signal,
+                    "style": self._signal._style,
+                    "type": "signal",
+                    "label": self._signal._name}
                 pos_err = utilities.get_array_errors(self._signal.project(0),
                                                      log10=True)
                 neg_err = utilities.get_array_errors(self._signal.project(0),
                                                      lin_err=-0.01, log10=True)
-                errors[self._signal._name] = {"errors": {"pos": pos_err,
-                                                         "neg": neg_err},
-                                              "style": self._signal._style,
-                                              "label": self._signal._name+" errors"}
+                #errors[self._signal._name] = {
+                #     "errors": {"pos": pos_err,
+                #                "neg": neg_err},
+                #     "style": self._signal._style,
+                #     "label": self._signal._name+" errors"}
                 if self._data:
                     spectra["data"] = {"spectra": self._data,
                                        "type": "data", "label": "Data"}
-                current_chi_squared = self._signal_config.get_chi_squareds()[0][-1]
                 plot_text = ["$\chi^2$ = %.2g" % chi_squared]
-                plot_text.append("Livetime = %.1f years" % self._signal._time_high)
-                title = self._signal._name + " @ %.2g counts" % self._signal._data.sum()
-                spectral_plot = plot.spectral_plot(spectra, 0, fig_num, False,
-                                                   errors=errors,
-                                                   per_bin=self._calculator,
-                                                   title=title,
-                                                   text=plot_text,
-                                                   log_y=True,
-                                                   limit=self._target.get("spectrum"))
+                plot_text.append("Livetime = %.1f years" %
+                                 self._signal._time_high)
+                title = (self._signal._name + " @ %.2g counts" %
+                         self._signal._data.sum())
+                spectral_plot = plot.spectral_plot(
+                    spectra, 0, fig_num, False, per_bin=self._calculator,
+                    title=title, text=plot_text, log_y=True,
+                    limit=self._target.get("spectrum"))
                 debug_pdf.savefig(spectral_plot)
                 spectral_plot.clear()
                 #fig_num += 1
