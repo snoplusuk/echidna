@@ -50,6 +50,7 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 docs/html  # separated out html docs for GitHub Pages 
+docs/*.rst
 
 # PyBuilder
 target/
