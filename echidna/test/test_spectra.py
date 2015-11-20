@@ -25,8 +25,13 @@ class TestSpectra(unittest.TestCase):
             energy = random.uniform(energy_low, energy_high)
             radius = random.uniform(radial_low, radial_high)
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
-            x_bin = energy / energy_high * energy_bins
-            y_bin = radius / radial_high * radial_bins
+            e_idx = test_spectra.get_config().get_index("energy_mc")
+            if e_idx == 0:
+                x_bin = energy / energy_high * energy_bins
+                y_bin = radius / radial_high * radial_bins
+            else:
+                y_bin = energy / energy_high * energy_bins
+                x_bin = radius / radial_high * radial_bins
             self.assertTrue(test_spectra._data[x_bin, y_bin] > 0)
         # Also test the sum method at the same time
         self.assertTrue(test_spectra.sum() == test_decays,
@@ -131,7 +136,12 @@ class TestSpectra(unittest.TestCase):
                             radial_mc_high=radial_high / 2)
         energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
         radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
-        self.assertTrue(test_spectra._data.shape == (energy_bins, radial_bins),
+        e_idx = test_spectra.get_config().get_index("energy_mc")
+        if e_idx == 0:
+            data_shape = (energy_bins, radial_bins)
+        else:
+            data_shape = (radial_bins, energy_bins)
+        self.assertTrue(test_spectra._data.shape == data_shape,
                         msg="Spectra shape %s, energy bins %s, radial bins %s"
                         % (test_spectra._data.shape, energy_bins, radial_bins))
 

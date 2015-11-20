@@ -682,7 +682,7 @@ class SpectraFitConfig(Config):
     def __init__(self, parameters):
         """Initialise SpectraFitConfig class
         """
-        super(SpectraFitConfig, self).__init__("spectra_fit")
+        super(SpectraFitConfig, self).__init__("spectra_fit", parameters)
 
     @classmethod
     def load_from_file(cls, filename):
@@ -727,8 +727,7 @@ class SpectraConfig(Config):
     def __init__(self, parameters):
         """Initialise SpectraConfig class
         """
-        super(SpectraConfig, self).__init__("spectra")
-        self._parameters = parameters
+        super(SpectraConfig, self).__init__("spectra", parameters)
 
     @classmethod
     def load_from_file(cls, filename):
@@ -842,10 +841,6 @@ class Spectra(object):
             bins.append(self._config.get_par(v)._bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
-        # Set all pars in fit config as spectra_specific
-        for parameter in fit_config.get_pars():
-            par = fit_config.get_par(parameter)
-            par._spectra_specific = True
         self._fit_config = fit_config
         # Flag for indicating bipo cut. HDF5 does not support bool so
         # 0 = no cut and 1 = cut
