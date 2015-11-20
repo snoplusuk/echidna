@@ -4,6 +4,7 @@ class CompatibilityError(Exception):
     """
     pass
 
+
 class LimitError(Exception):
     """ Exception raised when a limit has not been found.
     """

@@ -134,7 +134,7 @@ def main():
 
     print num_decays * efficiency
 
-    # We can also inspect the raw data structure. This is saved in the `_data`ashleyrback/getting_started
+    # We can also inspect the raw data structure. This is saved in the`_data`
     # member of the `Spectra` class:
 
     # In[ ]:
