@@ -457,7 +457,8 @@ class LimitSetting(object):
             print "DEBUG: Writing debug file to " + path + filename
         self._signal_config.reset_chi_squareds()
 
-        chi_zero = self._calculator.get_chi_squared(self._observed, expected)
+        chi_zero = self._calculator.get_chi_squared(
+            self._observed, expected, data_errors=True)
         print chi_zero
 
         fig_num = 0
@@ -582,7 +583,8 @@ class LimitSetting(object):
 
         self._signal_config.reset_chi_squareds()
         chi_zero = self._calculator.get_chi_squared(self._observed,
-                                                    self._expected)
+                                                    self._expected,
+                                                    data_errors=True)
         per_bin0 = self._calculator.get_chi_squared_per_bin()
         per_bin0 = numpy.multiply(per_bin0, 0.5)
         fig_num = 0
@@ -606,7 +608,8 @@ class LimitSetting(object):
                     fig1.clear()
 
                 chi_squared = self._calculator.get_chi_squared(
-                    self._observed, expected, chi_zeros=per_bin0)
+                    self._observed, expected, chi_zeros=per_bin0,
+                    data_errors=True)
                 self._signal_config.add_chi_squared(chi_squared, signal_count,
                                                     self._signal.sum())
             if self._verbose:
@@ -736,7 +739,7 @@ class LimitSetting(object):
                 try:
                     config.add_chi_squared(
                         self._calculator.get_chi_squared(
-                            self._observed, expected,
+                            self._observed, expected, data_errors=True,
                             penalty_terms=penalty_term),
                         count, background.sum())
                 except ValueError as detail:
@@ -763,7 +766,7 @@ class LimitSetting(object):
                             self._observed = total_background
                         config.add_chi_squared(
                             self._calculator.get_chi_squared(
-                                self._observed, expected,
+                                self._observed, expected, data_errors=True,
                                 penalty_terms=penalty_term),
                             count, background.sum())
                     else:

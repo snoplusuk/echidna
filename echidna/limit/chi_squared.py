@@ -71,7 +71,8 @@ class ChiSquared(object):
         """
         return self._chi_squared_per_bin
 
-    def get_chi_squared(self, observed, expected, chi_zeros=None, **kwargs):
+    def get_chi_squared(self, observed, expected, chi_zeros=None,
+                        data_errors=False, **kwargs):
         """ Calculate the chi squared comparing observed to expected.
 
         Args:
@@ -122,7 +123,9 @@ class ChiSquared(object):
             chi_squared = neyman_chi_squared(observed, expected)
         else:  # (self._form == "poisson_likelihood")
             ll, ll_per_bin = log_likelihood(observed, expected,
-                                            per_bin=True, chi_zeros=chi_zeros)
+                                            per_bin=True,
+                                            data_errors=data_errors,
+                                            chi_zeros=chi_zeros)
             self._chi_squared_per_bin = 2.0 * ll_per_bin
             chi_squared = 2.0 * ll
 
@@ -206,7 +209,8 @@ def neyman_chi_squared(observed, expected):
     return total
 
 
-def log_likelihood(observed, expected, per_bin=False, chi_zeros=None):
+def log_likelihood(observed, expected, per_bin=False,
+                   data_errors=False, chi_zeros=None):
     """ Calculates the (Baker-Cousins) log likelihood.
 
     .. note::
@@ -251,6 +255,9 @@ def log_likelihood(observed, expected, per_bin=False, chi_zeros=None):
             ll = expected[i]-observed[i]+observed[i]*numpy.log(observed[i]/expected[i])
         # Subtract chi-zero
         ll -= chi_zeros[i]
+        # Add penalty term for data errors
+        if data_errors:
+            ll += 0.5 * neyman_chi_squared(observed[i:i], expected[i:i])
         total += ll
         ll_per_bin = numpy.append(ll_per_bin, [ll], axis=0)
     if per_bin:
