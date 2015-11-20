@@ -754,7 +754,7 @@ class SpectraFitConfig(Config):
     def __init__(self, parameters):
         """Initialise SpectraFitConfig class
         """
-        super(SpectraFitConfig, self).__init__("spectra_fit")
+        super(SpectraFitConfig, self).__init__("spectra_fit", parameters)
 
     @classmethod
     def load_from_file(cls, filename):
@@ -800,7 +800,6 @@ class SpectraConfig(Config):
         """Initialise SpectraConfig class
         """
         super(SpectraConfig, self).__init__("spectra", parameters)
-        self._parameters = parameters
 
     @classmethod
     def load_from_file(cls, filename):
