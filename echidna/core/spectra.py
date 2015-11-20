@@ -658,7 +658,7 @@ class GlobalFitConfig(Config):
             to add.
           par_type (string): The type of parameter (global or spectra).
         """
-        if par_type != 'global' or par_type != 'spectra':
+        if par_type != 'global' and par_type != 'spectra':
             raise IndexError("%s is an invalid par_type. Must be 'global' or "
                              "'spectra'." % par_type)
         self._parameters[par._name] = {'par': par, 'type': par_type}
@@ -799,7 +799,7 @@ class SpectraConfig(Config):
     def __init__(self, parameters):
         """Initialise SpectraConfig class
         """
-        super(SpectraConfig, self).__init__("spectra")
+        super(SpectraConfig, self).__init__("spectra", parameters)
         self._parameters = parameters
 
     @classmethod
@@ -914,10 +914,6 @@ class Spectra(object):
             bins.append(self._config.get_par(v)._bins)
         self._data = numpy.zeros(shape=tuple(bins),
                                  dtype=float)
-        # Set all pars in fit config as spectra_specific
-        for parameter in fit_config.get_pars():
-            par = fit_config.get_par(parameter)
-            par._spectra_specific = True
         self._fit_config = fit_config
         # Flag for indicating bipo cut. HDF5 does not support bool so
         # 0 = no cut and 1 = cut

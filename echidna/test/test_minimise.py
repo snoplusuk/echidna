@@ -2,10 +2,10 @@
 """
 import numpy
 
-import echidna
 from echidna.limit.minimise import GridSearch
-from echidna.core.spectra import FitConfig
+from echidna.core.spectra import GlobalFitConfig, FitParameter
 
+from collections import OrderedDict
 import unittest
 
 
@@ -21,8 +21,18 @@ class TestGridSearch(unittest.TestCase):
     """ Tests for the class :class:`echidna.limit.minimise.GridSearch`.
     """
     def setUp(self):
-        fit_config = FitConfig.load_from_file(echidna.__echidna_home__ +
-                                              "/config/grid_search_test.yml")
+        # Cannot load from file, because not using standard echidna parameters
+        parameters = OrderedDict({})
+        fit_config = GlobalFitConfig(parameters)
+        x = FitParameter(name="x", prior=4.0, sigma=0.1,
+                         low=3.0, high=5.0, bins=21)
+        fit_config.add_par(x, "global")
+        y = FitParameter(name="y", prior=-2.5, sigma=0.1,
+                         low=-5.0, high=0.0, bins=51)
+        fit_config.add_par(y, "global")
+        z = FitParameter(name="z", prior=0.5, sigma=0.1,
+                         low=0.0, high=1.0, bins=11)
+        fit_config.add_par(z, "global")
 
         # Initialise default GridSearch
         self._default_grid_search = GridSearch(fit_config,
@@ -78,13 +88,13 @@ class TestGridSearch(unittest.TestCase):
         minimum = self._default_grid_search.minimise(funct)
         self.assertIsInstance(minimum, float)
         results = self._default_grid_search.get_summary()
-        self.assertAlmostEqual(results.get("energy_x"), fit_x)
-        self.assertAlmostEqual(results.get("energy_y"), fit_y)
-        self.assertAlmostEqual(results.get("energy_z"), fit_z)
+        self.assertAlmostEqual(results.get("x"), fit_x)
+        self.assertAlmostEqual(results.get("y"), fit_y)
+        self.assertAlmostEqual(results.get("z"), fit_z)
 
         # Try grid search using find_minimum
         self._grid_search.minimise(funct)
         results = self._grid_search.get_summary()
-        self.assertAlmostEqual(results.get("energy_x"), fit_x)
-        self.assertAlmostEqual(results.get("energy_y"), fit_y)
-        self.assertAlmostEqual(results.get("energy_z"), fit_z)
+        self.assertAlmostEqual(results.get("x"), fit_x)
+        self.assertAlmostEqual(results.get("y"), fit_y)
+        self.assertAlmostEqual(results.get("z"), fit_z)
