@@ -11,6 +11,7 @@ Examples:
 .. note:: Similar methods are available in all other smearing classes.
 """
 import numpy as np
+import scipy.stats
 import itertools
 import echidna.core.spectra as spectra
 
@@ -106,16 +107,39 @@ class EnergySmearLY(Smear):
     """ The class which smears energy. It accepts resolution in terms of light
       yield (LY) in units of NHit per MeV.
 
+    Args:
+      poisson (bool): If True, use poisson smearing.      
+
     Attributes:
       _light_yield (float): The light yield of the scintillator in NHits per
         MeV.
+      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
+        gaussian smearing is to be applied. 
     """
 
-    def __init__(self):
+    def __init__(self, poisson=True):
         """ Initialises the class.
         """
         super(EnergySmearLY, self).__init__("energy_light_yield")
-        self._light_yield = 200.  # NHits/MeV
+        self._poisson_smear = poisson
+        self._light_yield = 200  # Nhit/MeV
+
+
+    def calc_poisson_energy(self, x, lamb):
+        """ Calculates the value of a poisson whose integral is equal to
+        one at position x with a given lambda value.
+
+        Args:
+          x : Position to calculate the poisson
+          lamb : Lambda of the poisson
+
+        Returns: 
+          float: The value of the poisson at the given position
+        """
+        photons = int(x*self._light_yield)
+        expected = lamb*self._light_yield
+        return scipy.stats.poisson(expected).pmf(photons)
+
 
     def calc_smear_ly(self, new_ly, cur_ly=None):
         """Calculates the value of light yield (ly) required to smear a
@@ -235,9 +259,13 @@ class EnergySmearLY(Smear):
                                 0.5 * widths[i]
                         weights = []
                         for energy in np.arange(low, high, widths[i]):
-                            weights.append(self.calc_gaussian(energy,
-                                                              mean,
-                                                              sigma))
+                            if self._poisson_smear == True:
+                                weights.append(self.calc_poisson_energy(energy,
+                                                                        mean))
+                            else:
+                                weights.append(self.calc_gaussian(energy,
+                                                                  mean,
+                                                                  sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
@@ -297,7 +325,10 @@ class EnergySmearLY(Smear):
                     else:
                         data[par_names[i]] = mean
                 for i in range(entries):
-                    data[par] = np.fabs(np.random.normal(mean_e, sigma))
+                    if self._poisson_smear == True:
+                        data[par] = np.fabs(np.random.poisson(mean_e))
+                    else:
+                        data[par] = np.fabs(np.random.normal(mean_e, sigma))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -312,16 +343,38 @@ class EnergySmearRes(Smear):
 
     Inherits from :class:`Smear`
 
+    Args:
+      poisson (bool): If True, use poisson smearing.      
+
     Attributes:
       _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
         e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
+        gaussian smearing is to be applied. 
     """
 
-    def __init__(self):
+    def __init__(self, poisson=True):
         """ Initialise the class
         """
         super(EnergySmearRes, self).__init__("energy_resolution")
-        self._resolution = 0.05  # 5%/sqrt(MeV)
+        self._poisson_smear = poisson
+        self._light_yield = 200  # Nhit/MeV
+
+
+    def calc_poisson_energy(self, x, lamb):
+        """ Calculates the value of a poisson whose integral is equal to
+        one at position x with a given lambda value.
+
+        Args:
+          x : Position to calculate the poisson
+          lamb : Lambda of the poisson
+
+        Returns: 
+          float: The value of the poisson at the given position
+        """
+        photons = int(x*self._light_yield)
+        expected = lamb*self._light_yield
+        return scipy.stats.poisson(expected).pmf(photons)
 
     def calc_smear_resoluton(self, new_res, cur_res=None):
         """Calculates the value of resolution required to smear a data set
@@ -445,9 +498,13 @@ class EnergySmearRes(Smear):
                                 0.5 * widths[i]
                         weights = []
                         for energy in np.arange(low, high, widths[i]):
-                            weights.append(self.calc_gaussian(energy,
-                                                              mean,
-                                                              sigma))
+                            if self._poisson_smear == True:
+                                weights.append(self.calc_poisson_energy(energy,
+                                                                        mean))
+                            else:
+                                weights.append(self.calc_gaussian(energy,
+                                                                  mean,
+                                                                  sigma))
                     else:
                         data[par_names[i]] = mean
                 total_weight = sum(weights)
@@ -507,7 +564,10 @@ class EnergySmearRes(Smear):
                     else:
                         data[par_names[i]] = mean
                 for i in range(entries):
-                    data[par] = np.fabs(np.random.normal(mean_e, sigma))
+                    if self._poisson_smear == True:
+                        data[par] = np.fabs(np.random.normal(mean_e))
+                    else:
+                        data[par] = np.fabs(np.random.normal(mean_e, sigma))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -520,8 +580,13 @@ class RadialSmear(Smear):
     """ The class which smears the radius. It accepts resolution in terms of
       sigma in units of mm.
 
+    Args:
+      poisson (bool): If True, use poisson smearing.      
+
     Attributes:
       _resolution (float): The position resolution (mm).
+      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
+        gaussian smearing is to be applied. 
     """
 
     def __init__(self):
