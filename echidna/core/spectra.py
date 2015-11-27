@@ -99,9 +99,9 @@ class FitParameter(Parameter):
         for kw in kwargs:
             if kw == "prior":
                 self._prior = float(kwargs[kw])
-            if kw == "sigma":
+            elif kw == "sigma":
                 self._sigma = float(kwargs[kw])
-            if kw == "low":
+            elif kw == "low":
                 self._low = float(kwargs[kw])
             elif kw == "high":
                 self._high = float(kwargs[kw])
@@ -510,7 +510,7 @@ class SpectraParameter(Parameter):
         Returns:
           float: value of bin centre
         """
-        if type(bin) != int:
+        if type(bin) != int and type(bin) != numpy.int64:
             raise TypeError("Must pass an integer value")
         if bin < 0:
             raise ValueError("Bin number (%s) must be zero or positive" % bin)

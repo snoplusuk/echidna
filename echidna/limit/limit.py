@@ -10,7 +10,7 @@ class Limit(object):
     Args:
       signal (:class:`echidna.core.spectra.Spectra`): signal spectrum you wish
         to obtain a limit for.
-      fitter (:class:`echidna.limit.fit.Fitter`): The fitter used to set a
+      fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a
         a limit with.
       shrink (bool, optional): If set to True, :meth:`shrink` method is
         called on the signal spectrum before limit setting, shrinking to
@@ -19,7 +19,7 @@ class Limit(object):
     Attributes:
       _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum you wish
         to obtain a limit for.
-      _fitter (:class:`echidna.limit.fit.Fitter`): The fitter used to set a
+      _fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a
         a limit with.
     """
     def __init__(self, signal, fitter, shrink=True):
@@ -75,13 +75,13 @@ class Limit(object):
         Returns:
           float: The signal scaling at the limit you are setting.
         """
-        for scale in self._signal.get_fit_config().get_rates():
+        for scale in self._signal.get_fit_config().get_par("rate").get_values():
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
-            stat = self._fitter.get_statistic()
+            stat = self._fitter.get_test_statistic()
             if not isinstance(stat, float):  # Is array
                 stat = stat.sum()
             if stat > limit:

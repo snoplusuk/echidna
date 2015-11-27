@@ -2,7 +2,7 @@ import numpy
 
 import echidna.output.store as store
 from echidna.limit.fit_results import FitResults
-from echidna.limit.minimiser import GridSearch
+from echidna.limit.minimise import GridSearch
 from echidna.errors.custom_errors import CompatibilityError
 
 import copy
@@ -57,7 +57,7 @@ class Fit(object):
         spectra are stored.
     """
     def __init__(self, roi, test_statistic, fit_config, data=None,
-                 fixed_background=None, floating_backgrounds=None,
+                 fixed_backgrounds=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
                  use_pre_made=True, pre_made_base_dir=None):
         self._checked = False
@@ -69,7 +69,8 @@ class Fit(object):
             self._data_pars = self.get_roi_pars(self._data)
         else:
             self._data_pars = None
-        self._fixed_background = fixed_background
+        if fixed_backgrounds:  # spectra_dict in expected form
+            self.make_fixed_background(fixed_backgrounds)  # sets attribute
         if self._fixed_background:
             self._fixed_pars = self.get_roi_pars(self._fixed_background)
         else:
