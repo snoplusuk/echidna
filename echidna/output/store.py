@@ -84,6 +84,17 @@ def dump(file_path, spectra):
                 spectra.get_config().get_par(v)._high
             file_.attrs["pars:%s:bins" % v] = \
                 spectra.get_config().get_par(v)._bins
+        for par in spectra.get_fit_config().get_pars():
+            file_.attrs["fit_pars:%s:prior" % par] = \
+                spectra.get_fit_config().get_par(par)._prior
+            file_.attrs["fit_pars:%s:sigma" % par] = \
+                spectra.get_fit_config().get_par(par)._sigma
+            file_.attrs["fit_pars:%s:low" % par] = \
+                spectra.get_fit_config().get_par(par)._low
+            file_.attrs["fit_pars:%s:high" % par] = \
+                spectra.get_fit_config().get_par(par)._high
+            file_.attrs["fit_pars:%s:bins" % par] = \
+                spectra.get_fit_config().get_par(par)._bins
         file_.attrs["num_decays"] = spectra._num_decays
         file_.attrs["raw_events"] = spectra._raw_events
         file_.attrs["bipo"] = spectra._bipo
@@ -136,6 +147,7 @@ def load(file_path):
     """
     with h5py.File(file_path, "r") as file_:
         parameters = collections.OrderedDict()
+        fit_parameters = collections.OrderedDict()
         for v in file_.attrs:
             if v.startswith("pars:"):
                 [_, par, val] = v.split(":")
@@ -143,9 +155,21 @@ def load(file_path):
                     parameters[str(par)] = spectra.SpectraParameter(par, 1.,
                                                                     1., 1)
                 parameters[str(par)].set_par(**{val: float(file_.attrs[v])})
-        spec = spectra.Spectra(file_.attrs["name"],
-                               file_.attrs["num_decays"],
-                               spectra.SpectraConfig(parameters))
+        for key, value in file_.attrs.iteritems():
+            if key.startswith("fit_pars:"):
+                [_, par, attr] = key.split(":")
+                if par not in parameters:
+                    # create RateParameter instance with all values as 0
+                    fit_parameters[str(par)] = spectra.RateParameter(
+                        par, 0., 0., 0., 0., 0.)
+                # Fill correct values
+                fit_parameters[str(par)].set_par(**{attr: float(value)})
+        spec = spectra.Spectra(
+            name=file_.attrs["name"], num_decays=file_.attrs["num_decays"],
+            spectra_config=spectra.SpectraConfig(parameters),
+            fit_config=spectra.SpectraFitConfig(fit_parameters))
+        print spec.get_config().get_pars()
+        print spec.get_fit_config().get_pars()
         spec._raw_events = file_.attrs["raw_events"]
         try:
             spec._bipo = file_.attrs["bipo"]
