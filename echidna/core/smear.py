@@ -141,7 +141,6 @@ class EnergySmearLY(Smear):
             self._log_factorial[photons] = np.sum(np.log(np.arange(1,(photons+1))))
         logPois = photons*np.log(expected) - self._log_factorial[photons] - expected#*np.log(np.e)
         return np.exp(logPois)
-
     
     def calc_smear_ly(self, new_ly, cur_ly=None):
         """Calculates the value of light yield (ly) required to smear a
