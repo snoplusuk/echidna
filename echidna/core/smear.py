@@ -11,10 +11,6 @@ Examples:
 .. note:: Similar methods are available in all other smearing classes.
 """
 import numpy as np
-import decimal
-import scipy.stats
-import scipy.misc
-import gmpy
 import itertools
 import echidna.core.spectra as spectra
 
@@ -128,28 +124,6 @@ class EnergySmearLY(Smear):
         self._light_yield = 200  # Nhit/MeV
         self._log_factorial = {}
 
-    def split_and_log_factorial(self, n):
-        '''Split factorial into array of components.
-        
-        Args:
-          n (int): Integer for which the factorial is to be calculated.
-
-        Returns:
-          np.array(float): Array of factorial components.
-        '''
-        init_arr = np.arange(1, n+1)
-        if n % 4 != 0:
-            extra = 4 - (n % 4)
-            init_arr = np.insert(init_arr, 0, np.ones(extra))
-            n = n + extra
-        new_arr = np.ones((n/4))
-        iter = 0
-        for num in np.arange(0, n/4.,1):
-            new_arr[num] = np.log((init_arr[iter]*init_arr[-(iter+1)]
-                            * init_arr[iter+1]*init_arr[-(iter+2)]))
-            iter = iter + 2
-        return new_arr
-
     def calc_poisson_energy(self, x, lamb):
         """ Calculates the value of a poisson whose integral is equal to
         one at position x with a given lambda value.
@@ -164,10 +138,10 @@ class EnergySmearLY(Smear):
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
         if self._log_factorial.has_key(photons) == False:
-            fact_arr = self.split_and_log_factorial(photons)
-            self._log_factorial[photons] = np.sum(fact_arr)
+            self._log_factorial[photons] = np.sum(np.log(np.arange(1,(photons+1))))
         logPois = photons*np.log(expected) - self._log_factorial[photons] - expected#*np.log(np.e)
         return np.exp(logPois)
+
     
     def calc_smear_ly(self, new_ly, cur_ly=None):
         """Calculates the value of light yield (ly) required to smear a
@@ -389,28 +363,6 @@ class EnergySmearRes(Smear):
         self._light_yield = 200  # Nhit/MeV
         self._log_factorial = {}
 
-    def split_and_log_factorial(self, n):
-        '''Split factorial into array of components.
-        
-        Args:
-          n (int): Integer for which the factorial is to be calculated.
-
-        Returns:
-          np.array(float): Array of factorial components.
-        '''
-        init_arr = np.arange(1, n+1)
-        if n % 4 != 0:
-            extra = 4 - (n % 4)
-            init_arr = np.insert(init_arr, 0, np.ones(extra))
-            n = n + extra
-        new_arr = np.ones((n/4))
-        iter = 0
-        for num in np.arange(0, n/4.,1):
-            new_arr[num] = np.log((init_arr[iter]*init_arr[-(iter+1)]
-                            * init_arr[iter+1]*init_arr[-(iter+2)]))
-            iter = iter + 2
-        return new_arr
-
     def calc_poisson_energy(self, x, lamb):
         """ Calculates the value of a poisson whose integral is equal to
         one at position x with a given lambda value.
@@ -425,8 +377,7 @@ class EnergySmearRes(Smear):
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
         if self._log_factorial.has_key(photons) == False:
-            fact_arr = self.split_and_log_factorial(photons)
-            self._log_factorial[photons] = np.sum(fact_arr)
+            self._log_factorial[photons] = np.sum(np.log(np.arange(1,(photons+1))))
         logPois = photons*np.log(expected) - self._log_factorial[photons] - expected#*np.log(np.e)
         return np.exp(logPois)
 
