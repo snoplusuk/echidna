@@ -60,7 +60,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (array[-1], limit))
 
-    def get_limit(self, limit=2.71):
+    def get_limit(self, limit=2.71, stat_zero=None):
         """ Get the limit using the signal spectrum.
 
         Args:
@@ -68,6 +68,10 @@ class Limit(object):
             corresponds to the limit you want to set. The default is 2.71
             which corresponds to 90% CL when using a chi-squared test
             statistic.
+          stat_zero (float, optional): Enables calculation of e.g. delta
+            chi-squared. Include value of test statistic for zero signal
+            contribution, so this can be subtracted from the value of
+            the test statistic, with signal.
 
         Raises:
           LimitError: If all values in the array are below limit.
@@ -75,15 +79,17 @@ class Limit(object):
         Returns:
           float: The signal scaling at the limit you are setting.
         """
-        for scale in self._signal.get_fit_config().get_par("rate").get_values():
+        par = self._signal.get_fit_config().get_par("rate")
+        for scale in par.get_values():  # Loop over all signal contributions
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
-            stat = self._fitter.get_test_statistic()
-            if not isinstance(stat, float):  # Is array
+            stat = self._fitter.fit()
+            if not isinstance(stat, float):  # Is per-bin array
                 stat = stat.sum()
+            stat -= stat_zero  # Calculate delta for test statistic
             if stat > limit:
                 return scale
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"

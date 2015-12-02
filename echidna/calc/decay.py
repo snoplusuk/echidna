@@ -9,7 +9,6 @@ import numpy
 from echidna.calc import constants as const
 import echidna.test.physics_tests as physics_tests
 
-
 class DBIsotope(object):
     """ Class which calculates expected counts for a DBD isotope
       over a given experiment livetime.
@@ -571,6 +570,36 @@ def test(args):
     print message
 
     print "============"
+
+
+# Matrix elements - dictionary with Spectra name as key and matrix element as
+#                   value.
+matrix_elements = {
+    # REF: F. Simkovic et al. Phys. Rev. C. 79, 055501 1-10 (2009)
+    # Averaged over min and max values from columns 2, 4 & 6 in Table III
+    "Xe136_0n2b_n1": 2.205,
+    "Xe136_0n2b_n2": None,
+    # REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 2
+    # Assuming two Majorons emitted i.e. only type IE or IID modes
+    "Xe136_0n2b_n3": 1.e-3,
+    # REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 2
+    "Xe136_0n2b_n7": 1.e-3
+    }
+
+# Phase space factors - dictionary with Spectra name as key and phase space
+#                       factor as value.
+phase_spaces = {
+    # REF: Suhonen, J. & Civitarese, O. Physics Reports, Elsevier BV, 300
+    # 123-214 (1998)
+    # Table 6
+    "Xe136_0n2b_n1": 6.02e-16,
+    "Xe136_0n2b_n2": None,
+    # Assuming two Majorons emitted i.e. only type IE or IID modes
+    # REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 3
+    "Xe136_0n2b_n3": 1.06e-17,
+    # REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 3
+    "Xe136_0n2b_n7": 4.54e-17
+    }
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ class Timer:
 
 
 def start_logging(short_name=False):
-    """ Function to initialise logging output
+    """ Function to initialise logging output.
 
     Adapted from:
     https://docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations
@@ -64,7 +64,7 @@ def start_logging(short_name=False):
 
     # define Handler which writes WARNING messages or higher to the sys.stderr
     console = logging.StreamHandler()
-    console.setLevel(logging.WARNING)
+    console.setLevel(logging.INFO)
     # set a format which is simpler for console use
     formatter = logging.Formatter('%(levelname)-8s %(name)20s: %(message)s')
     # tell the handler to use this format

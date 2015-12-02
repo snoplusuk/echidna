@@ -148,17 +148,16 @@ def load(file_path):
     with h5py.File(file_path, "r") as file_:
         parameters = collections.OrderedDict()
         fit_parameters = collections.OrderedDict()
-        for v in file_.attrs:
-            if v.startswith("pars:"):
-                [_, par, val] = v.split(":")
-                if par not in parameters:
-                    parameters[str(par)] = spectra.SpectraParameter(par, 1.,
-                                                                    1., 1)
-                parameters[str(par)].set_par(**{val: float(file_.attrs[v])})
         for key, value in file_.attrs.iteritems():
-            if key.startswith("fit_pars:"):
+            if key.startswith("pars:"):
                 [_, par, attr] = key.split(":")
                 if par not in parameters:
+                    parameters[str(par)] = spectra.SpectraParameter(
+                        par, 1., 1., 1)
+                parameters[str(par)].set_par(**{attr: float(value)})
+            if key.startswith("fit_pars:"):
+                [_, par, attr] = key.split(":")
+                if par not in fit_parameters:
                     # create RateParameter instance with all values as 0
                     fit_parameters[str(par)] = spectra.RateParameter(
                         par, 0., 0., 0., 0., 0.)
@@ -168,8 +167,6 @@ def load(file_path):
             name=file_.attrs["name"], num_decays=file_.attrs["num_decays"],
             spectra_config=spectra.SpectraConfig(parameters),
             fit_config=spectra.SpectraFitConfig(fit_parameters))
-        print spec.get_config().get_pars()
-        print spec.get_fit_config().get_pars()
         spec._raw_events = file_.attrs["raw_events"]
         try:
             spec._bipo = file_.attrs["bipo"]
