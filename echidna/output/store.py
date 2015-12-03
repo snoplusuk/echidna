@@ -163,10 +163,11 @@ def load(file_path):
                         par, 0., 0., 0., 0., 0.)
                 # Fill correct values
                 fit_parameters[str(par)].set_par(**{attr: float(value)})
+        spec_name = file_.attrs["name"]
         spec = spectra.Spectra(
-            name=file_.attrs["name"], num_decays=file_.attrs["num_decays"],
+            name=spec_name, num_decays=file_.attrs["num_decays"],
             spectra_config=spectra.SpectraConfig(parameters),
-            fit_config=spectra.SpectraFitConfig(fit_parameters))
+            fit_config=spectra.SpectraFitConfig(fit_parameters, spec_name))
         spec._raw_events = file_.attrs["raw_events"]
         try:
             spec._bipo = file_.attrs["bipo"]
