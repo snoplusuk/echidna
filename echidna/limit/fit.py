@@ -80,13 +80,11 @@ class Fit(object):
             self._fixed_pars = self.get_roi_pars(self._fixed_background)
         else:
             self._fixed_pars = None
-        self._floating_backgrounds = floating_backgrounds
-        if self._floating_backgrounds:
-            floating_pars = []
-            for background in self._floating_backgrounds:
-                floating_pars.append(self.get_roi_pars(background))
-            self._floating_pars = floating_pars
-        else:
+        if floating_backgrounds:
+            # Sets self._floating_backgrounds and self._floating_pars
+            self.set_floating_backgrounds(floating_backgrounds)
+        else:  # Set both as None
+            self._floating_backgrounds = None
             self._floating_pars = None
         self._signal = signal
         if self._signal:
@@ -101,10 +99,12 @@ class Fit(object):
                                    self._fit_config.get_name())
         self._minimiser = minimiser
         # create fit results object - not required if using GridSearch.
-        if (fit_results is None and
-                not isinstance(self._minimiser, GridSearch)):
-            fit_results = FitResults(fit_config, fit_config.get_name())
-        self._fit_results = fit_results  # Still None for GridSearch
+        if fit_results is None:
+            if isinstance(self._minimiser, GridSearch):
+                fit_results = self._minimiser
+            else:
+                fit_results = FitResults(fit_config, fit_config.get_name())
+        self._fit_results = fit_results
         self._use_pre_made = use_pre_made
         self._pre_made_base_dir = pre_made_base_dir
 
@@ -258,6 +258,14 @@ class Fit(object):
         """
         return self._data
 
+    def get_fit_results(self):
+        """ Gets the fit results object for the fit.
+
+        Returns:
+          :class:`echidna.core.fit.FitResults`: FitResults for the fit.
+        """
+        return self._fit_results
+
     def get_fixed_background(self):
         """ Gets the fixed background you are fitting.
 
@@ -375,13 +383,14 @@ class Fit(object):
         observed = self._data.nd_project(self._data_pars)
         expected = self._fixed_background.nd_project(self._fixed_pars)
         global_pars = self._fit_config.get_global_pars()
-        for spectrum in self._floating_backgrounds:
+        for spectrum, floating_pars in zip(self._floating_backgrounds,
+                                           self._floating_pars):
             # Apply global parameters first
             if self._use_pre_made:  # Load pre-made spectrum from file
                 spectrum = self.load_pre_made(spectrum, global_pars)
             else:
                 for parameter in global_pars:
-                    par = self._fit_congfig.get_par()
+                    par = self._fit_congfig.get_par(parameter)
                     spectrum = par.apply_to(spectrum)
 
             # Apply spectrum-specific parameters
@@ -393,7 +402,7 @@ class Fit(object):
             # Shrink to roi
             self.shrink_spectra(spectrum)
             # and then add projection to expected spectrum
-            expected += spectrum.nd_project(self._floating_pars)
+            expected += spectrum.nd_project(floating_pars)
 
         # Add signal, if required
         if self._signal:
@@ -529,6 +538,8 @@ class Fit(object):
         floating_pars = []
         for background in floating_backgrounds:
             self.check_fit_config(background)
+            # Spectrum has a valid fit config, add to GlobalFit Config
+            self._fit_config.add_config(background.get_fit_config())
             if shrink:
                 self.shrink_spectra(background)
             else:

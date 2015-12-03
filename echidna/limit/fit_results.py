@@ -25,6 +25,7 @@ class FitResults(object):
       _name (string): Name of this :class:`FitResults` class instance.
       _data (:class:`numpy.ndarray`): Array of values of the test
         statistic calculated during the fit.
+      _resets (int): Number of times the grid has been reset.
 
     Examples:
 
@@ -36,6 +37,7 @@ class FitResults(object):
             name = fit_config.get_name() + "_results"
         self._name = name
         self._data = numpy.zeros(self.get_shape())
+        self._resets = 0
 
     def get_fit_config(self):
         """
@@ -76,3 +78,18 @@ class FitResults(object):
             parameter = self._fit_config.get_par(par)
             fit_results[par] = parameter.get_best_fit()
         return fit_results
+
+    def reset_grid(self):
+        """ Resets the grid stored in :attr:`_data`, including shape.
+
+        .. warning:: If fit parameters have been added/removed, calling
+          this method will increase/decrease the dimensions of the grid
+          to compensate for this change.
+        """
+        if self._resets == 0:
+            self._resets = 1
+            self._name += "_%d" % self._resets
+        else:
+            self._resets += 1
+            self._name = self._name[:-1] + str(self._resets)
+        self._data = numpy.zeros(self.get_shape())

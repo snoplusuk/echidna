@@ -660,8 +660,8 @@ class GlobalFitConfig(Config):
         if config._name == "spectra_fit":
             spectra_name = config._spectra_name
             for par_name in config.get_pars():
-                name = spectra_name + "_" + par
-                par = copy.deepcopy(config.get_par(par_name))
+                name = spectra_name + "_" + par_name
+                par = config.get_par(par_name)
                 par._name = name
                 self.add_par(par, "spectra")
         elif config._name == "global_fit":
@@ -791,7 +791,7 @@ class SpectraFitConfig(Config):
           filename (str): path to config file
           spectra_name (string): Name of the spectra associated with the
             :class:`echidna.core.spectra.SpectraFitConfig`
-        
+
 
         Returns:
           (:class:`echidna.core.spectra.SpectraFitConfig`): A config object
