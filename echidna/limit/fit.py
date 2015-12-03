@@ -79,7 +79,7 @@ class Fit(object):
         if self._floating_backgrounds:
             floating_pars = []
             for background in self._floating_backgrounds:
-                self._floating_pars.append(self.get_roi_pars(background))
+                floating_pars.append(self.get_roi_pars(background))
             self._floating_pars = floating_pars
         else:
             self._floating_pars = None
@@ -368,7 +368,7 @@ class Fit(object):
         # Loop over all floating backgrounds
         observed = self._data.nd_project(self._data_pars)
         expected = self._fixed_background.nd_project(self._fixed_pars)
-        global_pars = self._fit_config.get_gloal_pars()
+        global_pars = self._fit_config.get_global_pars()
         for spectrum in self._floating_backgrounds:
             # Apply global parameters first
             if self._use_pre_made:  # Load pre-made spectrum from file

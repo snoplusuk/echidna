@@ -65,7 +65,11 @@ class FitResults(object):
         return tuple(shape)
 
     def get_summary(self):
-        """
+        """ Get a summary of the fit parameters.
+
+        Returns:
+          dict: Results of fit. Dictionary with fit parameter names as
+            keys and best fit values for paramter as values.
         """
         fit_results = {}
         for par in self._fit_config.get_pars():

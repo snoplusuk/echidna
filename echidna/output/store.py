@@ -1,7 +1,4 @@
-import numpy
-
 import echidna.core.spectra as spectra
-import echidna.limit.limit_setting as limit_setting
 
 import h5py
 import sys
@@ -84,17 +81,18 @@ def dump(file_path, spectra):
                 spectra.get_config().get_par(v)._high
             file_.attrs["pars:%s:bins" % v] = \
                 spectra.get_config().get_par(v)._bins
-        for par in spectra.get_fit_config().get_pars():
-            file_.attrs["fit_pars:%s:prior" % par] = \
-                spectra.get_fit_config().get_par(par)._prior
-            file_.attrs["fit_pars:%s:sigma" % par] = \
-                spectra.get_fit_config().get_par(par)._sigma
-            file_.attrs["fit_pars:%s:low" % par] = \
-                spectra.get_fit_config().get_par(par)._low
-            file_.attrs["fit_pars:%s:high" % par] = \
-                spectra.get_fit_config().get_par(par)._high
-            file_.attrs["fit_pars:%s:bins" % par] = \
-                spectra.get_fit_config().get_par(par)._bins
+        if spectra.get_fit_config():
+            for par in spectra.get_fit_config().get_pars():
+                file_.attrs["fit_pars:%s:prior" % par] = \
+                    spectra.get_fit_config().get_par(par)._prior
+                file_.attrs["fit_pars:%s:sigma" % par] = \
+                    spectra.get_fit_config().get_par(par)._sigma
+                file_.attrs["fit_pars:%s:low" % par] = \
+                    spectra.get_fit_config().get_par(par)._low
+                file_.attrs["fit_pars:%s:high" % par] = \
+                    spectra.get_fit_config().get_par(par)._high
+                file_.attrs["fit_pars:%s:bins" % par] = \
+                    spectra.get_fit_config().get_par(par)._bins
         file_.attrs["num_decays"] = spectra._num_decays
         file_.attrs["raw_events"] = spectra._raw_events
         file_.attrs["bipo"] = spectra._bipo
