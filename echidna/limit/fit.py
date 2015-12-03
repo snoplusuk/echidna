@@ -67,7 +67,7 @@ class Fit(object):
         self._test_statistic = test_statistic
         self._fit_config = fit_config
         if not self._fit_config:
-            self._fit_config = SpectraFitConfig({})
+            self._fit_config = SpectraFitConfig({}, "")
         self._data = data
         if self._data:
             self._data_pars = self.get_roi_pars(self._data)
