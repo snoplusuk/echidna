@@ -650,6 +650,26 @@ class GlobalFitConfig(Config):
         """
         super(GlobalFitConfig, self).__init__("global_fit", parameters)
 
+    def add_config(self, config):
+        """ Add pars from a :class:`echidna.core.spectra.Config` to this
+          :class:`echidna.core.spectra.GlobalFitConfig`
+
+        Args:
+          config (:class:`echidna.core.spectra.Config`): Config to be added.
+        """
+        if config._name == "spectra_fit":
+            spectra_name = config._spectra_name
+            for par_name in config.get_pars():
+                name = spectra_name + "_" + par
+                par = copy.deepcopy(config.get_par(par_name))
+                par._name = name
+                self.add_par(par, "spectra")
+        elif config._name == "global_fit":
+            for par_name in config.get_pars():
+                self.add_par(config.get_par(par_name), "global")
+        else:
+            raise ValueError("%s is not a valid config type" % config._name)
+
     def add_par(self, par, par_type):
         """ Add parameter to the global fit config.
 
@@ -749,19 +769,29 @@ class SpectraFitConfig(Config):
     Args:
       parameters (:class:`collections.OrderedDict`): List of
         FitParameter objects
+      spectra_name (string): Name of the spectra associated with the
+         :class:`echidna.core.spectra.SpectraFitConfig`
+
+    Attributes:
+      _spectra_name (string): Name of the spectra associated with the
+        :class:`echidna.core.spectra.SpectraFitConfig`
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, spectra_name):
         """Initialise SpectraFitConfig class
         """
         super(SpectraFitConfig, self).__init__("spectra_fit", parameters)
+        self._spectra_name = spectra_name
 
     @classmethod
-    def load_from_file(cls, filename):
+    def load_from_file(cls, filename, spectra_name):
         """Initialise SpectraFitConfig class from a config file (classmethod).
 
         Args:
           filename (str): path to config file
+          spectra_name (string): Name of the spectra associated with the
+            :class:`echidna.core.spectra.SpectraFitConfig`
+        
 
         Returns:
           (:class:`echidna.core.spectra.SpectraFitConfig`): A config object
@@ -779,7 +809,7 @@ class SpectraFitConfig(Config):
                     config['parameters'][syst]['bins'])
             else:
                 raise IndexError("Unknown systematic in config %s" % syst)
-        return cls(parameters)
+        return cls(parameters, spectra_name)
 
 
 class SpectraConfig(Config):
@@ -789,10 +819,6 @@ class SpectraConfig(Config):
 
     Args:
       parameters (:class:`collections.OrderedDict`): List of
-        SpectraParameter objects
-
-    Attributes:
-      _parameters (:class:`collections.OrderedDict`): List of
         SpectraParameter objects
     """
 

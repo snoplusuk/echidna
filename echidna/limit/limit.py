@@ -46,7 +46,7 @@ class Limit(object):
         Returns:
           float: The signal scaling at the limit you are setting.
         """
-        counts = self._signal.get_fit_config().get_rates()
+        counts = self._signal.get_fit_config().get_par("rate").get_values()
         if len(counts) != len(array):
             raise CompatibilityError("Array length and number of signal "
                                      "scalings is different.")
@@ -60,7 +60,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (array[-1], limit))
 
-    def get_limit(self, limit=2.71, stat_zero=None):
+    def get_limit(self, limit=2.71, stat_zero=0.):
         """ Get the limit using the signal spectrum.
 
         Args:
@@ -95,7 +95,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (stat, limit))
 
-    def get_statisics(self):
+    def get_statistics(self):
         """ Get the test statistics for all signal scalings.
 
         Returns:
@@ -103,13 +103,13 @@ class Limit(object):
         """
         signal_config = self._signal.get_fit_config()
         stats = []
-        for scale in signal_config.get_rates():
+        for scale in signal_config.get_par("rate").get_values():
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
-            stats.append(self._fitter.get_statistic())
+            stats.append(self._fitter.fit())
         return numpy.array(stats)
 
     def sum_entries(self, array):

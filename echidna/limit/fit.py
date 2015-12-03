@@ -4,6 +4,7 @@ import echidna.output.store as store
 from echidna.limit.fit_results import FitResults
 from echidna.limit.minimise import GridSearch
 from echidna.errors.custom_errors import CompatibilityError
+from echidna.core.spectra import SpectraFitConfig
 
 import copy
 import os
@@ -40,6 +41,7 @@ class Fit(object):
         roi is e.g. {"energy": (2.4, 2.6), "radial3": (0., 0.2)}
       _test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An
         appropriate class for calculating test statistics.
+      _fit_config ():
       _data (:class:`echidna.core.spectra.Spectra`): Data spectrum you want to
         fit.
       _fixed_background (:class:`echidna.core.spectra.Spectra`):
@@ -56,7 +58,7 @@ class Fit(object):
       _pre_made_dir (string): Directory in which pre-made convolved
         spectra are stored.
     """
-    def __init__(self, roi, test_statistic, fit_config, data=None,
+    def __init__(self, roi, test_statistic, fit_config=None, data=None,
                  fixed_backgrounds=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
                  use_pre_made=True, pre_made_base_dir=None):
@@ -64,11 +66,14 @@ class Fit(object):
         self.set_roi(roi)
         self._test_statistic = test_statistic
         self._fit_config = fit_config
+        if not self._fit_config:
+            self._fit_config = SpectraFitConfig({})
         self._data = data
         if self._data:
             self._data_pars = self.get_roi_pars(self._data)
         else:
             self._data_pars = None
+        self._fixed_background = None
         if fixed_backgrounds:  # spectra_dict in expected form
             self.make_fixed_background(fixed_backgrounds)  # sets attribute
         if self._fixed_background:
@@ -92,7 +97,8 @@ class Fit(object):
             self.shrink_all()
         self.check_all_spectra()
         if minimiser is None:  # Use default (GridSearch)
-            minimiser = GridSearch(fit_config, fit_config.get_name())
+            minimiser = GridSearch(self._fit_config,
+                                   self._fit_config.get_name())
         self._minimiser = minimiser
         # create fit results object - not required if using GridSearch.
         if (fit_results is None and
