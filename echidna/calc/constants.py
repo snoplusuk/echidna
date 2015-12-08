@@ -21,9 +21,8 @@ klz_detector = {
     "Xe134_atm_weight": 133.90539450,
     # We want the atomic weight of the enriched Xenon
     "XeEn_atm_weight": 0.9093*135.907219 + 0.0889*133.90539450,
-    # REF: Xenon @ Periodic Table of Chemical Elements,
-    #   http://www/webqc.org/periodictable-Xenon-Xe.html, 05/07/2015
-    "Xe136_abundance": 0.089,
+    # Here we want the abundance in the enriched Xenon
+    "Xe136_abundance": 0.9093,
     # REF: A. Gando et al. (KamLAND-Zen Collaboration) Phys. Rev. C. 86,
     #   021601 (2012) - both values.
     "loading": 0.0244,
