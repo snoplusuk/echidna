@@ -97,6 +97,11 @@ class Limit(object):
             #if stat > limit:
             #    return scale
         min_stat = self._stats.min()
+        # Check zero signal stat in case its not in self._stats
+        self._fitter.remove_signal()
+        stat = self._fitter.fit()
+        if stat < min_stat:
+            min_stat = stat
         self._stats -= min_stat
         try:
             i_limit = numpy.where(self._stats > limit)[0][0]

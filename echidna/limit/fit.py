@@ -410,7 +410,7 @@ class Fit(object):
             # Shrink to roi
             self.shrink_spectra(spectrum)
             # and then add projection to expected spectrum
-            if expected:
+            if expected is not None:
                 expected += spectrum.nd_project(floating_pars)
             else:
                 expected = spectrum.nd_project(floating_pars)
