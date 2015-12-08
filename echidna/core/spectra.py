@@ -75,7 +75,7 @@ class FitParameter(Parameter):
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
         self._spectra_specific = False
-        self.check_values()
+        #self.check_values()
 
     def check_values(self):
         """ Checks that the prior is in the values array.

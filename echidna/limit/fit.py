@@ -86,6 +86,9 @@ class Fit(object):
         else:  # Set both as None
             self._floating_backgrounds = None
             self._floating_pars = None
+        # Now all floating backgrounds are loaded, check par values
+        for par in self.get_fit_config().get_spectra_pars():
+            par.check_values()  # raises an error if prior is not in values
         self._signal = signal
         if self._signal:
             self._signal_pars = self.get_roi_pars(self._signal)
