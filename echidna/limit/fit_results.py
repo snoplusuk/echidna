@@ -93,3 +93,9 @@ class FitResults(object):
             self._resets += 1
             self._name = self._name[:-1] + str(self._resets)
         self._data = numpy.zeros(self.get_shape())
+
+    def set_fit_config(self, fit_config):
+        """
+        """
+        self._fit_config = fit_config
+        self.reset_grid()

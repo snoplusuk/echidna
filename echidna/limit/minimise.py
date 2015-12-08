@@ -102,7 +102,6 @@ class GridSearch(FitResults, Minimiser):
         for values, indices in self._get_fit_par_values():
             # Call funct and pass array to it
             result = funct(*values)
-            # Fill result into grid
             self._data[tuple(indices)] = result
 
         # Now grid is filled minimise
