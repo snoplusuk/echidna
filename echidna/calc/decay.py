@@ -31,10 +31,6 @@ class DBIsotope(object):
       outer_radius (float, optional): Radius of outer container
         containing fiducial volume, e.g. AV, in mm. Default is stored in
         :class:`echidna.calc.constants`
-      roi_efficiency (float, optional): Efficiency factor of ROI.
-        Calculated by dividing the integral of the spectrum, shrunk to
-        the ROI, by the integral of the full spectrum. Default is
-        0.62465 (-0.5 to 1.5 sigma integral of a standard gaussian)
 
     Attributes:
       _name (string): Name of the isotope.
@@ -53,10 +49,6 @@ class DBIsotope(object):
       _outer_radius (float): Radius of outer container containing
         fiducial volume, e.g. AV, in mm. Default is stored in
         :class:`echidna.calc.constants`
-      _roi_efficiency (float): Efficiency factor of ROI. Calculated by
-        dividing the integral of the spectrum, shrunk to the ROI, by
-        the integral of the full spectrum. Default is 0.62465 (-0.5 to
-        1.5 sigma integral of a standard gaussian)
 
     Raises:
       ValueError: If abundance is < 0. or > 1.
@@ -67,8 +59,7 @@ class DBIsotope(object):
     """
     def __init__(self, name, atm_weight_iso, atm_weight_nat, abundance,
                  phase_space, matrix_element, loading=None, fv_radius=None,
-                 outer_radius=None, scint_density=None,
-                 roi_efficiency=0.62465):
+                 outer_radius=None, scint_density=None):
         if abundance < 0. or abundance > 1.:
             raise ValueError("Abundance ranges from 0 to 1")
         self._name = name
@@ -101,12 +92,6 @@ class DBIsotope(object):
             self._scint_density = scint_density
         else:
             self._scint_density = const._scint_density
-        # Defaults to standard Gaussian efficiency for
-        # -1/2 sigma to +3/2 sigma ROI
-        self._roi_efficiency = roi_efficiency
-        if roi_efficiency != 0.62465:
-            print ("Warning: using calculated ROI efficiency %.4f "
-                   "not default (0.62465)" % roi_efficiency)
 
     def get_n_atoms(self, fv_radius=None, loading=None, scint_density=None,
                     target_mass=None, scint_mass=None, outer_radius=None):
@@ -245,14 +230,12 @@ class DBIsotope(object):
                           (self._phase_space * self._matrix_element ** 2 *
                            half_life))
 
-    def activity_to_counts(self, activity, roi_cut=True, livetime=5.):
+    def activity_to_counts(self, activity, livetime=5.):
         """ Converts activity to number of counts, assuming constant activity.
 
         Args:
           activity (float): Initial activity of the isotope in
             :math:`years^{-1}`.
-          roi_cut (bool, optional): If True (default) calculates counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -265,18 +248,13 @@ class DBIsotope(object):
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        if roi_cut:
-            return activity*livetime*self._roi_efficiency
-        else:
-            return activity*livetime
+        return activity*livetime
 
-    def counts_to_activity(self, counts, roi_cut=True, livetime=5.):
+    def counts_to_activity(self, counts, livetime=5.):
         """ Converts counts to activity, assuming constant activity.
 
         Args:
           counts (float): Number of counts.
-          roi_cut (bool, optional): If True (default) assumes counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -289,13 +267,9 @@ class DBIsotope(object):
         """
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        if roi_cut:
-            return counts/(livetime*self._roi_efficiency)
-        else:
-            return counts/livetime
+        return counts/livetime
 
-    def counts_to_eff_mass(self, counts, n_atoms=None,
-                           roi_cut=True, livetime=5.):
+    def counts_to_eff_mass(self, counts, n_atoms=None, livetime=5.):
         """ Converts from signal counts to effective majorana mass.
 
         Args:
@@ -303,8 +277,6 @@ class DBIsotope(object):
             specified.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          roi_cut (bool, optional): If True (default) assumes counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -319,20 +291,16 @@ class DBIsotope(object):
             n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        half_life = self.counts_to_half_life(counts, n_atoms,
-                                             roi_cut, livetime)
+        half_life = self.counts_to_half_life(counts, n_atoms, livetime)
         return self.half_life_to_eff_mass(half_life)
 
-    def eff_mass_to_counts(self, eff_mass, n_atoms=None,
-                           roi_cut=True, livetime=5.):
+    def eff_mass_to_counts(self, eff_mass, n_atoms=None, livetime=5.):
         """ Converts from effective majorana mass to signal counts.
 
         Args:
           eff_mass (float): Effective majorana mass in eV.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          roi_cut (bool, optional): If True (default) calculates counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -352,10 +320,9 @@ class DBIsotope(object):
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         half_life = self.eff_mass_to_half_life(eff_mass)
-        return self.half_life_to_counts(half_life, n_atoms, roi_cut, livetime)
+        return self.half_life_to_counts(half_life, n_atoms, livetime)
 
-    def half_life_to_counts(self, half_life, n_atoms=None,
-                            roi_cut=True, livetime=5.):
+    def half_life_to_counts(self, half_life, n_atoms=None, livetime=5.):
         """ Converts from isotope's half-life to signal counts.
 
         Args:
@@ -363,8 +330,6 @@ class DBIsotope(object):
             years.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          roi_cut (bool, optional): If True (default) calculates counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -380,10 +345,9 @@ class DBIsotope(object):
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
         activity = self.half_life_to_activity(half_life, n_atoms)
-        return self.activity_to_counts(activity, roi_cut, livetime)
+        return self.activity_to_counts(activity, livetime)
 
-    def counts_to_half_life(self, counts, n_atoms=None,
-                            roi_cut=True, livetime=5.):
+    def counts_to_half_life(self, counts, n_atoms=None, livetime=5.):
         """ Converts from signal count to isotope's half-life.
 
         Args:
@@ -391,8 +355,6 @@ class DBIsotope(object):
             specified.
           n_atoms (float, optional): Number of isotope atoms/nuclei that could
             potentially decay to produce signal.
-          roi_cut (bool, optional): If True (default) assumes counts
-            in the ROI, not counts in the full spectrum.
           livetime (float, optional): Amount of years of data taking.
             Default is 5 years.
 
@@ -407,7 +369,7 @@ class DBIsotope(object):
             n_atoms = self.get_n_atoms()
         if livetime <= 0.:
             raise ValueError("Livetime should be positive and non zero")
-        activity = self.counts_to_activity(counts, roi_cut, livetime)
+        activity = self.counts_to_activity(counts, livetime)
         return self.activity_to_half_life(activity, n_atoms)
 
 
@@ -435,15 +397,9 @@ def test(args):
     phase_space = 3.69e-14  # PRC 85, 034316 (2012)
     matrix_element = 4.03  # IBM-2 PRC 87, 014315 (2013)
 
-    if args.roi_efficiency:
-        te130_converter = DBIsotope("Te130", Te130_atm_weight,
-                                    TeNat_atm_weight, Te130_abundance,
-                                    phase_space, matrix_element,
-                                    signal.get_roi(0).get("efficiency"))
-    else:
-        te130_converter = DBIsotope("Te130", Te130_atm_weight,
-                                    TeNat_atm_weight, Te130_abundance,
-                                    phase_space, matrix_element)
+    te130_converter = DBIsotope("Te130", Te130_atm_weight,
+                                TeNat_atm_weight, Te130_abundance,
+                                phase_space, matrix_element)
 
     # Check get_n_atoms for 0.3% loading, no FV cut
     expected = 3.7573e27  # SNO+-doc-1728v2
@@ -523,7 +479,7 @@ def test(args):
     activity = 50.4 * (const._fv_radius**3/const._av_radius**3)
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_counts, expected, activity=activity,
-        livetime=livetime, roi_cut=True)
+        livetime=livetime)
     print message
 
     # Check counts_to_activity
@@ -532,7 +488,7 @@ def test(args):
     counts = 31.2  # ROI counts, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_activity, expected, counts=counts,
-        livetime=livetime, roi_cut=True)
+        livetime=livetime)
     print message
 
     # Check counts_to_eff_mass
@@ -541,7 +497,7 @@ def test(args):
     counts = 31.2  # ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_eff_mass,
-        expected, counts=counts, roi_cut=True)
+        expected, counts=counts)
     print message
 
     # Check eff_mass_to_counts
@@ -550,7 +506,7 @@ def test(args):
     eff_mass = te130_converter.half_life_to_eff_mass(5.17e25)
     result, message = physics_tests.test_function_float(
         te130_converter.eff_mass_to_counts,
-        expected, eff_mass=eff_mass, roi_cut=True)
+        expected, eff_mass=eff_mass)
     print message
 
     # Check half_life_to_counts
@@ -558,7 +514,7 @@ def test(args):
     half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)
     result, message = physics_tests.test_function_float(
         te130_converter.half_life_to_counts,
-        expected, half_life=half_life, roi_cut=True)
+        expected, half_life=half_life)
     print message
 
     # Check counts_to_half_life
@@ -566,7 +522,7 @@ def test(args):
     counts = 31.2  # ROI counts, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_half_life,
-        expected, counts=counts, roi_cut=True)
+        expected, counts=counts)
     print message
 
     print "============"
@@ -612,9 +568,6 @@ if __name__ == "__main__":
                                      "script and validation.")
     parser.add_argument("-s", "--signal", action=ReadableDir,
                         help="Supply path for signal hdf5 file")
-    parser.add_argument("-e", "--roi_efficiency", action="store_true",
-                        help="If ROI efficiency should be calculated to "
-                        "override default value")
     args = parser.parse_args()
 
     test(args)
