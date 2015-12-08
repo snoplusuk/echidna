@@ -152,6 +152,8 @@ class BakerCousinsChi(TestStatistic):
             observed = numpy.array([observed])
         if isinstance(expected, float):
             expected = numpy.array([expected])
+        observed = observed.astype('float')
+        expected = expected.astype('float')
         epsilon = 1e-34  # In the limit of zero
         total = 0
         for i in range(len(observed)):
@@ -184,6 +186,8 @@ class BakerCousinsChi(TestStatistic):
         epsilon = 1e-34  # In the limit of zero
         stats = []
         for i in range(len(observed)):
+            expected[i] = float(expected[i])
+            observed[i] = float(observed[i])
             if expected[i] < epsilon:
                 expected[i] = epsilon
             if observed[i] < epsilon:
@@ -207,7 +211,7 @@ class BakerCousinsChi(TestStatistic):
         Returns:
           float: Value of the penalty term
         """
-        return ((current_value - prior)/sigma) ** 2
+        return ((current_value - prior)/float(sigma)) ** 2
 
 
 class BakerCousinsLL(TestStatistic):

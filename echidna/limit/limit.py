@@ -27,6 +27,9 @@ class Limit(object):
         self._fitter.check_fit_config(signal)
         self._fitter.set_signal(signal, shrink=shrink)
         self._signal = signal
+        self._stats = numpy.zeros(
+            self._signal.get_fit_config().get_par("rate")._bins,
+            dtype=numpy.float64)
 
     def get_array_limit(self, array, limit=2.71):
         """ Get the limit from an array containing statisics
@@ -80,7 +83,7 @@ class Limit(object):
           float: The signal scaling at the limit you are setting.
         """
         par = self._signal.get_fit_config().get_par("rate")
-        for scale in par.get_values():  # Loop over all signal contributions
+        for i , scale in enumerate(par.get_values()):  # Loop signal scales
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
@@ -89,11 +92,19 @@ class Limit(object):
             stat = self._fitter.fit()
             if not isinstance(stat, float):  # Is per-bin array
                 stat = stat.sum()
-            stat -= stat_zero  # Calculate delta for test statistic
-            if stat > limit:
-                return scale
-        raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
-                         % (stat, limit))
+            self._stats[i] = stat
+            #stat -= stat_zero  # Calculate delta for test statistic
+            #if stat > limit:
+            #    return scale
+        min_stat = self._stats.min()
+        self._stats -= min_stat
+        try:
+            i_limit = numpy.where(self._stats > limit)[0][0]
+            return par.get_values()[i_limit]
+        except:
+            raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
+                             % (self._stats.max, limit))
+
 
     def get_statistics(self):
         """ Get the test statistics for all signal scalings.

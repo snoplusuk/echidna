@@ -4,7 +4,7 @@ import echidna.output.store as store
 from echidna.limit.fit_results import FitResults
 from echidna.limit.minimise import GridSearch
 from echidna.errors.custom_errors import CompatibilityError
-from echidna.core.spectra import SpectraFitConfig
+from echidna.core.spectra import Config, SpectraFitConfig
 
 import copy
 import os
@@ -61,7 +61,7 @@ class Fit(object):
     def __init__(self, roi, test_statistic, fit_config=None, data=None,
                  fixed_backgrounds=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
-                 use_pre_made=True, pre_made_base_dir=None):
+                 use_pre_made=False, pre_made_base_dir=None):
         self._checked = False
         self.set_roi(roi)
         self._test_statistic = test_statistic
@@ -235,7 +235,7 @@ class Fit(object):
           ValueError: If roi high value and spectra high value are not equal.
         """
         for dim in self._roi:
-            dim_type = self._data.get_config().get_dim_type(dim)
+            dim_type = spectra.get_config().get_dim_type(dim)
             par = dim + "_" + dim_type
             if not numpy.isclose(self._roi[dim][0],
                                  spectra.get_config().get_par(par)._low):
@@ -257,6 +257,11 @@ class Fit(object):
           :class:`echidna.core.spectra.Spectra`: The data you are fitting.
         """
         return self._data
+
+    def get_fit_config(self):
+        """
+        """
+        return self._fit_config
 
     def get_fit_results(self):
         """ Gets the fit results object for the fit.
@@ -381,7 +386,10 @@ class Fit(object):
 
         # Loop over all floating backgrounds
         observed = self._data.nd_project(self._data_pars)
-        expected = self._fixed_background.nd_project(self._fixed_pars)
+        if self._fixed_background:
+            expected = self._fixed_background.nd_project(self._fixed_pars)
+        else:
+            expected = None
         global_pars = self._fit_config.get_global_pars()
         for spectrum, floating_pars in zip(self._floating_backgrounds,
                                            self._floating_pars):
@@ -390,7 +398,7 @@ class Fit(object):
                 spectrum = self.load_pre_made(spectrum, global_pars)
             else:
                 for parameter in global_pars:
-                    par = self._fit_congfig.get_par(parameter)
+                    par = self._fit_config.get_par(parameter)
                     spectrum = par.apply_to(spectrum)
 
             # Apply spectrum-specific parameters
@@ -402,7 +410,10 @@ class Fit(object):
             # Shrink to roi
             self.shrink_spectra(spectrum)
             # and then add projection to expected spectrum
-            expected += spectrum.nd_project(floating_pars)
+            if expected:
+                expected += spectrum.nd_project(floating_pars)
+            else:
+                expected = spectrum.nd_project(floating_pars)
 
         # Add signal, if required
         if self._signal:
@@ -509,6 +520,16 @@ class Fit(object):
             self.check_spectra(data)
         self._data = data
         self._data_pars = self.get_roi_pars(data)
+
+    def set_fit_config(self, fit_config):
+        """
+        """
+        if isinstance(fit_config, Config):
+            self._fit_config = fit_config
+            self._minimiser.set_fit_config(fit_config)
+        else:
+            raise TypeError("fit_config type (%s) is invalid" %
+                            type(fit_config))
 
     def set_fixed_background(self, fixed_background, shrink=True):
         """ Sets the fixed background you want to fit.

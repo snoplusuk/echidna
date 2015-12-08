@@ -75,6 +75,20 @@ class FitParameter(Parameter):
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
         self._spectra_specific = False
+        self.check_values()
+
+    def check_values(self):
+        """ Checks that the prior is in the values array.
+
+        Raises:
+          ValueError: If prior is not in the values array.
+        """
+        values = self.get_values()
+        indices = numpy.where(values == self._prior)[0]
+        if len(indices) == 0:
+            raise ValueError("Prior not in values array. This can be achieved "
+                             "with an odd number of bins and symmetric low and "
+                             "high values about the prior.")
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -165,7 +179,7 @@ class FitParameter(Parameter):
         if len(indices) == 0:
             raise ValueError("No value %.2g found in parameter values " +
                              "for parameter %s." % (value, self._name))
-        return indices[0]
+        return int(indices[0])
 
     def get_current_value(self):
         """
@@ -194,9 +208,9 @@ class FitParameter(Parameter):
         Returns:
           float: Sigma of fit parameter - stored in :attr:`_sigma`
         """
-        if self._current_value is None:
+        if self._sigma is None:
             raise ValueError("Sigma not yet set for parameter " + self._name)
-        return self._current_value
+        return self._sigma
 
     def get_best_fit(self):
         """
@@ -1237,22 +1251,22 @@ class Spectra(object):
             # above/below to be cut.
             if numpy.fabs(new_high - kwargs[kw_high]) > (0.99 *
                                                          par.get_width()):
-                print ("WARNING: Correcting possible floating point error in "
-                       "spectra.Spectra.shrink\n%s was the input. %s is the "
-                       "calculated value for %s" % (kwargs[kw_low],
-                                                    new_low, kw_low))
+                #print ("WARNING: Correcting possible floating point error in "
+                #       "spectra.Spectra.shrink\n%s was the input. %s is the "
+                #       "calculated value for %s" % (kwargs[kw_low],
+                #                                    new_low, kw_low))
                 if (new_high - kwargs[kw_high]) > 0.0:
                     high_bin -= 1
                     new_high = par.round(par._low + high_bin * par.get_width())
                 else:
                     high_bin += 1
                     new_high = par.round(par._low + high_bin * par.get_width())
-                print "Corrected %s to %s" % (kw_low, new_low)
+                #print "Corrected %s to %s" % (kw_low, new_low)
             if numpy.fabs(new_low - kwargs[kw_low]) > (0.99 * par.get_width()):
-                print ("WARNING: Correcting possible floating point error in "
-                       "spectra.Spectra.shrink\n%s was the input. %s is the "
-                       "calculated value for %s" % (kwargs[kw_low],
-                                                    new_low, kw_low))
+                #print ("WARNING: Correcting possible floating point error in "
+                #       "spectra.Spectra.shrink\n%s was the input. %s is the "
+                #       "calculated value for %s" % (kwargs[kw_low],
+                #                                    new_low, kw_low))
                 if (new_low - kwargs[kw_low]) > 0.0:
                     low_bin -= 1
                     new_low = par._low + low_bin * par.get_width()
