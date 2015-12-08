@@ -24,8 +24,6 @@ class DBIsotope(object):
       loading (float, optional): Loading of isotope with 0 to 1
         equivalent to 0% to 100%. Default is stored in
         :class:`echidna.calc.constants`
-      fv_radius (float, optional): Radius of fiducial volume in mm.
-        Default is stored in :class:`echidna.calc.constants`
       scint_density (float, optional): Density of liquid scintillator in
         kg/mm^3. Default is stored in :class:`echidna.calc.constants`
       outer_radius (float, optional): Radius of outer container
@@ -42,8 +40,6 @@ class DBIsotope(object):
       _matrix_element (float): Matrix element of the isotope.
       _loading (float): Loading of isotope with 0 to 1 equivalent to 0%
         to 100%. Default is stored in :class:`echidna.calc.constants`
-      _fv_radius (float): Radius of fiducial volume in mm. Default is
-        stored in :class:`echidna.calc.constants`
       _scint_density (float): Density of liquid scintillator in
         kg/mm^3. Default is stored in :class:`echidna.calc.constants`
       _outer_radius (float): Radius of outer container containing
@@ -53,12 +49,9 @@ class DBIsotope(object):
     Raises:
       ValueError: If abundance is < 0. or > 1.
       ValueError: If :obj:`outer_radius` is negative or zero.
-      ValueError: If :obj:`fv_radius` is not between zero and
-        :obj:`outer_radius`.
-
     """
     def __init__(self, name, atm_weight_iso, atm_weight_nat, abundance,
-                 phase_space, matrix_element, loading=None, fv_radius=None,
+                 phase_space, matrix_element, loading=None,
                  outer_radius=None, scint_density=None):
         if abundance < 0. or abundance > 1.:
             raise ValueError("Abundance ranges from 0 to 1")
@@ -81,19 +74,12 @@ class DBIsotope(object):
             self._outer_radius = outer_radius
         else:
             self._outer_radius = const._av_radius
-        if fv_radius:
-            if fv_radius <= 0. or fv_radius > self._outer_radius:
-                raise ValueError("FV radius must be between zero and outer "
-                                 "radius")
-            self._fv_radius = fv_radius
-        else:
-            self._fv_radius = const._fv_radius
         if scint_density:
             self._scint_density = scint_density
         else:
             self._scint_density = const._scint_density
 
-    def get_n_atoms(self, fv_radius=None, loading=None, scint_density=None,
+    def get_n_atoms(self, loading=None, scint_density=None,
                     target_mass=None, scint_mass=None, outer_radius=None):
         """ Calculates the number of atoms of the double-beta isotope.
 
@@ -104,8 +90,6 @@ class DBIsotope(object):
         .. warning:: All args default to SNO+ specific values!
 
         Args:
-          fv_radius (float, optional): Radius of fiducial volume in mm.
-            Default is stored as a class variable.
           loading (float, optional): Loading of isotope with 0 to 1
             equivalent to 0% to 100%. Default is stored as a class
             variable.
@@ -122,8 +106,6 @@ class DBIsotope(object):
         Raises:
           ValueError: If :obj:`loading` is not between zero and 1.
           ValueError: If :obj:`outer_radius` is negative or zero.
-          ValueError: If :obj:`fv_radius` is not between zero and
-            :obj:`outer_radius`.
 
         Returns:
           float: Number of atoms.
@@ -134,10 +116,6 @@ class DBIsotope(object):
             outer_radius = self._outer_radius
         if outer_radius <= 0.:
             raise ValueError("Outer radius must be positive and non-zero")
-        if fv_radius is None:  # use class variable
-            fv_radius = self._fv_radius
-        if fv_radius <= 0. or fv_radius > outer_radius:
-            raise ValueError("FV radius must be between zero and outer radius")
         if loading is None:  # use class variable
             loading = self._loading
         if loading < 0. or loading > 1.:
@@ -154,10 +132,7 @@ class DBIsotope(object):
             mass_nat = self._atm_weight_nat*const._atomic_mass_unit  # kg/atom
             mass_fraction = self._abundance*mass_iso/mass_nat
 
-            # Volume fraction
-            volume_fraction = fv_radius**3 / outer_radius**3
-            target_mass = mass_fraction * volume_fraction * loading *\
-                scint_mass
+            target_mass = mass_fraction * loading * scint_mass
 
         n_atoms = (target_mass*const._n_avagadro) /\
             (self._atm_weight_iso*1.e-3)
@@ -404,7 +379,7 @@ def test(args):
     # Check get_n_atoms for 0.3% loading, no FV cut
     expected = 3.7573e27  # SNO+-doc-1728v2
     result, message = physics_tests.test_function_float(
-        te130_converter.get_n_atoms, expected, fv_radius=const._av_radius)
+        te130_converter.get_n_atoms, expected)
     print message, "(no FV cut)"
 
     # Check get_n_atoms with SNO+ defaults
@@ -424,20 +399,17 @@ def test(args):
     Xe136_abundance = 0.9093  # PRC 86, 021601 (2012)
     phase_space = 1433.0e-17  # PRC 85, 034316 (2012)
     matrix_element = 3.33  # IBM-2 PRC 87, 014315 (2013)
-    fv_radius = 1200.  # mm, PRC 86, 021601 (2012)
     loading = 0.0244  # 2.44%, PRC 86, 021601 (2012)
     scint_density = 756.28e-9  # kg/mm^3 calculated A Back 2015-07-22
     outer_radius = 1540.  # mm, PRC 86, 021601 (2012)
 
     xe136_converter = DBIsotope("Xe136", Xe136_atm_weight, XeEn_atm_weight,
                                 Xe136_abundance, phase_space, matrix_element,
-                                loading, fv_radius, outer_radius,
-                                scint_density)
+                                loading, outer_radius, scint_density)
 
     expected = 5.3985e+26  # Calculated - A Back 2015-06-30
     result, message = physics_tests.test_function_float(
-        xe136_converter.get_n_atoms, expected,
-        fv_radius=fv_radius, loading=loading,
+        xe136_converter.get_n_atoms, expected, loading=loading,
         scint_density=scint_density, outer_radius=outer_radius)
     print message, "(KamLAND-Zen)"
 
@@ -446,7 +418,7 @@ def test(args):
     half_life = 5.17e25  # y, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
     result, message = physics_tests.test_function_float(
         te130_converter.half_life_to_activity, expected, half_life=half_life,
-        n_atoms=te130_converter.get_n_atoms(fv_radius=const._av_radius))
+        n_atoms=te130_converter.get_n_atoms())
     print message, "(no FV cut)"
 
     # Check activity_to_half_life
@@ -454,7 +426,7 @@ def test(args):
     activity = 50.4  # /y, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_half_life, expected, activity=activity,
-        n_atoms=te130_converter.get_n_atoms(fv_radius=const._av_radius))
+        n_atoms=te130_converter.get_n_atoms())
     print message, "(no FV cut)"
 
     # Check eff_mass_to_half_life
@@ -476,7 +448,7 @@ def test(args):
     # ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
     expected = 31.2
     # /y SNO+-doc-2593v8 - adjusted to FV
-    activity = 50.4 * (const._fv_radius**3/const._av_radius**3)
+    activity = 50.4 
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_counts, expected, activity=activity,
         livetime=livetime)
@@ -484,7 +456,7 @@ def test(args):
 
     # Check counts_to_activity
     # /y SNO+-doc-2593v8 - adjusted to FV
-    expected = 50.4 * (const._fv_radius**3/const._av_radius**3)
+    expected = 50.4
     counts = 31.2  # ROI counts, SNO+-doc-2593v8
     result, message = physics_tests.test_function_float(
         te130_converter.counts_to_activity, expected, counts=counts,
