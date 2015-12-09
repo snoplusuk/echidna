@@ -198,7 +198,7 @@ class FitParameter(Parameter):
           float: Prior value of fit parameter - stored in
             :attr:`_prior`
         """
-        if self._current_value is None:
+        if self._prior is None:
             raise ValueError("Prior value not yet set " +
                              "for parameter " + self._name)
         return self._prior
