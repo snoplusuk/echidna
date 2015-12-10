@@ -61,6 +61,7 @@ class FitParameter(Parameter):
       _values (:class:`numpy.array`): Array of parameter values to
         test in fit.
       _best_fit (float): Best-fit value calculated by fit.
+      _penalty_term (float): Penalty term value at best fit.
       _spectra_specific (bool): Flag to show parameter applies to only
         a specific :class:`Spectra` instance.
     """
@@ -74,6 +75,7 @@ class FitParameter(Parameter):
         self._values = None  # Initially
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
+        self._penalty_term = None  # Initially
         self._spectra_specific = False
         self.check_values()
 
@@ -87,8 +89,8 @@ class FitParameter(Parameter):
         indices = numpy.where(values == self._prior)[0]
         if len(indices) == 0:
             raise ValueError("Prior not in values array. This can be achieved "
-                             "with an odd number of bins and symmetric low and "
-                             "high values about the prior.")
+                             "with an odd number of bins and symmetric low and"
+                             " high values about the prior.")
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -116,6 +118,7 @@ class FitParameter(Parameter):
             elif kw == "sigma":
                 self._sigma = float(kwargs[kw])
             elif kw == "low":
+                print "setting low to", kwargs[kw]
                 self._low = float(kwargs[kw])
             elif kw == "high":
                 self._high = float(kwargs[kw])
@@ -123,6 +126,7 @@ class FitParameter(Parameter):
                 self._bins = float(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
+        self._values = None
 
     def set_current_value(self, value):
         """ Set value for :attr:`_current_value`.
@@ -139,6 +143,15 @@ class FitParameter(Parameter):
           best_fit (float): Best fit value for parameter
         """
         self._best_fit = best_fit
+
+    def set_penalty_term(self, penalty_term):
+        """ Set value for :attr:`_penalty_term`.
+
+        Args:
+          penalty_term (float): Value for penalty term of parameter at
+            best fit.
+        """
+        self._penalty_term = penalty_term
 
     def get_values(self):
         """
@@ -226,6 +239,22 @@ class FitParameter(Parameter):
             raise ValueError("Best fit value for parameter" +
                              self._name + " has not been set")
         return self._best_fit
+
+    def get_penalty_term(self):
+        """ Gets the value of the penalty term at the best fit.
+
+        Returns:
+          float: Penalty term value of parameter at best fit - stored in
+            :attr:`_penalty_term`.
+
+        Raises:
+          ValueError: If the value of :attr:`_penalty_term` has not yet
+            been set.
+        """
+        if self._penalty_term is None:
+            raise ValueError("Penalty term value for parameter" +
+                             self._name + " has not been set")
+        return self._penalty_term
 
     def get_pre_convolved(self, directory, filename):
         """ Appends the name and current value of a the :class:`FitParameter`
@@ -1251,19 +1280,19 @@ class Spectra(object):
             # above/below to be cut.
             if numpy.fabs(new_high - kwargs[kw_high]) > (0.99 *
                                                          par.get_width()):
-                #print ("WARNING: Correcting possible floating point error in "
+                # print ("WARNING: Correcting possible floating point error in"
                 #       "spectra.Spectra.shrink\n%s was the input. %s is the "
-                #       "calculated value for %s" % (kwargs[kw_low],
-                #                                    new_low, kw_low))
+                #        "calculated value for %s" % (kwargs[kw_low],
+                #                                     new_low, kw_low))
                 if (new_high - kwargs[kw_high]) > 0.0:
                     high_bin -= 1
                     new_high = par.round(par._low + high_bin * par.get_width())
                 else:
                     high_bin += 1
                     new_high = par.round(par._low + high_bin * par.get_width())
-                #print "Corrected %s to %s" % (kw_low, new_low)
+                # print "Corrected %s to %s" % (kw_low, new_low)
             if numpy.fabs(new_low - kwargs[kw_low]) > (0.99 * par.get_width()):
-                #print ("WARNING: Correcting possible floating point error in "
+                # print ("WARNING: Correcting possible floating point error in"
                 #       "spectra.Spectra.shrink\n%s was the input. %s is the "
                 #       "calculated value for %s" % (kwargs[kw_low],
                 #                                    new_low, kw_low))

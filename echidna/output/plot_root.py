@@ -218,3 +218,103 @@ def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
         hist.Draw()
         raw_input("RET to quit")
     return hist
+
+
+def plot_stats_vs_scale(summary, graphical=True):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_stats())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Test Statistic")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_best_fit_vs_scale(summary, graphical=True):
+    """ Plots the best fit of the parameter vs signal scales as a
+      :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_best_fits())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Best fit (Decays)")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_sigma_best_fit_vs_scale(summary, graphical=True):
+    """ Plots the best fit in term of number of sigma away from the prior of
+      the parameter vs signal scales as a :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    best_fits = summary.get_best_fits()
+    prior = summary.get_prior()
+    sigma = summary.get_sigma()
+    best_fits -= prior
+    best_fits /= sigma
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(), best_fits)
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Best fit (Num. #sigma)")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_penalty_term_vs_scale(summary, graphical=True):
+    """ Plots the contribution of the penalty term to the test statistic for
+      the parameter vs signal scales as a :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_penalty_terms())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Test Statistic Penalty")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g

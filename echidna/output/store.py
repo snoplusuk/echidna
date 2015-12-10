@@ -1,4 +1,5 @@
 import echidna.core.spectra as spectra
+import echidna.limit.summary as summary
 
 import h5py
 import sys
@@ -134,6 +135,27 @@ def dump_ndarray(file_path, ndarray_object):
                                      "saved as an h5py attribute.")
 
 
+def dump_summary(file_path, summary):
+    """ Dump the limit setting summary to the file_path.
+
+    Args:
+      file_path (string): Location to save to.
+      summary (:class:`echdina.limit.summary.Summary`): The summary to save
+    """
+    with h5py.File(file_path, "w") as file_:
+        file_.attrs["name"] = summary._name
+        file_.attrs["num_scales"] = summary._num_scales
+        file_.create_dataset("best_fits", data=summary._best_fits,
+                             compression="gzip")
+        file_.create_dataset("penalty_terms", data=summary._penalty_terms,
+                             compression="gzip")
+        file_.create_dataset("scales", data=summary._scales,
+                             compression="gzip")
+        file_.create_dataset("stats", data=summary._stats, compression="gzip")
+        file_.attrs["prior"] = summary._prior
+        file_.attrs["sigma"] = summary._sigma
+
+
 def load(file_path):
     """ Load a spectra from file_path.
 
@@ -240,3 +262,25 @@ def load_ndarray(file_path, ndarray_object):
                 print " --> skipping!"
                 continue
     return ndarray_object
+
+
+def load_summary(file_path):
+    """ Load a limit setting summary from file_path.
+
+    Args:
+      file_path (string): Location to load from.
+
+    Returns:
+      :class:`echidna.limit.summary.Summary`: The Summary object.
+    """
+    with h5py.File(file_path, "r") as file_:
+        name = file_.attrs["name"]
+        num_scales = file_.attrs["num_scales"]
+        s = summary.Summary(name, num_scales)
+        s.set_best_fits(file_["best_fits"].value)
+        s.set_penalty_terms(file_["penalty_terms"].value)
+        s.set_prior(file_.attrs["prior"])
+        s.set_scales(file_["scales"].value)
+        s.set_sigma(file_.attrs["sigma"])
+        s.set_stats(file_["stats"].value)
+    return s
