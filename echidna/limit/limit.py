@@ -1,5 +1,6 @@
 import numpy
 import copy
+import collections
 import time
 
 from echidna.errors.custom_errors import LimitError, CompatibilityError
@@ -101,7 +102,7 @@ class Limit(object):
         min_stat = self._fitter.fit()
         if store_summary and \
                 self._fitter.get_floating_backgrounds() is not None:
-            summaries = {}
+            summaries = collections.OrderedDict()
             scales = par.get_values()
             for par_name in self._fitter.get_fit_config().get_pars():
                 summaries[par_name] = summary.Summary(par_name, len(scales))
@@ -135,9 +136,11 @@ class Limit(object):
         if store_summary and \
                 self._fitter.get_floating_backgrounds() is not None:
             timestamp = "%.f" % time.time()  # seconds since epoch
+            fnames = []
             for name, cur_summary in summaries.iteritems():
                 cur_summary.set_stats(self._stats)
                 fname = name + "_" + timestamp + ".hdf5"
+                fnames.append(fname)
                 store.dump_summary(fname, cur_summary)
                 print "Saved summary of %s to file %s" % (name, fname)
         try:
@@ -149,6 +152,7 @@ class Limit(object):
                     fout.write("===== Limit Summary =====\nLimit found at:\n")
                     fout.write("Signal Decays: %s\n"
                                % par.get_values()[i_limit])
+                    j = 0
                     for name, cur_summary in summaries.iteritems():
                         fout.write("--- systematic: %s ---\n" % name)
                         fout.write("Best fit: %s\n"
@@ -159,6 +163,8 @@ class Limit(object):
                                    % cur_summary.get_sigma())
                         fout.write("Penalty term: %s\n"
                                    % cur_summary.get_penalty_term(i_limit))
+                        fout.write("Summary hdf5: %s\n" % fnames[j])
+                        j += 1
                     fout.write("----------------------------\n")
                     fout.write("Test statistic: %s\n" % self._stats[i_limit])
                     fout.write("N.D.F.: 1\n")  # Only fit one dof currently
@@ -174,6 +180,7 @@ class Limit(object):
                                "Values at max test statistic:\n")
                     fout.write("Signal Decays: %s\n"
                                % par.get_values()[i_limit])
+                    j = 0
                     for name, cur_summary in summaries.iteritems():
                         fout.write("--- systematic: %s ---\n" % name)
                         fout.write("Best fit: %s\n"
@@ -184,6 +191,8 @@ class Limit(object):
                                    % cur_summary.get_sigma())
                         fout.write("Penalty term: %s\n"
                                    % cur_summary.get_penalty_term(i_limit))
+                        fout.write("Summary hdf5: %s\n" % fnames[j])
+                        j += 1
                         fout.write("----------------------------\n")
                     fout.write("Max test statistic: %s\n"
                                % self._stats[i_limit])
