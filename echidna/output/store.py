@@ -93,6 +93,10 @@ def dump(file_path, spectra):
                     spectra.get_fit_config().get_par(par)._high
                 file_.attrs["fit_pars:%s:bins" % par] = \
                     spectra.get_fit_config().get_par(par)._bins
+                file_.attrs["fit_pars:%s:logscale" % par] = \
+                    spectra.get_fit_config().get_par(par)._logscale
+                file_.attrs["fit_pars:%s:base" % par] = \
+                    spectra.get_fit_config().get_par(par)._base
         file_.attrs["num_decays"] = spectra._num_decays
         file_.attrs["raw_events"] = spectra._raw_events
         file_.attrs["bipo"] = spectra._bipo
@@ -160,7 +164,7 @@ def load(file_path):
                     fit_parameters[str(par)] = spectra.RateParameter(
                         par, 0., 0., 0., 0., 0.)
                 # Fill correct values
-                fit_parameters[str(par)].set_par(**{attr: float(value)})
+                fit_parameters[str(par)].set_par(**{attr: value})
         spec_name = file_.attrs["name"]
         spec = spectra.Spectra(
             name=spec_name, num_decays=file_.attrs["num_decays"],

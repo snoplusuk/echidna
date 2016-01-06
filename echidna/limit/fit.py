@@ -8,6 +8,7 @@ from echidna.core.spectra import Config, SpectraFitConfig
 
 import copy
 import os
+import logging
 
 
 class Fit(object):
@@ -37,6 +38,7 @@ class Fit(object):
         spectra are stored.
 
     Attributes:
+      _logger (loggging.Logger): Logger for :class:`Fit` class.
       _roi (dictionary): Region Of Interest you want to fit in. The format of
         roi is e.g. {"energy": (2.4, 2.6), "radial3": (0., 0.2)}
       _test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An
@@ -62,6 +64,7 @@ class Fit(object):
                  fixed_backgrounds=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
                  use_pre_made=False, pre_made_base_dir=None):
+        self._logger = logging.getLogger("Fit")
         self._checked = False
         self.set_roi(roi)
         self._test_statistic = test_statistic
@@ -83,13 +86,34 @@ class Fit(object):
         if floating_backgrounds:
             # Sets self._floating_backgrounds and self._floating_pars
             self.set_floating_backgrounds(floating_backgrounds)
+            if (len(self.get_fit_config().get_spectra_pars()) !=
+                    len(self._floating_backgrounds)):
+                self._logger.info(
+                    "Spectral fit parameters: %s" %
+                    str(self.get_fit_config().get_spectra_pars()))
+                raise ValueError("Number of spectral fit pars and "
+                                 "number of floating backgrounds do not match")
         else:  # Set both as None
+            if len(self.get_fit_config().get_spectra_pars()) != 0:
+                self._logger.info(
+                    "Spectral fit parameters: %s" %
+                    str(self.get_fit_config().get_spectra_pars()))
+                raise ValueError("Number of spectral fit pars and "
+                                 "number of floating backgrounds do not match")
             self._floating_backgrounds = None
             self._floating_pars = None
-        # Now all floating backgrounds are loaded, check par values
+        # Now all floating backgrounds are loaded, check fit config and par
+        # values
+        self._logger.info("Running fit with the following parameters:\n%s" %
+                          str(self.get_fit_config().get_pars()))
+        for par in self.get_fit_config().get_pars():
+            parameter = self.get_fit_config().get_par(par)
+            self._logger.debug("Parameter %s, with values:\n%s" %
+                               (par, str(parameter.get_values())))
         for par in self.get_fit_config().get_spectra_pars():
             par.check_values()  # raises an error if prior is not in values
         self._signal = signal
+        self._logger.debug("Set _test_statistic as %s" % str(test_statistic))
         if self._signal:
             self._signal_pars = self.get_roi_pars(self._signal)
         else:

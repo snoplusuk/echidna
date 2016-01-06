@@ -1,5 +1,4 @@
 import numpy
-import copy
 
 from echidna.errors.custom_errors import LimitError, CompatibilityError
 
@@ -63,7 +62,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (array[-1], limit))
 
-    def get_limit(self, limit=2.71, stat_zero=0.):
+    def get_limit(self, limit=2.71, stat_zero=None):
         """ Get the limit using the signal spectrum.
 
         Args:
@@ -83,7 +82,7 @@ class Limit(object):
           float: The signal scaling at the limit you are setting.
         """
         par = self._signal.get_fit_config().get_par("rate")
-        for i , scale in enumerate(par.get_values()):  # Loop signal scales
+        for i, scale in enumerate(par.get_values()):  # Loop signal scales
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
@@ -93,23 +92,28 @@ class Limit(object):
             if not isinstance(stat, float):  # Is per-bin array
                 stat = stat.sum()
             self._stats[i] = stat
-            #stat -= stat_zero  # Calculate delta for test statistic
-            #if stat > limit:
-            #    return scale
-        min_stat = self._stats.min()
-        # Check zero signal stat in case its not in self._stats
-        self._fitter.remove_signal()
-        stat = self._fitter.fit()
-        if stat < min_stat:
-            min_stat = stat
+        if stat_zero:  # If supplied specific stat_zero use this
+            min_stat = stat_zero
+        else:
+            # Find array minimum and fit for no signal - use whichever is
+            # smallest
+            min_stat = self._stats.min()
+            # Check zero signal stat in case its not in self._stats
+            self._fitter.remove_signal()
+            stat = self._fitter.fit()
+            if stat < min_stat:
+                min_stat = stat
+
+        # Also want to know index of minimum
+        min_bin = numpy.argmin(self._stats)
         self._stats -= min_stat
         try:
-            i_limit = numpy.where(self._stats > limit)[0][0]
-            return par.get_values()[i_limit]
-        except:
+            # Slice from min_bin upwards
+            i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
+            return par.get_values()[min_bin+i_limit]
+        except IndexError:
             raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
-                             % (self._stats.max, limit))
-
+                             % (self._stats.max(), limit))
 
     def get_statistics(self):
         """ Get the test statistics for all signal scalings.

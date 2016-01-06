@@ -5,6 +5,7 @@ import collections
 import yaml
 import copy
 import abc
+import logging
 
 
 class Parameter(object):
@@ -75,7 +76,7 @@ class FitParameter(Parameter):
         self._current_value = None  # Initially
         self._best_fit = None  # Initially
         self._spectra_specific = False
-        #self.check_values()
+        self._logger = logging.getLogger("fit_parameter")
 
     def check_values(self):
         """ Checks that the prior is in the values array.
@@ -87,8 +88,8 @@ class FitParameter(Parameter):
         indices = numpy.where(values == self._prior)[0]
         if len(indices) == 0:
             raise ValueError("Prior not in values array. This can be achieved "
-                             "with an odd number of bins and symmetric low and "
-                             "high values about the prior.")
+                             "with an odd number of bins and symmetric low "
+                             "and high values about the prior.")
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -106,6 +107,9 @@ class FitParameter(Parameter):
             * high (float): Value to set the higher limit to of the parameter
             * bins (float): Value to set the size of the bins between low and
               high of the parameter
+            * logscale (bool): Flag to create an logscale array of
+              values, rather than a linear array.
+            * base (float): Base to use when creating an logscale array.
 
         Raises:
           TypeError: Unknown variable type passed as a kwarg.
@@ -121,6 +125,10 @@ class FitParameter(Parameter):
                 self._high = float(kwargs[kw])
             elif kw == "bins":
                 self._bins = float(kwargs[kw])
+            elif kw == "logscale":
+                self._logscale = bool(kwargs[kw])
+            elif kw == "base":
+                self._base = float(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
 
@@ -130,6 +138,14 @@ class FitParameter(Parameter):
         Args:
           value (float): Current value of fit parameter
         """
+        if self._current_value is None:
+            self._logger.debug("Changing current value of %s, "
+                               "from None to %.4g" % (str(self), value))
+        else:
+            self._logger.debug("Changing current value of %s, "
+                               "from %.4g to %.4g" % (str(self),
+                                                      self._current_value,
+                                                      value))
         self._current_value = value
 
     def set_best_fit(self, best_fit):
@@ -147,7 +163,20 @@ class FitParameter(Parameter):
             fit. Stored in :attr:`_values`.
         """
         if self._values is None:  # Generate array of values
-            self._values = numpy.linspace(self._low, self._high, self._bins)
+            if self._logscale:  # Create a linear array in log-space
+                if self._low <= 0.:  # set low = -log(high)
+                    low = -numpy.log(self._high)
+                    logging.warning("Correcting fit parameter value <= 0.0")
+                    logging.debug(" --> changed to %.4g (previously %.4g)" %
+                                  (numpy.exp(low), self._low))
+                else:
+                    low = numpy.log(self._low)
+                high = numpy.log(self._high)
+                self._values = numpy.logspace(low, high, num=self._bins,
+                                              base=numpy.e)
+            else:  # Create a normal linear array
+                self._values = numpy.linspace(self._low,
+                                              self._high, self._bins)
         return self._values
 
     def get_value_at(self, index):
@@ -310,11 +339,21 @@ class RateParameter(FitParameter):
       low (float): The lower limit to float the parameter from
       high (float): The higher limit to float the parameter from
       bins (int): The number of steps between low and high values
-    """
+      logscale (bool, optional): Flag to create an logscale array of
+        values, rather than a linear array.
+      base (float, optional): Base to use when creating an logscale array.
 
-    def __init__(self, name, prior, sigma, low, high, bins):
+    Attributes:
+      _logscale (bool): Flag to create an logscale array of values,
+        rather than a linear array.
+      _base (float): Base to use when creating an logscale array.
+    """
+    def __init__(self, name, prior, sigma, low, high,
+                 bins, logscale=False, base=numpy.e):
         super(RateParameter, self).__init__(name, prior, sigma,
                                             low, high, bins)
+        self._logscale = logscale
+        self._base = base
 
     def apply_to(self, spectrum):
         """ Scales spectrum to current value of rate parameter.
@@ -330,8 +369,13 @@ class RateParameter(FitParameter):
           ValueError: If :attr:`_current_value` is not set.
         """
         if self._current_value is None:
+            self._logger.debug("Applying current value (None) to %s" %
+                               str(self))
             raise ValueError("Current value of rate parameter %s "
                              "has not been set" % self._name)
+        else:
+            self._logger.debug("Applying current value (%.4g) to %s" %
+                               (self._current_value, str(self)))
         spectrum.scale(self._current_value)
         return spectrum
 
@@ -820,7 +864,9 @@ class SpectraFitConfig(Config):
                     config['parameters'][syst]['sigma'],
                     config['parameters'][syst]['low'],
                     config['parameters'][syst]['high'],
-                    config['parameters'][syst]['bins'])
+                    config['parameters'][syst]['bins'],
+                    config['parameters'][syst]['logscale'],
+                    config['parameters'][syst]['base'])
             else:
                 raise IndexError("Unknown systematic in config %s" % syst)
         return cls(parameters, spectra_name)
