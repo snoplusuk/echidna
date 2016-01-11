@@ -63,7 +63,7 @@ class Fit(object):
     def __init__(self, roi, test_statistic, fit_config=None, data=None,
                  fixed_backgrounds=None, floating_backgrounds=None,
                  signal=None, shrink=True, minimiser=None, fit_results=None,
-                 use_pre_made=False, pre_made_base_dir=None):
+                 use_pre_made=False, pre_made_base_dir=None, single_bin=False):
         self._logger = logging.getLogger("Fit")
         self._checked = False
         self.set_roi(roi)
@@ -134,6 +134,7 @@ class Fit(object):
         self._fit_results = fit_results
         self._use_pre_made = use_pre_made
         self._pre_made_base_dir = pre_made_base_dir
+        self._single_bin = single_bin
 
     def append_fixed_background(self, spectra_dict, shrink=True):
         ''' Appends the fixed background with more spectra.
@@ -445,6 +446,11 @@ class Fit(object):
         # Add signal, if required
         if self._signal:
             expected += self._signal.nd_project(self._signal_pars)
+
+        # If single bin - sum over expected and observed
+        if self._single_bin:
+            expected = numpy.sum(expected)
+            observed = numpy.sum(observed)
 
         # Calculate value of test statistic
         test_statistic = self._test_statistic.compute_statistic(
