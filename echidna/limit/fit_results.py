@@ -2,8 +2,6 @@
 """
 import numpy
 
-import copy
-
 
 class FitResults(object):
     """ Base class for handling results of the fit.
@@ -16,6 +14,11 @@ class FitResults(object):
       name (str, optional): Name of this :class:`FitResults` class
         instance. If no name is supplied, name from fit_results will be
         taken and appended with "_results".
+      bins (tuple, optional): Number of bins (in each dimension) used
+        in fit. This is used to accommodate per-bin reporting of
+        test-statisitc.
+      num_bins (int, optional): Number of bins used in fit. This is used to
+        accommodate per-bin reporting of test-statisitc.
 
     Attributes:
       _fit_config (:class:`echidna.limit.fit.FitConfig`): Configuration
@@ -23,6 +26,8 @@ class FitResults(object):
         :class:`echidna.limit.fit.FitConfig` object in
         :class:`echidna.limit.fit.Fit`.
       _name (string): Name of this :class:`FitResults` class instance.
+      _bins (tuple): Number of bins (in each dimension) used in fit.
+        This is used to accommodate per-bin reporting of test-statisitc.
       _data (:class:`numpy.ndarray`): Array of values of the test
         statistic calculated during the fit.
       _resets (int): Number of times the grid has been reset.
@@ -31,11 +36,12 @@ class FitResults(object):
 
         >>> fit_results = FitResults(fitter.get_config())
     """
-    def __init__(self, fit_config, name=None):
+    def __init__(self, fit_config, name=None, bins=None):
         self._fit_config = fit_config
         if name is None:
             name = fit_config.get_name() + "_results"
         self._name = name
+        self._bins = bins
         self._data = numpy.zeros(self.get_shape())
         self._resets = 0
 
@@ -54,6 +60,13 @@ class FitResults(object):
         """
         return self._data
 
+    def get_name(self):
+        """
+        Returns:
+          string: Name of fit results object.
+        """
+        return self._name
+
     def get_shape(self):
         """ Determine the shape of the grid of parameter values.
 
@@ -64,6 +77,12 @@ class FitResults(object):
         for par in self._fit_config.get_pars():
             parameter = self._fit_config.get_par(par)
             shape.append(len(parameter.get_values()))
+
+        # If using per-bin monitoring need to add number of bins
+        if self._bins is not None:
+            for dimension in self._bins:
+                shape.append(dimension)
+
         return tuple(shape)
 
     def get_summary(self):

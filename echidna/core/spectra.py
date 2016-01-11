@@ -1017,6 +1017,13 @@ class Spectra(object):
         """
         return self._config
 
+    def get_data(self):
+        """
+        Returns:
+          (:class:`numpy.ndarray`): The spectral data.
+        """
+        return self._data
+
     def get_fit_config(self):
         """ Get the config of the spectra.
 
@@ -1025,6 +1032,13 @@ class Spectra(object):
             the spectra.
         """
         return self._fit_config
+
+    def get_name(self):
+        """
+        Returns:
+          string: The name of the spectra.
+        """
+        return self._name
 
     def set_fit_config(self, config):
         """ Get the config of the spectra.

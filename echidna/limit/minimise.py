@@ -13,15 +13,20 @@ class Minimiser(object):
 
     Args:
       name (string): Name of minimiser.
+      per_bin (bool, optional): Flag if minimiser should expect a
+        test statistic value per-bin.
 
     Attributes:
       _name (string): Name of minimiser.
+      _per_bin (bool, optional): Flag if minimiser should expect a
+        test statistic value per-bin.
       _type (string): Type of minimiser, e.g. GridSearch
     """
     __metaclass__ = abc.ABCMeta  # Only required for python 2
 
-    def __init__(self, name):
+    def __init__(self, name, per_bin=False):
         self._name = name
+        self._per_bin = per_bin
         self._type = None  # No type for base class
 
     @abc.abstractmethod
@@ -58,6 +63,11 @@ class GridSearch(FitResults, Minimiser):
       name (str, optional): Name of this :class:`FitResults` class
         instance. If no name is supplied, name from fit_results will be
         taken and appended with "_results".
+      bins (tuple, optional): Number of bins (in each dimension) used
+        in fit. This is used to accommodate per-bin reporting of
+        test-statisitc.
+      per_bin (bool, optional): Flag if minimiser should expect a
+        test statistic value per-bin.
       use_numpy (bool, optional): Flag to indicate whether to use the
         built-in numpy functions for minimisation and locating the
         minimum, or use the :meth:`find_minimum` method. Default is to
@@ -69,6 +79,9 @@ class GridSearch(FitResults, Minimiser):
         :class:`echidna.limit.fit.FitConfig` object in
         :class:`echidna.limit.fit.Fit`.
       _name (string): Name of this :class:`GridSearch` class instance.
+      _bins (tuple): Number of bins (in each dimension) used in fit.
+      _per_bin (bool, optional): Flag if minimiser should expect a
+        test statistic value per-bin.
       _data (:class:`numpy.ndarray`): Array of values of the test
         statistic calculated during the fit.
       _use_numpy (bool, optional): Flag to indicate whether to use the
@@ -76,10 +89,12 @@ class GridSearch(FitResults, Minimiser):
         minimum, or use the :meth:`find_minimum` method. Default is to
         use numpy.
     """
-    def __init__(self, fit_config, name=None, use_numpy=True):
-        super(GridSearch, self).__init__(fit_config, name=None)  # FitResults
+    def __init__(self, fit_config, name=None, bins=None,
+                 per_bin=False, use_numpy=True):
+        super(GridSearch, self).__init__(fit_config, name=None, bins=bins)  # FitResults
         # Minimiser __init__ won't be called, so replicate functionality
         self._name = name
+        self._per_bin = per_bin
         self._type = GridSearch
         self._use_numpy = use_numpy
 
@@ -95,33 +110,54 @@ class GridSearch(FitResults, Minimiser):
             echidna framework, the :meth:`echidna.limit.fit.Fit.funct`
             method is the recommened callable to use here.
 
+        Attributes:
+          _minimum (float): Minimum value of test statistic found.
+          _best_fit (tuple): Position of minimum.
+
         Returns:
-          float: Minimum value found during minimisation.
+          (float or :class:`numpy.ndarray`): Minimum value (or per-bin
+            array) found during minimisation.
         """
         # Loop over all possible combinations of fit parameter values
         for values, indices in self._get_fit_par_values():
             # Call funct and pass array to it
             result = funct(*values)
+
+            # Check result is of correct form
+            if self._per_bin:  # expecting numpy.ndarray
+                if not isinstance(result, numpy.ndarray):
+                    raise TypeError("Expecting result of type numpy.ndarray "
+                                    "(not %s), for per_bin enabled" %
+                                    type(result))
+                    if result.shape != self._bins:
+                        raise ValueError("Expecting result to be numpy array "
+                                         "with shape of %s (not %d), "
+                                         "for per_bin enabled" %
+                                         (str(self._bins), str(result.shape)))
             self._data[tuple(indices)] = result
 
         # Now grid is filled minimise
         self._minimum = copy.copy(self._data)
+        if self._per_bin:  # sum over bins first
+            for dimension in self._bins:
+                self._minimum = self._minimum.sum(axis=-1)  # always last axis
 
         if self._use_numpy:
-            self._minimum = numpy.nanmin(self._minimum)
             # Set best_fit values
             # This is probably not the most efficient way of doing this
-            best_fit = numpy.argmin(self._data)
-            best_fit = numpy.unravel_index(best_fit, self._data.shape)
+            best_fit = numpy.argmin(self._minimum)
+            best_fit = numpy.unravel_index(best_fit, self._minimum.shape)
+            self._minimum = numpy.nanmin(self._minimum)
         else:  # Use find_minimum method
             self._minimum, best_fit = self.find_minimum(self._minimum)
+        self._best_fit = best_fit
 
         for index, par in zip(best_fit, self._fit_config.get_pars()):
             parameter = self._fit_config.get_par(par)
             parameter.set_best_fit(parameter.get_value_at(index))
 
-        # Return minimum to limit setting
-        return self._minimum
+        # Return minimum to fitting
+        return self._data[best_fit]  # returns either float or array
 
     def _update_coords(self, coords, new_coords):
         """ Internal method called by :meth:`find_minimum` to update the

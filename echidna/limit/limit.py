@@ -89,8 +89,8 @@ class Limit(object):
             else:
                 self._fitter.remove_signal()
             stat = self._fitter.fit()
-            if not isinstance(stat, float):  # Is per-bin array
-                stat = stat.sum()
+            if isinstance(stat, numpy.ndarray):  # Is per-bin array
+                stat = numpy.sum(stat)
             self._stats[i] = stat
         if stat_zero:  # If supplied specific stat_zero use this
             min_stat = stat_zero
@@ -101,12 +101,14 @@ class Limit(object):
             # Check zero signal stat in case its not in self._stats
             self._fitter.remove_signal()
             stat = self._fitter.fit()
+            if isinstance(stat, numpy.ndarray):  # Is per-bin array
+                stat = numpy.sum(stat)
             if stat < min_stat:
                 min_stat = stat
 
         # Also want to know index of minimum
-        min_bin = numpy.argmin(self._stats)
         self._stats -= min_stat
+        min_bin = numpy.argmin(self._stats)
         try:
             # Slice from min_bin upwards
             i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
