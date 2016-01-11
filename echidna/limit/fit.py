@@ -379,6 +379,14 @@ class Fit(object):
         """
         return self._floating_backgrounds
 
+    def get_minimiser(self):
+        """ Gets the minimiser you are using.
+
+        Returns:
+          :class:`echidna.limit.minimise.Minimiser`: The minimiser
+        """
+        return self._minimiser
+
     def get_test_statistic(self):
         """ Gets the class instance you are using to calculate the test
         statistic used in the fit.
@@ -443,7 +451,7 @@ class Fit(object):
         else:  # Pass to minimiser
             if self._minimiser is None:
                 raise AttributeError("Minimiser is not set.")
-            return self._minimiser.minimise(self._funct)
+            return self._minimiser.minimise(self._funct, self._test_statistic)
 
     def _funct(self, *args):
         """ Callable to pass to minimiser.

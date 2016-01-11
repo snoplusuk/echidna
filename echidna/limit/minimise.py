@@ -98,7 +98,7 @@ class GridSearch(FitResults, Minimiser):
         self._type = GridSearch
         self._use_numpy = use_numpy
 
-    def minimise(self, funct):
+    def minimise(self, funct, test_statistic):
         """ Method to perform the minimisation.
 
         Args:
@@ -109,6 +109,8 @@ class GridSearch(FitResults, Minimiser):
             parameter values. E.g. ``def funct(*args)``. Within the
             echidna framework, the :meth:`echidna.limit.fit.Fit.funct`
             method is the recommened callable to use here.
+          test_statistic (:class:`echidna.limit.test_statistic`): The
+            test_statistic object used to calcualte the test statistics.
 
         Attributes:
           _minimum (float): Minimum value of test statistic found.
@@ -150,12 +152,15 @@ class GridSearch(FitResults, Minimiser):
             self._minimum = numpy.nanmin(self._minimum)
         else:  # Use find_minimum method
             self._minimum, best_fit = self.find_minimum(self._minimum)
-        self._best_fit = best_fit
 
         for index, par in zip(best_fit, self._fit_config.get_pars()):
             parameter = self._fit_config.get_par(par)
+            best_fit = parameter.get_value_at(index)
+            sigma = parameter.get_sigma()
+            prior = parameter.get_prior()
             parameter.set_best_fit(parameter.get_value_at(index))
-
+            parameter.set_penalty_term(test_statistic.get_penalty_term(
+                    best_fit, prior, sigma))
         # Return minimum to fitting
         return self._data[best_fit]  # returns either float or array
 

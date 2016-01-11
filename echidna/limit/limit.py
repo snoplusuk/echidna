@@ -1,6 +1,11 @@
 import numpy
+import copy
+import collections
+import time
 
 from echidna.errors.custom_errors import LimitError, CompatibilityError
+from echidna.limit import summary
+from echidna.output import store
 
 
 class Limit(object):
@@ -20,6 +25,8 @@ class Limit(object):
         to obtain a limit for.
       _fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a
         a limit with.
+      _stats (:class:`numpy.ndarray`): Data container for
+        test statistic values.
     """
     def __init__(self, signal, fitter, shrink=True):
         self._fitter = fitter
@@ -62,7 +69,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (array[-1], limit))
 
-    def get_limit(self, limit=2.71, stat_zero=None):
+    def get_limit(self, limit=2.71, stat_zero=None, store_summary=True):
         """ Get the limit using the signal spectrum.
 
         Args:
@@ -74,6 +81,14 @@ class Limit(object):
             chi-squared. Include value of test statistic for zero signal
             contribution, so this can be subtracted from the value of
             the test statistic, with signal.
+          store_summary (bool, optional):  If True (default) then a hdf5 file
+            is produced containing best fit values for systematics, total
+            delta chi-squared and penalty chi_squared of each systematic as a
+            function of signal scaling. The prior and sigma values used are
+            also stored. A log file is also produced for the values of best
+            fits and penalty chi_squared of each systematic,
+            total chi_squared, number of degrees of freedom and signal scaling
+            at the requested limit.
 
         Raises:
           LimitError: If all values in the array are below limit.
@@ -82,7 +97,21 @@ class Limit(object):
           float: The signal scaling at the limit you are setting.
         """
         par = self._signal.get_fit_config().get_par("rate")
+        # Check zero signal stat in case its not in self._stats
+        self._fitter.remove_signal()
+        min_stat = self._fitter.fit()
+        if store_summary and \
+                self._fitter.get_floating_backgrounds() is not None:
+            summaries = collections.OrderedDict()
+            scales = par.get_values()
+            for par_name in self._fitter.get_fit_config().get_pars():
+                summaries[par_name] = summary.Summary(par_name, len(scales))
+                summaries[par_name].set_scales(scales)
+                cur_par = self._fitter.get_fit_config().get_par(par_name)
+                summaries[par_name].set_prior(cur_par.get_prior())
+                summaries[par_name].set_sigma(cur_par.get_sigma())
         for i, scale in enumerate(par.get_values()):  # Loop signal scales
+            print "signal scale:", scale
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
@@ -92,6 +121,14 @@ class Limit(object):
             if isinstance(stat, numpy.ndarray):  # Is per-bin array
                 stat = numpy.sum(stat)
             self._stats[i] = stat
+            if store_summary and \
+                    self._fitter.get_floating_backgrounds() is not None:
+                summary_results = self._fitter.get_minimiser().get_summary()
+                for key in summary_results.keys():
+                    summaries[key].set_best_fit(
+                        summary_results[key]["best_fit"], i)
+                    summaries[key].set_penalty_term(
+                        summary_results[key]["penalty_term"], i)
         if stat_zero:  # If supplied specific stat_zero use this
             min_stat = stat_zero
         else:
@@ -109,13 +146,68 @@ class Limit(object):
         # Also want to know index of minimum
         self._stats -= min_stat
         min_bin = numpy.argmin(self._stats)
+
+        if (store_summary and
+                self._fitter.get_floating_backgrounds() is not None) :
+            timestamp = "%.f" % time.time()  # seconds since epoch
+            fnames = []
+            for name, cur_summary in summaries.iteritems():
+                cur_summary.set_stats(self._stats)
+                fname = name + "_" + timestamp + ".hdf5"
+                fnames.append(fname)
+                store.dump_summary(fname, cur_summary)
+                print "Saved summary of %s to file %s" % (name, fname)
         try:
             # Slice from min_bin upwards
+			log_text = ""
             i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
-            return par.get_values()[min_bin+i_limit]
+			limit = par.get_values()[min_bin+i_limit]
+            log_text.append("\n===== Limit Summary =====\nLimit found at:\n")
+            log_text.append("Signal Decays: %.4g\n" % limit)
+            j = 0
+            for name, cur_summary in summaries.iteritems():
+                log_text.append("--- systematic: %s ---\n" % name)
+                log_text.append("Best fit: %s\n"
+                           % cur_summary.get_best_fit(i_limit))
+                log_text.append("Prior: %s\n"
+                           % cur_summary.get_prior())
+                log_text.append("Sigma: %s\n"
+                           % cur_summary.get_sigma())
+                log_text.append("Penalty term: %s\n"
+                           % cur_summary.get_penalty_term(i_limit))
+                log_text.append("Summary hdf5: %s\n" % fnames[j])
+                j += 1
+            log_text.append("----------------------------\n")
+            log_text.append("Test statistic: %s\n" % self._stats[i_limit])
+            log_text.append("N.D.F.: 1\n")  # Only fit one dof currently
+			self._logger.info("\n%s" % log_text)
+            return limit
         except IndexError:
+            # Slice from min_bin upwards
+			log_text = ""
+            i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
+            log_text.append("\n===== Limit Summary =====\nLimit found at:\n")
+            log_text.append("Signal Decays: %.4g\n" % limit)
+            j = 0
+            for name, cur_summary in summaries.iteritems():
+                log_text.append("--- systematic: %s ---\n" % name)
+                log_text.append("Best fit: %s\n"
+                           % cur_summary.get_best_fit(i_limit))
+                log_text.append("Prior: %s\n"
+                           % cur_summary.get_prior())
+                log_text.append("Sigma: %s\n"
+                           % cur_summary.get_sigma())
+                log_text.append("Penalty term: %s\n"
+                           % cur_summary.get_penalty_term(i_limit))
+                log_text.append("Summary hdf5: %s\n" % fnames[j])
+                j += 1
+            log_text.append("----------------------------\n")
+            log_text.append("Test statistic: %s\n" % self._stats[i_limit])
+            log_text.append("N.D.F.: 1\n")  # Only fit one dof currently
+			self._logger.info("\n%s" % log_text)
             raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
-                             % (self._stats.max(), limit))
+                             % (self._stats.max, limit))
+
 
     def get_statistics(self):
         """ Get the test statistics for all signal scalings.

@@ -90,12 +90,15 @@ class FitResults(object):
 
         Returns:
           dict: Results of fit. Dictionary with fit parameter names as
-            keys and best fit values for paramter as values.
+            keys and a nested dictionary as values containing the keys
+            best_fit and penalty_term with the corresponding values for the
+            parameter.
         """
         fit_results = {}
         for par in self._fit_config.get_pars():
             parameter = self._fit_config.get_par(par)
-            fit_results[par] = parameter.get_best_fit()
+            fit_results[par] = {"best_fit": parameter.get_best_fit(),
+                                "penalty_term": parameter.get_penalty_term()}
         return fit_results
 
     def reset_grid(self):
