@@ -1,11 +1,13 @@
 import numpy
-import copy
-import collections
-import time
+import matplotlib.pyplot as plt
 
 from echidna.errors.custom_errors import LimitError, CompatibilityError
 from echidna.limit import summary
 from echidna.output import store
+
+import logging
+import collections
+import time
 
 
 class Limit(object):
@@ -29,13 +31,15 @@ class Limit(object):
         test statistic values.
     """
     def __init__(self, signal, fitter, shrink=True):
+        self._logger = logging.getLogger(name="Limit")
         self._fitter = fitter
         self._fitter.check_fit_config(signal)
         self._fitter.set_signal(signal, shrink=shrink)
         self._signal = signal
-        self._stats = numpy.zeros(
-            self._signal.get_fit_config().get_par("rate")._bins,
-            dtype=numpy.float64)
+        shape = tuple([self._signal.get_fit_config().get_par("rate")._bins])
+        self._stats = numpy.zeros(shape, dtype=numpy.float64)
+        shape += signal.get_data().shape
+        self._per_bin = numpy.zeros(shape, dtype=numpy.float64)
 
     def get_array_limit(self, array, limit=2.71):
         """ Get the limit from an array containing statisics
@@ -96,12 +100,24 @@ class Limit(object):
         Returns:
           float: The signal scaling at the limit you are setting.
         """
+        par = self._signal.get_config().get_par("energy_reco")
+        x = par.get_bin_centres()
+        bins = par.get_bins()
+
         par = self._signal.get_fit_config().get_par("rate")
-        # Check zero signal stat in case its not in self._stats
-        self._fitter.remove_signal()
-        min_stat = self._fitter.fit()
-        if store_summary and \
-                self._fitter.get_floating_backgrounds() is not None:
+        if stat_zero:  # If supplied specific stat_zero use this
+            min_stat = stat_zero
+        else:  # check zero signal stat in case its not in self._stats
+            self._fitter.remove_signal()
+            min_stat = self._fitter.fit()
+            location = self._fitter.get_fit_results()._location
+            per_bin_zero = self._fitter.get_fit_results().get_per_bin(location)
+            plt.hist(x, bins=bins, weights=per_bin_zero, histtype="step")
+            plt.show()
+            raw_input("RETURN to continue")
+
+        if (store_summary and
+                self._fitter.get_floating_backgrounds() is not None):
             summaries = collections.OrderedDict()
             scales = par.get_values()
             for par_name in self._fitter.get_fit_config().get_pars():
@@ -110,45 +126,41 @@ class Limit(object):
                 cur_par = self._fitter.get_fit_config().get_par(par_name)
                 summaries[par_name].set_prior(cur_par.get_prior())
                 summaries[par_name].set_sigma(cur_par.get_sigma())
+
         for i, scale in enumerate(par.get_values()):  # Loop signal scales
-            print "signal scale:", scale
+            self._logger.debug("signal scale: %.4g" % scale)
             if not numpy.isclose(scale, 0.):
                 self._signal.scale(scale)
                 self._fitter.set_signal(self._signal, shrink=False)
             else:
                 self._fitter.remove_signal()
             stat = self._fitter.fit()
-            if isinstance(stat, numpy.ndarray):  # Is per-bin array
-                stat = numpy.sum(stat)
             self._stats[i] = stat
-            if store_summary and \
-                    self._fitter.get_floating_backgrounds() is not None:
+
+            fit_results = self._fitter.get_fit_results()
+            location = fit_results._location
+            per_bin = fit_results.get_per_bin(location)
+            self._per_bin[i] = per_bin / per_bin_zero
+
+            if (store_summary and
+                    self._fitter.get_floating_backgrounds() is not None):
                 summary_results = self._fitter.get_minimiser().get_summary()
                 for key in summary_results.keys():
                     summaries[key].set_best_fit(
                         summary_results[key]["best_fit"], i)
                     summaries[key].set_penalty_term(
                         summary_results[key]["penalty_term"], i)
-        if stat_zero:  # If supplied specific stat_zero use this
-            min_stat = stat_zero
-        else:
-            # Find array minimum and fit for no signal - use whichever is
-            # smallest
+        # Find array minimum - use whichever is largest out of array min and
+        # previously calculated min_stat
+        if self._stats.min() > min_stat:
             min_stat = self._stats.min()
-            # Check zero signal stat in case its not in self._stats
-            self._fitter.remove_signal()
-            stat = self._fitter.fit()
-            if isinstance(stat, numpy.ndarray):  # Is per-bin array
-                stat = numpy.sum(stat)
-            if stat < min_stat:
-                min_stat = stat
 
         # Also want to know index of minimum
         self._stats -= min_stat
         min_bin = numpy.argmin(self._stats)
 
         if (store_summary and
-                self._fitter.get_floating_backgrounds() is not None) :
+                self._fitter.get_floating_backgrounds() is not None):
             timestamp = "%.f" % time.time()  # seconds since epoch
             fnames = []
             for name, cur_summary in summaries.iteritems():
@@ -159,55 +171,57 @@ class Limit(object):
                 print "Saved summary of %s to file %s" % (name, fname)
         try:
             # Slice from min_bin upwards
-			log_text = ""
+            log_text = ""
             i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
-			limit = par.get_values()[min_bin+i_limit]
-            log_text.append("\n===== Limit Summary =====\nLimit found at:\n")
-            log_text.append("Signal Decays: %.4g\n" % limit)
+            limit = par.get_values()[min_bin+i_limit]
+            log_text += "\n===== Limit Summary =====\nLimit found at:\n"
+            log_text += "Signal Decays: %.4g\n" % limit
             j = 0
             for name, cur_summary in summaries.iteritems():
-                log_text.append("--- systematic: %s ---\n" % name)
-                log_text.append("Best fit: %s\n"
-                           % cur_summary.get_best_fit(i_limit))
-                log_text.append("Prior: %s\n"
-                           % cur_summary.get_prior())
-                log_text.append("Sigma: %s\n"
-                           % cur_summary.get_sigma())
-                log_text.append("Penalty term: %s\n"
-                           % cur_summary.get_penalty_term(i_limit))
-                log_text.append("Summary hdf5: %s\n" % fnames[j])
+                log_text += "--- systematic: %s ---\n" % name
+                log_text += ("Best fit: %4g\n" %
+                             cur_summary.get_best_fit(i_limit))
+                log_text += "Prior: %.4g\n" % cur_summary.get_prior()
+                log_text += "Sigma: %.4g\n" % cur_summary.get_sigma()
+                log_text += ("Penalty term: %.4g\n" %
+                             cur_summary.get_penalty_term(i_limit))
+                log_text += "Summary hdf5: %s\n" % fnames[j]
                 j += 1
-            log_text.append("----------------------------\n")
-            log_text.append("Test statistic: %s\n" % self._stats[i_limit])
-            log_text.append("N.D.F.: 1\n")  # Only fit one dof currently
-			self._logger.info("\n%s" % log_text)
-            return limit
-        except IndexError:
-            # Slice from min_bin upwards
-			log_text = ""
-            i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
-            log_text.append("\n===== Limit Summary =====\nLimit found at:\n")
-            log_text.append("Signal Decays: %.4g\n" % limit)
-            j = 0
-            for name, cur_summary in summaries.iteritems():
-                log_text.append("--- systematic: %s ---\n" % name)
-                log_text.append("Best fit: %s\n"
-                           % cur_summary.get_best_fit(i_limit))
-                log_text.append("Prior: %s\n"
-                           % cur_summary.get_prior())
-                log_text.append("Sigma: %s\n"
-                           % cur_summary.get_sigma())
-                log_text.append("Penalty term: %s\n"
-                           % cur_summary.get_penalty_term(i_limit))
-                log_text.append("Summary hdf5: %s\n" % fnames[j])
-                j += 1
-            log_text.append("----------------------------\n")
-            log_text.append("Test statistic: %s\n" % self._stats[i_limit])
-            log_text.append("N.D.F.: 1\n")  # Only fit one dof currently
-			self._logger.info("\n%s" % log_text)
-            raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
-                             % (self._stats.max, limit))
+            log_text += "----------------------------\n"
+            log_text += "Test statistic: %.4f\n" % self._stats[i_limit]
+            log_text += "N.D.F.: 1\n"  # Only fit one dof currently
+            self._logger.info("\n%s" % log_text)
 
+            # per-bin
+            per_bin = self._per_bin[min_bin]
+            plt.hist(x, bins=bins, weights=per_bin, histtype="step")
+            plt.show()
+            raw_input("RETURN to continue")
+            return limit
+        except IndexError as detail:
+            # Slice from min_bin upwards
+            log_text = ""
+            i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
+            log_text += "\n===== Limit Summary =====\nLimit found at:\n"
+            log_text += "Signal Decays: %.4g\n" % limit
+            j = 0
+            for name, cur_summary in summaries.iteritems():
+                log_text += "--- systematic: %s ---\n" % name
+                log_text += ("Best fit: %.4g\n" %
+                             cur_summary.get_best_fit(i_limit))
+                log_text += "Prior: %.4g\n" % cur_summary.get_prior()
+                log_text += "Sigma: %.4g\n" % cur_summary.get_sigma()
+                log_text += ("Penalty term: %.4g\n" %
+                             cur_summary.get_penalty_term(i_limit))
+                log_text += "Summary hdf5: %s\n" % fnames[j]
+                j += 1
+            log_text += "----------------------------\n"
+            log_text += "Test statistic: %s\n" % self._stats[i_limit]
+            log_text += "N.D.F.: 1\n"  # Only fit one dof currently
+            self._logger.info("\n%s" % log_text)
+            self._logger.debug("Recieved: \nIndexError: %s" % detail)
+            raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
+                             % (self._stats.max(), limit))
 
     def get_statistics(self):
         """ Get the test statistics for all signal scalings.

@@ -221,6 +221,9 @@ class Fit(object):
         """
         if not spectra.get_fit_config():
             raise CompatibilityError("%s has no fit config" % spectra._name)
+        for par in spectra.get_fit_config().get_pars():
+            parameter = spectra.get_fit_config().get_par(par)
+            parameter.check_values()
 
     def check_fitter(self):
         """ Checks that the Fit class is ready to be used for fitting.
@@ -463,6 +466,7 @@ class Fit(object):
         Returns:
           float: Value of the test statistic given the current values
             of the fit parameters.
+          float: Total penalty term to be applied to the test statistic.
 
         Raises:
           ValueError: If :attr:`_floating_backgrounds` is None. This
@@ -529,14 +533,16 @@ class Fit(object):
             observed.ravel(), expected.ravel())
 
         # Add penalty terms
+        total_penalty = 0.
         for parameter in self._fit_config.get_pars():
             par = self._fit_config.get_par(parameter)
             current_value = par.get_current_value()
             prior = par.get_prior()
             sigma = par.get_sigma()
-            test_statistic += self._test_statistic.get_penalty_term(
+            total_penalty += self._test_statistic.get_penalty_term(
                 current_value, prior, sigma)
-        return test_statistic
+
+        return test_statistic, total_penalty
 
     def load_pre_made(self, spectrum, global_pars):
         """ Load pre-made convolved spectra.

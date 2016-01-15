@@ -123,7 +123,7 @@ class GridSearch(FitResults, Minimiser):
         # Loop over all possible combinations of fit parameter values
         for values, indices in self._get_fit_par_values():
             # Call funct and pass array to it
-            result = funct(*values)
+            result, penalty = funct(*values)
 
             # Check result is of correct form
             if self._per_bin:  # expecting numpy.ndarray
@@ -136,33 +136,32 @@ class GridSearch(FitResults, Minimiser):
                                          "with shape of %s (not %d), "
                                          "for per_bin enabled" %
                                          (str(self._bins), str(result.shape)))
-            self._data[tuple(indices)] = result
+            self._stats[tuple(indices)] = result
+            self._penalties[tuple(indices)] = penalty
 
         # Now grid is filled minimise
-        self._minimum = copy.copy(self._data)
-        if self._per_bin:  # sum over bins first
-            for dimension in self._bins:
-                self._minimum = self._minimum.sum(axis=-1)  # always last axis
+        self._minimum = self.get_fit_data()
 
         if self._use_numpy:
             # Set best_fit values
             # This is probably not the most efficient way of doing this
-            best_fit = numpy.argmin(self._minimum)
-            best_fit = numpy.unravel_index(best_fit, self._minimum.shape)
+            location = numpy.argmin(self._minimum)
+            location = numpy.unravel_index(location, self._minimum.shape)
             self._minimum = numpy.nanmin(self._minimum)
         else:  # Use find_minimum method
-            self._minimum, best_fit = self.find_minimum(self._minimum)
+            self._minimum, location = self.find_minimum(self._minimum)
 
-        for index, par in zip(best_fit, self._fit_config.get_pars()):
+        for index, par in zip(location, self._fit_config.get_pars()):
             parameter = self._fit_config.get_par(par)
             best_fit = parameter.get_value_at(index)
             sigma = parameter.get_sigma()
             prior = parameter.get_prior()
             parameter.set_best_fit(parameter.get_value_at(index))
-            parameter.set_penalty_term(test_statistic.get_penalty_term(
-                    best_fit, prior, sigma))
+            parameter.set_penalty_term(
+                test_statistic.get_penalty_term(best_fit, prior, sigma))
         # Return minimum to fitting
-        return self._data[best_fit]  # returns either float or array
+        self._location = location  # save location of minimum
+        return self._minimum  # always returns float
 
     def _update_coords(self, coords, new_coords):
         """ Internal method called by :meth:`find_minimum` to update the

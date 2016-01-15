@@ -29,7 +29,8 @@ klz_detector = {
     "ib_radius": 1540.,   # mm
     "scint_density": 7.5628e-7,  # kg/mm^3, calculated by A Back 2015-07-28
     # REF: A. Gando et al. (KamLAND-Zen Collaboration) Phys. Rev. C. 86,
-    #   021601 (2012) - both values.
+    #   021601 (2012) - all three values.
+    "target_mass": 125.,  # kg
     "livetime": 112.3 / 365.25,  # y, (112.3 live days)
     "fv_radius": 1200.
 }

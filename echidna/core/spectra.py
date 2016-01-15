@@ -79,20 +79,26 @@ class FitParameter(Parameter):
         self._penalty_term = None  # Initially
         self._spectra_specific = False
         self._logger = logging.getLogger("fit_parameter")
-        self.check_values()
+        self._logscale = None
 
     def check_values(self):
-        """ Checks that the prior is in the values array.
+        """ For symmetric arrays, check that the prior is in the values.
 
         Raises:
           ValueError: If prior is not in the values array.
         """
         values = self.get_values()
-        indices = numpy.where(values == self._prior)[0]
-        if len(indices) == 0:
-            raise ValueError("Prior not in values array. This can be achieved "
-                             "with an odd number of bins and symmetric low "
-                             "and high values about the prior.")
+        if not self._logscale:
+            indices = numpy.where(values == self._prior)[0]
+            if len(indices) == 0:
+                log_text = ""
+                log_text += "Values: %s\n" % str(values)
+                log_text += "Prior: %.4g\n" % self._prior
+                self._logger.debug("\n%s" % log_text)
+                raise ValueError("Prior not in values array. "
+                                 "This can be achieved with an odd number "
+                                 "of bins and symmetric low and high values "
+                                 "about the prior.")
 
     def set_par(self, **kwargs):
         """Set a fitting parameter's values after initialisation.
@@ -531,57 +537,26 @@ class SpectraParameter(Parameter):
         super(SpectraParameter, self).__init__("spectra", name, low, high,
                                                bins)
 
-    def set_par(self, **kwargs):
-        """Set a limit / binning parameter after initialisation.
+    def get_bin(self, x):
+        """ Gets the bin index which contains value x.
 
         Args:
-          kwargs (dict): keyword arguments
-
-        .. note::
-
-          Keyword arguments include:
-
-            * low (float): Value to set the lower limit to of the parameter
-            * high (float): Value to set the higher limit to of the parameter
-            * bins (int): Value to set the number of bins of the parameter
+          x (float): Value you wish to find the bin index for.
 
         Raises:
-          TypeError: Unknown variable type passed as a kwarg.
-        """
-        for kw in kwargs:
-            if kw == "low":
-                self._low = float(kwargs[kw])
-            elif kw == "high":
-                self._high = float(kwargs[kw])
-            elif kw == "bins":
-                self._bins = int(kwargs[kw])
-            else:
-                raise TypeError("Unhandled parameter name / type %s" % kw)
-
-    def get_unit(self):
-        """Get the default unit for a given parameter
-
-        Raises:
-          Exception: Unknown parameter.
+          ValueError: If x is less than parameter lower bounds
+          ValueError: If x is more than parameter upper bounds
 
         Returns:
-          string: Unit of the parameter
+          int: Bin index
         """
-        if self._name.split('_')[0] == "energy":
-            return "MeV"
-        if self._name.split('_')[0] == "radial":
-            return "mm"
-
-    def round(self, x):
-        """ Round the value to nearest bin edge
-
-        Args:
-          x (float): Value to round.
-
-        Returns:
-          float: The value of the closest bin edge to x
-        """
-        return round(x/self.get_width())*self.get_width()
+        if x < self._low:
+            raise ValueError("%s is below parameter lower bound %s"
+                             % (x, self._low))
+        if x > self._high:
+            raise ValueError("%s is above parameter upper bound %s"
+                             % (x, self._high))
+        return int((x - self._low) / self.get_width())
 
     def get_bin_centre(self, bin):
         """ Calculates the central value of a given bin
@@ -616,26 +591,65 @@ class SpectraParameter(Parameter):
                             self._high+self.get_width()*0.5,
                             self.get_width())
 
-    def get_bin(self, x):
-        """ Gets the bin index which contains value x.
-
-        Args:
-          x (float): Value you wish to find the bin index for.
-
-        Raises:
-          ValueError: If x is less than parameter lower bounds
-          ValueError: If x is more than parameter upper bounds
+    def get_bins(self):
+        """ Returns the bin boundaries for the parameter
 
         Returns:
-          int: Bin index
+          :class:`numpy.ndarray`: Bin boundaries for the parameter.
         """
-        if x < self._low:
-            raise ValueError("%s is below parameter lower bound %s"
-                             % (x, self._low))
-        if x > self._high:
-            raise ValueError("%s is above parameter upper bound %s"
-                             % (x, self._high))
-        return int((x - self._low) / self.get_width())
+        return numpy.linspace(self._low, self._high, self._bins+1)
+
+    def get_unit(self):
+        """Get the default unit for a given parameter
+
+        Raises:
+          Exception: Unknown parameter.
+
+        Returns:
+          string: Unit of the parameter
+        """
+        if self._name.split('_')[0] == "energy":
+            return "MeV"
+        if self._name.split('_')[0] == "radial":
+            return "mm"
+
+    def round(self, x):
+        """ Round the value to nearest bin edge
+
+        Args:
+          x (float): Value to round.
+
+        Returns:
+          float: The value of the closest bin edge to x
+        """
+        return round(x/self.get_width())*self.get_width()
+
+    def set_par(self, **kwargs):
+        """Set a limit / binning parameter after initialisation.
+
+        Args:
+          kwargs (dict): keyword arguments
+
+        .. note::
+
+          Keyword arguments include:
+
+            * low (float): Value to set the lower limit to of the parameter
+            * high (float): Value to set the higher limit to of the parameter
+            * bins (int): Value to set the number of bins of the parameter
+
+        Raises:
+          TypeError: Unknown variable type passed as a kwarg.
+        """
+        for kw in kwargs:
+            if kw == "low":
+                self._low = float(kwargs[kw])
+            elif kw == "high":
+                self._high = float(kwargs[kw])
+            elif kw == "bins":
+                self._bins = int(kwargs[kw])
+            else:
+                raise TypeError("Unhandled parameter name / type %s" % kw)
 
 
 class Config(object):
@@ -888,14 +902,8 @@ class SpectraFitConfig(Config):
         parameters = collections.OrderedDict()
         for syst in config['parameters']:
             if syst == 'rate':
-                parameters[syst] = RateParameter(
-                    syst, config['parameters'][syst]['prior'],
-                    config['parameters'][syst]['sigma'],
-                    config['parameters'][syst]['low'],
-                    config['parameters'][syst]['high'],
-                    config['parameters'][syst]['bins'],
-                    config['parameters'][syst]['logscale'],
-                    config['parameters'][syst]['base'])
+                rate_kwargs = config['parameters'][syst]
+                parameters[syst] = RateParameter(syst, **rate_kwargs)
             else:
                 raise IndexError("Unknown systematic in config %s" % syst)
         return cls(parameters, spectra_name)

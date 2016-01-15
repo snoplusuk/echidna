@@ -163,7 +163,6 @@ class BakerCousinsChi(TestStatistic):
                 bin_value = exp
             else:
                 bin_value = exp - obs + obs * numpy.log(obs / exp)
-            print bin_value
             total += bin_value
         return 2. * total
 
@@ -195,7 +194,6 @@ class BakerCousinsChi(TestStatistic):
                 bin_value = exp
             else:
                 bin_value = exp - obs + obs * numpy.log(obs / exp)
-            print bin_value
             stats.append(bin_value)
         stats = 2. * numpy.array(stats)
         if not numpy.allclose(numpy.sum(stats), not_per_bin):

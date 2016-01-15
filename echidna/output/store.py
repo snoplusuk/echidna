@@ -4,10 +4,12 @@ import echidna.limit.summary as summary
 import h5py
 import sys
 import collections
+import json
 
 
 def dict_to_string(in_dict):
-    """ Converts a dicionary to a string so it can be saved in a hdf5 file.
+    """ *** DEPRECIATED ***
+    Converts a dicionary to a string so it can be saved in a hdf5 file.
 
     Args:
       in_dict (dict): Dictionary to convert.
@@ -35,8 +37,8 @@ def dict_to_string(in_dict):
 
 
 def string_to_dict(in_string):
-    """ Converts a string to a dictionary so it can
-      be loaded from the hdf5 file.
+    """ *** DEPRECIATED ***
+    Converts a string to a dictionary so it can be loaded from the hdf5 file.
 
     Args:
       in_string (string): The string to convert into a dictionary.
@@ -84,31 +86,27 @@ def dump(file_path, spectra):
                 spectra.get_config().get_par(v)._bins
         if spectra.get_fit_config():
             for par in spectra.get_fit_config().get_pars():
-                file_.attrs["fit_pars:%s:prior" % par] = \
-                    spectra.get_fit_config().get_par(par)._prior
-                file_.attrs["fit_pars:%s:sigma" % par] = \
-                    spectra.get_fit_config().get_par(par)._sigma
-                file_.attrs["fit_pars:%s:low" % par] = \
-                    spectra.get_fit_config().get_par(par)._low
-                file_.attrs["fit_pars:%s:high" % par] = \
-                    spectra.get_fit_config().get_par(par)._high
-                file_.attrs["fit_pars:%s:bins" % par] = \
-                    spectra.get_fit_config().get_par(par)._bins
-                file_.attrs["fit_pars:%s:logscale" % par] = \
-                    spectra.get_fit_config().get_par(par)._logscale
-                file_.attrs["fit_pars:%s:base" % par] = \
-                    spectra.get_fit_config().get_par(par)._base
+                parameter = spectra.get_fit_config().get_par(par)
+                file_.attrs["fit_pars:%s:prior" % par] = parameter._prior
+                file_.attrs["fit_pars:%s:sigma" % par] = parameter._sigma
+                file_.attrs["fit_pars:%s:low" % par] = parameter._low
+                file_.attrs["fit_pars:%s:high" % par] = parameter._high
+                file_.attrs["fit_pars:%s:bins" % par] = parameter._bins
+                if parameter._logscale:
+                    file_.attrs["fit_pars:%s:logscale" % par] = \
+                        parameter._logscale
+                    file_.attrs["fit_pars:%s:base" % par] = parameter._base
         file_.attrs["num_decays"] = spectra._num_decays
         file_.attrs["raw_events"] = spectra._raw_events
         file_.attrs["bipo"] = spectra._bipo
         if len(spectra._style) == 0:
             file_.attrs["style"] = ""
         else:
-            file_.attrs["style"] = dict_to_string(spectra._style)
+            file_.attrs["style"] = json.dumps(spectra._style)
         if len(spectra._rois) == 0:
             file_.attrs["rois"] = ""
         else:
-            file_.attrs["rois"] = dict_to_string(spectra._rois)
+            file_.attrs["rois"] = json.dumps(spectra._rois)
         file_.create_dataset("data", data=spectra._data, compression="gzip")
 
 
@@ -199,10 +197,10 @@ def load(file_path):
             spec._bipo = 0
         style_dict = file_.attrs["style"]
         if len(style_dict) > 0:
-            spec._style = string_to_dict(style_dict)
+            spec._style = json.loads(style_dict)
         rois_dict = file_.attrs["rois"]
         if len(rois_dict) > 0:
-            spec._rois = string_to_dict(rois_dict)
+            spec._rois = json.loads(rois_dict)
         # else the default values of Spectra __init__ are kept
         spec._data = file_["data"].value
     return spec
