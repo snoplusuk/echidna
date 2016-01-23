@@ -35,6 +35,46 @@ class Parameter(object):
         self._high = float(high)
         self._bins = int(bins)
 
+    def get_bins(self):
+        """ Get the number of bins.
+
+        Returns:
+          int: Number of bins for this parameter.
+        """
+        return self._bins
+
+    def get_high(self):
+        """ Get the high value of the parameter
+
+        Returns:
+          float: The high value of the parameter.
+        """
+        return self._high
+
+    def get_low(self):
+        """ Get the low value of the parameter.
+
+        Returns:
+          float: The low value the parameter.
+        """
+        return self._low
+
+    def get_name(self):
+        """ Get the name of the parameter.
+
+        Returns:
+          float: The name of the parameter.
+        """
+        return self._name
+
+    def get_type(self):
+        """ Get the type of the parameter.
+
+        Returns:
+          float: The type of the parameter.
+        """
+        return self._type
+
     def get_width(self):
         """Get the width of the binning for the parameter
 
@@ -558,6 +598,14 @@ class SpectraParameter(Parameter):
                              % (x, self._high))
         return int((x - self._low) / self.get_width())
 
+    def get_bin_boundaries(self):
+        """ Returns the bin boundaries for the parameter
+
+        Returns:
+          :class:`numpy.ndarray`: Bin boundaries for the parameter.
+        """
+        return numpy.linspace(self._low, self._high, self._bins+1)
+
     def get_bin_centre(self, bin):
         """ Calculates the central value of a given bin
 
@@ -590,14 +638,6 @@ class SpectraParameter(Parameter):
         return numpy.arange(self._low+self.get_width()*0.5,
                             self._high+self.get_width()*0.5,
                             self.get_width())
-
-    def get_bins(self):
-        """ Returns the bin boundaries for the parameter
-
-        Returns:
-          :class:`numpy.ndarray`: Bin boundaries for the parameter.
-        """
-        return numpy.linspace(self._low, self._high, self._bins+1)
 
     def get_unit(self):
         """Get the default unit for a given parameter
@@ -678,6 +718,23 @@ class Config(object):
         """
         self._parameters[par._name] = par
 
+    def get_index(self, parameter):
+        """Return the index of a parameter within the existing set
+
+        Args:
+          parameter (string): Name of the parameter.
+
+        Raises:
+          IndexError: parameter is not in the config.
+
+        Returns:
+          int: Index of the parameter
+        """
+        for i, p in enumerate(self.get_pars()):
+            if p == parameter:
+                return i
+        raise IndexError("Unknown parameter %s" % parameter)
+
     def get_name(self):
         """
         Returns:
@@ -718,22 +775,17 @@ class Config(object):
         """
         return self._parameters.keys()
 
-    def get_index(self, parameter):
-        """Return the index of a parameter within the existing set
-
-        Args:
-          parameter (string): Name of the parameter.
-
-        Raises:
-          IndexError: parameter is not in the config.
+    def get_shape(self):
+        """ Get the shape of the parameter space.
 
         Returns:
-          int: Index of the parameter
+          tuple: A tuple constructed of the number of bins for each
+            parameter in the config - this can be thought of as the
+            full shape of the parameter space, whether it is the shape
+            of the parameter space for the fit, or the shape of the
+            spectral dimensions.
         """
-        for i, p in enumerate(self.get_pars()):
-            if p == parameter:
-                return i
-        raise IndexError("Unknown parameter %s" % parameter)
+        return tuple([self.get_par(par).get_bins() for par in self.get_pars()])
 
 
 class GlobalFitConfig(Config):

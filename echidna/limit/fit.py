@@ -267,21 +267,12 @@ class Fit(object):
         if self._per_bin:
             if not self._minimiser._per_bin:
                 raise ValueError("Expected per_bin True flag in minimiser")
-            if self._fit_results._bins is None:
-                raise ValueError("Expected integer value for num_bins "
-                                 "in FitResults class")
-            if not self._test_statistic._per_bin:
-                raise ValueError("Expected per_bin True flag "
-                                 "in test_statistic")
         else:
             if self._minimiser._per_bin:
                 raise ValueError("Unexpected per_bin True flag in minimiser")
-            if self._fit_results._bins is not None:
-                raise ValueError("Unexpected integer value for num_bins "
-                                 "in FitResults class, should be None")
-            if self._test_statistic._per_bin:
-                raise ValueError("Unexpected per_bin True flag "
-                                 "in test_statistic")
+
+        if not self._test_statistic._per_bin:
+            raise ValueError("Expected per_bin True flag in test_statistic")
 
         self._checked = True
 
@@ -726,13 +717,16 @@ class Fit(object):
             self.check_all_spectra()
             if self._per_bin:
                 self._minimiser = GridSearch(
-                    self._fit_config, name=self._fit_config.get_name(),
-                    bins=tuple(self._data.get_data().shape),
+                    fit_config=self._fit_config,
+                    spectra_config=self._data.get_config(),
+                    name=self._fit_config.get_name(),
                     # This assumes fitting over all dimensions
                     per_bin=self._per_bin)
             else:
                 self._minimiser = GridSearch(
-                    self._fit_config, name=self._fit_config.get_name())
+                    fit_config=self._fit_config,
+                    spectra_config=self._data.get_config(),
+                    name=self._fit_config.get_name())
             self._logger.debug("Created GridSearch (%s) to use as minimiser" %
                                self._minimiser.get_name())
 

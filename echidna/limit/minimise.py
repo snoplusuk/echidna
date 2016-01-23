@@ -26,8 +26,8 @@ class Minimiser(object):
 
     def __init__(self, name, per_bin=False):
         self._name = name
-        self._per_bin = per_bin
         self._type = None  # No type for base class
+        self._per_bin = per_bin
 
     @abc.abstractmethod
     def minimise(self, funct):
@@ -52,20 +52,20 @@ class GridSearch(FitResults, Minimiser):
     """ A grid-search minimisation algorithm.
 
     Although this is minimisation, it makes more sense for the class to
-    inherit from :class:`FitResults`, as the :attr:`_data` attribute is
+    inherit from :class:`FitResults`, as the :attr:`_stats` attribute is
     the same in both classes, as is the :attr:`_fit_config`.
 
     Args:
-      fit_config (:class:`echidna.limit.fit.FitConfig`): Configuration
-        for fit. This should be a direct copy of the
-        :class:`echidna.limit.fit.FitConfig` object in
-        :class:`echidna.limit.fit.Fit`.
+      fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Configuration
+        for fit. This should be a direct copy of the ``FitConfig``
+        in :class:`echidna.limit.fit.Fit`.
+      spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The
+        for spectra configuration. The recommended spectrum config to
+        include here is the one from the data spectrum, to which you
+        are fitting.
       name (str, optional): Name of this :class:`FitResults` class
         instance. If no name is supplied, name from fit_results will be
         taken and appended with "_results".
-      bins (tuple, optional): Number of bins (in each dimension) used
-        in fit. This is used to accommodate per-bin reporting of
-        test-statisitc.
       per_bin (bool, optional): Flag if minimiser should expect a
         test statistic value per-bin.
       use_numpy (bool, optional): Flag to indicate whether to use the
@@ -74,28 +74,41 @@ class GridSearch(FitResults, Minimiser):
         use numpy.
 
     Attributes:
-      _fit_config (:class:`echidna.limit.fit.FitConfig`): Configuration
-        for fit. This should be a direct copy of the
-        :class:`echidna.limit.fit.FitConfig` object in
-        :class:`echidna.limit.fit.Fit`.
+      _fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): The
+        configuration for fit. This should be a direct copy of the
+        ``FitConfig`` in :class:`echidna.limit.fit.Fit`.
+      _spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The
+        for spectra configuration. The recommended spectrum config to
+        include here is the one from the data spectrum, to which you
+        are fitting.
       _name (string): Name of this :class:`GridSearch` class instance.
-      _bins (tuple): Number of bins (in each dimension) used in fit.
+      _stats (:class:`numpy.ndarray`): Array of values of the test
+        statistic calculated during the fit.
+      _penalties (:class:`numpy.ndarray`): Array of values of the
+        penalty terms calculated during the fit.
+      _minimum_value (float): Minimum value of the array returned by
+        :meth:`get_fit_data`.
+      _minimum_position (tuple): Position of the test statistic minimum
+        value. The tuple contains the indices along each fit parameter
+        (dimension), acting as coordinates of the position of the
+        minimum.
+      _resets (int): Number of times the grid has been reset.
+      _type (string): Type of minimiser, e.g. GridSearch
       _per_bin (bool, optional): Flag if minimiser should expect a
         test statistic value per-bin.
-      _data (:class:`numpy.ndarray`): Array of values of the test
-        statistic calculated during the fit.
       _use_numpy (bool, optional): Flag to indicate whether to use the
         built-in numpy functions for minimisation and locating the
         minimum, or use the :meth:`find_minimum` method. Default is to
         use numpy.
     """
-    def __init__(self, fit_config, name=None, bins=None,
-                 per_bin=False, use_numpy=True):
-        super(GridSearch, self).__init__(fit_config, name=None, bins=bins)  # FitResults
+    def __init__(self, fit_config, spectra_config,
+                 name=None, per_bin=False, use_numpy=True):
+        # FitResults
+        super(GridSearch, self).__init__(fit_config, spectra_config, name=None)
         # Minimiser __init__ won't be called, so replicate functionality
         self._name = name
-        self._per_bin = per_bin
         self._type = GridSearch
+        self._per_bin = per_bin
         self._use_numpy = use_numpy
 
     def minimise(self, funct, test_statistic):
@@ -113,12 +126,11 @@ class GridSearch(FitResults, Minimiser):
             test_statistic object used to calcualte the test statistics.
 
         Attributes:
-          _minimum (float): Minimum value of test statistic found.
-          _best_fit (tuple): Position of minimum.
+          _minimum_value (float): Minimum value of test statistic found.
+          _minimum_position (tuple): Position of minimum.
 
         Returns:
-          (float or :class:`numpy.ndarray`): Minimum value (or per-bin
-            array) found during minimisation.
+          float: Minimum value found during minimisation.
         """
         # Loop over all possible combinations of fit parameter values
         for values, indices in self._get_fit_par_values():
@@ -131,27 +143,28 @@ class GridSearch(FitResults, Minimiser):
                     raise TypeError("Expecting result of type numpy.ndarray "
                                     "(not %s), for per_bin enabled" %
                                     type(result))
-                    if result.shape != self._bins:
-                        raise ValueError("Expecting result to be numpy array "
-                                         "with shape of %s (not %d), "
-                                         "for per_bin enabled" %
-                                         (str(self._bins), str(result.shape)))
-            self._stats[tuple(indices)] = result
-            self._penalties[tuple(indices)] = penalty
+                    expected_shape = self._spectra_config.get_shape()
+                    if result.shape != expected_shape:
+                        raise ValueError(
+                            "Expecting result to be numpy array with shape "
+                            "%s (not %s), for per_bin enabled" %
+                            (str(expected_shape), str(result.shape)))
+            self.set_stat(result, tuple(indices))
+            self.set_penalty_term(penalty, tuple(indices))
 
         # Now grid is filled minimise
-        self._minimum = self.get_fit_data()
+        minimum = self.get_stats()
 
         if self._use_numpy:
             # Set best_fit values
             # This is probably not the most efficient way of doing this
-            location = numpy.argmin(self._minimum)
-            location = numpy.unravel_index(location, self._minimum.shape)
-            self._minimum = numpy.nanmin(self._minimum)
+            position = numpy.argmin(minimum)
+            position = numpy.unravel_index(position, minimum.shape)
+            minimum = numpy.nanmin(minimum)
         else:  # Use find_minimum method
-            self._minimum, location = self.find_minimum(self._minimum)
+            minimum, position = self.find_minimum(minimum)
 
-        for index, par in zip(location, self._fit_config.get_pars()):
+        for index, par in zip(position, self._fit_config.get_pars()):
             parameter = self._fit_config.get_par(par)
             best_fit = parameter.get_value_at(index)
             sigma = parameter.get_sigma()
@@ -159,9 +172,11 @@ class GridSearch(FitResults, Minimiser):
             parameter.set_best_fit(parameter.get_value_at(index))
             parameter.set_penalty_term(
                 test_statistic.get_penalty_term(best_fit, prior, sigma))
+
+        self.set_minimum_value(minimum)
+        self.set_minimum_position(position)  # save position of minimum
         # Return minimum to fitting
-        self._location = location  # save location of minimum
-        return self._minimum  # always returns float
+        return minimum
 
     def _update_coords(self, coords, new_coords):
         """ Internal method called by :meth:`find_minimum` to update the
