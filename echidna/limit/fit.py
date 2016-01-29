@@ -8,6 +8,7 @@ from echidna.core.spectra import GlobalFitConfig, SpectraFitConfig
 import copy
 import os
 import logging
+import yaml
 
 
 class Fit(object):
@@ -250,14 +251,14 @@ class Fit(object):
         if self._floating_backgrounds is not None:
             if (len(self.get_fit_config().get_spectra_pars()) !=
                     len(self._floating_backgrounds)):
-                self._logger.info(
+                self._logger.error(
                     "Spectral fit parameters: %s" %
                     str(self.get_fit_config().get_spectra_pars()))
                 raise ValueError("Number of spectral fit pars and "
                                  "number of floating backgrounds do not match")
         else:
             if len(self.get_fit_config().get_spectra_pars()) != 0:
-                self._logger.info(
+                self._logger.error(
                     "Spectral fit parameters: %s" %
                     str(self.get_fit_config().get_spectra_pars()))
                 raise ValueError("Expected 0 spectral fit pars for "
@@ -277,12 +278,13 @@ class Fit(object):
         self._checked = True
 
         self._logger.info("Fitter checked!")
-        self._logger.info("Running fit with the following parameters:\n%s" %
-                          str(self.get_fit_config().get_pars()))
+        self._logger.info("Running fit with the following parameters:")
+        logging.getLogger("extra").info(
+            yaml.dump(self.get_fit_config().dump(basic=True)))
         for par in self.get_fit_config().get_pars():
             parameter = self.get_fit_config().get_par(par)
-            self._logger.debug("Parameter %s, with values:\n%s" %
-                               (par, str(parameter.get_values())))
+            self._logger.debug("Parameter %s, with values:\n\n" % par)
+            logging.getLogger("extra").debug(str(parameter.get_values()))
 
     def check_roi(self, roi):
         """ Checks the ROI used to fit.

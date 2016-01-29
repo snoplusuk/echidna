@@ -143,6 +143,7 @@ class Limit(object):
             else:  # use ReducedSummary
                 limit_summary = summary.ReducedSummary(
                     summary_name, len(scales),
+                    spectra_config=self._signal.get_config(),
                     fit_config=self._fitter.get_fit_config())
             limit_summary.set_scales(scales)
 
@@ -203,8 +204,10 @@ class Limit(object):
         try:
             # Slice from min_bin upwards
             log_text = ""
-            i_limit = numpy.where(self._stats[min_bin:] > limit)[0][0]
+            i_limit = numpy.where(stats[min_bin:] > limit)[0][0]
             limit = par.get_values()[min_bin + i_limit]
+            summary.set_limit(limit)
+            summary.set_limit_idx(min_bin + i_limit)
             log_text += "\n===== Limit Summary =====\nLimit found at:\n"
             log_text += "Signal Decays: %.4g\n" % limit
             for parameter in self._fitter.get_fit_config().get_pars():
@@ -219,14 +222,14 @@ class Limit(object):
                              limit_summary.get_penalty_term(i_limit,
                                                             parameter))
             log_text += "----------------------------\n"
-            log_text += "Test statistic: %.4f\n" % self._stats[i_limit]
+            log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
-            self._logger.info("\n%s" % log_text)
+            logging.getLogger("extra").info("\n%s\n" % log_text)
             return limit
         except IndexError as detail:
             # Slice from min_bin upwards
             log_text = ""
-            i_limit = numpy.argmax(self._stats[min_bin:])
+            i_limit = numpy.argmax(stats[min_bin:])
             limit = par.get_values()[min_bin + i_limit]
             log_text += "\n===== Limit Summary =====\nNo limit found:\n"
             log_text += "Signal Decays (at max stat): %.4g\n" % limit
@@ -242,10 +245,10 @@ class Limit(object):
                              limit_summary.get_penalty_term(i_limit,
                                                             parameter))
             log_text += "----------------------------\n"
-            log_text += "Test statistic: %.4f\n" % self._stats[i_limit]
+            log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
-            self._logger.info("\n%s" % log_text)
-            self._logger.debug("Recieved: \nIndexError: %s" % detail)
+            logging.getLogger("extra").info("\n%s" % log_text)
+            self._logger.error("Recieived: IndexError: %s" % detail)
             raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                              % (self._stats.max(), limit))
 

@@ -36,6 +36,9 @@ class Summary(object):
         each corresponding signal scale.
       _priors (float): The prior values of each fit parameter
       _sigma (float): The systematic uncertainty value of the fit parameter
+      _limit (float): Signal determined to be the limit
+      _limit_idx (int): Position in :attr:`_scales` array corresponding
+        to limit.
     """
     def __init__(self, name, num_scales, spectra_config, fit_config):
         """ Initialises the summary data container
@@ -53,6 +56,8 @@ class Summary(object):
         self._stats = numpy.zeros(shape=stats_shape, dtype=float)
         self._priors = numpy.zeros(shape=len(self._fit_config.get_pars()))
         self._sigmas = numpy.zeros(shape=len(self._fit_config.get_pars()))
+        self._limit = None
+        self._limit_idx = None
 
     def get_best_fits(self, parameter=None):
         """ Gets the best_fits array.
@@ -118,6 +123,32 @@ class Summary(object):
             return self._best_fits[idx][par_num]
         else:  # unrecognised parameter
             raise IndexError("Unknown parameter %s" % parameter)
+
+    def get_fit_config(self):
+        """ Gets the fit config of the summary object
+
+        Returns:
+          :class:`echidna.core.spectra.GlobalFitConfig`: The fit config
+            of the summary object.
+        """
+        return self._fit_config
+
+    def get_limit(self):
+        """ Gets the limit scaling determined.
+
+        Returns:
+          float: Signal scaling corresponding to the limit.
+        """
+        return self._limit
+
+    def get_limit_idx(self):
+        """ Gets the position in :attr:`scales` corresponding to the
+        determined limit.
+
+        Returns:
+          int: Position in :attr:`_scales` corresponding to the limit.
+        """
+        return self._limit_idx
 
     def get_name(self):
         """ Gets the name of the summary object
@@ -300,6 +331,15 @@ class Summary(object):
         else:  # unrecognised parameter
             raise IndexError("Unknown parameter %s" % parameter)
 
+    def get_spectra_config(self):
+        """ Gets the spectra config of the summary object
+
+        Returns:
+          :class:`echidna.core.spectra.SpectraConfig`: The spectra config
+            of the summary object.
+        """
+        return self._spectra_config
+
     def get_stats(self):
         """ Gets the total test statistics array.
 
@@ -410,6 +450,24 @@ class Summary(object):
             raise TypeError("best_fit must be a float")
         par_num = self._fit_config.get_index(parameter)
         self._best_fits[idx][par_num] = best_fit
+
+    def set_limit(self, limit):
+        """ Sets the limit scaling determined.
+
+        Args:
+          limit (float): Signal scaling corresponding to the limit.
+        """
+        self._limit = limit
+
+    def set_limit_idx(self, limit_idx):
+        """ Sets the position in :attr:`scales` corresponding to the
+        determined limit.
+
+        Args:
+          limit_idx (int): Position in :attr:`_scales` corresponding to
+            the limit.
+        """
+        self._limit_idx = limit_idx
 
     def set_name(self, name):
         """ Sets the name of the summary object
@@ -613,6 +671,8 @@ class ReducedSummary(Summary):
     Args:
       name (string): Name of the summary object.
       num_scales (int): Number of signal scales used in the limit setting.
+      spectra_config (:class:`echidna.core.spectra.SpectraConfig`): Config
+        for the signal spectrum.
       fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Fit
         config used during limit setting.
 
@@ -633,12 +693,16 @@ class ReducedSummary(Summary):
         each corresponding signal scale.
       _priors (float): The prior values of each fit parameter
       _sigma (float): The systematic uncertainty value of the fit parameter
+      _limit (float): Signal determined to be the limit
+      _limit_idx (int): Position in :attr:`_scales` array corresponding
+        to limit.
     """
-    def __init__(self, name, num_scales, fit_config):
+    def __init__(self, name, num_scales, spectra_config, fit_config):
         """ Initialises the summary data container
         """
         self._name = name
         self._num_scales = num_scales
+        self._spectra_config = spectra_config
         self._fit_config = fit_config
         pars_shape = (num_scales, len(self._fit_config.get_pars()))
         self._best_fits = numpy.zeros(shape=pars_shape, dtype=float)
@@ -648,6 +712,8 @@ class ReducedSummary(Summary):
         self._stats = numpy.zeros(shape=stats_shape, dtype=float)
         self._priors = numpy.zeros(shape=len(self._fit_config.get_pars()))
         self._sigmas = numpy.zeros(shape=len(self._fit_config.get_pars()))
+        self._limit = None
+        self._limit_idx = None
 
     def get_stats(self):
         """ Gets the total test statistics array.
