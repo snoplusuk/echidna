@@ -351,7 +351,7 @@ class Summary(object):
         """
         total_penalties = numpy.sum(self._penalty_terms, axis=-1)
         total_stats = copy.copy(self._stats)
-        for axis, parameter in self._spectra_config.get_pars():
+        for axis, parameter in enumerate(self._spectra_config.get_pars()):
             axis += 1  # first axis is always signal scale
             total_stats = numpy.sum(total_stats, axis=axis)
         return total_stats + total_penalties
@@ -369,7 +369,7 @@ class Summary(object):
         """
         total_penalty = numpy.sum(self.get_penalty_term(idx))
         total_stat = copy.copy(self._stats[idx])
-        for axis, parameter in self._spectra_config.get_pars():
+        for axis, parameter in enumerate(self._spectra_config.get_pars()):
             axis += 1  # first axis is always signal scale
             total_stat = numpy.sum(total_stat, axis=axis)
         return total_stat + total_penalty
@@ -388,7 +388,7 @@ class Summary(object):
             which to project the test statistic values.
         """
         projection = copy.copy(self._stats)
-        for axis, parameter in self._spectra_config.get_pars():
+        for axis, parameter in enumerate(self._spectra_config.get_pars()):
             axis += 1  # first axis is always signal scale
             if parameter not in parameters:
                 projection = numpy.sum(projection, axis=axis)
@@ -409,7 +409,7 @@ class Summary(object):
             which to project the test statistic values.
         """
         projection = copy.copy(self._stats)[idx]
-        for axis, parameter in self._spectra_config.get_pars():
+        for axis, parameter in enumerate(self._spectra_config.get_pars()):
             if parameter not in parameters:
                 projection = numpy.sum(projection, axis=axis)
         return projection

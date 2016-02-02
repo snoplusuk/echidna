@@ -179,17 +179,16 @@ class FitParameter(Parameter):
           ValueError: If prior is not in the values array.
         """
         values = self.get_values()
-        if not self._logscale:
-            indices = numpy.where(values == self._prior)[0]
-            if len(indices) == 0:
-                log_text = ""
-                log_text += "Values: %s\n" % str(values)
-                log_text += "Prior: %.4g\n" % self._prior
-                logging.getLogger("extra").warning("\n%s\n" % log_text)
-                raise ValueError("Prior not in values array. "
-                                 "This can be achieved with an odd number "
-                                 "of bins and symmetric low and high values "
-                                 "about the prior.")
+        if not numpy.any(numpy.around(values / self._prior, 12) ==
+                         numpy.around(1., 12)):
+            log_text = ""
+            log_text += "Values: %s\n" % str(values)
+            log_text += "Prior: %.4g\n" % self._prior
+            logging.getLogger("extra").warning("\n%s\n" % log_text)
+            raise ValueError("Prior not in values array. "
+                             "This can be achieved with an odd number "
+                             "of bins and symmetric low and high values "
+                             "about the prior.")
 
     def get_best_fit(self):
         """
@@ -719,7 +718,7 @@ class SpectraParameter(Parameter):
           :class:`numpy.ndarray`: Bin centres of parameter.
         """
         return numpy.arange(self._low+self.get_width()*0.5,
-                            self._high+self.get_width()*0.5,
+                            self._high,
                             self.get_width())
 
     def get_unit(self):

@@ -2,6 +2,7 @@ import numpy
 
 import echidna.output.store as store
 from echidna.limit.minimise import GridSearch
+from echidna.limit.fit_results import FitResults
 from echidna.errors.custom_errors import CompatibilityError
 from echidna.core.spectra import GlobalFitConfig, SpectraFitConfig
 
@@ -13,6 +14,12 @@ import yaml
 
 class Fit(object):
     """ Class to handle fitting.
+
+    .. warning:: The :class:`Fit` initialisation will try to set
+      atrributes using the values provided. If a value is not provided
+      echidna will attempt to set the default. If this is not possible
+      a warning will be raised and you will have to set this attribute
+      manually before calling :meth:`fit`.
 
     Args:
       roi (dictionary): Region Of Interest you want to fit in. The format of
@@ -93,18 +100,26 @@ class Fit(object):
         else:  # set both as None for now
             self._data = None
             self._data_pars = None
+            self._logger.warning("Data has not been set. This must be set "
+                                 "manually before running the fit.")
 
         if fixed_backgrounds:  # spectra_dict in expected form
             self.make_fixed_background(fixed_backgrounds)  # sets attribute
         else:  # set both as None for now
             self._fixed_background = None
             self._fixed_pars = None
+            self._logger.warning("Fixed background has not been set. Either "
+                                 "fixed background or at least one floating "
+                                 "is required to run the fit.")
 
         if floating_backgrounds:
             self.set_floating_backgrounds(floating_backgrounds)
         else:  # Set both as None for now
             self._floating_backgrounds = None
             self._floating_pars = None
+            self._logger.warning("No floating background has been set. Either "
+                                 "fixed background or at least one floating "
+                                 "is required to run the fit.")
 
         # Now all floating backgrounds are loaded, check fit par values
         for par in self.get_fit_config().get_spectra_pars():
@@ -115,23 +130,28 @@ class Fit(object):
         else:  # Set both as None for now
             self._signal = None
             self._signal_pars = None
+            self._logger.warning("No signal has been set.")
 
         if shrink:
             self.shrink_all()
 
-        self.check_all_spectra()
         self._per_bin = per_bin
 
-        if minimiser:
-            self._set_minimiser(minimiser)
-        else:
-            if len(self.get_fit_config().get_pars()) != 0:
-                # Use default (GridSearch)
-                self.set_minimiser()
-            else:
-                self._minimiser = None
+        # Try to set minimiser and fit_results
+        # Will only work if check_all_spectra passes.
+        try:
+            self.set_minimiser(minimiser)
+        except CompatibilityError as detail:
+            self._minimiser = None
+            self._logger.warning("Minimiser could not be set because: %s" %
+                                 detail)
 
-        self.set_fit_results()
+        try:
+            self.set_fit_results(fit_results)
+        except CompatibilityError as detail:
+            self._fit_results = None
+            self._logger.warning("Fit results could not be set because: %s" %
+                                 detail)
 
         self._use_pre_made = use_pre_made
         self._pre_made_base_dir = pre_made_base_dir
@@ -230,24 +250,21 @@ class Fit(object):
         """ Checks that the Fit class is ready to be used for fitting.
 
         Raises:
-          CompatibilityError: If no data spectrum is present.
-          CompatibilityError: If no fixed or floating backgrounds spectra are
-            present.
+          IndexError: If fit config contains no parameters
           ValueError: If number of floating backgrounds and number of
             spectral fit parameters do not match.
+          AttributeError: If :attr:`_minimiser` has not been set.
+          AttributeError: If :attr:`_fit_results` has not been set.
           ValueError: If (un)expected per_bin flag in minimiser.
           ValueError: If (un)expected integer value for num_bins, in
             fit_results.
           ValueError: If (un)expected per_bin flag in test_statistic.
         """
-        if not self._data:
-            raise CompatibilityError("No data spectrum exists in the fitter.")
-        if not self._fixed_background and not self._floating_backgrounds:
-            raise CompatibilityError("No fixed or floating backgrounds exist "
-                                     "in the fitter.")
-
         self.check_all_spectra()
 
+        # Check fit parameters
+        if len(self.get_fit_config().get_pars()) == 0:
+            raise IndexError("No parameters found in fit config.")
         if self._floating_backgrounds is not None:
             if (len(self.get_fit_config().get_spectra_pars()) !=
                     len(self._floating_backgrounds)):
@@ -263,6 +280,12 @@ class Fit(object):
                     str(self.get_fit_config().get_spectra_pars()))
                 raise ValueError("Expected 0 spectral fit pars for "
                                  "no floating backgrounds")
+
+        # Check minimiser and fit results
+        if self._minimiser is None:
+            raise AttributeError("Minimiser has not been set.")
+        if self._fit_results is None:
+            raise AttributeError("Fit results has not been set.")
 
         # Check per_bin propagation
         if self._per_bin:
@@ -651,18 +674,25 @@ class Fit(object):
         Args:
           fit_results (:class:`FitResults`, optional): The fit results
             instance.
+        Raises:
+          IndexError: If fit config contains no parameters.
         """
+        self.check_all_spectra()  # All spectra should be set and checked first
         if fit_results:
             self._fit_results = fit_results
             self._logger.debug("Setting %s as fit_results" %
                                fit_results.get_name())
         else:  # If using GridSearch minimiser this is should befit_results
+            if len(self.get_fit_config().get_pars()) == 0:
+                raise IndexError("No parameters found in fit config.")
             if isinstance(self._minimiser, GridSearch):
                 self._fit_results = self._minimiser
                 self._logger.debug("Setting GridSearch (%s) as fit_results" %
                                    self._minimiser.get_name())
             else:
-                self._fit_results = None
+                self._fit_results = FitResults(
+                    self._fit_config, copy.copy(self._data.get_config()),
+                    name=self._fit_config.get_name())
 
     def set_fixed_background(self, fixed_background, shrink=True):
         """ Sets the fixed background you want to fit.
@@ -710,13 +740,18 @@ class Fit(object):
         Args:
           minimiser (:class:`echidna.limit.minimise.Minimiser`, optional): The
             minimiser to use in the fit.
+
+        Raises:
+          IndexError: If fit config contains no parameters.
         """
+        self.check_all_spectra()  # All spectra should be set and checked first
         if minimiser:
             self._minimiser = minimiser
             self._logger.debug("Setting %s as minimiser" %
                                minimiser.get_name())
         else:  # Use default GridSearch
-            self.check_all_spectra()
+            if len(self.get_fit_config().get_pars()) == 0:
+                raise IndexError("No parameters found in fit config.")
             if self._per_bin:
                 self._minimiser = GridSearch(
                     fit_config=self._fit_config,

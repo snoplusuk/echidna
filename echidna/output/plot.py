@@ -72,9 +72,11 @@ def plot_projection(spectra, dimension, fig_num=1, show_plot=True):
     x = _produce_axis(spectra, dimension)
 
     data = spectra.project(dimension)
-    axis.hist(x, bins, weights=data, histtype="step")
+    style = spectra.get_style()
+    axis.hist(x, bins, weights=data, histtype="step", **style)
     plt.xlabel("%s (%s)" % (dimension, par.get_unit()))
     plt.ylabel("Count per %.2g %s bin" % (width, par.get_unit()))
+    plt.legend()
     if show_plot:
         plt.show()
     return fig

@@ -173,9 +173,9 @@ class Limit(object):
                     limit_summary.set_penalty_term(value.get("penalty_term"),
                                                    i, par_name)
                 if self._per_bin:
-                    minimum_position = fit_results.get_minimim_position()
+                    minimum_position = fit_results.get_minimum_position()
                     # Get per_bin array getting stats at minimum position
-                    min_per_bin = fit_results.get_stat(minimum_position)
+                    min_per_bin = fit_results.get_raw_stat(minimum_position)
                     limit_summary.set_stat(min_per_bin, i)
                 else:  # just use single stat
                     limit_summary.set_stat(stat, i)
@@ -195,19 +195,13 @@ class Limit(object):
         # Also want to know index of minimum
         min_bin = numpy.argmin(stats)
 
-        if (store_summary and self._fitter.get_fit_config() is not None):
-            timestamp = "%.f" % time.time()  # seconds since epoch
-            fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
-            store.dump_summary(fname, limit_summary)
-            self._logger.info("Saved summary of %s to file %s" %
-                              (limit_summary.get_name(), fname))
         try:
             # Slice from min_bin upwards
             log_text = ""
             i_limit = numpy.where(stats[min_bin:] > limit)[0][0]
             limit = par.get_values()[min_bin + i_limit]
-            summary.set_limit(limit)
-            summary.set_limit_idx(min_bin + i_limit)
+            limit_summary.set_limit(limit)
+            limit_summary.set_limit_idx(min_bin + i_limit)
             log_text += "\n===== Limit Summary =====\nLimit found at:\n"
             log_text += "Signal Decays: %.4g\n" % limit
             for parameter in self._fitter.get_fit_config().get_pars():
@@ -225,7 +219,25 @@ class Limit(object):
             log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
             logging.getLogger("extra").info("\n%s\n" % log_text)
+
+            if (store_summary and self._fitter.get_fit_config() is not None):
+                timestamp = "%.f" % time.time()  # seconds since epoch
+                fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
+                store.dump_summary(fname, limit_summary)
+                store.dump(fname, self._fitter.get_data(),
+                           append=True, group_name="data")
+                store.dump(fname, self._fitter.get_fixed_background(),
+                           append=True, group_name="fixed")
+                for background in self._fitter.get_floating_backgrounds():
+                    store.dump(fname, background, append=True,
+                               group_name=background.get_name())
+                store.dump(fname, self._signal,
+                           append=True, group_name="signal")
+                self._logger.info("Saved summary of %s to file %s" %
+                                  (limit_summary.get_name(), fname))
+
             return limit
+
         except IndexError as detail:
             # Slice from min_bin upwards
             log_text = ""
@@ -248,6 +260,23 @@ class Limit(object):
             log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
             logging.getLogger("extra").info("\n%s" % log_text)
+
+            if (store_summary and self._fitter.get_fit_config() is not None):
+                timestamp = "%.f" % time.time()  # seconds since epoch
+                fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
+                store.dump_summary(fname, limit_summary)
+                store.dump(fname, self._fitter.get_data(),
+                           append=True, group_name="data")
+                store.dump(fname, self._fitter.get_fixed_background(),
+                           append=True, group_name="fixed")
+                for background in self._fitter.get_floating_backgrounds():
+                    store.dump(fname, background, append=True,
+                               group_name=background.get_name())
+                store.dump(fname, self._signal,
+                           append=True, group_name="signal")
+                self._logger.info("Saved summary of %s to file %s" %
+                                  (limit_summary.get_name(), fname))
+
             self._logger.error("Recieived: IndexError: %s" % detail)
             raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                              % (self._stats.max(), limit))
