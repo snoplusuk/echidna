@@ -50,12 +50,12 @@ class ReadableDir(argparse.Action):
         else:
             raise TypeError("Invalid type for arg.")
         for prospective_dir in prospective_dirs:
-            if not os.path.isfile(prospective_dir):
-                raise argparse.ArgumentTypeError(
-                    "ReadableDir:{0} not a valid path".format(prospective_dir))
             if not os.access(prospective_dir, os.R_OK):
                 raise argparse.ArgumentTypeError(
                     "ReadableDir:{0} is not readable".format(prospective_dir))
+            if not os.path.isfile(prospective_dir):
+                raise argparse.ArgumentTypeError(
+                    "ReadableDir:{0} not a valid path".format(prospective_dir))
         setattr(namespace, self.dest, values)  # keeps original format
 
 if __name__ == "__main__":

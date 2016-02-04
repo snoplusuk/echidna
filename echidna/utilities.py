@@ -4,6 +4,7 @@ echidna.
 import numpy
 
 import echidna
+import echidna.output as output
 
 import time
 import logging
@@ -107,6 +108,9 @@ class DispatchingFormatter:
         return formatter.format(record)
 
 
+logger_set = False  # Create flag for logger set/un-set
+
+
 def start_logging(short_name=False, script_name=True):
     """ Function to initialise logging output.
 
@@ -123,12 +127,19 @@ def start_logging(short_name=False, script_name=True):
     Returns:
       :class:`logging.Logger`: Logger to use in script.
     """
+    global logger_set  # use module-level variable
+
     # Get current module
     current_module = inspect.getouterframes(inspect.currentframe())[1][1]
     current_module = current_module[
         current_module.rfind("/")+1:current_module.rfind(".")]
 
+    if logger_set:  # Don't need to create
+        logging.info("Starting script: %s.py" % current_module)
+        return logging.getLogger(name=current_module)
+
     # Set up logging to file
+    path = output.__default_save_path__ + "/"
     filename = "echidna"
     if script_name:
         filename += "." + current_module
@@ -137,12 +148,12 @@ def start_logging(short_name=False, script_name=True):
     filename += ".log"
 
     # Format filename.py:XX [function_name()] LEVEL: message
-    FORMAT = ("%(filename)s:%(lineno)s [%(funcName)-20s()] "
+    FORMAT = ("%(filename)s:%(lineno)s [%(funcName)s()] "
               "%(levelname)-8s: %(message)s")
     logging.basicConfig(
         level=logging.DEBUG,  # Include all logging levels in file
         format=FORMAT,
-        filename=filename,
+        filename=path+filename,
         filemode='w')
 
     # Define Handler which writes INFO messages or higher to the sys.stdout
@@ -176,8 +187,12 @@ def start_logging(short_name=False, script_name=True):
 
     # Start logging
     logging.info("echidna-v%s" % echidna.__version__)
-    logging.info("Saving logfile to %s" % filename)
+    logging.info("Saving logfile to %s" % path + filename)
     logging.info("Starting script: %s.py" % current_module)
     logging.getLogger("extra").info("Use the 'extra' logger at any time "
                                     "to add extra information.")
+
+    # Mark logger as set
+    logger_set = True
+
     return logging.getLogger(name=current_module)

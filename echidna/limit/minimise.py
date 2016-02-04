@@ -170,8 +170,11 @@ class GridSearch(FitResults, Minimiser):
             sigma = parameter.get_sigma()
             prior = parameter.get_prior()
             parameter.set_best_fit(parameter.get_value_at(index))
-            parameter.set_penalty_term(
-                test_statistic.get_penalty_term(best_fit, prior, sigma))
+            if sigma is not None:
+                parameter.set_penalty_term(
+                    test_statistic.get_penalty_term(best_fit, prior, sigma))
+            else:  # penalty term = 0
+                parameter.set_penalty_term(0.)
 
         self.set_minimum_value(minimum)
         self.set_minimum_position(position)  # save position of minimum

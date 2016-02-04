@@ -555,8 +555,10 @@ class Fit(object):
             current_value = par.get_current_value()
             prior = par.get_prior()
             sigma = par.get_sigma()
-            total_penalty += self._test_statistic.get_penalty_term(
-                current_value, prior, sigma)
+            # If sigma is explicitly None add no penalty term
+            if (sigma is not None):
+                total_penalty += self._test_statistic.get_penalty_term(
+                    current_value, prior, sigma)
 
         return test_statistic, total_penalty
 
@@ -663,8 +665,6 @@ class Fit(object):
         """
         if isinstance(fit_config, GlobalFitConfig):
             self._fit_config = fit_config
-            #self._minimiser.set_fit_config(fit_config)
-            # This needs to be done later as minimiser might not be set
         else:
             raise TypeError("fit_config type (%s) is invalid" %
                             type(fit_config))

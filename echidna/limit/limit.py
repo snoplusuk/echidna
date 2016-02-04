@@ -1,5 +1,6 @@
 import numpy
 
+import echidna.output as output
 from echidna.errors.custom_errors import LimitError, CompatibilityError
 from echidna.limit import summary
 from echidna.output import store
@@ -131,54 +132,56 @@ class Limit(object):
             # Get per_bin array getting stats at minimum position
             min_per_bin = fit_results.get_stat(minimum_position)
 
-        # Create summary if required
-        if store_summary and self._fitter.get_fit_config() is not None:
-            scales = par.get_values()
-            summary_name = self._fitter.get_fit_config().get_name()
-            if self._per_bin:  # want full Summary class
-                limit_summary = summary.Summary(
-                    summary_name, len(scales),
-                    spectra_config=self._signal.get_config(),
-                    fit_config=self._fitter.get_fit_config())
-            else:  # use ReducedSummary
-                limit_summary = summary.ReducedSummary(
-                    summary_name, len(scales),
-                    spectra_config=self._signal.get_config(),
-                    fit_config=self._fitter.get_fit_config())
-            limit_summary.set_scales(scales)
+        # Create summary
+        scales = par.get_values()
+        summary_name = self._fitter.get_fit_config().get_name()
+        if self._per_bin:  # want full Summary class
+            limit_summary = summary.Summary(
+                summary_name, len(scales),
+                spectra_config=self._signal.get_config(),
+                fit_config=self._fitter.get_fit_config())
+        else:  # use ReducedSummary
+            limit_summary = summary.ReducedSummary(
+                summary_name, len(scales),
+                spectra_config=self._signal.get_config(),
+                fit_config=self._fitter.get_fit_config())
+        limit_summary.set_scales(scales)
 
-            # Set prior and sigma values
-            for par_name in self._fitter.get_fit_config().get_pars():
-                cur_par = self._fitter.get_fit_config().get_par(par_name)
-                limit_summary.set_prior(cur_par.get_prior(), par_name)
-                limit_summary.set_sigma(cur_par.get_sigma(), par_name)
+        # Set prior and sigma values
+        for par_name in self._fitter.get_fit_config().get_pars():
+            cur_par = self._fitter.get_fit_config().get_par(par_name)
+            limit_summary.set_prior(cur_par.get_prior(), par_name)
+            limit_summary.set_sigma(cur_par.get_sigma(), par_name)
 
         # Loop through signal scalings
         for i, scale in enumerate(par.get_values()):
             self._logger.debug("signal scale: %.4g" % scale)
             if not numpy.isclose(scale, 0.):
+                if self._fitter.get_signal() is None:
+                    self._fitter.set_signal(self._signal, shrink=False)
                 self._signal.scale(scale)
-                self._fitter.set_signal(self._signal, shrink=False)
-            else:
+            else:  # want no signal contribution
                 self._fitter.remove_signal()
+                self._logger.warning("Removing signal in fit for scale %.4g" %
+                                     scale)
+
             stat = self._fitter.fit()  # best-fit test statistic for this scale
             stats[i] = stat
 
-            if store_summary and self._fitter.get_fit_config() is not None:
-                fit_results = self._fitter.get_fit_results()  # get results
-                results_summary = fit_results.get_summary()
-                for par_name, value in results_summary.iteritems():
-                    limit_summary.set_best_fit(value.get("best_fit"),
+            fit_results = self._fitter.get_fit_results()  # get results
+            results_summary = fit_results.get_summary()
+            for par_name, value in results_summary.iteritems():
+                limit_summary.set_best_fit(value.get("best_fit"),
+                                           i, par_name)
+                limit_summary.set_penalty_term(value.get("penalty_term"),
                                                i, par_name)
-                    limit_summary.set_penalty_term(value.get("penalty_term"),
-                                                   i, par_name)
-                if self._per_bin:
-                    minimum_position = fit_results.get_minimum_position()
-                    # Get per_bin array getting stats at minimum position
-                    min_per_bin = fit_results.get_raw_stat(minimum_position)
-                    limit_summary.set_stat(min_per_bin, i)
-                else:  # just use single stat
-                    limit_summary.set_stat(stat, i)
+            if self._per_bin:
+                minimum_position = fit_results.get_minimum_position()
+                # Get per_bin array getting stats at minimum position
+                min_per_bin = fit_results.get_raw_stat(minimum_position)
+                limit_summary.set_stat(min_per_bin, i)
+            else:  # just use single stat
+                limit_summary.set_stat(stat, i)
 
         # Find array minimum - use whichever is largest out of array min and
         # previously calculated min_stat
@@ -222,19 +225,20 @@ class Limit(object):
 
             if (store_summary and self._fitter.get_fit_config() is not None):
                 timestamp = "%.f" % time.time()  # seconds since epoch
+                path = output.__default_save_path__ + "/"
                 fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
-                store.dump_summary(fname, limit_summary)
-                store.dump(fname, self._fitter.get_data(),
+                store.dump_summary(path + fname, limit_summary)
+                store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
-                store.dump(fname, self._fitter.get_fixed_background(),
+                store.dump(path + fname, self._fitter.get_fixed_background(),
                            append=True, group_name="fixed")
                 for background in self._fitter.get_floating_backgrounds():
-                    store.dump(fname, background, append=True,
+                    store.dump(path + fname, background, append=True,
                                group_name=background.get_name())
-                store.dump(fname, self._signal,
+                store.dump(path + fname, self._signal,
                            append=True, group_name="signal")
                 self._logger.info("Saved summary of %s to file %s" %
-                                  (limit_summary.get_name(), fname))
+                                  (limit_summary.get_name(), path + fname))
 
             return limit
 
@@ -263,16 +267,17 @@ class Limit(object):
 
             if (store_summary and self._fitter.get_fit_config() is not None):
                 timestamp = "%.f" % time.time()  # seconds since epoch
+                path = output.__default_save_path__ + "/"
                 fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
-                store.dump_summary(fname, limit_summary)
-                store.dump(fname, self._fitter.get_data(),
+                store.dump_summary(path + fname, limit_summary)
+                store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
-                store.dump(fname, self._fitter.get_fixed_background(),
+                store.dump(path + fname, self._fitter.get_fixed_background(),
                            append=True, group_name="fixed")
                 for background in self._fitter.get_floating_backgrounds():
-                    store.dump(fname, background, append=True,
+                    store.dump(path + fname, background, append=True,
                                group_name=background.get_name())
-                store.dump(fname, self._signal,
+                store.dump(path + fname, self._signal,
                            append=True, group_name="signal")
                 self._logger.info("Saved summary of %s to file %s" %
                                   (limit_summary.get_name(), fname))

@@ -107,6 +107,11 @@ class FitParameter(Parameter):
     """Simple data container that holds information for a fit parameter
     (i.e. a systematic to float).
 
+    .. warning:: The sigma value can be explicitly set as None. This
+    is so that you disable a penalty term for a floating parameter.
+    If a parameter is being floated, but sigma is None, then no penalty
+    term will be added for the parameter.
+
     Args:
       name (str): The name of this parameter
       prior (float): The prior of the parameter
@@ -145,14 +150,18 @@ class FitParameter(Parameter):
         """Initialise FitParameter class
         """
         super(FitParameter, self).__init__("fit", name, low, high, bins)
+        self._logger = logging.getLogger("fit_parameter")
         self._prior = float(prior)
-        self._sigma = float(sigma)
+        if sigma is None:
+            self._logger.warning(
+                "Setting sigma explicitly as None for %s - "
+                "No penalty term will be added for this parameter!" % name)
+        self._sigma = sigma
         self._dimension = dimension
         self._values = values
         self._current_value = current_value
         self._best_fit = best_fit
         self._penalty_term = penalty_term
-        self._logger = logging.getLogger("fit_parameter")
         self._logscale = logscale
         self._base = base
 
@@ -297,9 +306,6 @@ class FitParameter(Parameter):
           float: Prior value of fit parameter - stored in
             :attr:`_prior`
         """
-        if self._prior is None:
-            raise ValueError("Prior value not yet set " +
-                             "for parameter " + self._name)
         return self._prior
 
     def get_sigma(self):
@@ -307,8 +313,6 @@ class FitParameter(Parameter):
         Returns:
           float: Sigma of fit parameter - stored in :attr:`_sigma`
         """
-        if self._sigma is None:
-            raise ValueError("Sigma not yet set for parameter " + self._name)
         return self._sigma
 
     def get_values(self):
@@ -408,7 +412,10 @@ class FitParameter(Parameter):
             if kw == "prior":
                 self._prior = float(kwargs[kw])
             elif kw == "sigma":
-                self._sigma = float(kwargs[kw])
+                if kwargs[kw] is None:
+                    self._logger.warning("Setting sigma explicitly as None - "
+                                         "No penalty term will be applied")
+                self._sigma = kwargs[kw]
             elif kw == "low":
                 self._low = float(kwargs[kw])
             elif kw == "high":

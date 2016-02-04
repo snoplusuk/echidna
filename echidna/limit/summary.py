@@ -1,6 +1,7 @@
 import numpy
 
 import copy
+import logging
 
 
 class Summary(object):
@@ -43,6 +44,7 @@ class Summary(object):
     def __init__(self, name, num_scales, spectra_config, fit_config):
         """ Initialises the summary data container
         """
+        self._logger = logging.getLogger("Summary")
         self._name = name
         self._num_scales = num_scales
         self._spectra_config = spectra_config
@@ -598,7 +600,11 @@ class Summary(object):
           TypeError: If sigma is not a float.
         """
         if not isinstance(sigma, float):
-            raise TypeError("sigma must be a float")
+            if sigma is None:
+                self._logger.warning("Sigma set explicitly as None for %s" %
+                                     parameter)
+            else:
+                raise TypeError("sigma must be a float")
         par_num = self._fit_config.get_index(parameter)
         self._sigmas[par_num] = sigma
 
@@ -700,6 +706,7 @@ class ReducedSummary(Summary):
     def __init__(self, name, num_scales, spectra_config, fit_config):
         """ Initialises the summary data container
         """
+        self._logger = logging.getLogger("ReducedSummary")
         self._name = name
         self._num_scales = num_scales
         self._spectra_config = spectra_config
