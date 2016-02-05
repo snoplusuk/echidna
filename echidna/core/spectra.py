@@ -112,6 +112,24 @@ class FitParameter(Parameter):
     If a parameter is being floated, but sigma is None, then no penalty
     term will be added for the parameter.
 
+    .. note:: The :class:`FitParameter` class offers three different
+    scales for constructing the array of values for the parameter::
+
+      * **linear**: A standard linear scale is the default option. This
+        creates an array of equally spaced values, starting at
+        :arg:`low` and ending at :arg:`high` (*includive*). The array
+        will contain :arg:`bins` values.
+      * **logscale**: This creates an array of values that are equally
+        spaced in log-space, but increase exponentially in linear-space,
+        starting at :arg:`low` and ending at :arg:`high` (*includive*).
+        The array will contain :arg:`bins` values.
+      * **logscale_deviation**: This creates an array of values -
+        centred around the prior - whose absolute deviations from the
+        prior are equally spaced in log-space, but increase
+        exponentially in linear-space. The values start at :arg:`low`
+        and end at :arg:`high` (*includive*). The array will contain
+        :arg:`bins` values.
+
     Args:
       name (str): The name of this parameter
       prior (float): The prior of the parameter
@@ -128,7 +146,9 @@ class FitParameter(Parameter):
       logscale (bool, optional): Flag to create an logscale array of
         values, rather than a linear array.
       base (float, optional): Base to use when creating an logscale
-        array.
+        array. Default is base-e.
+      logscale_deviation (bool, optional): Flag to create a logscale deviation
+        array of values rather than a linear or logscale array.
 
     Attributes:
       _prior (float): The prior of the parameter
@@ -142,11 +162,17 @@ class FitParameter(Parameter):
       _logscale (bool): Flag to create an logscale array of values,
         rather than a linear array.
       _base (float): Base to use when creating an logscale array.
+        Default is base-e
+      _logscale_deviation (bool): Flag to create a logscale deviation
+        array of values rather than a linear or logscale array.
+      _bin_boundaries (:class:`numpy.array`): Array of bin boundaries
+        corresponding to :attr:`_values`.
     """
 
     def __init__(self, name, prior, sigma, low, high, bins, dimension=None,
                  values=None, current_value=None, penalty_term=None,
-                 best_fit=None, logscale=None, base=None):
+                 best_fit=None, logscale=None, base=numpy.e,
+                 logscale_deviation=None):
         """Initialise FitParameter class
         """
         super(FitParameter, self).__init__("fit", name, low, high, bins)
@@ -162,8 +188,23 @@ class FitParameter(Parameter):
         self._current_value = current_value
         self._best_fit = best_fit
         self._penalty_term = penalty_term
-        self._logscale = logscale
-        self._base = base
+        self._logscale = None
+        self._base = None
+        self._logscale_deviation = None
+        self._bin_boundaries = None
+        if logscale:
+            self._logger.info("Setting logscale %s for parameter %s" %
+                              (logscale, name))
+            logging.getLogger("extra").info(" --> with base: %.4g" % base)
+            if logscale_deviation is not None:
+                self._logger.warning("Recieved logscale_deviation flag that "
+                                     "will not have any effect")
+            self._logscale = logscale
+            self._base = base
+        elif logscale_deviation:
+            self._logger.info("Setting logscale_deviation %s for parameter %s"
+                              % (logscale_deviation, name))
+            self._logscale_deviation = logscale_deviation
 
     @abc.abstractmethod
     def apply_to(self, spectrum):
@@ -213,6 +254,46 @@ class FitParameter(Parameter):
             raise ValueError("Best fit value for parameter" +
                              self._name + " has not been set")
         return self._best_fit
+
+    def get_bin_boundaries(self):
+        """ Returns an array of bin boundaries, based on the :attr:`_low`,
+        :attr:`_high` and :attr:`_bins` parameters, and any flags
+        (:attr:`_logscale` or :attr:`_logscale_deviation`) that have
+        been applied.
+
+        Returns:
+          (:class:`numpy.array`): Array of bin_baoundaries for the
+            parameter values stored in :attr:`_values`.
+        """
+        if self._bin_boundaries is None:  # Generate array of values
+            if self._logscale:
+                if self._low <= 0.:  # set low = -log(high)
+                    low = -numpy.log(self._high)
+                    logging.warning("Correcting fit parameter value <= 0.0")
+                    logging.debug(" --> changed to %.4g (previously %.4g)" %
+                                  (numpy.exp(low), self._low))
+                else:
+                    low = numpy.log(self._low)
+                high = numpy.log(self._high)
+                width = (numpy.log(high) - numpy.log(low)) / int(self._bins)
+                self._bin_boundaries = numpy.logspace(
+                    low - 0.5*width, high + 0.5*width,
+                    num=self._bins+1, base=numpy.e)
+            elif self._logscale_deviation:
+                delta = self._high - self._prior
+                width = numpy.log(delta + 1.) / int(self._bins / 2)
+                deltas = numpy.linspace(
+                    0.5 * width, numpy.log(delta + 1.) + 0.5*width,
+                    num=int((self._bins + 1) / 2))
+                pos = self._prior + numpy.exp(deltas) - 1.
+                neg = self._prior - numpy.exp(deltas[::-1]) + 1.
+                self._bin_boundaries = numpy.append(neg, pos)
+            else:
+                width = self.get_width()
+                self._bin_boundaries = numpy.linspace(self._low + 0.5*width,
+                                                      self._high + 0.5*width,
+                                                      self._bins + 1)
+        return self._bin_boundaries
 
     def get_current_value(self):
         """
@@ -316,13 +397,24 @@ class FitParameter(Parameter):
         return self._sigma
 
     def get_values(self):
-        """
+        """ Returns an array of values, based on the :attr:`_low`,
+        :attr:`_high` and :attr:`_bins` parameters, and any flags
+        (:attr:`_logscale` or :attr:`_logscale_deviation`) that have
+        been applied.
+
+        .. warning:: Calling this method with the :attr:`logscale_deviation`
+        flag enabled, may alter the value of :attr:`_low`, as this
+        scale must be symmetric about the prior.
+
         Returns:
           (:class:`numpy.array`): Array of parameter values to test in
             fit. Stored in :attr:`_values`.
         """
         if self._values is None:  # Generate array of values
-            if self._logscale:  # Create a linear array in log-space
+            if self._logscale:
+                # Create an array that is equally spaced in log-space
+                self._logger.info("Creating logscale array of values "
+                                  "for parameter %s" % self._name)
                 if self._low <= 0.:  # set low = -log(high)
                     low = -numpy.log(self._high)
                     logging.warning("Correcting fit parameter value <= 0.0")
@@ -333,7 +425,26 @@ class FitParameter(Parameter):
                 high = numpy.log(self._high)
                 self._values = numpy.logspace(low, high, num=self._bins,
                                               base=numpy.e)
+            elif self._logscale_deviation:
+                # Create an array with the prior as the central value, and
+                # then absolute deviations from the prior that are
+                # linearly spaced in log-space.
+                self._logger.info("Creating logscale_deviation array of "
+                                  "values for parameter %s" % self._name)
+                delta = self._high - self._prior
+                deltas = numpy.linspace(0., numpy.log(delta + 1.),
+                                        num=(self._bins + 1.) / 2.)
+                pos = self._prior + numpy.exp(deltas[1:]) - 1.
+                neg = self._prior - numpy.exp(deltas[::-1]) + 1.
+                self._values = numpy.append(neg, pos)
+                if not numpy.allclose(self._values[0], self._low):
+                    low = self._values[0]
+                    self._logger.warning(
+                        "Changing value of attr _low, from %.4g to %.4g, "
+                        "for parameter %s" % (self._low, low, self._name))
             else:  # Create a normal linear array
+                self._logger.info("Creating linear array of values "
+                                  "for parameter %s" % self._name)
                 self._values = numpy.linspace(self._low,
                                               self._high, self._bins)
         return self._values
@@ -426,6 +537,8 @@ class FitParameter(Parameter):
                 self._logscale = bool(kwargs[kw])
             elif kw == "base":
                 self._base = float(kwargs[kw])
+            elif kw == "logscale_deviation":
+                self._logscale_deviation = bool(kwargs[kw])
             elif kw == "dimension":
                 self._dimension = str(kwargs[kw])
             else:
@@ -468,14 +581,15 @@ class FitParameter(Parameter):
         parameter_dict["low"] = self._low
         parameter_dict["high"] = self._high
         parameter_dict["bins"] = self._bins
+        parameter_dict["logscale"] = self._logscale
+        parameter_dict["base"] = self._base
+        parameter_dict["logscale_deviation"] = self._logscale_deviation
         if basic:
             return parameter_dict
         # Add non-basic attributes
         parameter_dict["current_value"] = self._current_value
         parameter_dict["best_fit"] = self._best_fit
         parameter_dict["penalty_term"] = self._best_fit
-        parameter_dict["logscale"] = self._logscale
-        parameter_dict["base"] = self._base
         return parameter_dict
 
 
@@ -502,12 +616,11 @@ class RateParameter(FitParameter):
       _base (float): Base to use when creating an logscale array.
     """
     def __init__(self, name, prior, sigma, low, high,
-                 bins, logscale=False, base=numpy.e, **kwargs):
+                 bins, logscale=None, base=numpy.e,
+                 logscale_deviation=None, **kwargs):
         super(RateParameter, self).__init__(
-            name, prior, sigma, low, high, bins,
-            logscale=logscale, base=base, **kwargs)
-        self._logscale = logscale
-        self._base = base
+            name, prior, sigma, low, high, bins, logscale=logscale,
+            base=base, logscale_deviation=logscale_deviation, **kwargs)
 
     def apply_to(self, spectrum):
         """ Scales spectrum to current value of rate parameter.
