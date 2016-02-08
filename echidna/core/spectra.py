@@ -2065,7 +2065,7 @@ class Spectra(object):
         blue line, or dictionaries of strings e.g. {"color": "red"}.
 
         Args:
-          style (string): Pyplot-style plotting style.
+          style (string, dict): Pyplot-style plotting style.
         """
         self._style = style
 

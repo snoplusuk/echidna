@@ -101,7 +101,7 @@ def main(args):
             " --> all output will be saved to %s" %
             output.__default_save_path__)
 
-    args_config = yaml.load(open(args.config, "r"))
+    args_config = yaml.load(open(args.from_file, "r"))
     name = args_config.get("name")
     logger.info("Configuration name: %s" % name)
     logging.getLogger("extra").debug("\n\n%s\n" % yaml.dump(args_config))
@@ -326,7 +326,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="KamLAND-Zen (plot-grab) Majoron limits script")
-    parser.add_argument("-c", "--config", action=ReadableDir,
+    parser.add_argument("--from_file", action=ReadableDir,
                         help="Path to config file containing arg values")
     parser.add_argument("-s", "--save_path", action=ReadableDir,
                         help="Path to save all ouput files to. "
