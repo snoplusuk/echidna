@@ -230,8 +230,10 @@ class Limit(object):
                 store.dump_summary(path + fname, limit_summary)
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
-                store.dump(path + fname, self._fitter.get_fixed_background(),
-                           append=True, group_name="fixed")
+                if self._fitter.get_fixed_background() is not None:
+                    store.dump(path + fname,
+                               self._fitter.get_fixed_background(),
+                               append=True, group_name="fixed")
                 for background in self._fitter.get_floating_backgrounds():
                     store.dump(path + fname, background, append=True,
                                group_name=background.get_name())
@@ -272,8 +274,10 @@ class Limit(object):
                 store.dump_summary(path + fname, limit_summary)
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
-                store.dump(path + fname, self._fitter.get_fixed_background(),
-                           append=True, group_name="fixed")
+                if self._fitter.get_fixed_background() is not None:
+                    store.dump(path + fname,
+                               self._fitter.get_fixed_background(),
+                               append=True, group_name="fixed")
                 for background in self._fitter.get_floating_backgrounds():
                     store.dump(path + fname, background, append=True,
                                group_name=background.get_name())
