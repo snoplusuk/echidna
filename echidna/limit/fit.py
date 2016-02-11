@@ -168,7 +168,7 @@ class Fit(object):
         '''
         for spectrum, scaling in spectra_dict.iteritems():
             # Copy so original spectra is unchanged
-            spectrum = copy.deepcopy(spectrum)
+            spectrum = copy.copy(spectrum)
             if shrink:
                 self.shrink_spectra(spectrum)
             spectrum.scale(scaling)
@@ -612,7 +612,7 @@ class Fit(object):
             # Copy so original spectra is unchanged
             self._logger.debug("Adding Spectra with name %s to"
                                "_fixed_background" % spectrum.get_name())
-            spectrum = copy.deepcopy(spectrum)
+            spectrum = copy.copy(spectrum)
             if first:
                 first = False
                 if shrink:
