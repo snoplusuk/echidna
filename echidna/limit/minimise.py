@@ -30,7 +30,7 @@ class Minimiser(object):
         self._per_bin = per_bin
 
     @abc.abstractmethod
-    def minimise(self, funct):
+    def minimise(self, funct, test_statistic):
         """ Abstract base class method to override.
 
         Args:
@@ -41,11 +41,14 @@ class Minimiser(object):
             parameter values. E.g. ``def funct(*args)``. Within the
             echidna framework, the :meth:`echidna.limit.fit.Fit.funct`
             method is the recommened callable to use here.
+          test_statistic (:class:`echidna.limit.test_statistic`): The
+            test_statistic object used to calcualte the test statistics.
 
         Returns:
           float: Minimum value found during minimisation.
         """
-        pass
+        raise NotImplementedError("The minimise method can only be used "
+                                  "when overridden in a derived class")
 
 
 class GridSearch(FitResults, Minimiser):

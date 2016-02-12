@@ -4,12 +4,13 @@ import echidna.output.store as store
 from echidna.limit.minimise import GridSearch
 from echidna.limit.fit_results import FitResults
 from echidna.errors.custom_errors import CompatibilityError
-from echidna.core.spectra import GlobalFitConfig, SpectraFitConfig
+from echidna.core.spectra import GlobalFitConfig
 
-import copy
-import os
 import logging
+import collections
+import os
 import yaml
+import copy
 
 
 class Fit(object):
@@ -92,7 +93,8 @@ class Fit(object):
         self.set_test_statistic(test_statistic)
 
         if not fit_config:
-            fit_config = SpectraFitConfig({}, "")
+            parameters = collections.OrderedDict({})
+            fit_config = GlobalFitConfig("gloabl_fit_config", parameters)
         self.set_fit_config(fit_config)
 
         if data:
