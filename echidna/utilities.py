@@ -116,7 +116,7 @@ def start_logging(short_name=False, script_name=True):
 
     Adapted from:
     https://docs.python.org/2/howto/logging-cookbook.html#
-      logging-to-multiple-destinations
+    logging-to-multiple-destinations
 
     Args:
       short_name (bool, optional): If true the log name is always
