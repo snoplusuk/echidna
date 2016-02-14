@@ -6,7 +6,9 @@ from echidna.util import root_help
 import rat
 from ROOT import RAT
 from ROOT import TChain
+
 import echidna.core.spectra as spectra
+from echidna.core.config import SpectraConfig
 import echidna.core.dsextract as dsextract
 
 
@@ -18,14 +20,14 @@ def _bipo_ntuple(spectrum, chain, extractors):
       fill a spectrum.
 
     Args:
-      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
-        being filled.
+      spectrum (:class:`spectra.Spectra`): The spectrum which is being
+        filled.
       chain (ROOT.TChain): Chain containing the events.
-      extractors (dict): Keys are the variable names and the values are their
-        respective extractors.
+      extractors (dict): Keys are the variable names and the values are
+       their respective extractors.
 
     Returns:
-      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
+      :class:`spectra.Spectra`: The filled spectrum.
     """
     check_next = False
     fill_kwargs = {}
@@ -57,8 +59,8 @@ def _root_mix(spectrum, dsreader, extractors, bipo):
       mc (and/or truth) and reco paremeters.
 
     Args:
-      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
-        being filled.
+      spectrum (:class:`spectra.Spectra`): The spectrum which is being
+        filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
       extractors (dict): Keys are the variable names and the values are their
@@ -105,8 +107,8 @@ def _root_ev(spectrum, dsreader, extractors, bipo):
       reco paremeters.
 
     Args:
-      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
-        being filled.
+      spectrum (:class:`spectra.Spectra`): The spectrum which is being
+        filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
       extractors (dict): Keys are the variable names and the values are their
@@ -141,8 +143,8 @@ def _root_mc(spectrum, dsreader, extractors, bipo):
       mc or truth paremeters.
 
     Args:
-      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is
-        being filled.
+      spectrum (:class:`spectra.Spectra`): The spectrum which is being
+        filled.
       dsreder (ROOT.RAT.DU.DSReader): rat's data structure reader
         for the root file.
       extractors (dict): Keys are the variable names and the values are their
@@ -181,12 +183,11 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
       filename (str): A root file to study
       spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
-      config (:class:`echidna.core.spectra.SpectraConfig` or string, optional):
-        The config or directory to the config for the spectrum.
-        Not requried when appending a spectrum.
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional):
-        Spectrum you wish to append. Not required when creating a
-        new spectrum.
+      config (:class:`SpectraConfig` or string, optional): The config
+        or directory to the config for the spectrum. Not requried when
+        appending a spectrum.
+      spectrum (:class:`spectra.Spectra`, optional): Spectrum you wish
+        to append. Not required when creating a new spectrum.
       bipo (bool, optional): Applies the bipo cut if set to True.
         Default is False.
       kwargs (dict): Passed to and checked by the dsextractor.
@@ -197,10 +198,10 @@ def fill_from_root(filename, spectrum_name="", config=None, spectrum=None,
       IndexError: Unknown dimension type (not mc, truth or reco).
 
     Returns:
-      :class:`echidna.core.spectra.Spectra`: The filled spectrum.
+      :class:`spectra.Spectra`: The filled spectrum.
     """
     if type(config) == str:
-        config = spectra.SpectraConfig.load_from_file(config)
+        config = SpectraConfig.load_from_file(config)
     dsreader = RAT.DU.DSReader(filename)
     if spectrum is None:
         if spectrum_name == "" or not config:
@@ -245,11 +246,10 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
       filename (str): The ntuple to study
       spectrum_name (str, optional): A name of future spectrum. Not
         required when appending a spectrum.
-      config (:class:`spectra.SpectraConfig` or string, optional): The config
+      config (:class:`SpectraConfig` or string, optional): The config
         or directory to the config for the spectrum
-      spectrum (:class:`echidna.core.spectra.Spectra`, optional):
-        Spectrum you wish to append. Not required when creating a
-        new spectrum.
+      spectrum (:class:`spectra.Spectra`, optional): Spectrum you wish
+        to append. Not required when creating a new spectrum.
       bipo (bool, optional): Applies the bipo cut if set to True.
         Default is False.
       kwargs (dict): Passed to and checked by the dsextractor.
@@ -263,7 +263,7 @@ def fill_from_ntuple(filename, spectrum_name="", config=None, spectrum=None,
     chain = TChain("output")
     chain.Add(filename)
     if type(config) == str:
-        config = spectra.SpectraConfig.load_from_file(config)
+        config = SpectraConfig.load_from_file(config)
     if spectrum is None:
         if spectrum_name == "" or not config:
             raise ValueError("Name not set when creating new spectra.")

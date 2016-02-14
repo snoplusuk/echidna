@@ -1,10 +1,10 @@
 import numpy
 
 import echidna.output.store as store
-from echidna.limit.minimise import GridSearch
-from echidna.limit.fit_results import FitResults
+from echidna.fit.minimise import GridSearch
+from echidna.fit.fit_results import FitResults
 from echidna.errors.custom_errors import CompatibilityError
-from echidna.core.spectra import GlobalFitConfig
+from echidna.core.config import GlobalFitConfig
 
 import logging
 import collections

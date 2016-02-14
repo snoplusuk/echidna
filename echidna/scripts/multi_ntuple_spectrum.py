@@ -18,12 +18,13 @@ Examples:
   To specify a save directory, include a -s flag followed by path to
   the required save destination.
 """
-import os
-import argparse
 import echidna.output.store as store
-import echidna.core.spectra as spectra
+from echidna.core.config import SpectraConfig
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot_root as plot
+
+import os
+import argparse
 
 
 def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name,
@@ -33,16 +34,19 @@ def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name,
     hdf5 file.
 
     Args:
-      data_path (str): Path to directory containing the ntuples to be evaluated
+      data_path (str): Path to directory containing the ntuples to be
+        evaluated
       config_path (str): Path to config file
       bkgnd_name (str): Name of the background being processed
-      save_path (str): Path to a directory where the hdf5 files will be dumped
+      save_path (str): Path to a directory where the hdf5 files will be
+        dumped
       bipo (bool): Apply Bi*Po* cuts when extracting data if True.
-      fv_radius (float): Cut events outside the fiducial volume of this radius.
-      outer_radius (float): Used for calculating the radial3 parameter. 
-        See :class:`echidna.core.dsextract` for details.
+      fv_radius (float): Cut events outside the fiducial volume of this
+        radius.
+      outer_radius (float): Used for calculating the radial3 parameter.
+        See :mod:`echidna.core.dsextract` for details.
     """
-    config = spectra.SpectraConfig.load_from_file(config_path)
+    config = SpectraConfig.load_from_file(config_path)
     file_list = os.listdir(data_path)
     if outer_radius:
         if "radial3" not in config.get_dims():

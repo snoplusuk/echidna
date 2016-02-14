@@ -1,4 +1,6 @@
-""" Contains functions to view and interrogate chi-squared minimisation
+""" *** DEPRECIATED ***
+
+Contains functions to view and interrogate chi-squared minimisation
 
 Attributes:
   MAIN_FONT (dict): style properties for the main font to use in plot labels

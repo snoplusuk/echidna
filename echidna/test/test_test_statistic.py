@@ -1,9 +1,7 @@
-"""
-"""
 import numpy
 
-from echidna.limit.test_statistic import (TestStatistic, BakerCousinsChi,
-                                          BakerCousinsLL, Neyman, Pearson)
+from echidna.fit.test_statistic import (TestStatistic, BakerCousinsChi,
+                                        BakerCousinsLL, Neyman, Pearson)
 
 import unittest
 

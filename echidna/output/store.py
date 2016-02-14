@@ -1,6 +1,6 @@
-from echidna.core.spectra import (Spectra, SpectraConfig, SpectraParameter,
-                                  RateParameter, SpectraFitConfig,
-                                  GlobalFitConfig)
+from echidna.core.spectra import Spectra
+from echidna.core.config import (SpectraConfig, SpectraParameter,
+                                 SpectraFitConfig, GlobalFitConfig)
 from echidna.limit.summary import Summary, ReducedSummary
 
 import logging

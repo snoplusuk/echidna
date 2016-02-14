@@ -1,8 +1,11 @@
-import unittest
-import echidna.core.smear as smear
-import echidna.core.spectra as spectra
 import numpy
 from scipy.optimize import curve_fit
+
+import echidna.core.smear as smear
+from echidna.core.config import SpectraConfig
+import echidna.core.spectra as spectra
+
+import unittest
 
 
 class TestSmear(unittest.TestCase):
@@ -23,11 +26,11 @@ class TestSmear(unittest.TestCase):
         sigma = numpy.fabs(sigma)
         return A*numpy.exp(-(x-mean)**2/(2.*sigma**2))
 
-    def fit_gaussian_energy(self, spectra):
+    def fit_gaussian_energy(self, spectrum):
         """ Fits a gausian to the energy of a spectrum.
 
         Args:
-          spectra (core.spectra): Spectrum to be smeared
+          spectrum (:class:`spectra.Spectra`): Spectrum to be smeared
 
         Returns:
           tuple: mean (float), sigma (float) and
@@ -35,32 +38,32 @@ class TestSmear(unittest.TestCase):
         """
         entries = []
         energies = []
-        energy_width = spectra.get_config().get_par("energy_mc").get_width()
-        energy_low = spectra.get_config().get_par("energy_mc")._low
-        spectra_proj = spectra.project("energy_mc")
-        for i in range(len(spectra_proj)):
-            entries.append(spectra_proj[i])
+        energy_width = spectrum.get_config().get_par("energy_mc").get_width()
+        energy_low = spectrum.get_config().get_par("energy_mc")._low
+        spectrum_proj = spectrum.project("energy_mc")
+        for i in range(len(spectrum_proj)):
+            entries.append(spectrum_proj[i])
             energies.append(energy_low+energy_width*(i+0.5))
         pars0 = [300., 2.5, 0.1]
         coeff, var_mtrx = curve_fit(self.gaussian, energies, entries, p0=pars0)
         return coeff[1], numpy.fabs(coeff[2]), numpy.array(entries).sum()
 
-    def fit_gaussian_radius(self, spectra):
+    def fit_gaussian_radius(self, spectrum):
         """ Fits a gausian to the radius of a spectrum.
 
         Args:
-          spectra (core.spectra): Spectrum to be smeared
+          spectrum (:class:`spectra.Spectra`): Spectrum to be smeared
 
         Returns:
           tuple: mean (float), sigma (float) and integral (float)
         """
         entries = []
         radii = []
-        radial_width = spectra.get_config().get_par("radial_mc").get_width()
-        radial_low = spectra.get_config().get_par("radial_mc")._low
-        spectra_proj = spectra.project("radial_mc")
-        for i in range(len(spectra_proj)):
-            entries.append(spectra_proj[i])
+        radial_width = spectrum.get_config().get_par("radial_mc").get_width()
+        radial_low = spectrum.get_config().get_par("radial_mc")._low
+        spectrum_proj = spectrum.project("radial_mc")
+        for i in range(len(spectrum_proj)):
+            entries.append(spectrum_proj[i])
             radii.append(radial_low+radial_width*(i+0.5))
         pars0 = [400., 1000., 100.]
         coeff, var_mtrx = curve_fit(self.gaussian, radii, entries, p0=pars0)
@@ -77,7 +80,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 10000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
         for i in range(test_decays):
@@ -120,7 +123,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 50000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
         for i in range(test_decays):
@@ -163,7 +166,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 10000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
         for i in range(test_decays):
@@ -206,7 +209,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 50000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
         for i in range(test_decays):
@@ -249,7 +252,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 10000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         radius = 1000.  # mm
         for i in range(test_decays):
@@ -290,7 +293,7 @@ class TestSmear(unittest.TestCase):
         """
         test_decays = 50000
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         radius = 1000.  # mm
         for i in range(test_decays):

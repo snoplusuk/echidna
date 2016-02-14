@@ -1,7 +1,10 @@
-import unittest
-import echidna.core.spectra as spectra
-import random
 import numpy
+
+from echidna.core.config import SpectraConfig
+import echidna.core.spectra as spectra
+
+import unittest
+import random
 
 
 class TestSpectra(unittest.TestCase):
@@ -13,14 +16,14 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
-        radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        energy_bins = test_spectra.get_config().get_par("energy_mc").get_bins()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
+        radial_bins = test_spectra.get_config().get_par("radial_mc").get_bins()
         for x in range(0, test_decays):
             energy = random.uniform(energy_low, energy_high)
             radius = random.uniform(radial_low, radial_high)
@@ -53,14 +56,14 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
-        energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
-        radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        energy_bins = test_spectra.get_config().get_par("energy_mc").get_bins()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
+        radial_bins = test_spectra.get_config().get_par("radial_mc").get_bins()
         energy_projection = numpy.ndarray(shape=(energy_bins), dtype=float)
         energy_projection.fill(0)
         radial_projection = numpy.ndarray(shape=(radial_bins), dtype=float)
@@ -85,12 +88,12 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
         for x in range(0, test_decays):
             energy = random.uniform(energy_low, energy_high)
             radius = random.uniform(radial_low, radial_high)
@@ -112,12 +115,12 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
         self.assertRaises(ValueError,
                           test_spectra.shrink,
                           energy_mc_low=energy_low,
@@ -134,8 +137,8 @@ class TestSpectra(unittest.TestCase):
                             energy_mc_high=energy_high / 2,
                             radial_mc_low=radial_low,
                             radial_mc_high=radial_high / 2)
-        energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
-        radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
+        energy_bins = test_spectra.get_config().get_par("energy_mc").get_bins()
+        radial_bins = test_spectra.get_config().get_par("radial_mc").get_bins()
         e_idx = test_spectra.get_config().get_index("energy_mc")
         if e_idx == 0:
             data_shape = (energy_bins, radial_bins)
@@ -151,16 +154,16 @@ class TestSpectra(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         old_energy_width = test_spectra.get_config().get_par("energy_mc")\
             .get_width()
         old_radial_width = test_spectra.get_config().get_par("radial_mc")\
             .get_width()
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
         for decay in range(test_decays):
             energy = random.uniform(energy_low, energy_high)
             radius = random.uniform(radial_low, radial_high)

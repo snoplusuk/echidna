@@ -10,10 +10,10 @@ particularly the `meth:`GridSearch.minimise` method.
 import numpy
 
 import echidna.core.spectra as spectra
-import echidna.limit.test_statistic as test_statistic
-from echidna.core.spectra import (GlobalFitConfig, SpectraFitConfig,
-                                  SpectraConfig)
-from echidna.limit.minimise import GridSearch
+import echidna.fit.test_statistic as test_statistic
+from echidna.core.config import (GlobalFitConfig, SpectraFitConfig,
+                                 SpectraConfig)
+from echidna.fit.minimise import GridSearch
 
 import unittest
 import copy

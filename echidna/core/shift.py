@@ -1,5 +1,6 @@
-import echidna.core.spectra as spectra
 import numpy
+
+import echidna.core.spectra as spectra
 
 
 class Shift(object):
@@ -36,11 +37,11 @@ class Shift(object):
         Args:
           spectrum (float): The spectrum you want to shift.
           dimension (string): The dimension of the spectrum you want to shift.
-          kwargs (dict): To passed to the interpolation function in
-            :class:`echidna.core.spectra.Spectra`
+          kwargs (dict): To passed to
+            :meth:`spectra.Spectra.interpolation1d`
 
         Returns:
-          :class:`echidna.core.spectra.Spectra`: The shifted spectrum.
+          :class:`spectra.Spectra`: The shifted spectrum.
         """
         shift = self.get_shift()
         step = spectrum.get_config().get_par(dimension).get_width()
@@ -163,11 +164,11 @@ class Shift(object):
         Args:
           spectrum (float): The spectrum you want to shift.
           dimension (string): The dimension of the spectrum you want to shift.
-          kwargs (dict): To passed to the interpolation function in
-            :class:`echidna.core.spectra.Spectra`
+          kwargs (dict): To passed to
+            :meth:`spectra.Spectra.interpolation1d`
 
         Returns:
-          :class:`echidna.core.spectra.Spectra`: The shifted spectrum.
+          :class:`spectra.Spectra`: The shifted spectrum.
         """
         shift = self.get_shift()
         step = spectrum.get_config().get_par(dimension).get_width()

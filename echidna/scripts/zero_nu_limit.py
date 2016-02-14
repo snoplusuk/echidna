@@ -1,4 +1,6 @@
-""" Example limit setting script
+""" ***DEPRECIATED***
+
+Example limit setting script
 
 This script provides an example of how to use the limit setting tools,
 built into echidna, to set a 90% confidence limit on neutrinoless double

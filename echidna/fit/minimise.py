@@ -2,7 +2,7 @@
 """
 import numpy
 
-from echidna.limit.fit_results import FitResults
+from echidna.fit.fit_results import FitResults
 
 import copy
 import abc

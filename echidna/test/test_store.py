@@ -1,8 +1,11 @@
-import unittest
+import numpy
+
+from echidna.core.config import SpectraConfig, SpectraFitConfig
 import echidna.core.spectra as spectra
 import echidna.output.store as store
+
+import unittest
 import random
-import numpy
 
 
 class TestStore(unittest.TestCase):
@@ -13,20 +16,19 @@ class TestStore(unittest.TestCase):
         """
         test_decays = 10
         config_path = "echidna/config/spectra_example.yml"
-        config = spectra.SpectraConfig.load_from_file(config_path)
+        config = SpectraConfig.load_from_file(config_path)
         fit_config_path = "echidna/config/spectra_fit_example.yml"
-        fit_config = spectra.SpectraFitConfig.load_from_file(fit_config_path,
-                                                             "Test")
+        fit_config = SpectraFitConfig.load_from_file(fit_config_path, "Test")
 
         test_spectra = spectra.Spectra("Test", test_decays, config,
                                        fit_config=fit_config)
 
-        energy_high = test_spectra.get_config().get_par("energy_mc")._high
-        energy_bins = test_spectra.get_config().get_par("energy_mc")._bins
-        energy_low = test_spectra.get_config().get_par("energy_mc")._low
-        radial_high = test_spectra.get_config().get_par("radial_mc")._high
-        radial_bins = test_spectra.get_config().get_par("radial_mc")._bins
-        radial_low = test_spectra.get_config().get_par("radial_mc")._low
+        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
+        energy_bins = test_spectra.get_config().get_par("energy_mc").get_bins()
+        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
+        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
+        radial_bins = test_spectra.get_config().get_par("radial_mc").get_bins()
+        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
         energy_width = test_spectra.get_config().get_par("energy_mc").\
             get_width()
         radial_width = test_spectra.get_config().get_par("radial_mc").\
@@ -46,12 +48,18 @@ class TestStore(unittest.TestCase):
         store.dump("test.hdf5", test_spectra)
         loaded_spectra = store.load("test.hdf5")
 
-        energy_high2 = loaded_spectra.get_config().get_par("energy_mc")._high
-        energy_bins2 = loaded_spectra.get_config().get_par("energy_mc")._bins
-        energy_low2 = loaded_spectra.get_config().get_par("energy_mc")._low
-        radial_high2 = loaded_spectra.get_config().get_par("radial_mc")._high
-        radial_bins2 = loaded_spectra.get_config().get_par("radial_mc")._bins
-        radial_low2 = loaded_spectra.get_config().get_par("radial_mc")._low
+        energy_high2 = loaded_spectra.get_config().get_par("energy_mc").\
+            get_high()
+        energy_bins2 = loaded_spectra.get_config().get_par("energy_mc").\
+            get_bins()
+        energy_low2 = loaded_spectra.get_config().get_par("energy_mc").\
+            get_low()
+        radial_high2 = loaded_spectra.get_config().get_par("radial_mc").\
+            get_high()
+        radial_bins2 = loaded_spectra.get_config().get_par("radial_mc").\
+            get_bins()
+        radial_low2 = loaded_spectra.get_config().get_par("radial_mc").\
+            get_low()
         energy_width2 = loaded_spectra.get_config().get_par("energy_mc").\
             get_width()
         radial_width2 = loaded_spectra.get_config().get_par("radial_mc").\
