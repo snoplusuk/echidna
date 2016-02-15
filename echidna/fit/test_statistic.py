@@ -1,10 +1,10 @@
 """ Module to hold classes for various test statistics that can be used
 for fitting.
 
-.. note:: All forms of chi-squared are as defined in::
+.. note:: All forms of chi-squared are as defined in:
 
-  * REF: S. Baker & R. D. Cousins, Nucl. Inst. and Meth. in Phys.
-    Res. 211, 437-442 (1984)
+  * S. Baker & R. D. Cousins, Nucl. Inst. and Meth. in Phys. Res. 211,
+    437-442 (1984)
 """
 import numpy
 import abc
@@ -20,19 +20,19 @@ class TestStatistic(object):
 
     Args:
       name (string): Name of test statistic.
-      per_bin (bool): If True the statistic in each bin is returned as an
-        :class:`numpy.array`. If False one value for the statistic is returned
-        for the entire array.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
+        statistic is returned for the entire array.
 
     Attributes:
       _name (string): Name of test statistic.
-      _per_bin (bool): If True the statistic in each bin is returned as an
-        :class:`numpy.array`. If False one value for the statistic is returned
-        for the entire array.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
     """
     __metaclass__ = abc.ABCMeta  # Only required for python 2
 
-    def __init__(self, name, per_bin=False):
+    def __init__(self, name, per_bin=True):
         self._name = name
         self._per_bin = per_bin
 
@@ -53,9 +53,10 @@ class TestStatistic(object):
             expected values predicted by the model.
 
         Returns:
-          float: Computed value of test statistic if :attr:`_per_bin` is False.
-          :class:`numpy.array`: Of computed values of test statistic in each
-            bin if :attr:`per_bin` is True.
+          (float or :class:`numpy.array`): Computed value(s) of test
+            statistic. A float is returned if :attr:`_per_bin` is
+            False. Otherwise an array of computed test statistic
+            values, for each bin, is returned.
         """
         if len(observed.shape) != 1:
             raise TypeError("Incompatible shape %s for observed array, "
@@ -78,9 +79,9 @@ class TestStatistic(object):
         """ Calculates the test statistic.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
@@ -93,16 +94,16 @@ class TestStatistic(object):
         """ Gets the test statistic for each bin.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Raises:
           ValueError: If arrays are different lengths.
 
         Returns:
-          :class:`numpy.array`: Of the test statistic in each bin.
+          :class:`numpy.array`: Calculated chi squared for each bin.
         """
         return None
 
@@ -123,15 +124,22 @@ class TestStatistic(object):
 
 
 class BakerCousinsChi(TestStatistic):
-    """ Test statistic class for calculating the Baker-Cousins chi-squared test
-    statistic.
+    """ Test statistic class for calculating the Baker-Cousins
+    chi-squared (poisson likelihood) test statistic.
 
     Args:
-      per_bin (bool, optional): If True the statistic in each bin is returned
-        as an :class:`numpy.array`. If False (default) one value for the
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
         statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
     """
-    def __init__(self, per_bin=False):
+    def __init__(self, per_bin=True):
         super(BakerCousinsChi, self).__init__("baker_cousins", per_bin)
 
     @classmethod
@@ -139,13 +147,13 @@ class BakerCousinsChi(TestStatistic):
         """ Calculates the chi-squared.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
-          float: Calculated chi squared.
+          float: Calculated Baker-Cousins chi squared
         """
         # Convert to arrays, if observed and expected are floats
         if isinstance(observed, float):
@@ -171,16 +179,16 @@ class BakerCousinsChi(TestStatistic):
         """ Gets chi squared for each bin.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Raises:
           ValueError: If arrays are different lengths.
 
         Returns:
-          :class:`numpy.array`: Of the chi squared in each bin.
+          :class:`numpy.array`: Calculated chi squared for each bin
         """
         not_per_bin = self._compute(observed, expected)
         observed = observed.astype('float')
@@ -197,7 +205,9 @@ class BakerCousinsChi(TestStatistic):
             stats.append(bin_value)
         stats = 2. * numpy.array(stats)
         if not numpy.allclose(numpy.sum(stats), not_per_bin):
-            raise ValueError("ERROR!!!")
+            raise ValueError("Sum of chi squared array and value returned by "
+                             "_compute method for same observed and expected "
+                             "do not match!")
         return stats
 
     @classmethod
@@ -221,25 +231,32 @@ class BakerCousinsLL(TestStatistic):
       ratio test statistic.
 
     Args:
-      per_bin (bool, optional): If True the statistic in each bin is returned
-        as an :class:`numpy.array`. If False (default) one value for the
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
         statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
     """
-    def __init__(self, per_bin=False):
-        super(BakerCousinsLL, self).__init__("baker_cousins", per_bin)
+    def __init__(self, per_bin=True):
+        super(BakerCousinsLL, self).__init__("baker_cousins_ll", per_bin)
 
     @classmethod
     def _compute(self, observed, expected):
         """ Calculates the log likelihood.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
-          float: Calculated Neyman's chi squared
+          float: Calculated log-likelihood value
         """
         # Convert to arrays, if observed and expected are floats
         if isinstance(observed, float):
@@ -264,13 +281,13 @@ class BakerCousinsLL(TestStatistic):
         """ Gets chi squared for each bin.
 
         Args:
-          observed (:class:`numpy.array`, *float*): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`, *float*): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
-          :class:`numpy.array`: Of the chi squared in each bin.
+          :class:`numpy.array`: Calculated log-likelihood for each bin
         """
         epsilon = 1e-34  # In the limit of zero
         stats = []
@@ -306,11 +323,18 @@ class Neyman(TestStatistic):
     statistic.
 
     Args:
-      per_bin (bool, optional): If True the statistic in each bin is returned
-        as an :class:`numpy.array`. If False (default) one value for the
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
         statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
     """
-    def __init__(self, per_bin=False):
+    def __init__(self, per_bin=True):
         super(Neyman, self).__init__("neyman", per_bin)
 
     @classmethod
@@ -318,9 +342,9 @@ class Neyman(TestStatistic):
         """ Calculates chi squared.
 
         Args:
-          observed (:class:`numpy.array`/float): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`/float): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
@@ -349,13 +373,13 @@ class Neyman(TestStatistic):
         """ Gets chi squared for each bin.
 
         Args:
-          observed (:class:`numpy.array`/float): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`/float): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
-          :class:`numpy.array`: Of the chi squared in each bin.
+          :class:`numpy.array`: Calculated chi squared for each bin
         """
         # Chosen due to backgrounds with low rates in ROI
         epsilon = 1e-34  # In the limit of zero
@@ -391,11 +415,18 @@ class Pearson(TestStatistic):
     statistic.
 
     Args:
-      per_bin (bool, optional): If True the statistic in each bin is returned
-        as an :class:`numpy.array`. If False (default) one value for the
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
         statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
     """
-    def __init__(self, per_bin=False):
+    def __init__(self, per_bin=True):
         super(Pearson, self).__init__("pearson", per_bin)
 
     @classmethod
@@ -403,9 +434,9 @@ class Pearson(TestStatistic):
         """ Calculates chi squared.
 
         Args:
-          observed (:class:`numpy.array`/float): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`/float): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Raises:
@@ -437,13 +468,13 @@ class Pearson(TestStatistic):
         """ Gets chi squared for each bin.
 
         Args:
-          observed (:class:`numpy.array`/float): Number of observed
+          observed (:class:`numpy.array` or float): Number of observed
             events
-          expected (:class:`numpy.array`/float): Number of expected
+          expected (:class:`numpy.array` or float): Number of expected
             events
 
         Returns:
-          :class:`numpy.array`: Of the chi squared in each bin.
+          :class:`numpy.array`: Calculated chi squared for each bin
         """
         # Chosen due to backgrounds with low rates in ROI
         epsilon = 1e-34  # In the limit of zero

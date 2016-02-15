@@ -482,9 +482,12 @@ class Fit(object):
             current iteration.
 
         Returns:
-          float: Value of the test statistic given the current values
-            of the fit parameters.
-          float: Total penalty term to be applied to the test statistic.
+          tuple: containing:
+
+            :class:`numpy.ndrray`: Values of the test statistic given
+              the current values of the fit parameters.
+            float: Total penalty term to be applied to the test
+              statistic.
 
         Raises:
           ValueError: If :attr:`_floating_backgrounds` is None. This
@@ -496,6 +499,7 @@ class Fit(object):
 
         .. note:: This method should not be used if there are no
           floating backgrounds.
+
         """
         if self._floating_backgrounds is None:
             raise ValueError("The _funct method can only be used " +
@@ -579,8 +583,8 @@ class Fit(object):
             to convolve.
 
         Returns:
-          spectrum (:class:`echidna.core.spectra.Spectra`): Convolved
-            spectrum, ready for applying further systematics or fitting.
+          (:class:`echidna.core.spectra.Spectra`): Convolved spectrum,
+            ready for applying further systematics or fitting.
         """
         # Locate spectrum to load from HDF5
         # Base directory should be set beforehand
@@ -700,8 +704,8 @@ class Fit(object):
         """ Sets the fixed background you want to fit.
 
         Args:
-          fixed_background (:class:`echidna.core.spectra.Spectra`):
-            The fixed background spectrum you want to fit.
+          fixed_background (:class:`echidna.core.spectra.Spectra`): The
+            fixed background spectrum you want to fit.
           shrink (bool, optional): If set to True (default) :meth:`shrink`
             method is called on the spectra shrinking it to the ROI.
         """
@@ -797,10 +801,11 @@ class Fit(object):
         """ Sets the signal you want to fit.
 
         Args:
-          signal (:class:`echidna.core.spectra.Spectra`):
-            The signal spectrum you want to fit.
-          shrink (bool, optional): If set to True (default) :meth:`shrink`
-            method is called on the spectra shrinking it to the ROI.
+          signal (:class:`echidna.core.spectra.Spectra`): The signal
+            spectrum you want to fit.
+          shrink (bool, optional): If set to True (default)
+            :meth:`shrink` method is called on the spectra shrinking
+            it to the ROI.
         """
         if shrink:
             self.shrink_spectra(signal)

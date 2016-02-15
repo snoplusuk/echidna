@@ -109,9 +109,12 @@ class Summary(object):
             for which to get the best-fit value
 
         Returns:
-          float: The best fit value of the fit parameter at idx in the array.
-          :class:`numpy.ndarray`: If a parameter value is supplied, the
-            best-fit values for each fit parameter are returned.
+          (float or :class:`numpy.ndarray`): returns:
+
+            float: The best fit value of the fit parameter at idx in
+              the array.
+            :class:`numpy.ndarray`: If a parameter value is supplied,
+              the best-fit values for each fit parameter are returned.
 
         Raises:
           IndexError: If the parameter name supplied does not match
@@ -216,10 +219,13 @@ class Summary(object):
             for which to get the penalty term value
 
         Returns:
-          float: The penalty term value of the fit parameter at idx in
-            the array.
-          :class:`numpy.ndarray`: If a parameter value is supplied, the
-            penalty term values for each fit parameter are returned.
+          (float or :class:`numpy.ndarray`: returns:
+
+            float: The penalty term value of the fit parameter at idx
+              in the array.
+            :class:`numpy.ndarray`: If a parameter value is supplied,
+              the penalty term values for each fit parameter are
+              returned.
 
         Raises:
           IndexError: If the parameter name supplied does not match
@@ -309,7 +315,8 @@ class Summary(object):
         """ Get the sigmas array.
 
         Returns:
-          float: The value of the systematic uncertainty of the fit parameter.
+          :class:`numpy.ndarray`: The systematic uncertainty for each
+            fit parameter.
         """
         return self._sigmas
 
@@ -321,7 +328,7 @@ class Summary(object):
             for which to get the penalty term value
 
         Returns:
-          float: The sigma for the given parameter
+          float: The systematic uncertainty for the given parameter
 
         Raises:
           IndexError: If the parameter name supplied does not match
@@ -388,6 +395,10 @@ class Summary(object):
         Args:
           parameters (string): Names of a valid spectal parameters onto
             which to project the test statistic values.
+
+        Returns:
+          :class:`numpy.ndarray`: Projection of the :attr:`_stat`
+            array onto the given spectral parameter axes.
         """
         projection = copy.copy(self._stats)
         for axis, parameter in enumerate(self._spectra_config.get_pars()):
@@ -409,6 +420,10 @@ class Summary(object):
           idx (int): The index of the array.
           parameters (string): Names of a valid spectal parameters onto
             which to project the test statistic values.
+
+        Returns:
+          :class:`numpy.ndarray`: Projection of the :attr:`_stat`
+            array, at idx, onto the given spectral parameter axes.
         """
         projection = copy.copy(self._stats)[idx]
         for axis, parameter in enumerate(self._spectra_config.get_pars()):

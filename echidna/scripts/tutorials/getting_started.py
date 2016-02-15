@@ -1,5 +1,12 @@
+""" Python version of getting started tutorial.
 
-# coding: utf-8
+This file has been generated automatically by running::
+
+    (ENV) $ jupyter nbconvert --to python --template getting_started
+      getting_started.ipynb
+
+"""
+import matplotlib.pyplot as plt
 
 # First set up environment with convenience imports and inline plotting:
 # <!--- The following cell should be commented out in the python script
@@ -7,9 +14,8 @@
 
 # In[ ]:
 
-# get_ipython().magic(u'pylab inline')
+# %pylab inline
 # pylab.rc("savefig", dpi=120)  # set resolution of inline figures
-
 
 # The `%pylab` magic imports `matplotlib.pyplot` as `plt` and `numpy` as
 # `np`. We'll also, change the working directory to echidna's base
@@ -19,13 +25,12 @@
 
 # In[ ]:
 
-# get_ipython().magic(u'cd ../../..')
-
+# %cd ../../..
 
 # In[ ]:
 
-# get_ipython().run_cell_magic(u'bash', u'', u'pwd')
-
+# %%bash
+# pwd
 
 # The `%cd` inline-magic emmulates the bash `cd` command, allowing us to
 # change directory and the `%%bash` magic lets you run any bash command in
@@ -36,7 +41,7 @@
 # ***
 
 # <!--- In python script version insert:
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # here --->
 
 # # Tutorial 1: Getting started with echidna
@@ -57,8 +62,8 @@ import matplotlib.pyplot as plt
 
 # In[ ]:
 
-import echidna.core.spectra as spectra
-
+if __name__ == "__main__":  # for running as a standalone python script too!
+    import echidna.core.spectra as spectra
 
 # Now we need a config file to create the spectrum from. There is an example
 # config file in `echidna/config`. If we look at the contents of this yaml
@@ -73,13 +78,12 @@ import echidna.core.spectra as spectra
 
 # In[ ]:
 
-import echidna
-from echidna.core.config import SpectraConfig
+    import echidna
+    from echidna.core.config import SpectraConfig
 
-config = SpectraConfig.load_from_file(
-    echidna.__echidna_base__ + "/echidna/config/spectra_example.yml")
-print config.get_pars()
-
+    config = SpectraConfig.load_from_file(
+        echidna.__echidna_base__ + "/echidna/config/spectra_example.yml")
+    print config.get_pars()
 
 # Note we used the `__echidna_base__` member of the `echidna` module here.
 # This module has two special members for denoting the base directory (the
@@ -89,23 +93,20 @@ print config.get_pars()
 
 # In[ ]:
 
-print echidna.__echidna_base__
-print echidna.__echidna_home__
-
+    print echidna.__echidna_base__
+    print echidna.__echidna_home__
 
 # Finally before creating the spectrum, we should define the number of
 # events it should represent:
 
 # In[ ]:
 
-num_decays = 1000
-
+    num_decays = 1000
 
 # In[ ]:
 
-spectrum = spectra.Spectra("spectrum", num_decays, config)
-print spectrum
-
+    spectrum = spectra.Spectra("spectrum", num_decays, config)
+    print spectrum
 
 # And there you have it, we've created a `Spectra` object.
 
@@ -120,29 +121,28 @@ print spectrum
 
 # In[ ]:
 
-# Import numpy
-import numpy
-
+    # Import numpy
+    import numpy
 
 # In[ ]:
 
-# Generate random energies from a Gaussin with mean (mu) and sigma (sigma)
-mu = 2.5  # MeV
-sigma = 0.15  # MeV
+    # Generate random energies from a Gaussin with mean (mu) and sigma
+    # (sigma)
+    mu = 2.5  # MeV
+    sigma = 0.15  # MeV
 
-# Generate random radial position from a Uniform distribution
-outer_radius = 5997  # Radius of SNO+ AV
+    # Generate random radial position from a Uniform distribution
+    outer_radius = 5997  # Radius of SNO+ AV
 
-# Detector efficiency
-efficiency = 0.9  # 90%
+    # Detector efficiency
+    efficiency = 0.9  # 90%
 
-for event in range(num_decays):
-    energy = numpy.random.normal(mu, sigma)
-    radius = numpy.random.uniform(high=outer_radius)
-    event_detected = (numpy.random.uniform() < efficiency)
-    if event_detected:  # Fill spectrum with values
-        spectrum.fill(energy_mc=energy, radial_mc=radius)
-
+    for event in range(num_decays):
+        energy = numpy.random.normal(mu, sigma)
+        radius = numpy.random.uniform(high=outer_radius)
+        event_detected = (numpy.random.uniform() < efficiency)
+        if event_detected:  # Fill spectrum with values
+            spectrum.fill(energy_mc=energy, radial_mc=radius)
 
 # This will have filled our `Spectra` class with the events. Make sure to
 # use the exact parameter names that were printed out above, as kewyord
@@ -152,29 +152,28 @@ for event in range(num_decays):
 
 # In[ ]:
 
-print spectrum.sum()
-
+    print spectrum.sum()
 
 # The value returned by `sum`, should roughly equal:
 
 # In[ ]:
 
-print num_decays * efficiency
-
+    print num_decays * efficiency
 
 # We can also inspect the raw data structure. This is saved in the `_data`
 # member of the `Spectra` class:
 
 # In[ ]:
 
-print spectrum._data
+    print spectrum._data
 
-
-# **Note: you probably won't see any entries in the above. For large arrays,
-# numpy only prints the first three and last three entries. Since our energy
-# range is in the middle, all our events are in the** `...` **part at the
-# moment. But we will see entries printed out later when we apply some
-# cuts.**
+# <div class="alert alert-info">
+#     <strong>Note:</strong> you probably won't see any entries in the
+#     above. For large arrays, numpy only prints the first three and last
+#     three entries. Since our energy range is in the middle, all our events
+#     are in the `...` part at the moment. But we will see entries printed
+#     out later when we apply some cuts.
+# </div>
 
 # ## Plotting
 
@@ -185,34 +184,28 @@ print spectrum._data
 
 # In[ ]:
 
-import echidna.output.plot as plot
-import echidna.output.plot_root as plot_root
-
+    import echidna.output.plot as plot
+    import echidna.output.plot_root as plot_root
 
 # To plot the projection of the spectrum on the `energy_mc` axis:
 
 # In[ ]:
 
-fig1 = plot.plot_projection(spectrum, "energy_mc",
-                            fig_num=1, show_plot=False)
-plt.show()
-
+    fig1 = plot.plot_projection(spectrum, "energy_mc",
+                                fig_num=1, show_plot=False)
 
 # and to plot the projection on the `radial_mc` axis, this time using root:
 
 # In[ ]:
 
-plot_root.plot_projection(spectrum, "radial_mc", fig_num=2)
-
+    plot_root.plot_projection(spectrum, "radial_mc", fig_num=2)
 
 # We can also project onto two dimensions and plot a surface:
 
 # In[ ]:
 
-fig_3 = plot.plot_surface(spectrum, "energy_mc", "radial_mc",
-                          fig_num=3, show_plot=False)
-plt.show()
-
+    fig_3 = plot.plot_surface(spectrum, "energy_mc", "radial_mc",
+                              fig_num=3, show_plot=False)
 
 # ## Convolution and cuts
 
@@ -249,33 +242,29 @@ plt.show()
 
 # In[ ]:
 
-shrink_dict = {"energy_mc_low": mu - 5.*sigma,
-               "energy_mc_high": mu + 5.*sigma,
-               "radial_mc_low": 0.0,
-               "radial_mc_high": 3500}
-spectrum.shrink(**shrink_dict)
-
+    shrink_dict = {"energy_mc_low": mu - 5.*sigma,
+                   "energy_mc_high": mu + 5.*sigma,
+                   "radial_mc_low": 0.0,
+                   "radial_mc_high": 3500}
+    spectrum.shrink(**shrink_dict)
 
 # Using the `sum` method, we can check to see how many events were cut.
 
 # In[ ]:
 
-print spectrum.sum()
-
+    print spectrum.sum()
 
 # Import the smear class:
 
 # In[ ]:
 
-import echidna.core.smear as smear
-
+    import echidna.core.smear as smear
 
 # and create the smearer object.
 
 # In[ ]:
 
-smearer = smear.EnergySmearRes()
-
+    smearer = smear.EnergySmearRes()
 
 # By default the "weighted smear" method considers all bins within a $\pm
 # 5\sigma$ range. For the sake of speed, we will reduce this to three here.
@@ -283,17 +272,15 @@ smearer = smear.EnergySmearRes()
 
 # In[ ]:
 
-smearer.set_num_sigma(3)
-smearer.set_resolution(0.05)
-
+    smearer.set_num_sigma(3)
+    smearer.set_resolution(0.05)
 
 # To smear our original spectrum and create the new `Spectra` object
 # `smeared_spectrum`:
 
 # In[ ]:
 
-smeared_spectrum = smearer.weighted_smear(spectrum)
-
+    smeared_spectrum = smearer.weighted_smear(spectrum)
 
 # this should hopefully only take a couple of seconds.
 
@@ -302,52 +289,51 @@ smeared_spectrum = smearer.weighted_smear(spectrum)
 
 # In[ ]:
 
-def overlay_spectra(original, smeared, dimension="energy_mc", fig_num=1):
-    """ Overlay original and smeared spectra.
+    def overlay_spectra(original, smeared,
+                        dimension="energy_mc", fig_num=1):
+        """ Overlay original and smeared spectra.
 
-    Args:
-      original (echidna.core.spectra.Spectra): Original spectrum.
-      smeared (echidna.core.spectra.Spectra): Smeared spectrum.
-      dimension (string, optional): Dimension to project onto.
-        Default is "energy_mc".
-      fignum (int, optional): Figure number, if producing multiple
-        figures. Default is 1.
+        Args:
+          original (echidna.core.spectra.Spectra): Original spectrum.
+          smeared (echidna.core.spectra.Spectra): Smeared spectrum.
+          dimension (string, optional): Dimension to project onto.
+            Default is "energy_mc".
+          fignum (int, optional): Figure number, if producing multiple
+            figures. Default is 1.
 
-    Returns:
-      matplotlib.figure.Figure: Figure showing overlaid spectra.
-    """
-    par = original.get_config().get_par(dimension)
-    # Define array of bin boundarie
-    bins = par.get_bin_boundaries()
-    # Define array of bin centres
-    x = par.get_bin_centres()
-    # Save bin width
-    width = par.get_width()
+        Returns:
+          matplotlib.figure.Figure: Figure showing overlaid spectra.
+        """
+        par = original.get_config().get_par(dimension)
+        # Define array of bin boundarie
+        bins = par.get_bin_boundaries()
+        # Define array of bin centres
+        x = par.get_bin_centres()
+        # Save bin width
+        width = par.get_width()
 
-    # Create figure and axes
-    fig, ax = plt.subplots(num=fig_num)
+        # Create figure and axes
+        fig, ax = plt.subplots(num=fig_num)
 
-    # Overlay two spectra using projection as weight
-    ax.hist(x, bins, weights=original.project(dimension),
-            histtype="stepfilled", color="RoyalBlue",
-            alpha=0.5, label=original._name)
-    ax.hist(x, bins, weights=smeared.project(dimension),
-            histtype="stepfilled", color="Red",
-            alpha=0.5, label=smeared._name)
+        # Overlay two spectra using projection as weight
+        ax.hist(x, bins, weights=original.project(dimension),
+                histtype="stepfilled", color="RoyalBlue",
+                alpha=0.5, label=original._name)
+        ax.hist(x, bins, weights=smeared.project(dimension),
+                histtype="stepfilled", color="Red",
+                alpha=0.5, label=smeared._name)
 
-    # Add label/style
-    plt.legend(loc="upper right")
-    plt.ylim(ymin=0.0)
-    plt.xlabel(dimension + " [" + par.get_unit() + "]")
-    plt.ylabel("Events per " + str(width) + " " + par.get_unit() + " bin")
-    return fig
-
+        # Add label/style
+        plt.legend(loc="upper right")
+        plt.ylim(ymin=0.0)
+        plt.xlabel(dimension + " [" + par.get_unit() + "]")
+        plt.ylabel("Events per " + str(width) +
+                   " " + par.get_unit() + " bin")
+        return fig
 
 # In[ ]:
 
-fig_4 = overlay_spectra(spectrum, smeared_spectrum, fig_num=4)
-plt.show()
-
+    fig_4 = overlay_spectra(spectrum, smeared_spectrum, fig_num=4)
 
 # ## Other spectra manipulations
 
@@ -364,10 +350,10 @@ plt.show()
 
 # In[ ]:
 
-roi = (mu - 0.5*sigma, mu + 1.45*sigma)  # To get nice shape for rebinning
-smeared_spectrum.shrink_to_roi(roi[0], roi[1], "energy_mc")
-print smeared_spectrum.get_roi("energy_mc")
-
+    # To get nice shape for rebinning
+    roi = (mu - 0.5*sigma, mu + 1.45*sigma)
+    smeared_spectrum.shrink_to_roi(roi[0], roi[1], "energy_mc")
+    print smeared_spectrum.get_roi("energy_mc")
 
 # ### Rebin
 
@@ -381,19 +367,17 @@ print smeared_spectrum.get_roi("energy_mc")
 
 # In[ ]:
 
-dimension = smeared_spectrum.get_config().get_pars().index("energy_mc")
-old_shape = smeared_spectrum._data.shape
-reduction_factor = 5  # how many bins to combine into a single bin
-new_shape = tuple([j / reduction_factor if i == dimension else j
-                   for i, j in enumerate(old_shape)])
-print old_shape
-print new_shape
-
+    dimension = smeared_spectrum.get_config().get_pars().index("energy_mc")
+    old_shape = smeared_spectrum._data.shape
+    reduction_factor = 5  # how many bins to combine into a single bin
+    new_shape = tuple([j / reduction_factor if i == dimension else j
+                       for i, j in enumerate(old_shape)])
+    print old_shape
+    print new_shape
 
 # In[ ]:
 
-smeared_spectrum.rebin(new_shape)
-
+    smeared_spectrum.rebin(new_shape)
 
 # ### Scaling
 
@@ -407,9 +391,8 @@ smeared_spectrum.rebin(new_shape)
 
 # In[ ]:
 
-smeared_spectrum.scale(104.25)
-print smeared_spectrum.sum()
-
+    smeared_spectrum.scale(104.25)
+    print smeared_spectrum.sum()
 
 # ## Putting it all together
 
@@ -418,11 +401,10 @@ print smeared_spectrum.sum()
 
 # In[ ]:
 
-print smeared_spectrum._data
-
+    print smeared_spectrum._data
 
 # In[ ]:
 
-fig_5 = plot.plot_projection(smeared_spectrum, "energy_mc",
-                             fig_num=5, show_plot=False)
-plt.show()
+    fig_5 = plot.plot_projection(smeared_spectrum, "energy_mc",
+                                 fig_num=5, show_plot=False)
+    plt.show()

@@ -3,46 +3,58 @@
 This script:
 
   * Sets 90% confidence limit on the Majoron-emitting neutrinoless
-    double beta decay modes (with spectral indices n = 1, 2, 3and 7),
+    double beta decay modes (with spectral indices n = 1, 2, 3 and 7),
     using plot-grabbed data from KamLAND-Zen.
+
+Examples:
+  To use simply run the script and supply a YAML file detailing the
+  spectra (data, fixed, floating) to load::
+
+        $ python zero_nu_limit.py --from_file klz_majoron_limits_config.yaml
 
 The ``--upper_bound`` and ``--lower_bound`` flags from the command, can
 be used to return an estimate on the error introduced through the
 plot-grabbing process.
 
-Examples:
-  To use simply run the script and supply a YAML file detailing the
-    spectra (data, fixed, floating) to load::
-
-        $ python zero_nu_limit.py --from_file klz_majoron_limits_config.yaml
-
 .. note:: An example config would be::
 
-    data:
-        data/klz/v1.0.0/klz_data.hdf5
+        data:
+            data/klz/v1.0.0/klz_data.hdf5
 
-    fixed:
-        {data/klz/v1.0.0/total_b_g_klz.hdf5: 26647.1077395}
+    ::
 
-    floating:
-        [data/klz/v1.0.0/Xe136_2n2b_fig2.hdf5]
+        fixed:
+            {data/klz/v1.0.0/total_b_g_klz.hdf5: 26647.1077395}
 
-    signals:
-        {
-            klz_n1: data/klz/v1.0.0/Xe136_0n2b_n1_fig2.hdf5,
-            klz_n2: data/klz/v1.0.0/Xe136_0n2b_n2_fig2.hdf5,
-            klz_n3: data/klz/v1.0.0/Xe136_0n2b_n3_fig2.hdf5,
-            klz_n7: data/klz/v1.0.0/Xe136_0n2b_n7_fig2.hdf5}
+    ::
 
-    roi:
-        energy:
-            !!python/tuple [1.0, 3.0]
+        floating:
+            [data/klz/v1.0.0/Xe136_2n2b_fig2.hdf5]
 
-    per_bin:
-        true
+    ::
 
-    store_summary:
-        true
+        signals:
+            {
+                klz_n1: data/klz/v1.0.0/Xe136_0n2b_n1_fig2.hdf5,
+                klz_n2: data/klz/v1.0.0/Xe136_0n2b_n2_fig2.hdf5,
+                klz_n3: data/klz/v1.0.0/Xe136_0n2b_n3_fig2.hdf5,
+                klz_n7: data/klz/v1.0.0/Xe136_0n2b_n7_fig2.hdf5}
+
+    ::
+
+        roi:
+            energy:
+                !!python/tuple [1.0, 3.0]
+
+    ::
+
+        per_bin:
+            true
+
+    ::
+
+        store_summary:
+            true
 
 """
 import numpy

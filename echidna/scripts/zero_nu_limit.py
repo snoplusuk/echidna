@@ -1,4 +1,4 @@
-""" ***DEPRECIATED***
+""" ***CURRENTLY NOT WORKING***
 
 Example limit setting script
 
@@ -22,13 +22,14 @@ Examples:
 
 .. note:: Use the -v option to print out progress and timing information
 """
+# TODO(@ashleyrback}: update this script to work with new fitting/limit code
 import numpy
 
-import echidna
 import echidna.output.store as store
-import echidna.limit.limit_config as limit_config
-import echidna.limit.limit_setting as limit_setting
-import echidna.limit.chi_squared as chi_squared
+# These no longer exist
+# import echidna.limit.limit_config as limit_config
+# import echidna.limit.limit_setting as limit_setting
+# import echidna.limit.chi_squared as chi_squared
 import echidna.output.plot_chi_squared_root as plot_chi_squared
 from echidna.calc import decay
 
@@ -61,6 +62,7 @@ class ReadableDir(argparse.Action):
         setattr(namespace, self.dest, values)  # keeps original format
 
 if __name__ == "__main__":
+    raise NotImplementedError("This script has been temporarily disabled")
     parser = argparse.ArgumentParser(description="Example limit setting "
                                      "script.")
     parser.add_argument("-v", "--verbose", action="store_true",

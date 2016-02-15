@@ -151,8 +151,8 @@ class FitResults(object):
         .. warning:: This has no penalty term contributions added.
 
         .. note:: Unlike :meth:`get_stat`, here you can specify indices
-          for any number of fit parameters dimensions, so to geta slice
-          of the raw array.
+          for any number of fit parameters dimensions, so to get a
+          slice of the raw array.
 
         Args:
           indices (tuple): Index along each fit parameter (dimension)
@@ -267,17 +267,22 @@ class FitResults(object):
         """ Projects the test statistic values, at given the given
         indices, onto the axes specified by fit and spectral parameters.
 
-        .. note:: If only **fit** parameters are specified all spectral
-          dimensions are collapsed and penalty term contributions
-          **are** included. If any **spectral** parameters are provided
-          penalty term contributions **are not** included.
+        .. warning:: If only **fit** parameters are specified all
+          spectral dimensions are collapsed and penalty term
+          contributions **are** included. If any **spectral**
+          parameters are provided penalty term contributions **are
+          not** included.
 
         Args:
           indices (tuple): The index along each fit parameter dimension
             specifying the coordinates from which to retrieve the test
             statistic value.
-          parameters (string): Names of a valid fit or spectral
+          *parameters (string): Names of a valid fit or spectral
             parameters onto which to project the test statistic values.
+
+        Returns:
+          :class:`numpy.ndarray`: Projection of :attr:`_stats` array,
+            at the given indices, onto the given parameter axes.
 
         Raises:
           TypeError: If the indices supplied are not at tuple
@@ -310,14 +315,19 @@ class FitResults(object):
         """ Projects the test statistic values onto the axes specified
         by fit and spectral parameters.
 
-        .. note:: If only **fit** parameters are specified all spectral
-          dimensions are collapsed and penalty term contributions
-          **are** included. If any **spectral** parameters are provided
-          penalty term contributions **are not** included.
+        .. warning:: If only **fit** parameters are specified all
+          spectral dimensions are collapsed and penalty term
+          contributions **are** included. If any **spectral**
+          parameters are provided penalty term contributions **are
+          not** included.
 
         Args:
-          parameters (string): Names of a valid fit or spectral
+          *parameters (string): Names of a valid fit or spectral
             parameters onto which to project the test statistic values.
+
+        Returns:
+          :class:`numpy.ndarray`: Projection of :attr:`_stats` array
+            onto the given parameter axes.
 
         Raises:
           IndexError: If the parameter names supplied do not match

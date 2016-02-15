@@ -40,7 +40,7 @@ class TestTestStatistic(unittest.TestCase):
         self.assertAlmostEqual(Pearson._compute(100., 100.), 0.)
 
         # Test arrays
-        test_statistic = Pearson()
+        test_statistic = Pearson(per_bin=False)
         # Check correct exceptions raised - only need to do once
         # Following example from:
         # http://www.lengrand.fr/2011/12/pythonunittest-assertraises-raises-error/
@@ -61,7 +61,7 @@ class TestTestStatistic(unittest.TestCase):
             lambda: test_statistic.compute_statistic(
                 self._observed, numpy.append(self._expected, [16.])))
 
-        test_statistic_pb = Pearson(per_bin=True)
+        test_statistic_pb = Pearson()
         result = test_statistic.compute_statistic(self._observed,
                                                   self._expected)
         self.assertIsInstance(result, float)
@@ -82,8 +82,8 @@ class TestTestStatistic(unittest.TestCase):
         self.assertAlmostEqual(Neyman._compute(100., 100.), 0.)
 
         # Test arrays
-        test_statistic = Neyman()
-        test_statistic_pb = Neyman(per_bin=True)
+        test_statistic = Neyman(per_bin=False)
+        test_statistic_pb = Neyman()
         result = test_statistic.compute_statistic(self._observed,
                                                   self._expected)
         self.assertIsInstance(result, float)
@@ -108,8 +108,8 @@ class TestTestStatistic(unittest.TestCase):
         self.assertAlmostEqual(BakerCousinsLL._compute(100., 100.), 0.)
 
         # Test arrays
-        test_statistic = BakerCousinsLL()
-        test_statistic_pb = BakerCousinsLL(per_bin=True)
+        test_statistic = BakerCousinsLL(per_bin=False)
+        test_statistic_pb = BakerCousinsLL()
         result = test_statistic.compute_statistic(self._observed,
                                                   self._expected)
         self.assertIsInstance(result, float)
@@ -133,8 +133,8 @@ class TestTestStatistic(unittest.TestCase):
         self.assertAlmostEqual(BakerCousinsChi._compute(100., 100.), 0.)
 
         # Test arrays
-        test_statistic = BakerCousinsChi()
-        test_statistic_pb = BakerCousinsChi(per_bin=True)
+        test_statistic = BakerCousinsChi(per_bin=False)
+        test_statistic_pb = BakerCousinsChi()
         result = test_statistic.compute_statistic(self._observed,
                                                   self._expected)
         self.assertIsInstance(result, float)
