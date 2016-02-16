@@ -1,7 +1,7 @@
 """ Python version of getting started tutorial.
 
-Please see https://github.com/snoplusuk/echidna/wiki/GettingStarted for
-a full explanation of the commands in this tutorial.
+Please see https://github.com/snoplusuk/echidna/wiki/GettingStarted or the
+jupyter notebook form of this tutorial for further details.
 
 This script:
  * Creates :class:`echidna.core.spectra.Spectra` instance
@@ -14,14 +14,16 @@ This script:
 This file has been generated automatically by running::
 
     (ENV) $ jupyter nbconvert --to python --template getting_started
-      getting_started.ipynb
+getting_started.ipynb
 
 Examples:
-  To run type (from the base directory)::
+  To run (from the base directory)::
 
     $ python echidna/scripts/tutorials/getting_started.py
+
 """
-import matplotlib.pyplot as plt
+if __name__ == "__main__":  # for running as a standalone python script too!
+    import matplotlib.pyplot as plt
 
 # First set up environment with convenience imports and inline plotting:
 # <!--- The following cell should be commented out in the python script
@@ -51,49 +53,52 @@ import matplotlib.pyplot as plt
 # change directory and the `%%bash` magic lets you run any bash command in
 # the cell but remaining in the notebook!
 
-# <!--- Main script starts below ------------------------------------------->
-
 # ***
 
-# <!--- In python script version insert:
-# import matplotlib.pyplot as plt
-# here --->
+# <div class="alert alert-info">
+#     <strong>A quick note about the ipython notebook:</strong>
+#     <ul>
+#         <li> To see the keyboard shortcuts at any time simply press the
+#             `Esc` key and then the `H` key </li>
+#         <li> The notebook has two basic modes: **Command** and **Edit**.
+#             Command mode is enabled by the `Esc` key and Edit by the
+#             `Enter` key. </li>
+#         <li> The main comand you will need is `Shift`+`Enter` (make sure
+#             you are in command mode first by pressing `Esc`). This
+#             executes the current cell and then selects the cell below. Try
+#             pressing `Shift`+`Enter` on this cell and then again to run
+#             the cell below. </li>
+#     </ul>
+# </div>
+
+# In[ ]:
+
+    print "Hello World!"
+
+# <div class="alert alert-info">
+#     <par>
+#         As you can see, for cells containing valid python, the code
+#         snippet is executed as it would be in a python terminal shell and
+#         the output is displayed below. Try selecting the cell above and
+#         editing it (`Enter` for edit mode) so that it prints out
+#         `Goodbye World!` when executed.
+#     </par>
+#     <par>
+#         These commands should get you through the tutorial, but there are
+#         more in-depth tutorials
+#         <a href="https://nbviewer.jupyter.org/github/ipython/ipython/blob/4.
+# 0.x/examples/IPython%20Kernel/Index.ipynb">
+#         here</a> if you are interested - you can even download them and
+#         work through them in the Jupyter viewer.
+#     </par>
+# </div>
+
+# <!--- Main script starts below ------------------------------------------->
 
 # # Tutorial 1: Getting started with echidna
 
 # This guide tutorial aims to get you started with some basic tasks you can
 # accomplish using echidna.
-
-    # ---
-    # ## A quick note about the ipython notebook
-
-    # To see the keyboard shortcuts at any time simply press the `Esc` key and
-    # then the `H` key.
-
-    # The notebook has two basic modes: **Command** and **Edit**. Command mode
-    # is enabled by the `Esc` key and Edit by the `Enter` key. 
-
-    # The main comand you will need is `Shift`+`Enter` (make sure you are in
-    # command mode first by pressing `Esc`). This executes the current cell
-    # and then selects the cell below. Try pressing `Shift`+`Enter` on this
-    # cell and then again to run the cell below.
-
-    # In[ ]:
-
-    print "Hello World!"
-
-
-    # As you can see, for cells containing valid python, the code snippet is
-    # executed as it would be in a terminal shell and the output is displayed
-    # below. Try selecting the cell above and editing it (`Enter` for edit
-    # mode) so that it prints out `Goodbye World!` when executed.
-
-    # These commands should get you through the tutorial, but there are more
-    # in-depth tutorials [here](http://nbviewer.jupyter.org/github/ipython/
-    # ipython/blob/3.x/examples/Notebook/Index.ipynb) if you are interested -
-    # you can even download them and work through them in the Jupyter viewer.
-    # 
-    # ---
 
 # ## Spectra creation
 
@@ -108,7 +113,6 @@ import matplotlib.pyplot as plt
 
 # In[ ]:
 
-if __name__ == "__main__":  # for running as a standalone python script too!
     import echidna.core.spectra as spectra
 
 # Now we need a config file to create the spectrum from. There is an example
