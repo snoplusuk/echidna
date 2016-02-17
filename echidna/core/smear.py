@@ -1,42 +1,40 @@
-import numpy as np
-import decimal
+"""
+Examples:
+  To smear an already smeared spectrum with a light yield of 200 to a
+  a light yield of 190 then the following lines are required::
+
+    >>> smearer = smear.SmearEnergySmearLY()
+    >>> ly = smearer.calc_smear_ly(190., cur_ly=200.)
+    >>> smearer.set_resolution(ly)
+    >>> smeared_spec = smearer.weighted_smear(spectrum)
+
+.. note:: Similar methods are available in all other smearing classes.
+"""
+import numpy
+
 import echidna.core.spectra as spectra
+
+import itertools
 
 
 class Smear(object):
-    """ This class smears the energy and radius of a spectra.
+    """ The base class for smearing spectra.
 
-    The class can recieve energy and radius as individual data points or a
-    1 dimensional numpy array to smear which is then returned. 2d and 3d
-    arrays with linked energy, radius and time information is yet to be
-    implemented.
+    Args:
+      name (string): The name of the smearing class.
 
     Attributes:
-      _light_yield (float): Number of PMT hits expected for a
-        MeV energy deposit in NHit/MeV
-      _position_resolution (float): Sigma in mm
+      _name (string): name of the smeaing class.
+      _num_sigma (float): The width of the window in terms of number of sigma
+        you wish to apply weights to.
     """
-    _light_yield = 200.  # NHit per MeV
-    _position_resolution = 100.  # mm
 
-    def __init__(self):
-        """ Initialise the Smear class by seeding the random number generator
+    def __init__(self, name):
+        """ Initialise the Smear class by seeding the random number generator.
         """
-        np.random.seed()
-
-    def bin_1d_array(self, array, bins):
-        """ Sorts a 1 dimensional array and bins it
-
-        Args:
-          array (:class:`numpy.array`): To sort and bin
-          bins (list): Upper limit of bins
-
-        Returns:
-          A 1 dimensional numpy array, sorted and binned.
-        """
-        array = np.sort(array)
-        split_at = array.searchsorted(bins)
-        return np.split(array, split_at)
+        numpy.random.seed()
+        self._name = name
+        self._num_sigma = 5.
 
     def calc_gaussian(self, x, mean, sigma):
         """ Calculates the value of a gaussian whose integral is equal to
@@ -48,377 +46,323 @@ class Smear(object):
             sigma : Sigma of the gaussian
 
           Returns:
-            Value of the gaussian at the given position
+            float: Value of the gaussian at the given position
         """
-        return np.exp(-(x-mean)**2/(2*sigma**2))/(sigma*np.sqrt(2*np.pi))
+        return (numpy.exp(-(x - mean) ** 2 / (2 * sigma ** 2)) /
+                (sigma*numpy.sqrt(2 * numpy.pi)))
 
-    def floor_to_bin(self, x, bin_size):
-        """ Rounds down value bin content to lower edge of nearest bin.
+    def get_bin_mean(self, low, bin, width):
+        """ Calculates the mean value of a bin.
 
         Args:
-          x (float): Value to round down
-          bin_size (float): Width of a bin
+          low (float): The lower bound value of the parameter.
+          bin (int): The number of the bin you wish to calculate the mean of.
+          width (float): The width of the bin.
 
         Returns:
-          Value of nearest lower bin edge
+          float: The mean value of the bin.
         """
-        dp = abs(decimal.Decimal(str(bin_size)).as_tuple().exponent)
-        coef = np.power(10, dp)
-        return np.floor(coef*(x//bin_size)*bin_size)/coef
+        return low + (bin + 0.5)*width
 
-    def ceil_to_bin(self, x, bin_size):
-        """ Rounds up value bin content to upper edge of nearest bin.
+    def get_num_sigma(self):
+        """ Returns the width of the window in terms of number of sigma
+          you wish to apply weights to.
+
+        Returns:
+          float: The number of sigma.
+        """
+        return self._num_sigma
+
+    def set_num_sigma(self, num_sigma):
+        """ Sets the width of the window in terms of number of sigma
+          you wish to apply weights to.
 
         Args:
-          x (float): Value to round down
-          bin_size (float): Width of a bin
+          num_sigma (float): The number of sigma you wish to apply weights to.
+        Raises:
+          ValueError: If the number of sigma is zero or negative.
+        """
+        if (num_sigma > 0.):
+            self._num_sigma = float(num_sigma)
+        else:
+            raise ValueError("%s is an invalid num_sigma. Value must be "
+                             "greater than zero." % num_sigma)
+
+    def get_bounds(self, mean, sigma):
+        """ Calculates the boundaries you wish to apply the smearing
+          weights to.
+
+        Args:
+          mean (float): The mean value you are smearing.
+          sigma (float): The sigma of the gaussian you are using to smear.
 
         Returns:
-          Value of nearest lower bin edge
+          tuple: First value of the tuple is the lower bound. The second is
+            the upper bound.
         """
-        dp = abs(decimal.Decimal(str(bin_size)).as_tuple().exponent)
-        coef = np.power(10, dp)
-        return np.ceil(coef*(bin_size+(x//bin_size)*bin_size))/coef
+        low = mean - self._num_sigma*sigma
+        high = mean + self._num_sigma*sigma
+        return low, high
 
-    def get_energy_sigma(self, energy):
+
+class EnergySmearLY(Smear):
+    """ The class which smears energy. It accepts resolution in terms of light
+      yield (LY) in units of NHit per MeV.
+
+    Attributes:
+      _light_yield (float): The light yield of the scintillator in NHits per
+        MeV.
+    """
+
+    def __init__(self):
+        """ Initialises the class.
+        """
+        super(EnergySmearLY, self).__init__("energy_light_yield")
+        self._light_yield = 200.  # NHits/MeV
+
+    def calc_smear_ly(self, new_ly, cur_ly=None):
+        """Calculates the value of light yield (ly) required to smear a
+          data set which has already been smeared with a light yield of cur_ly
+          to achieve a smeared data set with a new light yield of new_ly.
+
+        Args:
+          new_ly (float): The value of light yield wanted for the smeared PDF.
+          cur_ly (float, optional): Current value of light yield the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_ly is smaller than cur_sigma. Can't smear to
+            higher light yields (smaller sigmas)
+
+        Returns:
+          float: The value of light yield needed to smear the current
+            PDF to obtain a new light yield: new_ly.
+        """
+        if not cur_ly:
+            cur_ly = self.get_resolution()
+        if new_ly > cur_ly:
+            raise ValueError("New light yield must be smaller than the"
+                             "current light yield. cur_ly: %s. new_ly: %s."
+                             % (cur_ly, new_ly))
+        return new_ly*cur_ly/(cur_ly-new_ly)
+
+    def get_resolution(self):
+        """ Returns the light yield.
+
+        Returns:
+          float: The light yield.
+        """
+        return self._light_yield
+
+    def get_sigma(self, energy):
         """ Calculates sigma at a given energy.
 
         Args:
           energy (float): Energy value of data point(s)
 
         Returns:
-          Sigma equivalent to sqrt(energy/_light_yield)
+          float: Sigma equivalent to sqrt(energy/_light_yield)
         """
-        return np.sqrt(energy/self._light_yield)
+        return numpy.sqrt(energy/self._light_yield)
 
-    def smear_energy_0d(self, energy):
-        """ Smears a single energy value
+    def set_resolution(self, light_yield):
+        """ Sets the light yield
 
         Args:
-          energy (float): Value to smear
+          light_yield (float): The value you wish to set the light yield to.
 
-        Returns:
-          Smeared energy value
+        Raises:
+          ValueError: If the light yield is zero or negative.
         """
-        sigma = self.get_energy_sigma(energy)
-        return np.fabs(np.random.normal(energy, sigma))
+        if light_yield > 0.:
+            self._light_yield = float(light_yield)
+        else:
+            raise ValueError("%s is an invalid light yield. Light yield "
+                             "must be greater than zero.")
 
-    def smear_energy_1d(self, energies, bins, binned=False):
-        """ Smears a 1 dimensional array of energy values
+    def weighted_smear(self, spectrum, par="energy_mc"):
+        """ Smears the energy of a :class:`spectra.Spectra` by
+        calculating a Gaussian PDF for each bin. Weights are then
+        applied to a window of width specified by the number of sigma
+        depending on the value of the Gaussian PDF at the mean of the
+        bin.
 
         Args:
-          energies (:class:`numpy.array`): Values to smear
-          bins (list): Upper edge of bins for array
-          binned (bool): Is the array already binned? (True or False)
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish
+            to smear. The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
 
         Returns:
-          Smeared and sorted 1 dimensional numpy array of energy values
+          :class:`spectra.Spectra`: The smeared spectrum
         """
-        if binned is False:
-            energies = self.bin_1d_array(energies, bins)
-        bin_size = bins[1]-bins[0]
-        smeared_energies = []
-        for energy in energies:
-            if energy.any():
-                energy_bin = self.floor_to_bin(energy[0], bin_size)+0.5*bin_size
-                num_entries = len(energy)
-                smeared_energies += self.smear_energy_bin(energy_bin,
-                                                          num_entries)
-        return np.array(smeared_energies)
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
+                                       str(self._light_yield),
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = spectrum._data[bin]
+            if entries:
+                data = {}
+                low = None
+                high = None
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        sigma = self.get_sigma(mean)
+                        low, high = self.get_bounds(mean, sigma)
+                        low = spectrum.get_config().get_par(
+                            par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
+                        high = spectrum.get_config().get_par(
+                            par).round(high + 0.5 * widths[i]) + \
+                            0.5 * widths[i]
+                        if low < spectrum.get_config().get_par(par)._low:
+                            low = spectrum.get_config().get_par(par)._low + \
+                                0.5 * widths[i]
+                        if high > spectrum.get_config().get_par(par)._high:
+                            high = spectrum.get_config().get_par(par)._high - \
+                                0.5 * widths[i]
+                        weights = []
+                        for energy in numpy.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(energy,
+                                                              mean,
+                                                              sigma))
+                    else:
+                        data[par_names[i]] = mean
+                total_weight = sum(weights)
+                i = 0
+                for energy in numpy.arange(low, high, widths[idx]):
+                    data[par] = energy
+                    smeared_spec.fill(weight=entries*weights[i]/total_weight,
+                                      **data)
+                    i += 1
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec
 
-    def smear_energy_bin(self, energy, entries):
-        """ Smears one energy bin.
+    def random_smear(self, spectrum, par="energy_mc"):
+        """ Smears the energy of a :class:`spectra.Spectra` by
+        generating a number of random points from  Gaussian PDF generated
+        from that bins mean value and the corresponding sigma. The number
+        of points generated is equivalent to the number of entries in that
+        bin.
 
         Args:
-          energy (float): Central value of energy of bin
-          entries (int): Number of entries in the bin
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish to
+            smear. The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
 
         Returns:
-          A list of smeared energies corresponding to the input bin.
+          :class:`spectra.Spectra`: The smeared spectrum
         """
-        sigma = self.get_energy_sigma(energy)
-        smeared_energies = []
-        for i in range(entries):
-            smeared_energies.append(np.fabs(np.random.normal(energy, sigma)))
-        return smeared_energies
-
-    def smear_radius_0d(self, radius):
-        """ Smears a single radius value
-
-        Args:
-          radius (float): Value to smear
-
-        Returns:
-          Smeared radius value
-        """
-        return np.fabs(np.random.normal(radius, self._position_resolution))
-
-    def smear_radii_1d(self, radii, bins, binned=False):
-        """ Smears a 1 dimensional array of radius values
-
-        Args:
-          radii (:class:`numpy.array`): Values to smear
-          bins (list): Upper edge of bins for array
-          binned (bool): Is the array already binned? (True or False)
-
-        Returns:
-          Smeared and sorted 1 dimensional numpy array of radius values
-        """
-        if binned is False:
-            radii = self.bin_1d_array(radii, bins)
-        bin_size = bins[1]-bins[0]
-        smeared_radii = []
-        for radius in radii:
-            if radius.any():
-                radius_bin = self.floor_to_bin(radius[0],
-                                               bin_size) + 0.5*bin_size
-                num_entries = len(radius)
-                smeared_radii += self.smear_radius_bin(radius_bin, num_entries)
-        return np.array(smeared_radii)
-
-    def smear_radius_bin(self, radius, entries):
-        """ Smears one energy bin.
-
-        Args:
-          radius (float): Central value of radius of bin
-          entries (int): Number of entries in the bin
-
-        Returns:
-          A list of smeared radii corresponding to the input bin.
-        """
-        smeared_radii = []
-        for i in range(entries):
-            smeared_radii.append(
-                np.fabs(np.random.normal(radius, self._position_resolution)))
-        return smeared_radii
-
-    def random_gaussian_energy_spectra(self, true_spectrum):
-        """ Smears the energy of a spectra object by generating
-          a number of random points from a Gaussian pdf generated
-          for that bin. The number of points generated is equivalent
-          to the number of entries in that bin.
-
-        Args:
-          true_spectrum (spectra): spectrum to be smeared
-
-        Returns:
-          A smeared spectra object.
-        """
-        raw_events = true_spectrum._raw_events
-        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
-        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
-        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(
-            true_spectrum._name+str(self._light_yield)+"_light_yield",
-            true_spectrum._num_decays)
-        for time_bin in range(true_spectrum._time_bins):
-            mean_time = time_bin*time_step+0.5*time_step
-            for radial_bin in range(true_spectrum._radial_bins):
-                mean_radius = radial_bin*radial_step+0.5*radial_step
-                for energy_bin in range(true_spectrum._energy_bins):
-                    mean_energy = energy_bin*energy_step+0.5*energy_step
-                    sigma = self.get_energy_sigma(mean_energy)
-                    entries = true_spectrum._data[energy_bin,
-                                                  radial_bin,
-                                                  time_bin]
-                    for i in range(int(entries)):
-                        try:
-                            smeared_spectrum.fill(
-                                np.fabs(np.random.normal(mean_energy, sigma)),
-                                mean_radius, mean_time)
-                        except ValueError:
-                            # Occurs when smeared energy is outside bin range
-                            print "Warning: Smeared energy out of bounds. Skipping."
-                            continue
-        smeared_spectrum._raw_events = raw_events
-        return smeared_spectrum
-
-    def weight_gaussian_energy_spectra(self, true_spectrum, num_sigma=5.):
-        """ Smears the energy of a spectra object by calculating a
-          Gaussian pdf for each bin and applying a weight to the bin
-          and corresponding bins a default 5 sigma apart.
-
-        Args:
-          true_spectrum (spectra): spectrum to be smeared
-          num_sigma (float): Width of window to apply the weight method.
-            Default is 5.
-
-        Returns:
-          A smeared spectra object.
-        """
-        raw_events = true_spectrum._raw_events
-        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
-        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
-        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(
-            true_spectrum._name+str(self._light_yield)+"_light_yield",
-            true_spectrum._num_decays)
-        for time_bin in range(true_spectrum._time_bins):
-            mean_time = time_bin*time_step+0.5*time_step
-            for radial_bin in range(true_spectrum._radial_bins):
-                mean_radius = radial_bin*radial_step+0.5*radial_step
-                for energy_bin in range(true_spectrum._energy_bins):
-                    mean_energy = energy_bin*energy_step+0.5*energy_step
-                    sigma = self.get_energy_sigma(mean_energy)
-                    entries = float(true_spectrum._data[energy_bin,
-                                                        radial_bin,
-                                                        time_bin])
-                    if entries == 0:
-                        continue  # Bin Empty
-                    lower_bin = self.floor_to_bin(mean_energy-num_sigma*sigma,
-                                                  energy_step)+0.5*energy_step
-                    upper_bin = self.ceil_to_bin(mean_energy+num_sigma*sigma,
-                                                 energy_step)-0.5*energy_step
-                    if upper_bin > true_spectrum._energy_high:
-                        upper_bin = true_spectrum._energy_high-0.5*energy_step
-                    if lower_bin < true_spectrum._energy_low:
-                        lower_bin = true_spectrum._energy_low+0.5*energy_step
-                    weights = []
-                    for energy in np.arange(lower_bin, upper_bin, energy_step):
-                        weights.append(self.calc_gaussian(energy,
-                                                          mean_energy,
-                                                          sigma))
-                    i = 0
-                    tot_weight = np.array(weights).sum()
-                    for energy in np.arange(lower_bin, upper_bin, energy_step):
-                        try:
-                            smeared_spectrum.fill(
-                                energy, mean_radius, mean_time,
-                                entries*weights[i]/tot_weight)
-                        except ValueError:
-                            # Occurs when smeared energy is outside bin range
-                            print "Warning: Smeared energy out of bounds. Skipping."
-                            continue
-                        i += 1
-        smeared_spectrum._raw_events = raw_events
-        return smeared_spectrum
-
-    def random_gaussian_radius_spectra(self, true_spectrum):
-        """ Smears the radius of a spectra object by generating a
-          number of random points from a Gaussian pdf generated for
-          that bin. The number of points generated is equivalent to the
-          number of entries in that bin.
-
-        Args:
-          true_spectrum (spectra): spectrum to be smeared
-
-        Returns:
-          A smeared spectra object.
-        """
-        raw_events = true_spectrum._raw_events
-        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
-        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
-        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(
-            true_spectrum._name+str(self._position_resolution)+"_position_resolution",
-            true_spectrum._num_decays)
-        for time_bin in range(true_spectrum._time_bins):
-            mean_time = time_bin*time_step+0.5*time_step
-            for energy_bin in range(true_spectrum._energy_bins):
-                mean_energy = energy_bin*energy_step+0.5*energy_step
-                for radial_bin in range(true_spectrum._radial_bins):
-                    mean_radius = radial_bin*radial_step+0.5*radial_step
-                    entries = true_spectrum._data[energy_bin,
-                                                  radial_bin,
-                                                  time_bin]
-                    for i in range(int(entries)):
-                        try:
-                            smeared_spectrum.fill(
-                                mean_energy,
-                                np.fabs(np.random.normal(
-                                    mean_radius, self._position_resolution)),
-                                mean_time)
-                        except ValueError:
-                            # Occurs when smeared radius is outside bin range
-                            print "Warning: Smeared radius out of bounds. Skipping."
-                            continue
-        smeared_spectrum._raw_events = raw_events
-        return smeared_spectrum
-
-    def weight_gaussian_radius_spectra(self, true_spectrum, num_sigma=5.):
-        """ Smears the radius of a spectra object by calculating a
-          Gaussian pdf for each bin and applies a weight to the bin and
-          corresponding bins a default 5 sigma apart.
-
-        Args:
-          true_spectrum (spectra): spectrum to be smeared
-          num_sigma (float): Width of window to apply the weight method.
-            Default is 5.
-
-        Returns:
-          A smeared spectra object.
-        """
-        raw_events = true_spectrum._raw_events
-        energy_step = (true_spectrum._energy_high-true_spectrum._energy_low)/true_spectrum._energy_bins
-        time_step = (true_spectrum._time_high-true_spectrum._time_low)/true_spectrum._time_bins
-        radial_step = (true_spectrum._radial_high-true_spectrum._radial_low)/true_spectrum._radial_bins
-        smeared_spectrum = spectra.Spectra(
-            true_spectrum._name+str(self._position_resolution)+"_position_resolution",
-            true_spectrum._num_decays)
-        for time_bin in range(true_spectrum._time_bins):
-            mean_time = time_bin*time_step+0.5*time_step
-            for energy_bin in range(true_spectrum._energy_bins):
-                mean_energy = energy_bin*energy_step+0.5*energy_step
-                for radial_bin in range(true_spectrum._radial_bins):
-                    mean_radius = radial_bin*radial_step+0.5*radial_step
-                    entries = float(true_spectrum._data[energy_bin,
-                                                        radial_bin,
-                                                        time_bin])
-                    if entries == 0:
-                        continue  # Bin Empty
-                    lower_bin = self.floor_to_bin(mean_radius-num_sigma*self._position_resolution,
-                                                  radial_step)+0.5*radial_step
-                    upper_bin = self.ceil_to_bin(mean_radius+num_sigma*self._position_resolution,
-                                                 radial_step)-0.5*radial_step
-                    if upper_bin > true_spectrum._radial_high:
-                        upper_bin = true_spectrum._radial_high-0.5*energy_step
-                    if lower_bin < true_spectrum._radial_low:
-                        lower_bin = true_spectrum._radial_low+0.5*energy_step
-                    weights = []
-                    for radius in np.arange(lower_bin, upper_bin, radial_step):
-                        weights.append(
-                            self.calc_gaussian(radius, mean_radius,
-                                               self._position_resolution))
-                    weight_tot = np.array(weights).sum()
-                    i = 0
-                    for radius in np.arange(lower_bin, upper_bin, radial_step):
-                        try:
-                            smeared_spectrum.fill(
-                                mean_energy, radius, mean_time,
-                                entries*weights[i]/weight_tot)
-                        except ValueError:
-                            # Occurs when smeared radius is outside bin range
-                            print "Warning: Smeared radius out of bounds. Skipping."
-                            continue
-                        i += 1
-        smeared_spectrum._raw_events = raw_events
-        return smeared_spectrum
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
+                                       str(self._light_yield),
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = int(spectrum._data[bin])
+            if entries:
+                data = {}
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        mean_e = mean
+                        sigma = self.get_sigma(mean)
+                    else:
+                        data[par_names[i]] = mean
+                for i in range(entries):
+                    data[par] = numpy.fabs(numpy.random.normal(mean_e, sigma))
+                    try:
+                        smeared_spec.fill(**data)
+                    except ValueError:
+                        print "WARNING: Smeared energy out of bounds. Skipping"
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec
 
 
-class EResSmear(Smear):
+class EnergySmearRes(Smear):
     """ Allows you to smear directly by supplied energy resolution
       (in :math:`\sqrt{MeV}`).
 
-    Inherits from :class:`Smear` to provide exactly the same
-    functionality but overrides :meth:`Smear.get_energy_sigma` to use
-    a given energy resolution to calculate sigma.
-
-    Args:
-      energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
-        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+    Inherits from :class:`Smear`
 
     Attributes:
-      _light_yield (float): Number of PMT hits expected for a
-        MeV energy deposit in NHit/MeV.
       _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
         e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
-      _position_resolution (float): Sigma in mm.
     """
-    def __init__(self, energy_resolution):
-        super(EResSmear, self).__init__()
-        self._energy_resolution = energy_resolution
 
-    def get_energy_sigma(self, energy):
+    def __init__(self):
+        """ Initialise the class
+        """
+        super(EnergySmearRes, self).__init__("energy_resolution")
+        self._resolution = 0.05  # 5%/sqrt(MeV)
+
+    def calc_smear_resoluton(self, new_res, cur_res=None):
+        """Calculates the value of resolution required to smear a data set
+          which has already been smeared with a resolution of cur_res to
+          achieve a new resolution of new_res.
+
+        Args:
+          new_res (float): The value of resolution wanted for the smeared PDF.
+          cur_res (float, optional): Current value of resolution the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_res is smaller than cur_sigma. Can't smear to
+            higher resolutions (smaller sigmas)
+
+        Returns:
+          float: The value of resolution needed to smear the current
+            PDF to obtain a new resolution with sigma value new_res.
+        """
+        if not cur_res:
+            cur_res = self.get_resolution()
+        if new_res < cur_res:
+            raise ValueError("New resolution must be larger than the"
+                             "current resolution. cur_res: %s. new_res: %s."
+                             % (cur_res, new_res))
+        return numpy.fabs(numpy.sqrt(new_res**2 - cur_res**2))
+
+    def get_resolution(self):
+        """ Get the energy resolution
+
+        Returns:
+          float: Energy resolution in  :math:`\sqrt{MeV}`
+          e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`
+        """
+        return self._resolution
+
+    def get_sigma(self, energy):
         """ Calculates sigma at a given energy.
 
         Args:
@@ -428,4 +372,351 @@ class EResSmear(Smear):
           float: Sigma (MeV) equivalent to energy_resolution *
             :math:`\sqrt{energy}`
         """
-        return self._energy_resolution * np.power(energy, (1./2.))
+        return self._resolution * numpy.power(energy, (1. / 2.))
+
+    def set_resolution(self, resolution):
+        """ Set the energy resolution in :math:`\sqrt{MeV}`
+        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+
+        Args:
+          resolution (float): Energy resolution in :math:`\sqrt{MeV}`
+            e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
+
+        Raises:
+          ValueError: If the resolution is not between 0 and 1.
+        """
+        if (resolution > 0. and resolution < 1.):
+            self._resolution = resolution
+        else:
+            raise ValueError("%s is an invalid energy resolution. Value "
+                             "must be between 0. and 1." % resolution)
+
+    def weighted_smear(self, spectrum, par="energy_mc"):
+        """ Smears the energy of a :class:`spectra.Spectra` by
+        calculating a Gaussian PDF for each bin. Weights are then applied
+        to a window of width specified by the number of sigma depending on
+        the value of the Gaussian PDF at the mean of the bin.
+
+        Args:
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish to
+            smear. The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`spectra.Spectra`: The smeared spectrum
+        """
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name + "_" +
+                                       str(100.*self._resolution)+"%",
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = spectrum._data[bin]
+            if entries:
+                data = {}
+                low = None
+                high = None
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        sigma = self.get_sigma(mean)
+                        low, high = self.get_bounds(mean, sigma)
+                        low = spectrum.get_config().get_par(
+                            par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
+                        high = spectrum.get_config().get_par(
+                            par).round(high + 0.5 * widths[i]) + \
+                            0.5 * widths[i]
+                        if low < spectrum.get_config().get_par(par)._low:
+                            low = spectrum.get_config().get_par(par)._low + \
+                                0.5 * widths[i]
+                        if high > spectrum.get_config().get_par(par)._high:
+                            high = spectrum.get_config().get_par(par)._high - \
+                                0.5 * widths[i]
+                        weights = []
+                        for energy in numpy.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(energy,
+                                                              mean,
+                                                              sigma))
+                    else:
+                        data[par_names[i]] = mean
+                total_weight = sum(weights)
+                i = 0
+                for energy in numpy.arange(low, high, widths[idx]):
+                    data[par] = energy
+                    smeared_spec.fill(weight=entries*weights[i]/total_weight,
+                                      **data)
+                    i += 1
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec
+
+    def random_smear(self, spectrum, par="energy_mc"):
+        """ Smears the energy of a :class:`spectra.Spectra` by
+        generating a number of random points from  Gaussian PDF
+        generated from that bins mean value and the corresponding
+        sigma. The number of points generated is equivalent to the
+        number of entries in that bin.
+
+        Args:
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish to
+            smear. The default is energy_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`spectra.Spectra`: The smeared spectrum
+        """
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name + "_" +
+                                       str(100.*self._resolution)+"%",
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = int(spectrum._data[bin])
+            if entries:
+                data = {}
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        mean_e = mean
+                        sigma = self.get_sigma(mean)
+                    else:
+                        data[par_names[i]] = mean
+                for i in range(entries):
+                    data[par] = numpy.fabs(numpy.random.normal(mean_e, sigma))
+                    try:
+                        smeared_spec.fill(**data)
+                    except ValueError:
+                        print "WARNING: Smeared energy out of bounds. Skipping"
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec
+
+
+class RadialSmear(Smear):
+    """ The class which smears the radius. It accepts resolution in terms of
+      sigma in units of mm.
+
+    Attributes:
+      _resolution (float): The position resolution (mm).
+    """
+
+    def __init__(self):
+        """ Initialises the class.
+        """
+        super(RadialSmear, self).__init__("radial")
+        self._resolution = 100.  # mm
+
+    def calc_smear_resoluton(self, new_res, cur_res=None):
+        """Calculates the value of resolution required to smear a data set
+          which has already been smeared with a resolution of cur_res to
+          achieve a new resolution of new_res.
+
+        Args:
+          new_res (float): The value of resolution wanted for the smeared PDF.
+          cur_res (float, optional): Current value of resolution the PDF
+            has been convolved with from the true value PDF.
+
+        Raises:
+          ValueError: If new_res is smaller than cur_sigma. Can't smear to
+            higher resolutions (smaller sigmas)
+
+        Returns:
+          float: The value of resolution needed to smear the current
+            PDF to obtain a new resolution: new_res.
+        """
+        if not cur_res:
+            cur_res = self.get_resolution()
+        if new_res < cur_res:
+            raise ValueError("New resolution must be larger than the"
+                             "current resolution. cur_res: %s. new_res: %s."
+                             % (cur_res, new_res))
+        return numpy.fabs(numpy.sqrt(new_res**2 - cur_res**2))
+
+    def get_resolution(self):
+        """Gets the position resolution.
+
+        Returns:
+          float: Position resolution.
+        """
+        return self._resolution
+
+    def set_resolution(self, resolution):
+        """Sets the position resolution:
+
+        Raises:
+          ValueError: If resolution is zero or less.
+
+        Args:
+          resolution (float): Position resolution in mm.
+        """
+        if resolution > 0:
+            self._resolution = resolution
+        else:
+            raise ValueError("%s is an incorrect position resolutioin. Value "
+                             "must be greater than zero." % resolution)
+
+    def get_sigma(self):
+        """Sigma and resolution are equivalent for radial dimensions
+        currently. This function calls self.get_resolution()
+
+        Returns:
+          float: Sigma in mm equivalent to resolution
+        """
+        return self.get_resolution()
+
+    def weighted_smear(self, spectrum, par="radial_mc"):
+        """ Smears the radius of a :class:`spectra.Spectra` by
+        calculating a Gaussian PDF for each bin. Weights are then
+        applied to a window of width specified by the number of sigma
+        depending on the value of the Gaussian PDF at the mean of the
+        bin.
+
+        Args:
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish to
+            smear. The default is radial_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`spectra.Spectra`: The smeared spectrum
+        """
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name + "_" +
+                                       str(self._resolution) + "mm",
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = spectrum._data[bin]
+            if entries:
+                data = {}
+                low = None
+                high = None
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        sigma = self.get_sigma()
+                        low, high = self.get_bounds(mean, sigma)
+                        low = spectrum.get_config().get_par(
+                            par).round(low - 0.5 * widths[i]) + 0.5 * widths[i]
+                        high = spectrum.get_config().get_par(
+                            par).round(high + 0.5 * widths[i]) + \
+                            0.5 * widths[i]
+                        if low < spectrum.get_config().get_par(par)._low:
+                            low = spectrum.get_config().get_par(par)._low + \
+                                0.5 * widths[i]
+                        if high > spectrum.get_config().get_par(par)._high:
+                            high = spectrum.get_config().get_par(par)._high - \
+                                0.5 * widths[i]
+                        weights = []
+                        for radius in numpy.arange(low, high, widths[i]):
+                            weights.append(self.calc_gaussian(radius,
+                                                              mean,
+                                                              sigma))
+                    else:
+                        data[par_names[i]] = mean
+                total_weight = sum(weights)
+                i = 0
+                for radius in numpy.arange(low, high, widths[idx]):
+                    data[par] = radius
+                    smeared_spec.fill(weight=entries*weights[i]/total_weight,
+                                      **data)
+                    i += 1
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec
+
+    def random_smear(self, spectrum, par="radial_mc"):
+        """ Smears the radius of a :class:`spectra.Spectra` by
+        generating a number of random points from  Gaussian PDF
+        generated from that bins mean value and the corresponding
+        sigma. The number of points generated is equivalent to the
+        number of entries in that bin.
+
+        Args:
+          spectrum (:class:`spectra.Spectra`): Spectrum you wish to
+            smear.
+          par (string, optional): The name of the parameter you wish to
+            smear. The default is radial_mc.
+
+        Raises:
+          IndexError: If par is not in the specta config.
+
+        Returns:
+          :class:`spectra.Spectra`: The smeared spectrum
+        """
+        if par not in spectrum.get_config().get_pars():
+            raise IndexError("%s is not a parameter in the spectrum" % par)
+        idx = spectrum.get_config().get_index(par)
+        bins = []
+        lows = []
+        widths = []
+        par_names = []
+        for par_name in spectrum.get_config().get_pars():
+            bins.append(range(spectrum.get_config().get_par(par_name)._bins))
+            lows.append(spectrum.get_config().get_par(par_name)._low)
+            widths.append(spectrum.get_config().get_par(par_name).get_width())
+            par_names.append(par_name)
+        smeared_spec = spectra.Spectra(spectrum._name + "_" +
+                                       str(self._resolution) + "mm",
+                                       spectrum._num_decays,
+                                       spectrum.get_config())
+        for bin in itertools.product(*bins):
+            entries = spectrum._data[bin]
+            if entries:
+                data = {}
+                for i in range(len(bin)):
+                    mean = self.get_bin_mean(lows[i], bin[i], widths[i])
+                    if i == idx:
+                        mean_r = mean
+                        sigma = self.get_sigma()
+                    else:
+                        data[par_names[i]] = mean
+                for i in range(entries):
+                    data[par] = numpy.fabs(numpy.random.normal(mean_r, sigma))
+                    try:
+                        smeared_spec.fill(**data)
+                    except ValueError:
+                        print "WARNING: Smeared radius out of bounds. Skipping"
+        smeared_spec._raw_events = spectrum._raw_events
+        return smeared_spec

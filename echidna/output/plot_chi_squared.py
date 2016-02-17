@@ -1,4 +1,6 @@
-""" Contains functions to view and interrogate chi-squared minimisation
+""" *** DEPRECIATED ***
+
+Contains functions to view and interrogate chi-squared minimisation
 
 Attributes:
   MAIN_FONT (dict): style properties for the main font to use in plot labels
@@ -18,7 +20,8 @@ BOLD_FONT = {"size": 22, "weight": "bold"}
 
 
 def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
-                          n_atoms=None, *args, **kwargs):
+                          n_atoms=None, penalty=None, effective_mass=False,
+                          half_life=False, save_as=None, show=False, **kwargs):
     """ Plot the chi squared as a function of signal counts
 
     Args:
@@ -30,44 +33,42 @@ def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
         same script, ensures matplotlib doesn't overwrite them.
       n_atoms (float): Number of atoms for converter to use in
         calculations of half life or effective mass.
-      *args: Arguments to pass to converter methods.
-      **kwargs: Keyword arguments.
-
-    .. note::
-
-      Keyword arguments include:
-
-        * penalty (:class:`echidna.limit.limit_config.LimitConfig`): config
-          for signal with penalty term.
-        * effective_mass (*bool*): if True, plot the x-axis as the
-          signal contribution effective mass.
-        * half_life (*bool*): if True, plot the x-axis as the signal
-          contribution half life.
+      penalty (:class:`echidna.limit.limit_config.LimitConfig`, optional):
+        config for signal with penalty term.
+      effective_mass (bool, optional): if True, plot the x-axis as the
+        signal contribution effective mass.
+      half_life (bool, optional): if True, plot the x-axis as the signal
+        contribution half life.
+      save_as (string, optional): Name of plot to save. All plots are
+        saved in .png format.
+      show (bool, optional): Display the plot to screen. Default is False.
+      \**kwargs: Keyword arguments to pass to converter methods.
 
     Raises:
       TypeError: If 'half_life' or 'effective_mass' keyword arguments
         are used without :class:`echidna.calc.decay.DBIsotope` object
         to use as converter.
+
+    Returns:
+      matplotlib.pyplot.figure: Plotted figure.
     """
-    if (converter is None and
-        (kwargs.get("half_life") or kwargs.get("effective_mass"))):
+    if (converter is None and half_life or effective_mass):
         raise TypeError("converter is None. Cannot use 'half_life' or "
                         "'effective_mass' keywords without converter")
-
-    fig = plt.figure(fig_num, figsize=(10, 10))  # Fig. 1 (axes generated automatically)
+    # Fig. 1 (axes generated automatically)
+    fig = plt.figure(fig_num, figsize=(10, 10))
 
     # X axis values
-    if kwargs.get("effective_mass"):
+    if effective_mass:
         x = numpy.zeros(shape=(signal_config.get_chi_squareds()[2].shape))
         for i_bin, count in enumerate(signal_config.get_chi_squareds()[2]):
-            effective_mass = converter.counts_to_eff_mass(count, *args,
-                                                          **kwargs)
+            effective_mass = converter.counts_to_eff_mass(count, **kwargs)
             x[i_bin] = effective_mass
         plt.xlabel(r"$m_{\beta\beta}$", **BOLD_FONT)
-    elif kwargs.get("half_life"):
+    elif half_life:
         x = numpy.zeros(shape=(signal_config.get_chi_squareds()[2].shape))
         for i_bin, count in enumerate(signal_config.get_chi_squareds()[2]):
-            x.append(1./converter.counts_to_half_life(count, *args, **kwargs))
+            x.append(1./converter.counts_to_half_life(count, **kwargs))
         plt.xlabel(r"$1/T_{1/2}^{0\nu}$", **BOLD_FONT)
     else:
         x = signal_config.get_chi_squareds()[2]
@@ -75,10 +76,11 @@ def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
     # Y axis values
     y_1 = signal_config.get_chi_squareds()[0]
     plt.ylabel(r"$\chi^{2}$", **BOLD_FONT)
-    if kwargs.get("penalty") is not None:
-        y_2 = kwargs.get("penalty").get_chi_squareds()[0]
+    if penalty:
+        y_2 = penalty.get_chi_squareds()[0]
         plt.plot(x, y_1, "bo-", label="no systematic uncertainties")
-        plt.plot(x, y_2, "ro-", label="systematic uncertainties")  # lines and dots
+        # lines and dots
+        plt.plot(x, y_2, "ro-", label="systematic uncertainties")
         plt.legend(loc="upper left")
     else:
         plt.plot(x, y_1, "o-")  # lines and dots
@@ -86,49 +88,41 @@ def chi_squared_vs_signal(signal_config, converter=None, fig_num=1,
     # Set the tick labels, via Axes instance
     ax = fig.gca()  # Get current Axes instance
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-        label.set_fontsize(MAIN_FONT.get("size"))  # Set other properties here e.g. colour, rotation
+        # Set other properties here e.g. colour, rotation
+        label.set_fontsize(MAIN_FONT.get("size"))
 
-    if kwargs.get("save_as") is not None:
-        plt.savefig(kwargs.get("save_as") + ".png", dpi=400)
-
-    if kwargs.get("show") is not None:
+    if save_as:
+        plt.savefig(save_as + ".png", dpi=400)
+    if show:
         plt.show()
     return fig
 
 
-def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
+def chi_squared_map(syst_analyser, fig_num=1, preferred_values=True,
+                    minima=True, contours=False, save_as=None):
     """ Plot chi squared surface for systematic vs. signal counts
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
-        analyser object, created during limit setting. Can be used
-        during limit setting setting or can load an instance from
-        hdf5
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
+        during limit setting setting or can load an instance from hdf5
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
-
-    .. note::
-
-      Keyword arguments include:
-
-        * contours (*bool*): if True produces a contour plot of chi
-          squared surface. Default (*False*).
-        * preferred_values (*bool*): if False "preferred values" curve
-          is not overlayed on colour map. Default (*True*)
-        * minima (*bool*): if False "minima" are not overlayed on
-          colour map. Default (*True*)
-        * save_as (*string*): supply file name to save image
+      preferred_values (bool, optional): if False "preferred values" curve
+        is not overlayed on colour map. Default is True.
+      minima (bool, optional): if False "minima" are not overlayed on
+        colour map. Default is True.
+      contours (bool, optional): if True produces a contour plot of chi
+        squared surface. Default is False.
+      save_as (string, optional): Name of plot to save. All plots are
+        saved with in .png format.
 
       Default is to produce a colour map, with "preferred values" curve
       and "minima" overlayed.
 
+    Returns:
+      matplotlib.pyplot.figure: Plotted figure.
     """
-    # Set kwargs defaults
-    if kwargs.get("preferred_values") is None:
-        kwargs["preferred_values"] = True
-    if kwargs.get("minima") is None:
-        kwargs["minima"] = True
-
     # Set x and y axes
     x = syst_analyser.get_actual_counts()
     y = syst_analyser.get_syst_values()
@@ -156,7 +150,7 @@ def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
     levels = locator.tick_values(data.min(), data.max())
     norm = BoundaryNorm(levels, ncolors=color_map.N)
 
-    if kwargs.get("contours"):
+    if contours:
         fig = plt.figure(fig_num, figsize=(16, 10))  # Fig. 2
         fig.text(0.1, 0.9, syst_analyser._name, **BOLD_FONT)
         ax = Axes3D(fig)
@@ -188,8 +182,8 @@ def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
         color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))
 
         plt.show()
-        if kwargs.get("save_as") is not None:
-            fig.savefig(kwargs.get("save_as") + "_contour.png", dpi=300)
+        if save_as:
+            fig.savefig(save_as + "_contour.png", dpi=300)
     else:
         fig = plt.figure(fig_num, figsize=(12, 10))  # Fig. 2
         fig.text(0.1, 0.95, syst_analyser._name, **BOLD_FONT)
@@ -203,15 +197,16 @@ def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
         color_map = ax.pcolormesh(X, Y, data, cmap=color_map, norm=norm)
         color_bar = fig.colorbar(color_map)
         color_bar.set_label("$\chi^2$", size=MAIN_FONT.get("size"))
-        color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))  # tick label size
+        # tick label size
+        color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))
 
         # Set axes limits
         ax.set_xlim([X.min(), X.max()])
         ax.set_ylim([Y.min(), Y.max()])
 
-        if kwargs.get("preferred_values"):
+        if preferred_values:
             ax.plot(x, y_2, "bo-", label="Preferred values")
-        if kwargs.get("minima"):
+        if minima:
             ax.plot(x_3, y_3, "ko", label="Minima")
 
         # Set axes tick label size
@@ -219,27 +214,25 @@ def chi_squared_map(syst_analyser, fig_num=1, **kwargs):
             label.set_fontsize(MAIN_FONT.get("size"))
 
         ax.legend(loc="upper left")
-        if kwargs.get("save_as") is not None:
-            fig.savefig(kwargs.get("save_as") + "_color_map.png", dpi=300)
+        if save_as:
+            fig.savefig(save_as + "_color_map.png", dpi=300)
     return fig
 
 
-def penalty_vs_systematic(syst_analyser, fig_num=1, **kwargs):
+def penalty_vs_systematic(syst_analyser, fig_num=1, save_as=None):
     """ Plot penalty_value vs. systematic
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
-        analyser object, created during limit setting. Can be used
-        during limit setting setting or can load an instance from
-        hdf5
-      fig_num (int): Fig number. When creating multiple plots in the
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
+        during limit setting setting or can load an instance from hdf5
+      fig_num (int, optional): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
+      save_as (string, optional): Name of plot to save. All plots are
+        saved with in .png format.
 
-    .. note::
-
-      Keyword arguments include:
-
-        * save_as (*string*): supply file name to save image
+    Returns:
+      matplotlib.pyplot.figure: Plotted figure.
     """
     fig = plt.figure(fig_num, figsize=(9, 7))  # Fig. 3
     fig.text(0.1, 0.95, syst_analyser._name, **BOLD_FONT)
@@ -252,33 +245,32 @@ def penalty_vs_systematic(syst_analyser, fig_num=1, **kwargs):
     plt.plot(x, y, "bo")
 
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-        label.set_fontsize(MAIN_FONT.get("size"))  # Set other properties here e.g. colour, rotation
+        # Set other properties here e.g. colour, rotation
+        label.set_fontsize(MAIN_FONT.get("size"))
 
-    if kwargs.get("save_as") is not None:
-        plt.savefig(kwagrs.get("save_as"))
+    if save_as:
+        plt.savefig(kwagrs.get("save_as") + ".png")
     return fig
 
 
-def turn_on(syst_analyser, signal_config, fig=1, **kwargs):
+def turn_on(syst_analyser, signal_config, fig=1, save_as=None):
     """ Plot deviation from chi-squared with no floated systematics.
 
     When does the effect of floating the systematic "turn on"?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
-        analyser object, created during limit setting. Can be used
-        during limit setting setting or can load an instance from
-        hdf5
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
+        during limit setting setting or can load an instance from hdf5.
       signal_config (:class:`echidna.limit.limit_config.LimitConfig`): Signal
         config class, where chi squareds have been stored.
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
+      save_as (string, optional): Name of plot to save. All plots are
+        saved with in .png format.
 
-    .. note::
-
-      Keyword arguments include:
-
-        * save_as (*string*): supply file name to save image
+    Returns:
+      matplotlib.pyplot.figure: Plotted figure.
     """
     # Set x and y axes
     x = syst_analyser.get_actual_counts()
@@ -291,7 +283,9 @@ def turn_on(syst_analyser, signal_config, fig=1, **kwargs):
     # Create meshgrid
     X, Y = numpy.meshgrid(x, y)
 
-    # Define an array of \chi_0 values - chi squared without floating systematics
+    # Define an array of \chi_0 values - chi squared without
+    # floating systematics
+
     chi_squareds = signal_config.get_chi_squareds()[0]
     data_np = numpy.zeros(data.shape)  # zeroed array the same size as data
     for y in range(len(data_np)):
@@ -331,7 +325,8 @@ def turn_on(syst_analyser, signal_config, fig=1, **kwargs):
     color_map = ax.pcolormesh(X, Y, offsets, cmap=color_map, norm=norm)
     color_bar = fig.colorbar(color_map)
     color_bar.set_label("$\chi^2 - \chi_0^2$", size=MAIN_FONT.get("size"))
-    color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))  # tick label size
+    # tick label size
+    color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))
 
     # Set axes limits
     ax.set_xlim([X.min(), X.max()])
@@ -342,12 +337,12 @@ def turn_on(syst_analyser, signal_config, fig=1, **kwargs):
         label.set_fontsize(MAIN_FONT.get("size"))
 
     ax.legend(loc="upper left")
-    if kwargs.get("save_as") is not None:
-        fig.savefig(kwargs.get("save_as") + "_turn_on.png", dpi=300)
+    if save_as:
+        fig.savefig(save_as + "_turn_on.png", dpi=300)
     return fig
 
 
-def push_pull(syst_analyser, fig=1, **kwargs):
+def push_pull(syst_analyser, fig=1, save_as=None):
     """ Plot penalty value - poisson likelihood chi squared.
 
     When does minimising chi squared, which wants to "pull" the away
@@ -356,18 +351,16 @@ def push_pull(syst_analyser, fig=1, **kwargs):
     dominate?
 
     Args:
-      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): Systematic
-        analyser object, created during limit setting. Can be used
-        during limit setting setting or can load an instance from
-        hdf5
+      syst_analyser (:class:`echidna.limit.limit_setting.SystAnalyser`): A
+        systematic analyser object, created during limit setting. Can be used
+        during limit setting setting or can load an instance from hdf5
       fig_num (int): Fig number. When creating multiple plots in the
         same script, ensures matplotlib doesn't overwrite them.
+      save_as (string, optional): Name of plot to save. All plots are
+        saved with in .png format.
 
-    .. note::
-
-      Keyword arguments include:
-
-        * save_as (*string*): supply file name to save image
+    Returns:
+      matplotlib.pyplot.figure: Plotted figure.
     """
     # Set x and y axes
     x = syst_analyser.get_actual_counts()
@@ -382,7 +375,8 @@ def push_pull(syst_analyser, fig=1, **kwargs):
 
     # Define an array penalty values
     penalty_values = syst_analyser._penalty_values[1, 0:len(y)]
-    penalty_array = numpy.zeros(data.shape)  # zeroed array the same size as data
+    # zeroed array the same size as data
+    penalty_array = numpy.zeros(data.shape)
     for y, penalty_value in enumerate(penalty_values):
         for x in range(len(penalty_array[y])):
             penalty_array[y][x] = penalty_value
@@ -422,7 +416,8 @@ def push_pull(syst_analyser, fig=1, **kwargs):
     color_map = ax.pcolormesh(X, Y, push_pull, cmap=color_map, norm=norm)
     color_bar = fig.colorbar(color_map)
     color_bar.set_label("$s-\chi^{2}_{\lambda,p}$", size=MAIN_FONT.get("size"))
-    color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))  # tick label size
+    # tick label size
+    color_bar.ax.tick_params(labelsize=MAIN_FONT.get("size"))
 
     # Set axes limits
     ax.set_xlim([X.min(), X.max()])
@@ -433,8 +428,8 @@ def push_pull(syst_analyser, fig=1, **kwargs):
         label.set_fontsize(MAIN_FONT.get("size"))
 
     ax.legend(loc="upper left")
-    if kwargs.get("save_as") is not None:
-        fig.savefig(kwargs.get("save_as") + "_push_pull.png", dpi=300)
+    if save_as:
+        fig.savefig(save_as + "_push_pull.png", dpi=300)
     return fig
 
 

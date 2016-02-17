@@ -11,66 +11,75 @@ This script:
 
 Examples:
   To read all ntuples in a directory and save both individual and summed
-  spectra to file::
+  spectra to file with config cnfg.yml::
 
-    $ python multi_ntuple_spectrum.py /path/to/ntuple/direc/
+    $ python multi_ntuple_spectrum.py /path/to/cnfg.yml /path/to/ntuple/direc/
 
   To specify a save directory, include a -s flag followed by path to
   the required save destination.
 """
+import echidna.output.store as store
+from echidna.core.config import SpectraConfig
+import echidna.core.fill_spectrum as fill_spectrum
+import echidna.output.plot_root as plot
+
 import os
 import argparse
-import echidna.output.store as store
-import echidna.core.fill_spectrum as fill_spectrum
-import echidna.output.plot as plot
 
 
-def create_combined_ntuple_spectrum(data_path, half_life,
-                                    bkgnd_name, save_path):
-    """ Creates mc, truth and reco spectra from directory containing
+def create_combined_ntuple_spectrum(data_path, config_path, bkgnd_name,
+                                    save_path, bipo, fv_radius, outer_radius):
+    """ Creates both mc, truth and reco spectra from directory containing
     background ntuples, dumping the results as a spectrum object in an
     hdf5 file.
 
     Args:
       data_path (str): Path to directory containing the ntuples to be
-        evaluated.
-      half_life (float): Half-life of isotope.
-      bkgnd_name (str): Name of the background being processed.
+        evaluated
+      config_path (str): Path to config file
+      bkgnd_name (str): Name of the background being processed
       save_path (str): Path to a directory where the hdf5 files will be
-        dumped.
+        dumped
+      bipo (bool): Apply Bi*Po* cuts when extracting data if True.
+      fv_radius (float): Cut events outside the fiducial volume of this
+        radius.
+      outer_radius (float): Used for calculating the radial3 parameter.
+        See :mod:`echidna.core.dsextract` for details.
     """
+    config = SpectraConfig.load_from_file(config_path)
     file_list = os.listdir(data_path)
-    for idx, fname in enumerate(file_list):
-        file_path = "%s/%s" % (data_path, fname)
-        if idx == 0:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
-                file_path, half_life, spectrumname="%s_mc" % bkgnd_name)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, half_life, spectrumname="%s_reco" % bkgnd_name)
-            truth_spec = fill_spectrum.fill_truth_ntuple_spectrum(
-                file_path, half_life, spectrumname="%s_truth" % bkgnd_name)
-        else:
-            mc_spec = fill_spectrum.fill_mc_ntuple_spectrum(
-                file_path, half_life, spectrum=mc_spec)
-            reco_spec = fill_spectrum.fill_reco_ntuple_spectrum(
-                file_path, half_life, spectrum=reco_spec)
-            truth_spec = fill_spectrum.fill_truth_ntuple_spectrum(
-                file_path, half_life, spectrum=truth_spec)
-
+    if outer_radius:
+        if "radial3" not in config.get_dims():
+            raise ValueError("Outer radius passed as an command line arg "
+                             "but no radial3 in the config file.")
+        for idx, fname in enumerate(file_list):
+            file_path = "%s/%s" % (data_path, fname)
+            if idx == 0:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum_name="%s" % bkgnd_name, config=config,
+                    bipo=bipo, fv_radius=fv_radius, outer_radius=outer_radius)
+            else:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum=spec, bipo=bipo, fv_radius=fv_radius,
+                    outer_radius=outer_radius)
+    else:
+        for idx, fname in enumerate(file_list):
+            file_path = "%s/%s" % (data_path, fname)
+            if idx == 0:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum_name="%s" % bkgnd_name, config=config,
+                    bipo=bipo, fv_radius=fv_radius)
+            else:
+                spec = fill_spectrum.fill_from_ntuple(
+                    file_path, spectrum=spec, bipo=bipo, fv_radius=fv_radius)
     # Plot
-    plot_spectrum(mc_spec)
-    plot_spectrum(reco_spec)
-    plot_spectrum(truth_spec)
-
+    plot_spectrum(spec, config)
     # Dump to file
-    store.dump("%s%s_mc.hdf5" % (save_path, bkgnd_name), mc_spec)
-    store.dump("%s%s_reco.hdf5" % (save_path, bkgnd_name), reco_spec)
-    store.dump("%s%s_truth.hdf5" % (save_path, bkgnd_name), truth_spec)
+    store.dump("%s%s.hdf5" % (save_path, bkgnd_name), spec)
 
 
-def plot_spectrum(spec):
-    """ Plot spectra for each of the three spectrum dimensions:
-      Energy, radius and time.
+def plot_spectrum(spec, config):
+    """ Plot spectra for each of the spectrum dimensions (e.g energy)
 
     Args:
       Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to
@@ -79,20 +88,30 @@ def plot_spectrum(spec):
     Returns:
       None
     """
-    plot.plot_projection(spec, 0)
-    plot.plot_projection(spec, 1)
-    plot.plot_projection(spec, 2)
+    for var in config.get_pars():
+        plot.plot_projection(spec, var)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--save_path", type=str, default="./",
                         help="Enter destination path for .hdf5 spectra files.")
     parser.add_argument("-n", "--bkgnd_name", type=str,
-                        help="Name of background "
-                        "(to be used as file and spectrum name)")
-    parser.add_argument("path", type=str, help="Path to ntuple directory")
-    parser.add_argument("half_life", type=float,
-                        help="Half-life of isotope ntuple files being read")
+                        help="Name of background (to be used as file and "
+                        "spectrum name)")
+    parser.add_argument("-c", "--config", type=str,
+                        help="Path to config file")
+    parser.add_argument("-p", "--path", type=str,
+                        help="Path to ntuple directory")
+    parser.add_argument("--bipo", dest="bipo", action="store_true",
+                        help="Apply bipo cut")
+    parser.add_argument("--no-bipo", dest="bipo", action="store_false",
+                        help="Don't apply bipo cut (default)")
+    parser.add_argument("-v", "--fv_radius", type=float,
+                        help="Radius for fiducial volume cut", default=None)
+    parser.add_argument("-o", "--outer_radius", type=float,
+                        help="Outer radius for filling spectra with the"
+                        "parameter radial3.", default=None)
+    parser.set_defaults(bipo=False)
     args = parser.parse_args()
 
     # Take data_path from arg input
@@ -109,5 +128,6 @@ if __name__ == "__main__":
     # All files contained should be read and filled into a single specturm
     # object.
     ##########################################################################
-    create_combined_ntuple_spectrum(data_path, args.half_life,
-                                    bkgnd_name, args.save_path)
+    create_combined_ntuple_spectrum(data_path, args.config, bkgnd_name,
+                                    args.save_path, args.bipo, args.fv_radius,
+                                    args.outer_radius)
