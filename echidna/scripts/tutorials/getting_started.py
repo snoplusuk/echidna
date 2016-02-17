@@ -1,7 +1,7 @@
-""" Tutorial 1: Getting Started - full tutorial
+""" Python version of getting started tutorial.
 
-Please see https://github.com/snoplusuk/echidna/wiki/GettingStarted for
-a full explanation of the commands in this tutorial.
+Please see https://github.com/snoplusuk/echidna/wiki/GettingStarted or the
+jupyter notebook form of this tutorial for further details.
 
 This script:
  * Creates :class:`echidna.core.spectra.Spectra` instance
@@ -11,128 +11,173 @@ This script:
  * Other `Spectra` manipulations e.g. `shrink_to_roi`, `rebin` and
    `scale`
 
+This file has been generated automatically by running::
+
+    (ENV) $ jupyter nbconvert --to python --template getting_started
+getting_started.ipynb
+
 Examples:
-  To run type (from the base directory)::
+  To run (from the base directory)::
 
     $ python echidna/scripts/tutorials/getting_started.py
+
 """
-
-
-def main():
-    """ Function to run tutorial script.
-    """
+if __name__ == "__main__":  # for running as a standalone python script too!
     import matplotlib.pyplot as plt
-    # # Tutorial 1: Getting started with echidna
 
-    # This guide tutorial aims to get you started with some basic tasks you can
-    # accomplish using echidna.
+# First set up environment with convenience imports and inline plotting:
+# <!--- The following cell should be commented out in the python script
+# version of this notebook --->
 
-    # ---
-    # ## A quick note about the ipython notebook
+# In[ ]:
 
-    # To see the keyboard shortcuts at any time simply press the `Esc` key and
-    # then the `H` key.
+# %pylab inline
+# pylab.rc("savefig", dpi=120)  # set resolution of inline figures
 
-    # The notebook has two basic modes: **Command** and **Edit**. Command mode
-    # is enabled by the `Esc` key and Edit by the `Enter` key. 
+# The `%pylab` magic imports `matplotlib.pyplot` as `plt` and `numpy` as
+# `np`. We'll also, change the working directory to echidna's base
+# directory, so that all the relative imports work.
+# <!--- The following cell should be commented out in the python script
+# version of this notebook --->
 
-    # The main comand you will need is `Shift`+`Enter` (make sure you are in
-    # command mode first by pressing `Esc`). This executes the current cell
-    # and then selects the cell below. Try pressing `Shift`+`Enter` on this
-    # cell and then again to run the cell below.
+# In[ ]:
 
-    # In[ ]:
+# %cd ../../..
+
+# In[ ]:
+
+# %%bash
+# pwd
+
+# The `%cd` inline-magic emmulates the bash `cd` command, allowing us to
+# change directory and the `%%bash` magic lets you run any bash command in
+# the cell but remaining in the notebook!
+
+# ***
+
+# <div class="alert alert-info">
+#     <strong>A quick note about the ipython notebook:</strong>
+#     <ul>
+#         <li> To see the keyboard shortcuts at any time simply press the
+#             `Esc` key and then the `H` key </li>
+#         <li> The notebook has two basic modes: **Command** and **Edit**.
+#             Command mode is enabled by the `Esc` key and Edit by the
+#             `Enter` key. </li>
+#         <li> The main comand you will need is `Shift`+`Enter` (make sure
+#             you are in command mode first by pressing `Esc`). This
+#             executes the current cell and then selects the cell below. Try
+#             pressing `Shift`+`Enter` on this cell and then again to run
+#             the cell below. </li>
+#     </ul>
+# </div>
+
+# In[ ]:
 
     print "Hello World!"
 
+# <div class="alert alert-info">
+#     <par>
+#         As you can see, for cells containing valid python, the code
+#         snippet is executed as it would be in a python terminal shell and
+#         the output is displayed below. Try selecting the cell above and
+#         editing it (`Enter` for edit mode) so that it prints out
+#         `Goodbye World!` when executed.
+#     </par>
+#     <par>
+#         These commands should get you through the tutorial, but there are
+#         more in-depth tutorials
+#         <a href="https://nbviewer.jupyter.org/github/ipython/ipython/blob/4.
+# 0.x/examples/IPython%20Kernel/Index.ipynb">
+#         here</a> if you are interested - you can even download them and
+#         work through them in the Jupyter viewer.
+#     </par>
+# </div>
 
-    # As you can see, for cells containing valid python, the code snippet is
-    # executed as it would be in a terminal shell and the output is displayed
-    # below. Try selecting the cell above and editing it (`Enter` for edit
-    # mode) so that it prints out `Goodbye World!` when executed.
+# <!--- Main script starts below ------------------------------------------->
 
-    # These commands should get you through the tutorial, but there are more
-    # in-depth tutorials [here](http://nbviewer.jupyter.org/github/ipython/
-    # ipython/blob/3.x/examples/Notebook/Index.ipynb) if you are interested -
-    # you can even download them and work through them in the Jupyter viewer.
-    # 
-    # ---
+# # Tutorial 1: Getting started with echidna
 
-    # ## Spectra creation
+# This guide tutorial aims to get you started with some basic tasks you can
+# accomplish using echidna.
 
-    # The `Spectra` class is echidna's most fundamental class. It holds the
-    # core data structure and provides much of the core functionality required.
-    # Coincidentally, this guide will be centred around this class, how to
-    # create it and then some manipulations of the class.
+# ## Spectra creation
 
-    # We'll begin with how to create an instance of the `Spectra` class. It is
-    # part of the `echidna.core.spectra` module, so we will import this and
-    # make a `Spectra` instance.
+# The `Spectra` class is echidna's most fundamental class. It holds the core
+# data structure and provides much of the core functionality required.
+# Coincidentally, this guide will be centred around this class, how to
+# create it and then some manipulations of the class.
 
-    # In[ ]:
+# We'll begin with how to create an instance of the `Spectra` class. It is
+# part of the `echidna.core.spectra` module, so we will import this and make
+# a `Spectra` instance.
+
+# In[ ]:
 
     import echidna.core.spectra as spectra
 
-    # Now we need a config file to create the spectrum from. There is an
-    # example config file in `echidna/config`. If we look at the contents of
-    # this yaml file, we see it tells the `Spectra` class to create a data
-    # structure to hold two parameters:
+# Now we need a config file to create the spectrum from. There is an example
+# config file in `echidna/config`. If we look at the contents of this yaml
+# file, we see it tells the `Spectra` class to create a data structure to
+# hold two parameters:
 
-    #  * `energy_mc`, with lower limit 0, upper limit 10 and 1000 bins
-    #  * `radial_mc`, with lower limit 0, upper limit 15000 and 1500 bins
+#  * `energy_mc`, with lower limit 0, upper limit 10 and 1000 bins
+#  * `radial_mc`, with lower limit 0, upper limit 15000 and 1500 bins
 
-    # This config should be fine for us. We can load it using the
-    # `load_from_file` method of the `SpectraConfig` class:
+# This config should be fine for us. We can load it using the
+# `load_from_file` method of the `SpectraConfig` class:
 
-    # In[ ]:
+# In[ ]:
 
     import echidna
-    config = spectra.SpectraConfig.load_from_file(
-        echidna.__echidna_base__ + "/echidna/config/example.yml")
+    from echidna.core.config import SpectraConfig
+
+    config = SpectraConfig.load_from_file(
+        echidna.__echidna_base__ + "/echidna/config/spectra_example.yml")
     print config.get_pars()
 
-    # Note we used the `__echidna_base__` member of the `echidna` module here.
-    # This module has two special members for denoting the base directory (the
-    # outermost directory of the git repository) and the home directory (the
-    # `echidna` directory inside the base directory. The following lines show
-    # the current location of these directories:
+# Note we used the `__echidna_base__` member of the `echidna` module here.
+# This module has two special members for denoting the base directory (the
+# outermost directory of the git repository) and the home directory (the
+# `echidna` directory inside the base directory. The following lines show
+# the current location of these directories:
 
-    # In[ ]:
+# In[ ]:
 
     print echidna.__echidna_base__
     print echidna.__echidna_home__
 
-    # Finally before creating the spectrum, we should define the number of
-    # events it should represent:
+# Finally before creating the spectrum, we should define the number of
+# events it should represent:
 
-    # In[ ]:
+# In[ ]:
 
     num_decays = 1000
 
-    # In[ ]:
+# In[ ]:
 
     spectrum = spectra.Spectra("spectrum", num_decays, config)
     print spectrum
 
-    # And there you have it, we've created a `Spectra` object.
+# And there you have it, we've created a `Spectra` object.
 
-    # ## Filling the spectrum
+# ## Filling the spectrum
 
-    # Ok, so we now have a spectrum, let's fill it with some events. We'll
-    # generate random energies from a Gaussian distribution and random
-    # positions from a Uniform distribution. Much of echidna is built using
-    # the `numpy` and `SciPy` packages and we will use them here to generate
-    # the random numbers. We'll also generate a third random number to
-    # simulate some form rudimentary detector efficiency.
+# Ok, so we now have a spectrum, let's fill it with some events. We'll
+# generate random energies from a Gaussian distribution and random positions
+# from a Uniform distribution. Much of echidna is built using the `numpy`
+# and `SciPy` packages and we will use them here to generate the random
+# numbers. We'll also generate a third random number to simulate some form
+# rudimentary detector efficiency.
 
-    # In[ ]:
+# In[ ]:
 
     # Import numpy
     import numpy
 
-    # In[ ]:
+# In[ ]:
 
-    # Generate random energies from a Gaussin with mean (mu) and sigma (sigma)
+    # Generate random energies from a Gaussin with mean (mu) and sigma
+    # (sigma)
     mu = 2.5  # MeV
     sigma = 0.15  # MeV
 
@@ -149,104 +194,103 @@ def main():
         if event_detected:  # Fill spectrum with values
             spectrum.fill(energy_mc=energy, radial_mc=radius)
 
-    # This will have filled our `Spectra` class with the events. Make sure to
-    # use the exact parameter names that were printed out above, as kewyord
-    # arguments. To check we can now use the `sum` method. This returns the
-    # total number of events stored in the spectrum at a given time - the
-    # integral of the spectrum.
+# This will have filled our `Spectra` class with the events. Make sure to
+# use the exact parameter names that were printed out above, as kewyord
+# arguments. To check we can now use the `sum` method. This returns the
+# total number of events stored in the spectrum at a given time - the
+# integral of the spectrum.
 
-    # In[ ]:
+# In[ ]:
 
     print spectrum.sum()
 
-    # The value returned by `sum`, should roughly equal:
+# The value returned by `sum`, should roughly equal:
 
-    # In[ ]:
+# In[ ]:
 
     print num_decays * efficiency
 
-    # We can also inspect the raw data structure. This is saved in the `_data`ashleyrback/getting_started
-    # member of the `Spectra` class:
+# We can also inspect the raw data structure. This is saved in the `_data`
+# member of the `Spectra` class:
 
-    # In[ ]:
+# In[ ]:
 
     print spectrum._data
 
-    # **Note: you probably won't see any entries in the above. For large
-    # arrays, numpy only prints the first three and last three entries. Since
-    # our energy range is in the middle, all our events are in the** `...`
-    # **part at the  moment. But we will see entries printed out later when we
-    # apply some cuts.**
+# <div class="alert alert-info">
+#     <strong>Note:</strong> you probably won't see any entries in the
+#     above. For large arrays, numpy only prints the first three and last
+#     three entries. Since our energy range is in the middle, all our events
+#     are in the `...` part at the moment. But we will see entries printed
+#     out later when we apply some cuts.
+# </div>
 
-    # ## Plotting
+# ## Plotting
 
-    # Another useful way to inspect the `Spectra` created is to plot it.
-    # Support is available within echidna to plot using either `ROOT` or
-    # `matplotlib` and there are some useful plotting functions available in
-    # the `plot` and `plot_root` modules.
+# Another useful way to inspect the `Spectra` created is to plot it. Support
+# is available within echidna to plot using either `ROOT` or `matplotlib`
+# and there are some useful plotting functions available in the `plot` an
+# `plot_root` modules.
 
-    # In[ ]:
+# In[ ]:
 
     import echidna.output.plot as plot
     import echidna.output.plot_root as plot_root
 
-    # To plot the projection of the spectrum on the `energy_mc` axis:
+# To plot the projection of the spectrum on the `energy_mc` axis:
 
-    # In[ ]:
+# In[ ]:
 
-    fig_1 = plot.plot_projection(spectrum, "energy_mc",
-                                 fig_num=1, show_plot=False)
-    plt.show()
+    fig1 = plot.plot_projection(spectrum, "energy_mc",
+                                fig_num=1, show_plot=False)
 
-    # and to plot the projection on the `radial_mc` axis, this time using root:
+# and to plot the projection on the `radial_mc` axis, this time using root:
 
-    # In[ ]:
+# In[ ]:
 
-    fig_2, can = plot_root.plot_projection(spectrum, "radial_mc",
-                                           graphical=True, fig_num=2)
+    plot_root.plot_projection(spectrum, "radial_mc", fig_num=2)
 
-    # We can also project onto two dimensions and plot a surface:
+# We can also project onto two dimensions and plot a surface:
 
-    # In[ ]:
+# In[ ]:
 
     fig_3 = plot.plot_surface(spectrum, "energy_mc", "radial_mc",
                               fig_num=3, show_plot=False)
-    plt.show()
 
-    # ## Convolution and cuts
+# ## Convolution and cuts
 
-    # The ability to smear the event, along a parameter axis, is built into
-    # echidna in the `smear` module. There are three classes in the module that
-    # allow us to create a smearer for different scenarios. There are two
-    # smearers for energy-based parameters, `EnergySmearRes` and
-    # `EnergySmearLY`, which allow smearing by energy resolution (e.g.
-    # $\frac{5\%}{\sqrt{(E[MeV])}}$ and light yield (e.g. 200 NHit/Mev)
-    # respectively. Then additionally the `RadialSmear` class handles smearing
-    # along the axis of any radial based parameter.
+# The ability to smear the event, along a parameter axis, is built into
+# echidna in the `smear` module. There are three classes in the module that
+# allow us to create a smearer for different scenarios. There are two
+# smearers for energy-based parameters, `EnergySmearRes` and
+# `EnergySmearLY`, which allow smearing by energy resolution (e.g.
+# $\frac{5\%}{\sqrt{(E[MeV])}}$ and light yield (e.g. 200 NHit/Mev)
+# respectively. Then additionally the `RadialSmear` class handles smearing
+# along the axis of any radial based parameter.
 
-    # We will go through an example of how to smear our spectrum by a fixed
-    # energy resolution of 5%. There are two main smearing algorithms:
-    # "weighted smear" and "random smear". The "random smear" algorithm takes
-    # each event in each bin and randomly assigns it a new energy from the
-    # Gaussian distribution for that bin - it is fast but not very accurate
-    # for low statistics. The "weighted smear" algorithm is slower but much
-    # more accurate, as re-weights each bin by taking into account all other
-    # nearby bins within a pre-defined range. We will use the "weighted smear"
-    # method in this example.
+# We will go through an example of how to smear our spectrum by a fixed
+# energy resolution of 5%. There are two main smearing algorithms: "weighted
+# smear" and "random smear". The "random smear" algorithm takes each event
+# in each bin and randomly assigns it a new energy from the Gaussian
+# distribution for that bin - it is fast but not very accurate for low
+# statistics. The "weighted smear" algorithm is slower but much more
+# accurate, as re-weights each bin by taking into account all other nearby
+# bins within a pre-defined range. We will use the "weighted smear" method
+# in this example.
 
-    # First to speed the smearing process, we will apply some loose cuts.
-    # Although, fewer bins means faster smearing, you should be wary of cutting
-    # the spectrum too tightly before smearing as you may end up cutting bins
-    # that would have influenced the smearing. Cuts can be applied using the
-    # `shrink` method. (Confusingly there is also a `cut` method which is
-    # almost identical to the `shrink` method, but updates the number of
-    # events the spectrum represents, after the cut is applied. Unless you are
-    # sure this is what you want to do, it is probably better to use the
-    # `shrink` method.) To shrink over multiple parameters, it is best to
-    # construct a dictionary of `_low` and `_high` values for each parameter
-    # and then pass this to the shrink method.
+# First to speed the smearing process, we will apply some loose cuts.
+# Although, fewer bins means faster smearing, you should be wary of cutting
+# the spectrum too tightly before smearing as you may end up cutting bins
+# that would have influenced the smearing. Cuts can be applied using the
+# `shrink` method. (Confusingly there is also a `cut` method which is almost
+# identical to the `shrink` method, but updates the number of events the
+# spectrum represents, after the cut is applied. Unless you are sure this is
+# what you want to do, it is probably better to use the `shrink` method.) To
+# shrink over multiple parameters, it is best to construct a dictionary of
+# `_low` and `_high` values for each parameter and then pass this to the
+# shrink method.
 
-    # In[ ]:
+# In[ ]:
 
     shrink_dict = {"energy_mc_low": mu - 5.*sigma,
                    "energy_mc_high": mu + 5.*sigma,
@@ -254,51 +298,49 @@ def main():
                    "radial_mc_high": 3500}
     spectrum.shrink(**shrink_dict)
 
-    # Using the `sum` method, we can check to see how many events were cut.
+# Using the `sum` method, we can check to see how many events were cut.
 
-    # In[ ]:
+# In[ ]:
 
     print spectrum.sum()
 
-    # Import the smear class:
+# Import the smear class:
 
-    # In[ ]:
+# In[ ]:
 
     import echidna.core.smear as smear
 
-    # and create the smearer object.
+# and create the smearer object.
 
-    # In[ ]:
+# In[ ]:
 
     smearer = smear.EnergySmearRes()
 
-    # By default the "weighted smear" method considers all bins within a
-    # $\pm 5\sigma$ range. For the sake of speed, we will reduce this to 3
-    # here. Also set the energy resolution - 0.05 for 5%.
+# By default the "weighted smear" method considers all bins within a $\pm
+# 5\sigma$ range. For the sake of speed, we will reduce this to three here.
+# Also set the energy resolution - 0.05 for 5%.
 
-    # In[ ]:
+# In[ ]:
 
     smearer.set_num_sigma(3)
     smearer.set_resolution(0.05)
 
-    # To smear our original spectrum and create the new `Spectra` object
-    # `smeared_spectrum`:
+# To smear our original spectrum and create the new `Spectra` object
+# `smeared_spectrum`:
 
-    # In[ ]:
+# In[ ]:
 
     smeared_spectrum = smearer.weighted_smear(spectrum)
 
-    # this should hopefully only create a couple of seconds.
+# this should hopefully only take a couple of seconds.
 
-    # The following code shows how to make a simple script, using matplotlib,
-    # to overlay the original and smeared spectra.
+# The following code shows how to make a simple script, using matplotlib, to
+# overlay the original and smeared spectra.
 
-    # In[ ]:
+# In[ ]:
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    def overlay_spectra(original, smeared, dimension="energy_mc", fig_num=1):
+    def overlay_spectra(original, smeared,
+                        dimension="energy_mc", fig_num=1):
         """ Overlay original and smeared spectra.
 
         Args:
@@ -312,16 +354,16 @@ def main():
         Returns:
           matplotlib.figure.Figure: Figure showing overlaid spectra.
         """
-        fig = plt.figure(num=fig_num)
-        ax = fig.add_subplot(1, 1, 1)
-
         par = original.get_config().get_par(dimension)
+        # Define array of bin boundarie
+        bins = par.get_bin_boundaries()
+        # Define array of bin centres
+        x = par.get_bin_centres()
+        # Save bin width
         width = par.get_width()
 
-        # Define array of bin boundaries (1 more than number of bins)
-        bins = np.linspace(par._low, par._high, par._bins+1)
-        # Define array of bin centres
-        x = bins[:-1] + 0.5*width
+        # Create figure and axes
+        fig, ax = plt.subplots(num=fig_num)
 
         # Overlay two spectra using projection as weight
         ax.hist(x, bins, weights=original.project(dimension),
@@ -335,88 +377,84 @@ def main():
         plt.legend(loc="upper right")
         plt.ylim(ymin=0.0)
         plt.xlabel(dimension + " [" + par.get_unit() + "]")
-        plt.ylabel("Events per " + str(width) + " " + par.get_unit() + " bin")
+        plt.ylabel("Events per " + str(width) +
+                   " " + par.get_unit() + " bin")
         return fig
 
-    # In[ ]:
+# In[ ]:
 
     fig_4 = overlay_spectra(spectrum, smeared_spectrum, fig_num=4)
-    plt.show()
 
-    # ## Other spectra manipulations
+# ## Other spectra manipulations
 
-    # We now have a nice smeared version of our original spectrum. To prepare
-    # the spectrum for a final analysis there are a few final manipulations we
-    # may wish to do.
+# We now have a nice smeared version of our original spectrum. To prepare
+# the spectrum for a final analysis there are a few final manipulations we
+# may wish to do.
 
-    # ### Region of Interest (ROI)
+# ### Region of Interest (ROI)
 
-    # There is a special version of the `shrink` method called `shrink_to_roi`
-    # that can be used for ROI cuts. It saves some useful information about the
-    # ROI in the `Spectra` class instance, including the efficiency i.e.
-    # integral of spectrum after cut divided by integral of spectrum before
-    # cut.
+# There is a special version of the `shrink` method called `shrink_to_roi`
+# that can be used for ROI cuts. It saves some useful information about the
+# ROI in the `Spectra` class instance, including the efficiency i.e.
+# integral of spectrum after cut divided by integral of spectrum before cut.
 
-    # In[ ]:
+# In[ ]:
 
-    roi = (mu - 0.5*sigma, mu + 1.45*sigma)  # To get nice shape for rebinning
+    # To get nice shape for rebinning
+    roi = (mu - 0.5*sigma, mu + 1.45*sigma)
     smeared_spectrum.shrink_to_roi(roi[0], roi[1], "energy_mc")
     print smeared_spectrum.get_roi("energy_mc")
 
-    # ### Rebin
+# ### Rebin
 
-    # Our spectrum is still quite finely binned, perhaps we want to bin it in
-    # 50 keV bins instead of 10 keV bins. The `rebin` method can be used to
-    # acheive this.
+# Our spectrum is still quite finely binned, perhaps we want to bin it in 50
+# keV bins instead of 10 keV bins. The `rebin` method can be used to acheive
+# this.
 
-    # The `rebin` method requires us to specify the new shape (tuple) of the
-    # data. With just two dimensions this is trivial, but with more dimensions,
-    # it may be better to use a construct such as:
+# The `rebin` method requires us to specify the new shape (tuple) of the
+# data. With just two dimensions this is trivial, but with more dimensions,
+# it may be better to use a construct such as:
 
-    # In[ ]:
+# In[ ]:
 
     dimension = smeared_spectrum.get_config().get_pars().index("energy_mc")
     old_shape = smeared_spectrum._data.shape
     reduction_factor = 5  # how many bins to combine into a single bin
     new_shape = tuple([j / reduction_factor if i == dimension else j
-                      for i, j in enumerate(old_shape)])
+                       for i, j in enumerate(old_shape)])
     print old_shape
     print new_shape
 
-    # In[ ]:
+# In[ ]:
 
     smeared_spectrum.rebin(new_shape)
 
-    # ### Scaling
+# ### Scaling
 
-    # Finally, we "simulated" 1000 events, but we most likely want to scale
-    # this down for to represent the number of events expected in our analysis.
-    # The `Spectra` class has a `scale` method to accomplish this. Remember
-    # that the `scale` method should always be supplied with the number of
-    # events the full spectrum (i.e. before any cuts using `shrink` or
-    # `shrink_to_roi`) should represent. Lets assume that our spectrum should
-    # actually represent 104.25 events:
+# Finally, we "simulated" 1000 events, but we most likely want to scale this
+# down for to represent the number of events expected in our analysis. The
+# `Spectra` class has a `scale` method to accomplish this. Remember that the
+# `scale` method should always be supplied with the number of events the
+# full spectrum (i.e. before any cuts using `shrink` or `shrink_to_roi`)
+# should represent. Lets assume that our spectrum should actually represent
+# 104.25 events:
 
-    # In[ ]:
+# In[ ]:
 
     smeared_spectrum.scale(104.25)
     print smeared_spectrum.sum()
 
-    # ## Putting it all together
+# ## Putting it all together
 
-    # After creating, filling, convolving and various other manipulations what
-    # does our final spectrum look like?
+# After creating, filling, convolving and various other manipulations what
+# does our final spectrum look like?
 
-    # In[ ]:
+# In[ ]:
 
     print smeared_spectrum._data
 
-    # In[ ]:
+# In[ ]:
 
     fig_5 = plot.plot_projection(smeared_spectrum, "energy_mc",
                                  fig_num=5, show_plot=False)
     plt.show()
-
-
-if __name__ == "__main__":
-    main()  # run tutorial

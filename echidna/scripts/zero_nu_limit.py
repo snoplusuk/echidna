@@ -1,4 +1,6 @@
-""" Example limit setting script
+""" ***CURRENTLY NOT WORKING***
+
+Example limit setting script
 
 This script provides an example of how to use the limit setting tools,
 built into echidna, to set a 90% confidence limit on neutrinoless double
@@ -20,13 +22,14 @@ Examples:
 
 .. note:: Use the -v option to print out progress and timing information
 """
+# TODO(@ashleyrback}: update this script to work with new fitting/limit code
 import numpy
 
-import echidna
 import echidna.output.store as store
-import echidna.limit.limit_config as limit_config
-import echidna.limit.limit_setting as limit_setting
-import echidna.limit.chi_squared as chi_squared
+# These no longer exist
+# import echidna.limit.limit_config as limit_config
+# import echidna.limit.limit_setting as limit_setting
+# import echidna.limit.chi_squared as chi_squared
 import echidna.output.plot_chi_squared_root as plot_chi_squared
 from echidna.calc import decay
 
@@ -50,15 +53,16 @@ class ReadableDir(argparse.Action):
         else:
             raise TypeError("Invalid type for arg.")
         for prospective_dir in prospective_dirs:
-            if not os.path.isfile(prospective_dir):
-                raise argparse.ArgumentTypeError(
-                    "ReadableDir:{0} not a valid path".format(prospective_dir))
             if not os.access(prospective_dir, os.R_OK):
                 raise argparse.ArgumentTypeError(
                     "ReadableDir:{0} is not readable".format(prospective_dir))
+            if not os.path.isfile(prospective_dir):
+                raise argparse.ArgumentTypeError(
+                    "ReadableDir:{0} not a valid path".format(prospective_dir))
         setattr(namespace, self.dest, values)  # keeps original format
 
 if __name__ == "__main__":
+    raise NotImplementedError("This script has been temporarily disabled")
     parser = argparse.ArgumentParser(description="Example limit setting "
                                      "script.")
     parser.add_argument("-v", "--verbose", action="store_true",

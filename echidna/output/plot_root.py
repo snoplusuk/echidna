@@ -1,10 +1,12 @@
-from echidna.util import root_help
+from echidna.util import root_help, strings
 from echidna.output import root_style
+
 import ROOT
 from ROOT import TH1D, TH2D, TCanvas
 
 
-def plot_projection(spectra, dimension, graphical=True, fig_num=1):
+def plot_projection(spectra, dimension, graphical=True, fig_num=1,
+                    h_name=None):
     """ Plot the spectra as projected onto the dimension.
 
     Args:
@@ -18,22 +20,25 @@ def plot_projection(spectra, dimension, graphical=True, fig_num=1):
       (:class:`ROOT.TCanvas`): Root canvas object containing plot of
         histogram.
     """
-    plot = TH1D(dimension, "; %s; Count per bin" % dimension,
+    if not h_name:
+        h_name = dimension + strings.id_generator()
+    plot = TH1D(h_name, "; %s; Count per bin" % dimension,
                 int(spectra.get_config().get_par(dimension)._bins),
                 spectra.get_config().get_par(dimension)._low,
                 spectra.get_config().get_par(dimension)._high)
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index + 1, datum)
-    can = TCanvas("Figure " + str(fig_num), "Figure " + str(fig_num))
     if graphical:
+        can = TCanvas()
         can.cd()
         plot.Draw()
         raw_input("Return to quit")
-    return plot, can
+        del can
+    return plot
 
 
-def plot_surface(spectra, dimension1, dimension2, graphical=True):
+def plot_surface(spectra, dimension1, dimension2, graphical=True, h_name=None):
     """ Plots a 2D histogram of the dimensions in spectra.
 
     Args:
@@ -48,7 +53,9 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
       (:class:`ROOT.TCanvas`): Root canvas object containing plot of
         histogram.
     """
-    plot = TH2D("%s:%s" % (dimension1, dimension2),
+    if not h_name:
+        h_name = dimension1 + ":" + dimension2 + strings.id_generator()
+    plot = TH2D(h_name,
                 "%s;%s;Count per bin" % (dimension1, dimension2),
                 spectra.get_config().get_par(dimension1)._bins,
                 spectra.get_config().get_par(dimension1)._low,
@@ -60,12 +67,13 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True):
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
             plot.SetBinContent(index_x + 1, index_y + 1, datum)
-    can = TCanvas("Figure " + str(fig_num), "Figure " + str(fig_num))
     if graphical:
+        can = TCanvas("Figure", "Figure")
         can.cd()
         plot.Draw("COLZ")
         raw_input("Return to quit")
-    return plot, can
+        del can
+    return plot
 
 
 def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
@@ -179,7 +187,7 @@ def spectral_plot(spectra_dict, dimension="energy", show_plot=False,
 
 
 def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
-                             x_title=None, graphical=False):
+                             x_title=None, graphical=False, h_name=None):
     """ Produces a histogram of chi-squared per bin.
 
     Args:
@@ -195,6 +203,8 @@ def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
     Returns:
       :class:`ROOT.TH1D`: Histogram of chi-squared per bin.
     """
+    if not h_name:
+        h_name = "chi_sq_per_bin" + strings.id_generator()
     if x_title:
         hist_title = "; "+x_title+"; #chi^{2}"
     else:
@@ -208,3 +218,103 @@ def plot_chi_squared_per_bin(calculator, x_bins, x_low, x_high,
         hist.Draw()
         raw_input("RET to quit")
     return hist
+
+
+def plot_stats_vs_scale(summary, graphical=True):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_stats())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Test Statistic")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_best_fit_vs_scale(summary, graphical=True):
+    """ Plots the best fit of the parameter vs signal scales as a
+      :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_best_fits())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Best fit (Decays)")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_sigma_best_fit_vs_scale(summary, graphical=True):
+    """ Plots the best fit in term of number of sigma away from the prior of
+      the parameter vs signal scales as a :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    best_fits = summary.get_best_fits()
+    prior = summary.get_prior()
+    sigma = summary.get_sigma()
+    best_fits -= prior
+    best_fits /= sigma
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(), best_fits)
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Best fit (Num. #sigma)")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_penalty_term_vs_scale(summary, graphical=True):
+    """ Plots the contribution of the penalty term to the test statistic for
+      the parameter vs signal scales as a :class:`ROOT.TGraph` object.
+
+    Args:
+      summary (:class:`echidna.limit.summary.Summary`): The summary object
+        which contains the data.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    g = ROOT.TGraph(summary.get_num_scales(), summary.get_scales(),
+                    summary.get_penalty_terms())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle("Number of Signal Decays")
+    g.GetYaxis().SetTitle("Test Statistic Penalty")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g

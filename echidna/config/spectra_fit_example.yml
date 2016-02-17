@@ -1,0 +1,7 @@
+spectral_fit_parameters:
+        rate:
+                prior: 10.
+                sigma: 0.1
+                low: 7.
+                high: 13.
+                bins: 101
