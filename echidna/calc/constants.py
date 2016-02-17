@@ -12,3 +12,25 @@ _scint_density = 862.8e-9  # kg/mm^3
 # SNO+ defaults
 _fv_radius = 3500.  # mm
 _loading = 0.003  # 0.3%
+
+# KamLAND-Zen detector information
+klz_detector = {
+    # REF: Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-05-07
+    "Xe136_atm_weight": 135.907219,
+    # REF: Molar Mass Calculator, http://www.webqc.org/mmcalc.php, 2015-06-03
+    "Xe134_atm_weight": 133.90539450,
+    # We want the atomic weight of the enriched Xenon
+    "XeEn_atm_weight": 0.9093*135.907219 + 0.0889*133.90539450,
+    # Here we want the abundance in the enriched Xenon
+    "Xe136_abundance": 0.9093,
+    # REF: A. Gando et al. (KamLAND-Zen Collaboration) Phys. Rev. C. 86,
+    #   021601 (2012) - both values.
+    "loading": 0.0244,
+    "ib_radius": 1540.,   # mm
+    "scint_density": 7.5628e-7,  # kg/mm^3, calculated by A Back 2015-07-28
+    # REF: A. Gando et al. (KamLAND-Zen Collaboration) Phys. Rev. C. 86,
+    #   021601 (2012) - all three values.
+    "target_mass": 125.,  # kg
+    "livetime": 112.3 / 365.25,  # y, (112.3 live days)
+    "fv_radius": 1200.
+}

@@ -1,5 +1,6 @@
-import echidna.core.spectra as spectra
 import numpy
+
+import echidna.core.spectra as spectra
 
 
 class Scale(object):
@@ -40,12 +41,13 @@ class Scale(object):
 
         Args:
           spectrum (float): The spectrum you want to scale.
-          dimension (string): The dimension of the spectrum you want to scale.
-          kwargs (dict): To passed to the interpolation function in
-            :class:`echidna.core.spectra.Spectra`
+          dimension (string): The dimension of the spectrum you want to
+            scale.
+          kwargs (dict): To be passed to
+            :meth:`spectra.Spectra.interpolate1d`.
 
         Returns:
-          :class:`echidna.core.spectra.Spectra`: The scaled spectrum.
+          :class:`spectra.Spectra`: The scaled spectrum.
         """
         prescale_sum = spectrum.sum()
         interpolation = spectrum.interpolate1d(dimension, **kwargs)

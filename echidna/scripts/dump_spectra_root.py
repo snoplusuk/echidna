@@ -19,7 +19,7 @@ Examples:
 import argparse
 import csv
 import echidna.output.store as store
-import echidna.core.spectra as spectra
+from echidna.core.config import SpectraConfig
 import echidna.core.fill_spectrum as fill_spectrum
 import echidna.output.plot as plot
 
@@ -39,7 +39,7 @@ def read_and_dump_root(fname, config_path, spectrum_name, save_path, bipo,
       outer_radius (float): Used for calculating the radial3 parameter.
         See :class:`echidna.core.dsextract` for details.
     """
-    config = spectra.SpectraConfig.load_from_file(config_path)
+    config = SpectraConfig.load_from_file(config_path)
     if outer_radius:
         if "radial3" not in config.get_dims():
             raise ValueError("Outer radius passed as an command line arg "
@@ -64,7 +64,7 @@ def plot_spectrum(spec, config):
     Args:
       Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object to
         be plotted
-      config (:class:`echidna.core.spectra.Config`): configuration object
+      config (:class:`SpectraConfig`): configuration object
     """
     for v in config.getpars():
         plot.plot_projection(spec, v)
