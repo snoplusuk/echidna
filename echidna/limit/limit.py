@@ -187,12 +187,12 @@ class Limit(object):
         # previously calculated min_stat
         if stats.min() > min_stat:
             min_stat = stats.min()
-            if self._per_bin:
-                # Now we want the corresponding per_bin values
-                min_per_bin = limit_summary.get_raw_stat(stats.argmin())
 
         # Convert stats to delta - subtracting minimum
         stats -= min_stat
+        if self._per_bin:
+            # Now we want the corresponding per_bin values
+            min_per_bin = limit_summary.get_raw_stat(stats.argmin())
         limit_summary.set_stats(limit_summary.get_raw_stats() - min_per_bin)
 
         # Also want to know index of minimum
