@@ -193,7 +193,8 @@ class Limit(object):
         if self._per_bin:
             # Now we want the corresponding per_bin values
             min_per_bin = limit_summary.get_raw_stat(stats.argmin())
-        limit_summary.set_stats(limit_summary.get_raw_stats() - min_per_bin)
+            limit_summary.set_stats(limit_summary.get_raw_stats() -
+                                    min_per_bin)
 
         # Also want to know index of minimum
         min_bin = numpy.argmin(stats)
