@@ -116,7 +116,7 @@ class EnergySmearLY(Smear):
       _light_yield (float): The light yield of the scintillator in NHits per
         MeV.
       _poisson_smear (Bool): True if poisson smearing is to be applied. False
-      if gaussian smearing is to be applied.
+        if gaussian smearing is to be applied.
     """
 
     def __init__(self, poisson=True):
@@ -363,7 +363,7 @@ class EnergySmearRes(Smear):
       _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
         e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
       _poisson_smear (Bool): True if poisson smearing is to be applied.
-      False if gaussian smearing is to be applied.
+        False if gaussian smearing is to be applied.
     """
 
     def __init__(self, poisson=True):
@@ -610,7 +610,7 @@ class RadialSmear(Smear):
     Attributes:
       _resolution (float): The position resolution (mm).
       _poisson_smear (Bool): True if poisson smearing is to be applied.
-      False if gaussian smearing is to be applied.
+        False if gaussian smearing is to be applied.
     """
 
     def __init__(self):
