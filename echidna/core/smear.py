@@ -141,13 +141,12 @@ class EnergySmearLY(Smear):
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
         if photons not in self._log_factorial:
-            self._log_factorial[photons] = (numpy.sum
-                                            (numpy.log
-                                             (numpy.arange(1, (photons+1)))))
-        logPois = (photons*numpy.log(expected) -
-                   self._log_factorial[photons] -
-                   expected)
-        return numpy.exp(logPois)
+            self._log_factorial[photons] = (
+                numpy.sum(numpy.log(numpy.arange(1, (photons+1)))))
+        log_pois = (photons*numpy.log(expected) -
+                    self._log_factorial[photons] -
+                    expected)
+        return numpy.exp(log_pois)
 
     def calc_smear_ly(self, new_ly, cur_ly=None):
         """Calculates the value of light yield (ly) required to smear a
@@ -388,13 +387,12 @@ class EnergySmearRes(Smear):
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
         if photons not in self._log_factorial:
-            self._log_factorial[photons] = (numpy.sum
-                                            (numpy.log
-                                             (numpy.arange(1, (photons+1)))))
-        logPois = (photons*numpy.log(expected) -
-                   self._log_factorial[photons] -
-                   expected)
-        return numpy.exp(logPois)
+            self._log_factorial[photons] = (
+                numpy.sum(numpy.log(numpy.arange(1, (photons+1)))))
+        log_pois = (photons*numpy.log(expected) -
+                    self._log_factorial[photons] -
+                    expected)
+        return numpy.exp(log_pois)
 
     def calc_smear_resoluton(self, new_res, cur_res=None):
         """Calculates the value of resolution required to smear a data set
