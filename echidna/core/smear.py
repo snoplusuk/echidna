@@ -110,13 +110,13 @@ class EnergySmearLY(Smear):
       yield (LY) in units of NHit per MeV.
 
     Args:
-      poisson (bool): If True, use poisson smearing.      
+      poisson (bool): If True, use poisson smearing.
 
     Attributes:
       _light_yield (float): The light yield of the scintillator in NHits per
         MeV.
-      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
-        gaussian smearing is to be applied. 
+      _poisson_smear (Bool): True if poisson smearing is to be applied. False
+      if gaussian smearing is to be applied.
     """
 
     def __init__(self, poisson=True):
@@ -135,16 +135,20 @@ class EnergySmearLY(Smear):
           x : Number of events
           lamb : Lambda of the poisson
 
-        Returns: 
+        Returns:
           float: The value of the poisson at the given position
         """
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
-        if self._log_factorial.has_key(photons) == False:
-            self._log_factorial[photons] = numpy.sum(numpy.log(np.arange(1,(photons+1))))
-        logPois = photons*numpy.log(expected) - self._log_factorial[photons] - expected#*np.log(np.e)
+        if photons not in self._log_factorial:
+            self._log_factorial[photons] = (numpy.sum
+                                            (numpy.log
+                                             (numpy.arange(1, (photons+1)))))
+        logPois = (photons*numpy.log(expected) -
+                   self._log_factorial[photons] -
+                   expected)
         return numpy.exp(logPois)
-    
+
     def calc_smear_ly(self, new_ly, cur_ly=None):
         """Calculates the value of light yield (ly) required to smear a
           data set which has already been smeared with a light yield of cur_ly
@@ -264,7 +268,7 @@ class EnergySmearLY(Smear):
                                 0.5 * widths[i]
                         weights = []
                         for energy in numpy.arange(low, high, widths[i]):
-                            if self._poisson_smear == True:
+                            if self._poisson_smear is True:
                                 weights.append(self.calc_poisson_energy(energy,
                                                                         mean))
                             else:
@@ -330,10 +334,14 @@ class EnergySmearLY(Smear):
                     else:
                         data[par_names[i]] = mean
                 for i in range(entries):
-                    if self._poisson_smear == True:
-                        data[par] = numpy.fabs(numpy.random.poisson(mean_e))
+                    if self._poisson_smear is True:
+                        photons = (numpy.fabs
+                                   (numpy.random.poisson(mean_e *
+                                                         self._light_yield)))
+                        data[par] = photons / float(self._light_yield)
                     else:
-                        data[par] = numpy.fabs(numpy.random.normal(mean_e, sigma))
+                        data[par] = (numpy.fabs
+                                     (numpy.random.normal(mean_e, sigma)))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -349,13 +357,13 @@ class EnergySmearRes(Smear):
     Inherits from :class:`Smear`
 
     Args:
-      poisson (bool): If True, use poisson smearing.      
+      poisson (bool): If True, use poisson smearing.
 
     Attributes:
       _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`
         e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.
-      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
-        gaussian smearing is to be applied. 
+      _poisson_smear (Bool): True if poisson smearing is to be applied.
+      False if gaussian smearing is to be applied.
     """
 
     def __init__(self, poisson=True):
@@ -374,15 +382,19 @@ class EnergySmearRes(Smear):
           x : Number of events
           lamb : Lambda of the poisson
 
-        Returns: 
+        Returns:
           float: The value of the poisson at the given position
         """
         photons = int(x*self._light_yield)
         expected = lamb*self._light_yield
-        if self._log_factorial.has_key(photons) == False:
-            self._log_factorial[photons] = np.sum(np.log(np.arange(1,(photons+1))))
-        logPois = photons*np.log(expected) - self._log_factorial[photons] - expected#*np.log(np.e)
-        return np.exp(logPois)
+        if photons not in self._log_factorial:
+            self._log_factorial[photons] = (numpy.sum
+                                            (numpy.log
+                                             (numpy.arange(1, (photons+1)))))
+        logPois = (photons*numpy.log(expected) -
+                   self._log_factorial[photons] -
+                   expected)
+        return numpy.exp(logPois)
 
     def calc_smear_resoluton(self, new_res, cur_res=None):
         """Calculates the value of resolution required to smear a data set
@@ -505,8 +517,8 @@ class EnergySmearRes(Smear):
                             high = spectrum.get_config().get_par(par)._high - \
                                 0.5 * widths[i]
                         weights = []
-                        for energy in np.arange(low, high, widths[i]):
-                            if self._poisson_smear == True:
+                        for energy in numpy.arange(low, high, widths[i]):
+                            if self._poisson_smear is True:
                                 weights.append(self.calc_poisson_energy(energy,
                                                                         mean))
                             else:
@@ -572,10 +584,14 @@ class EnergySmearRes(Smear):
                     else:
                         data[par_names[i]] = mean
                 for i in range(entries):
-                    if self._poisson_smear == True:
-                        data[par] = numpy.fabs(numpy.random.normal(mean_e))
+                    if self._poisson_smear is True:
+                        photons = (numpy.fabs
+                                   (numpy.random.poisson(mean_e *
+                                                         self._light_yield)))
+                        data[par] = photons / float(self._light_yield)
                     else:
-                        data[par] = numpy.fabs(numpy.random.normal(mean_e, sigma))
+                        data[par] = (numpy.fabs
+                                     (numpy.random.normal(mean_e, sigma)))
                     try:
                         smeared_spec.fill(**data)
                     except ValueError:
@@ -589,12 +605,12 @@ class RadialSmear(Smear):
       sigma in units of mm.
 
     Args:
-      poisson (bool): If True, use poisson smearing.      
+      poisson (bool): If True, use poisson smearing.
 
     Attributes:
       _resolution (float): The position resolution (mm).
-      _poisson_smear (Bool): True if poisson smearing is to be applied. False if
-        gaussian smearing is to be applied. 
+      _poisson_smear (Bool): True if poisson smearing is to be applied.
+      False if gaussian smearing is to be applied.
     """
 
     def __init__(self):
