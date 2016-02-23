@@ -1,0 +1,954 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.fit.fit &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.fit.fit</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
+<span class="kn">from</span> <span class="nn">echidna.fit.minimise</span> <span class="kn">import</span> <span class="n">GridSearch</span>
+<span class="kn">from</span> <span class="nn">echidna.fit.fit_results</span> <span class="kn">import</span> <span class="n">FitResults</span>
+<span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">CompatibilityError</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">GlobalFitConfig</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<div class="viewcode-block" id="Fit"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit">[docs]</a><span class="k">class</span> <span class="nc">Fit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to handle fitting.</span>
+
+<span class="sd">    .. warning:: The :class:`Fit` initialisation will try to set</span>
+<span class="sd">      atrributes using the values provided. If a value is not provided</span>
+<span class="sd">      echidna will attempt to set the default. If this is not possible</span>
+<span class="sd">      a warning will be raised and you will have to set this attribute</span>
+<span class="sd">      manually before calling :meth:`fit`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      roi (dictionary): Region Of Interest you want to fit in. The format of</span>
+<span class="sd">        roi is e.g. {&quot;energy&quot;: (2.4, 2.6), &quot;radial3&quot;: (0., 0.2)}</span>
+<span class="sd">      test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An</span>
+<span class="sd">        appropriate class for calculating test statistics.</span>
+<span class="sd">      fit_config (:class:`FitConfig`, optional): Config class for fit -</span>
+<span class="sd">        usually loaded from file.</span>
+<span class="sd">      data (:class:`echidna.core.spectra.Spectra`): Data spectrum you want to</span>
+<span class="sd">        fit.</span>
+<span class="sd">      fixed_background (dict, optional): Dictionary containing all fixed</span>
+<span class="sd">        backgrounds, with :class:`echidna.core.spectra.Spectra` as keys</span>
+<span class="sd">        and priors (float) as values.</span>
+<span class="sd">      floating_backgrounds (list, optional): one</span>
+<span class="sd">        :class:`echidna.core.spectra.Spectra` for each background to float.</span>
+<span class="sd">      signal (:class:`echidna.core.spectra.Spectra`):</span>
+<span class="sd">        A spectrum of the signal that you are fitting.</span>
+<span class="sd">      shrink (bool, optional): If set to True (default),</span>
+<span class="sd">        :meth:`shrink` method is called on all spectra shrinking them to</span>
+<span class="sd">        the ROI.</span>
+<span class="sd">      minimiser (:class:`echidna.limit.minimiser.Minimiser`, optional): Object</span>
+<span class="sd">        to handle the minimisation.</span>
+<span class="sd">      fit_results (:class:`FitResults`, optional): Specify a separate</span>
+<span class="sd">        Fit Results class.</span>
+<span class="sd">      use_pre_made (bool, optional): Flag whether to load a pre-made spectrum</span>
+<span class="sd">        for each systematic value, or apply convolutions on the fly.</span>
+<span class="sd">      pre_made_dir (string, optional): Directory in which pre-made convolved</span>
+<span class="sd">        spectra are stored.</span>
+<span class="sd">      single_bin (bool, optional): Flag for a single bin fit (e.g. simple</span>
+<span class="sd">        counting experiment).</span>
+<span class="sd">      per_bin (bool, optional): Flag to monitor values of test</span>
+<span class="sd">        statistic, per bin included in the fit (ROI)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _logger (loggging.Logger): Logger for :class:`Fit` class.</span>
+<span class="sd">      _checked</span>
+<span class="sd">      _roi (dictionary): Region Of Interest you want to fit in. The format of</span>
+<span class="sd">        roi is e.g. {&quot;energy&quot;: (2.4, 2.6), &quot;radial3&quot;: (0., 0.2)}</span>
+<span class="sd">      _test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`): An</span>
+<span class="sd">        appropriate class for calculating test statistics.</span>
+<span class="sd">      _fit_config (:class:`FitConfig`): Config class for fit -</span>
+<span class="sd">        usually loaded from file.</span>
+<span class="sd">      _data (:class:`echidna.core.spectra.Spectra`): Data spectrum you want to</span>
+<span class="sd">        fit.</span>
+<span class="sd">      _fixed_background (:class:`echidna.core.spectra.Spectra`):</span>
+<span class="sd">        A spectrum containing all fixed backgrounds.</span>
+<span class="sd">      _floating_backgrounds (list): one :class:`echidna.core.spectra.Spectra`</span>
+<span class="sd">        for each background to float.</span>
+<span class="sd">      _signal (:class:`echidna.core.spectra.Spectra`):</span>
+<span class="sd">        A spectrum of the signal that you are fitting.</span>
+<span class="sd">      _minimiser (:class:`echidna.limit.minimiser.Minimiser)`: Object to</span>
+<span class="sd">        handle the minimisation.</span>
+<span class="sd">      _fit_results (:class:`FitResults`): Specify a separate</span>
+<span class="sd">        Fit Results class.</span>
+<span class="sd">      _checked (bool): If True then the fit class is ready to be used.</span>
+<span class="sd">      _use_pre_made (bool): Flag whether to load a pre-made spectrum</span>
+<span class="sd">        for each systematic value, or apply convolutions on the fly.</span>
+<span class="sd">      _pre_made_dir (string): Directory in which pre-made convolved</span>
+<span class="sd">        spectra are stored.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi</span><span class="p">,</span> <span class="n">test_statistic</span><span class="p">,</span> <span class="n">fit_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">fixed_backgrounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">floating_backgrounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">signal</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">minimiser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">fit_results</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">use_pre_made</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">pre_made_base_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">single_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;Fit&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checked</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_roi</span><span class="p">(</span><span class="n">roi</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_test_statistic</span><span class="p">(</span><span class="n">test_statistic</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fit_config</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">({})</span>
+            <span class="n">fit_config</span> <span class="o">=</span> <span class="n">GlobalFitConfig</span><span class="p">(</span><span class="s">&quot;gloabl_fit_config&quot;</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_fit_config</span><span class="p">(</span><span class="n">fit_config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># set both as None for now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_pars</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Data has not been set. This must be set &quot;</span>
+                                 <span class="s">&quot;manually before running the fit.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fixed_backgrounds</span><span class="p">:</span>  <span class="c"># spectra_dict in expected form</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_fixed_background</span><span class="p">(</span><span class="n">fixed_backgrounds</span><span class="p">)</span>  <span class="c"># sets attribute</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># set both as None for now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Fixed background has not been set. Either &quot;</span>
+                                 <span class="s">&quot;fixed background or at least one floating &quot;</span>
+                                 <span class="s">&quot;is required to run the fit.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">floating_backgrounds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_floating_backgrounds</span><span class="p">(</span><span class="n">floating_backgrounds</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Set both as None for now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_floating_pars</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No floating background has been set. Either &quot;</span>
+                                 <span class="s">&quot;fixed background or at least one floating &quot;</span>
+                                 <span class="s">&quot;is required to run the fit.&quot;</span><span class="p">)</span>
+
+        <span class="c"># Now all floating backgrounds are loaded, check fit par values</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">():</span>
+            <span class="n">par</span><span class="o">.</span><span class="n">check_values</span><span class="p">()</span>  <span class="c"># raises an error if prior is not in values</span>
+
+        <span class="k">if</span> <span class="n">signal</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Set both as None for now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal_pars</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No signal has been set.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_all</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span> <span class="o">=</span> <span class="n">per_bin</span>
+
+        <span class="c"># Try to set minimiser and fit_results</span>
+        <span class="c"># Will only work if check_all_spectra passes.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_minimiser</span><span class="p">(</span><span class="n">minimiser</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CompatibilityError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Minimiser could not be set because: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                 <span class="n">detail</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_fit_results</span><span class="p">(</span><span class="n">fit_results</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CompatibilityError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Fit results could not be set because: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                 <span class="n">detail</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_pre_made</span> <span class="o">=</span> <span class="n">use_pre_made</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_made_base_dir</span> <span class="o">=</span> <span class="n">pre_made_base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_single_bin</span> <span class="o">=</span> <span class="n">single_bin</span>
+
+<div class="viewcode-block" id="Fit.append_fixed_background"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.append_fixed_background">[docs]</a>    <span class="k">def</span> <span class="nf">append_fixed_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra_dict</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Appends the fixed background with more spectra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra_dict (dict): Dictionary containing spectra as keys and</span>
+<span class="sd">            prior counts as values.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default), :meth:`shrink`</span>
+<span class="sd">            method is called on the spectra shrinking it to the ROI.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">scaling</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="c"># Copy so original spectra is unchanged</span>
+            <span class="n">spectrum</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+            <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaling</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.check_all_spectra"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.check_all_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">check_all_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Ensures that all spectra can be used for fitting.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          CompatibilityError: If the data spectra exists and its roi pars have</span>
+<span class="sd">            not been set.</span>
+<span class="sd">          CompatibilityError: If the data spectrum has not been set.</span>
+<span class="sd">          CompatibilityError: If neither fixed background nor at least</span>
+<span class="sd">            one floating background, has been set.</span>
+<span class="sd">          CompatibilityError: If the fixed background spectra exists and its</span>
+<span class="sd">            roi pars have not been set.</span>
+<span class="sd">          CompatibilityError: If the signal spectra exists and its</span>
+<span class="sd">            roi pars have not been set.</span>
+<span class="sd">          CompatibilityError: If the floating backgrounds spectra exists and</span>
+<span class="sd">            their roi pars have not been set.</span>
+<span class="sd">          CompatibilityError: If the floating backgrounds spectra exists and</span>
+<span class="sd">            their roi pars have not been set.</span>
+<span class="sd">          CompatibilityError: If the floating backgrounds spectra exists and</span>
+<span class="sd">            length of their roi pars is different to the number of floating</span>
+<span class="sd">            backgrounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_pars</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;data roi pars have not been set.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;data spectrum has not been set.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Must provide either fixed background &quot;</span>
+                                     <span class="s">&quot;or at least one floating background &quot;</span>
+                                     <span class="s">&quot;to fit to data&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;fixed background roi pars have not &quot;</span>
+                                         <span class="s">&quot;been set.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_pars</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;signal roi pars have not been set.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_pars</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;floating background roi pars have &quot;</span>
+                                         <span class="s">&quot;not been set.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_floating_pars</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Different number of sets of roi &quot;</span>
+                                         <span class="s">&quot;pars as the number of floating &quot;</span>
+                                         <span class="s">&quot;backgrounds.&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_fit_config</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.check_fit_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.check_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">check_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks that a spectra has a fit config.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra (:class:`echidna.core.spectra.Spectra`): Spectra you want to</span>
+<span class="sd">            check.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          CompatibilityError: If spectra has no fit config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> has no fit config&quot;</span> <span class="o">%</span> <span class="n">spectra</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">parameter</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+            <span class="n">parameter</span><span class="o">.</span><span class="n">check_values</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Fit.check_fitter"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.check_fitter">[docs]</a>    <span class="k">def</span> <span class="nf">check_fitter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks that the Fit class is ready to be used for fitting.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If fit config contains no parameters</span>
+<span class="sd">          ValueError: If number of floating backgrounds and number of</span>
+<span class="sd">            spectral fit parameters do not match.</span>
+<span class="sd">          AttributeError: If :attr:`_minimiser` has not been set.</span>
+<span class="sd">          AttributeError: If :attr:`_fit_results` has not been set.</span>
+<span class="sd">          ValueError: If (un)expected per_bin flag in minimiser.</span>
+<span class="sd">          ValueError: If (un)expected integer value for num_bins, in</span>
+<span class="sd">            fit_results.</span>
+<span class="sd">          ValueError: If (un)expected per_bin flag in test_statistic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_all_spectra</span><span class="p">()</span>
+
+        <span class="c"># Check fit parameters</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;No parameters found in fit config.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">())</span> <span class="o">!=</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s">&quot;Spectral fit parameters: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">()))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Number of spectral fit pars and &quot;</span>
+                                 <span class="s">&quot;number of floating backgrounds do not match&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">())</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s">&quot;Spectral fit parameters: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">()))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Expected 0 spectral fit pars for &quot;</span>
+                                 <span class="s">&quot;no floating backgrounds&quot;</span><span class="p">)</span>
+
+        <span class="c"># Check minimiser and fit results</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Minimiser has not been set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Fit results has not been set.&quot;</span><span class="p">)</span>
+
+        <span class="c"># Check per_bin propagation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Expected per_bin True flag in minimiser&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Unexpected per_bin True flag in minimiser&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Expected per_bin True flag in test_statistic&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checked</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Fitter checked!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Running fit with the following parameters:&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">basic</span><span class="o">=</span><span class="bp">True</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parameter </span><span class="si">%s</span><span class="s">, with values:</span><span class="se">\n\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">get_values</span><span class="p">()))</span>
+</div>
+<div class="viewcode-block" id="Fit.check_roi"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.check_roi">[docs]</a>    <span class="k">def</span> <span class="nf">check_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks the ROI used to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          roi (dict): roi you want to check.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If roi is not a dict</span>
+<span class="sd">          TypeError: If value in roi dict is not a list or a tuple</span>
+<span class="sd">          CompatibilityError: If the length of a value in the roi dict is</span>
+<span class="sd">            not 2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;roi must be a dictionary of parameter values&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">roi</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">],</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;roi must be a dictionary of tuples or lists&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> entry (</span><span class="si">%s</span><span class="s">) in roi must contain a&quot;</span>
+                                         <span class="s">&quot; low and high value in a tuple or&quot;</span>
+                                         <span class="s">&quot; list&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="n">dim</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>  <span class="c"># Make sure low is first</span>
+                <span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># Reverses list/tuple</span>
+</div>
+<div class="viewcode-block" id="Fit.check_spectra"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.check_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">check_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks the spectra you want to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra (:class:`echidna.core.spectra.Spectra`): Spectra you want to</span>
+<span class="sd">            check.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If roi low value and spectra low value are not equal.</span>
+<span class="sd">          ValueError: If roi high value and spectra high value are not equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">:</span>
+            <span class="n">dim_type</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">dim_type</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                 <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;roi </span><span class="si">%s</span><span class="s"> low (</span><span class="si">%s</span><span class="s">) not equal to spectra </span><span class="si">%s</span><span class="s">&quot;</span>
+                                 <span class="s">&quot; </span><span class="si">%s</span><span class="s"> low (</span><span class="si">%s</span><span class="s">)&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">,</span>
+                                    <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                                 <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;roi </span><span class="si">%s</span><span class="s"> high (</span><span class="si">%s</span><span class="s">) not equal to spectra </span><span class="si">%s</span><span class="s">&quot;</span>
+                                 <span class="s">&quot; </span><span class="si">%s</span><span class="s"> high (</span><span class="si">%s</span><span class="s">)&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">roi</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">,</span>
+                                    <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Fit.get_data"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the data you are fitting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The data you are fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+</div>
+<div class="viewcode-block" id="Fit.get_fit_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span>
+</div>
+<div class="viewcode-block" id="Fit.get_fit_results"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_fit_results">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the fit results object for the fit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.fit.FitResults`: FitResults for the fit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span>
+</div>
+<div class="viewcode-block" id="Fit.get_fixed_background"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_fixed_background">[docs]</a>    <span class="k">def</span> <span class="nf">get_fixed_background</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the fixed background you are fitting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The fixed background you are</span>
+<span class="sd">            fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span>
+</div>
+<div class="viewcode-block" id="Fit.get_floating_backgrounds"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_floating_backgrounds">[docs]</a>    <span class="k">def</span> <span class="nf">get_floating_backgrounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the floating backgrounds you are fitting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: The floating backgrounds you are fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span>
+</div>
+<div class="viewcode-block" id="Fit.get_minimiser"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_minimiser">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimiser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the minimiser you are using.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.limit.minimise.Minimiser`: The minimiser</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span>
+</div>
+<div class="viewcode-block" id="Fit.get_test_statistic"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_test_statistic">[docs]</a>    <span class="k">def</span> <span class="nf">get_test_statistic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the class instance you are using to calculate the test</span>
+<span class="sd">        statistic used in the fit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`echidna.limit.test_statistic.TestStatistic`): The class</span>
+<span class="sd">            instance used to calculate test statistics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span>
+</div>
+<div class="viewcode-block" id="Fit.get_roi"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the region of interest (roi)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: The region of interest</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span>
+</div>
+<div class="viewcode-block" id="Fit.get_roi_pars"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_roi_pars">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the parameters of a spectra that contain the roi.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The spectra you want to obtain</span>
+<span class="sd">            the roi parameters for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Of the names of the spectra parameters which contain the roi.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">:</span>
+            <span class="n">dim_type</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">dim_type</span>
+            <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pars</span>
+</div>
+<div class="viewcode-block" id="Fit.get_signal"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.get_signal">[docs]</a>    <span class="k">def</span> <span class="nf">get_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the signal you are fitting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Spectra`: The fixed background you are</span>
+<span class="sd">            fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span>
+</div>
+<div class="viewcode-block" id="Fit.fit"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the value of the test statistic used for fitting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float or :class:`numpy.array`: The resulting test statisic(s)</span>
+<span class="sd">            dependent upon what method is used to compute the statistic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checked</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_fitter</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>  <span class="c"># Use fixed only</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_pars</span><span class="p">)</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">:</span>
+                <span class="n">expected</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal_pars</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span><span class="o">.</span><span class="n">compute_statistic</span><span class="p">(</span><span class="n">observed</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                                          <span class="n">expected</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Pass to minimiser</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Minimiser is not set.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="o">.</span><span class="n">minimise</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_funct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit._funct"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit._funct">[docs]</a>    <span class="k">def</span> <span class="nf">_funct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Callable to pass to minimiser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          args (list): List of fit parameter values to test in the</span>
+<span class="sd">            current iteration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          tuple: containing:</span>
+
+<span class="sd">            :class:`numpy.ndrray`: Values of the test statistic given</span>
+<span class="sd">              the current values of the fit parameters.</span>
+<span class="sd">            float: Total penalty term to be applied to the test</span>
+<span class="sd">              statistic.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_floating_backgrounds` is None. This</span>
+<span class="sd">            method requires at least one floating background.</span>
+
+<span class="sd">        .. note:: This method should not be called directly, it is</span>
+<span class="sd">          intended to be passed to an appropriate minimiser and</span>
+<span class="sd">          called from within the minimisation algorithm.</span>
+
+<span class="sd">        .. note:: This method should not be used if there are no</span>
+<span class="sd">          floating backgrounds.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;The _funct method can only be used &quot;</span> <span class="o">+</span>
+                             <span class="s">&quot;with at least one floating background&quot;</span><span class="p">)</span>
+
+        <span class="c"># Update parameter current values</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_par_by_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">par</span><span class="o">.</span><span class="n">set_current_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c"># Loop over all floating backgrounds</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_pars</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">global_pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_global_pars</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">floating_pars</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">_floating_pars</span><span class="p">):</span>
+            <span class="c"># Apply global parameters first</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_pre_made</span><span class="p">:</span>  <span class="c"># Load pre-made spectrum from file</span>
+                <span class="n">spectrum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_pre_made</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">global_pars</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">global_pars</span><span class="p">:</span>
+                    <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+                    <span class="n">spectrum</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+
+            <span class="c"># Apply spectrum-specific parameters</span>
+            <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+                <span class="n">spectrum</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+
+            <span class="c"># Spectrum should now be fully convolved/scaled</span>
+            <span class="c"># Shrink to roi</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+            <span class="c"># and then add projection to expected spectrum</span>
+            <span class="k">if</span> <span class="n">expected</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">expected</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="n">floating_pars</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="n">floating_pars</span><span class="p">)</span>
+
+        <span class="c"># Add signal, if required</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal_pars</span><span class="p">)</span>
+
+        <span class="c"># If single bin - sum over expected and observed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single_bin</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span>
+
+        <span class="c"># Calculate value of test statistic</span>
+        <span class="n">test_statistic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span><span class="o">.</span><span class="n">compute_statistic</span><span class="p">(</span>
+            <span class="n">observed</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">expected</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+        <span class="c"># Add penalty terms</span>
+        <span class="n">total_penalty</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="n">current_value</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_current_value</span><span class="p">()</span>
+            <span class="n">prior</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_prior</span><span class="p">()</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+            <span class="c"># If sigma is explicitly None add no penalty term</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="n">total_penalty</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span><span class="o">.</span><span class="n">get_penalty_term</span><span class="p">(</span>
+                    <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">test_statistic</span><span class="p">,</span> <span class="n">total_penalty</span>
+</div>
+<div class="viewcode-block" id="Fit.load_pre_made"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.load_pre_made">[docs]</a>    <span class="k">def</span> <span class="nf">load_pre_made</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">global_pars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Load pre-made convolved spectra.</span>
+
+<span class="sd">        This method is used to load a pre-made spectra convolved with</span>
+<span class="sd">        certain resolution, energy-scale or shift values, or a</span>
+<span class="sd">        combination of two or more at given values.</span>
+
+<span class="sd">        The method loads the loads the correct spectra from HDF5s,</span>
+<span class="sd">        stored in the given directory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum</span>
+<span class="sd">            to convolve.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`echidna.core.spectra.Spectra`): Convolved spectrum,</span>
+<span class="sd">            ready for applying further systematics or fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Locate spectrum to load from HDF5</span>
+        <span class="c"># Base directory should be set beforehand</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_made_base_dir</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;Pre-made directory is not set.&quot;</span><span class="p">)</span>
+
+        <span class="c"># Start with base spectrum name</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_made_base_dir</span>
+
+        <span class="c"># Add current value of each global parameter</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">global_pars</span><span class="p">:</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="n">directory</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_pre_convolved</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="c"># Load spectrum from hdf5</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s">&quot;.hdf5&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">spectrum</span>
+</div>
+<div class="viewcode-block" id="Fit.make_fixed_background"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.make_fixed_background">[docs]</a>    <span class="k">def</span> <span class="nf">make_fixed_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra_dict</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Makes a spectrum for fixed backgrounds and stores it in the class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra_dict (dict): Dictionary containing spectra as keys and</span>
+<span class="sd">            prior counts as values.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default), :meth:`shrink`</span>
+<span class="sd">            method is called on the spectra shrinking it to the ROI.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">scaling</span> <span class="ow">in</span> <span class="n">spectra_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="c"># Copy so original spectra is unchanged</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding Spectra with name </span><span class="si">%s</span><span class="s"> to&quot;</span>
+                               <span class="s">&quot;_fixed_background&quot;</span> <span class="o">%</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+            <span class="n">spectrum</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaling</span><span class="p">)</span>
+                <span class="n">total_spectrum</span> <span class="o">=</span> <span class="n">spectrum</span>
+                <span class="n">total_spectrum</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s">&quot;Fixed Background&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaling</span><span class="p">)</span>
+                <span class="n">total_spectrum</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span> <span class="o">=</span> <span class="n">total_spectrum</span>  <span class="c"># No need to check</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_roi_pars</span><span class="p">(</span><span class="n">total_spectrum</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_fixed_background</span><span class="p">(</span><span class="n">total_spectrum</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.remove_signal"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.remove_signal">[docs]</a>    <span class="k">def</span> <span class="nf">remove_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Removes the signal spectra from the class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Fit.set_data"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the data you want to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          data (:class:`echidna.core.spectra.Spectra`): Data spectrum you</span>
+<span class="sd">            want to fit.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default), :meth:`shrink`</span>
+<span class="sd">            method is called on the spectra shrinking it to the ROI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting Spectra with name </span><span class="si">%s</span><span class="s"> as data&quot;</span> <span class="o">%</span>
+                           <span class="n">data</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_roi_pars</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.set_fit_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">          fit_config (:class:`echidna.core.spectra.FitConfig`): Config</span>
+<span class="sd">            for fit.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If fit_config is not of type :class:`FitConfig`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fit_config</span><span class="p">,</span> <span class="n">GlobalFitConfig</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;fit_config type (</span><span class="si">%s</span><span class="s">) is invalid&quot;</span> <span class="o">%</span>
+                            <span class="nb">type</span><span class="p">(</span><span class="n">fit_config</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Fit.set_fit_results"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_fit_results">[docs]</a>    <span class="k">def</span> <span class="nf">set_fit_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">          fit_results (:class:`FitResults`, optional): The fit results</span>
+<span class="sd">            instance.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If fit config contains no parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_all_spectra</span><span class="p">()</span>  <span class="c"># All spectra should be set and checked first</span>
+        <span class="k">if</span> <span class="n">fit_results</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span> <span class="o">=</span> <span class="n">fit_results</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting </span><span class="si">%s</span><span class="s"> as fit_results&quot;</span> <span class="o">%</span>
+                               <span class="n">fit_results</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># If using GridSearch minimiser this is should befit_results</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;No parameters found in fit config.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="p">,</span> <span class="n">GridSearch</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting GridSearch (</span><span class="si">%s</span><span class="s">) as fit_results&quot;</span> <span class="o">%</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fit_results</span> <span class="o">=</span> <span class="n">FitResults</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get_config</span><span class="p">()),</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="Fit.set_fixed_background"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_fixed_background">[docs]</a>    <span class="k">def</span> <span class="nf">set_fixed_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fixed_background</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the fixed background you want to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          fixed_background (:class:`echidna.core.spectra.Spectra`): The</span>
+<span class="sd">            fixed background spectrum you want to fit.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default) :meth:`shrink`</span>
+<span class="sd">            method is called on the spectra shrinking it to the ROI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">fixed_background</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="n">fixed_background</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span> <span class="o">=</span> <span class="n">fixed_background</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_roi_pars</span><span class="p">(</span><span class="n">fixed_background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.set_floating_backgrounds"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_floating_backgrounds">[docs]</a>    <span class="k">def</span> <span class="nf">set_floating_backgrounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_backgrounds</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the floating backgrounds you want to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          floating_backgrounds (list): List of backgrounds you want to float</span>
+<span class="sd">            in the fit.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default), :meth:`shrink`</span>
+<span class="sd">            method is called on the spectra shrinking it to the ROI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">floating_pars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="n">floating_backgrounds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding Spectra with name </span><span class="si">%s</span><span class="s"> to&quot;</span>
+                               <span class="s">&quot;_floating_backgrounds&quot;</span> <span class="o">%</span> <span class="n">background</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_fit_config</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+            <span class="c"># Spectrum has a valid fit config, add to GlobalFit Config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">add_config</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+            <span class="n">floating_pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_roi_pars</span><span class="p">(</span><span class="n">background</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span> <span class="o">=</span> <span class="n">floating_backgrounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floating_pars</span> <span class="o">=</span> <span class="n">floating_pars</span>
+</div>
+<div class="viewcode-block" id="Fit.set_minimiser"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_minimiser">[docs]</a>    <span class="k">def</span> <span class="nf">set_minimiser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimiser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the minimiser to use in fitting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          minimiser (:class:`echidna.limit.minimise.Minimiser`, optional): The</span>
+<span class="sd">            minimiser to use in the fit.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If fit config contains no parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_all_spectra</span><span class="p">()</span>  <span class="c"># All spectra should be set and checked first</span>
+        <span class="k">if</span> <span class="n">minimiser</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="o">=</span> <span class="n">minimiser</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting </span><span class="si">%s</span><span class="s"> as minimiser&quot;</span> <span class="o">%</span>
+                               <span class="n">minimiser</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Use default GridSearch</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;No parameters found in fit config.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="o">=</span> <span class="n">GridSearch</span><span class="p">(</span>
+                    <span class="n">fit_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="p">,</span>
+                    <span class="n">spectra_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
+                    <span class="c"># This assumes fitting over all dimensions</span>
+                    <span class="n">per_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span> <span class="o">=</span> <span class="n">GridSearch</span><span class="p">(</span>
+                    <span class="n">fit_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="p">,</span>
+                    <span class="n">spectra_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Created GridSearch (</span><span class="si">%s</span><span class="s">) to use as minimiser&quot;</span> <span class="o">%</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_minimiser</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="Fit.set_test_statistic"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_test_statistic">[docs]</a>    <span class="k">def</span> <span class="nf">set_test_statistic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_statistic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the method you want to use to calculate test statistics in</span>
+<span class="sd">          the fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          test_statistic (:class:`echidna.limit.test_statistic.TestStatistic`):</span>
+<span class="sd">            An appropriate class for calculating test statistics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_statistic</span> <span class="o">=</span> <span class="n">test_statistic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Set _test_statistic as </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">test_statistic</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Fit.set_roi"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_roi">[docs]</a>    <span class="k">def</span> <span class="nf">set_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the region of interest you want to fit in.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          roi (dictionary): The Region Of Interest you want to fit in.</span>
+<span class="sd">            The format of roi is</span>
+<span class="sd">            e.g. {&quot;energy&quot;: (2.4, 2.6), &quot;radial3&quot;: (0., 0.2)}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_roi</span><span class="p">(</span><span class="n">roi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span> <span class="o">=</span> <span class="n">roi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Set _roi as </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">roi</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checked</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># Must redo checks for a new roi</span>
+</div>
+<div class="viewcode-block" id="Fit.set_signal"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_signal">[docs]</a>    <span class="k">def</span> <span class="nf">set_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the signal you want to fit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          signal (:class:`echidna.core.spectra.Spectra`): The signal</span>
+<span class="sd">            spectrum you want to fit.</span>
+<span class="sd">          shrink (bool, optional): If set to True (default)</span>
+<span class="sd">            :meth:`shrink` method is called on the spectra shrinking</span>
+<span class="sd">            it to the ROI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">shrink</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_spectra</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">signal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Set _signal as Spectra with name </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                           <span class="n">signal</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal_pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_roi_pars</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.set_pre_made_dir"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.set_pre_made_dir">[docs]</a>    <span class="k">def</span> <span class="nf">set_pre_made_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the directory in which pre-made convolved spectra are</span>
+<span class="sd">        stored.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          directory (string): Directory in which pre-made spectra are</span>
+<span class="sd">            located.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Check that it is a valid directory</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Supplied directory </span><span class="si">%s</span><span class="s"> is not a valid path.&quot;</span>
+                             <span class="o">%</span> <span class="n">directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_made_dir</span> <span class="o">=</span> <span class="n">directory</span>
+</div>
+<div class="viewcode-block" id="Fit.shrink_all"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.shrink_all">[docs]</a>    <span class="k">def</span> <span class="nf">shrink_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shrinks all the spectra used in the fit to the roi.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_background</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating_backgrounds</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shrink_spectra</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Fit.shrink_spectra"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit.Fit.shrink_spectra">[docs]</a>    <span class="k">def</span> <span class="nf">shrink_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shrinks the spectra used in the fit to the roi.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra (:class:`echidna.core.spectra.Spectra`): Spectra you want to</span>
+<span class="sd">            shrink to the roi.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shrink</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">:</span>
+            <span class="n">dim_type</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_dim_type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">par_low</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">dim_type</span> <span class="o">+</span> <span class="s">&quot;_low&quot;</span>
+            <span class="n">par_high</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">dim_type</span> <span class="o">+</span> <span class="s">&quot;_high&quot;</span>
+            <span class="n">shrink</span><span class="p">[</span><span class="n">par_low</span><span class="p">],</span> <span class="n">shrink</span><span class="p">[</span><span class="n">par_high</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+        <span class="n">spectra</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">shrink</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

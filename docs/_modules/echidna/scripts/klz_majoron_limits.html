@@ -1,0 +1,455 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.scripts.klz_majoron_limits &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.scripts.klz_majoron_limits</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; KamLAND-Zen (plot-grab) Majoron limits script</span>
+
+<span class="sd">This script:</span>
+
+<span class="sd">  * Sets 90% confidence limit on the Majoron-emitting neutrinoless</span>
+<span class="sd">    double beta decay modes (with spectral indices n = 1, 2, 3 and 7),</span>
+<span class="sd">    using plot-grabbed data from KamLAND-Zen.</span>
+
+<span class="sd">Examples:</span>
+<span class="sd">  To use simply run the script and supply a YAML file detailing the</span>
+<span class="sd">  spectra (data, fixed, floating) to load::</span>
+
+<span class="sd">        $ python zero_nu_limit.py --from_file klz_majoron_limits_config.yaml</span>
+
+<span class="sd">The ``--upper_bound`` and ``--lower_bound`` flags from the command, can</span>
+<span class="sd">be used to return an estimate on the error introduced through the</span>
+<span class="sd">plot-grabbing process.</span>
+
+<span class="sd">.. note:: An example config would be::</span>
+
+<span class="sd">        data:</span>
+<span class="sd">            data/klz/v1.0.0/klz_data.hdf5</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        fixed:</span>
+<span class="sd">            {data/klz/v1.0.0/total_b_g_klz.hdf5: 26647.1077395}</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        floating:</span>
+<span class="sd">            [data/klz/v1.0.0/Xe136_2n2b_fig2.hdf5]</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        signals:</span>
+<span class="sd">            {</span>
+<span class="sd">                klz_n1: data/klz/v1.0.0/Xe136_0n2b_n1_fig2.hdf5,</span>
+<span class="sd">                klz_n2: data/klz/v1.0.0/Xe136_0n2b_n2_fig2.hdf5,</span>
+<span class="sd">                klz_n3: data/klz/v1.0.0/Xe136_0n2b_n3_fig2.hdf5,</span>
+<span class="sd">                klz_n7: data/klz/v1.0.0/Xe136_0n2b_n7_fig2.hdf5}</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        roi:</span>
+<span class="sd">            energy:</span>
+<span class="sd">                !!python/tuple [1.0, 3.0]</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        per_bin:</span>
+<span class="sd">            true</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        store_summary:</span>
+<span class="sd">            true</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.output</span> <span class="kn">as</span> <span class="nn">output</span>
+<span class="kn">import</span> <span class="nn">echidna.utilities</span> <span class="kn">as</span> <span class="nn">utilities</span>
+<span class="kn">import</span> <span class="nn">echidna.fit.test_statistic</span> <span class="kn">as</span> <span class="nn">test_statistic</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">GlobalFitConfig</span>
+<span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
+<span class="kn">import</span> <span class="nn">echidna.fit.fit</span> <span class="kn">as</span> <span class="nn">fit</span>
+<span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">CompatibilityError</span>
+<span class="kn">import</span> <span class="nn">echidna.calc.decay</span> <span class="kn">as</span> <span class="nn">decay</span>
+<span class="kn">import</span> <span class="nn">echidna.calc.constants</span> <span class="kn">as</span> <span class="nn">constants</span>
+<span class="kn">import</span> <span class="nn">echidna.limit.limit</span> <span class="kn">as</span> <span class="nn">limit</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="ReadableDir"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.klz_majoron_limits.ReadableDir">[docs]</a><span class="k">class</span> <span class="nc">ReadableDir</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Custom argparse action</span>
+
+<span class="sd">    Adapted from http://stackoverflow.com/a/11415816</span>
+
+<span class="sd">    Checks that hdf5 files supplied via command line exist and can be read</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">prospective_dirs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">prospective_dirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">prospective_dirs</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Invalid type for arg.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prospective_dir</span> <span class="ow">in</span> <span class="n">prospective_dirs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                    <span class="s">&quot;ReadableDir:{0} is not readable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prospective_dir</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>  <span class="c"># keeps original format</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.klz_majoron_limits.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The limit setting script.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      args (:class:`argparse.Namespace`): Arguments passed via command-</span>
+<span class="sd">        line</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">start_logging</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Overriding default save path!&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s">&quot; --&gt; all output will be saved to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">__default_save_path__</span><span class="p">)</span>
+
+    <span class="n">args_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">from_file</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Configuration name: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">args_config</span><span class="p">))</span>
+
+    <span class="c"># Set plot-grab error if required</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">upper_bound</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+        <span class="n">pixel_err</span> <span class="o">=</span> <span class="mf">0.005</span>
+        <span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">plot_grab_err</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_pixel</span><span class="o">*</span><span class="n">pixel_err</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c"># Set ROI from config</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">roi</span> <span class="o">=</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;roi&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Set ROI&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">roi</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;roi should be a dictionary, &quot;</span>
+                            <span class="s">&quot;not type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">roi</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No ROI found, spectra will not be shrunk&quot;</span><span class="p">)</span>
+
+    <span class="c"># Set per_bin, as required</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;per_bin&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">per_bin</span> <span class="o">=</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;per_bin&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Storing per-bin information: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">per_bin</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No per-bin flag found - setting per_bin to False&quot;</span><span class="p">)</span>
+        <span class="n">per_bin</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c"># Set store_summary, as required</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;store_summary&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">store_summary</span> <span class="o">=</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;store_summary&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Storing Summary information: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">store_summary</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No store_summary flag found - &quot;</span>
+                       <span class="s">&quot;setting store_summary to False&quot;</span><span class="p">)</span>
+        <span class="n">store_summary</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c"># Set test_statistic</span>
+    <span class="c"># This is fixed</span>
+    <span class="n">chi_squared</span> <span class="o">=</span> <span class="n">test_statistic</span><span class="o">.</span><span class="n">BakerCousinsChi</span><span class="p">(</span><span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using test statisitc: BakerCousinsChi&quot;</span><span class="p">)</span>
+
+    <span class="c"># Set fit_config</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fit_config&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">fit_config</span> <span class="o">=</span> <span class="n">GlobalFitConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span>
+            <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fit_config&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c"># Don&#39;t have any global fit parameters here - make blank config</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No fit_config path found - creating blank config&quot;</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+        <span class="c"># The name set here will be the same name given to the GridSearch</span>
+        <span class="c"># created by the fitter, and the Summary class saved to hdf5.</span>
+        <span class="n">fit_config</span> <span class="o">=</span> <span class="n">GlobalFitConfig</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using GlobalFitConfig with the following parameters:&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span>
+
+    <span class="c"># Set data</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using data spectrum </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;No data path found&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s">&quot; --&gt; echidna can use total background as data, &quot;</span>
+            <span class="s">&quot;but a blank data spectrum should still be supplied.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;No data path found&quot;</span><span class="p">)</span>
+
+    <span class="c"># Apply plot-grab errors as appropriate</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+        <span class="n">data_neg_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=-</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">data_neg_errors</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+        <span class="n">data_pos_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">data_pos_errors</span>
+
+    <span class="c"># Set fixed backgrounds</span>
+    <span class="c"># Create fixed_backgrounds dict with Spectra as keys and priors as values</span>
+    <span class="n">fixed_backgrounds</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fixed&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fixed&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s">&quot;Expecting dictionary with paths to fixed backgrounds as keys &quot;</span>
+                <span class="s">&quot;and num_decays for each background as values&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">num_decays</span> <span class="ow">in</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fixed&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using fixed spectrum: </span><span class="si">%s</span><span class="s"> (</span><span class="si">%.4f</span><span class="s"> decays)&quot;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">))</span>
+            <span class="n">spectrum</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+            <span class="c"># Add plot-grab errors as appropriate</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+                <span class="n">spectrum_neg_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=-</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">spectrum_neg_errors</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+                <span class="n">spectrum_pos_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">spectrum_pos_errors</span>
+
+            <span class="n">fixed_backgrounds</span><span class="p">[</span><span class="n">spectrum</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_decays</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No fixed spectra found&quot;</span><span class="p">)</span>
+
+    <span class="c"># Set floating backgrounds</span>
+    <span class="n">floating_backgrounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;floating&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;floating&quot;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Expecting list of paths to floating backgrounds&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;floating&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using floating background: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">spectrum</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+            <span class="c"># Add plot-grab errors as appropriate</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+                <span class="n">spectrum_neg_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=-</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">spectrum_neg_errors</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+                <span class="n">spectrum_pos_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">spectrum_pos_errors</span>
+
+            <span class="n">floating_backgrounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;No floating backgrounds found&quot;</span><span class="p">)</span>
+
+    <span class="c"># Using default minimiser (GridSearch) so let Fit class handle this</span>
+
+    <span class="c"># Create fitter</span>
+    <span class="c"># No convolutions here --&gt; use_pre_made = False</span>
+    <span class="n">fitter</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="n">chi_squared</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                     <span class="n">fixed_backgrounds</span><span class="o">=</span><span class="n">fixed_backgrounds</span><span class="p">,</span>
+                     <span class="n">floating_backgrounds</span><span class="o">=</span><span class="n">floating_backgrounds</span><span class="p">,</span>
+                     <span class="n">per_bin</span><span class="o">=</span><span class="n">per_bin</span><span class="p">,</span> <span class="n">use_pre_made</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created fitter&quot;</span><span class="p">)</span>
+
+    <span class="c"># Fit with no signal</span>
+    <span class="n">stat_zero</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">fit_results</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">get_fit_results</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Calculated stat_zero: </span><span class="si">%.4f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">stat_zero</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Fit summary:&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                                    <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fit_results</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()))</span>
+
+    <span class="c"># Load signals</span>
+    <span class="n">signals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;signals&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">args_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;signals&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using signal spectrum: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+            <span class="c"># Add plot-grab errors as appropriate</span>
+            <span class="c"># For signal we want to swap negative and positive fluctuations</span>
+            <span class="c"># The lower bound on the limit, is when all our backgrounds have</span>
+            <span class="c"># fluctuated down (through plot-grabbing) but the signal has</span>
+            <span class="c"># fluctuated up. Then the reverse is true for the upper bound,</span>
+            <span class="c"># backgrounds are fluctuated up and signal is fluctuated down</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">:</span>
+                <span class="n">signal_pos_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">signal</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">signal</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">signal_pos_errors</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">:</span>
+                <span class="n">signal_neg_errors</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_array_errors</span><span class="p">(</span>
+                    <span class="n">signal</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=-</span><span class="n">plot_grab_err</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">signal</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_data</span> <span class="o">+</span> <span class="n">signal_neg_errors</span>
+
+            <span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;No signal spectra found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Must have at least one signal to set limit&quot;</span><span class="p">)</span>
+
+    <span class="c"># KamLAND-Zen limits</span>
+    <span class="n">klz_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;Xe136_0n2b_n1&quot;</span><span class="p">:</span> <span class="mf">2.6e24</span><span class="p">,</span>
+                  <span class="s">&quot;Xe136_0n2b_n2&quot;</span><span class="p">:</span> <span class="mf">1.0e24</span><span class="p">,</span>
+                  <span class="s">&quot;Xe136_0n2b_n3&quot;</span><span class="p">:</span> <span class="mf">4.5e23</span><span class="p">,</span>
+                  <span class="s">&quot;Xe136_0n2b_n7&quot;</span><span class="p">:</span> <span class="mf">1.1e22</span><span class="p">}</span>
+
+    <span class="c"># KamLAND-Zen detector info</span>
+    <span class="n">klz_detector</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">klz_detector</span>
+
+    <span class="c"># Loop through signals and set limit for each</span>
+    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
+        <span class="c"># Reset GridSearch - with added signal rate parameter</span>
+        <span class="n">fitter</span><span class="o">.</span><span class="n">get_fit_results</span><span class="p">()</span><span class="o">.</span><span class="n">reset_grids</span><span class="p">()</span>
+
+        <span class="c"># Create converter</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">DBIsotope</span><span class="p">(</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;Xe136_atm_weight&quot;</span><span class="p">),</span>
+            <span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;XeEn_atm_weight&quot;</span><span class="p">),</span>
+            <span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;Xe136_abundance&quot;</span><span class="p">),</span>
+            <span class="n">decay</span><span class="o">.</span><span class="n">phase_spaces</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="p">),</span>
+            <span class="n">decay</span><span class="o">.</span><span class="n">matrix_elements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="p">),</span>
+            <span class="n">loading</span><span class="o">=</span><span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;loading&quot;</span><span class="p">),</span>
+            <span class="n">outer_radius</span><span class="o">=</span><span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fv_radius&quot;</span><span class="p">),</span>
+            <span class="n">scint_density</span><span class="o">=</span><span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;scint_density&quot;</span><span class="p">))</span>
+        <span class="n">klz_limit</span> <span class="o">=</span> <span class="n">klz_limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+
+        <span class="c"># Create limit setter</span>
+        <span class="n">limit_setter</span> <span class="o">=</span> <span class="n">limit</span><span class="o">.</span><span class="n">Limit</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">fitter</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="n">per_bin</span><span class="p">)</span>
+
+        <span class="n">limit_scaling</span> <span class="o">=</span> <span class="n">limit_setter</span><span class="o">.</span><span class="n">get_limit</span><span class="p">(</span><span class="n">store_summary</span><span class="o">=</span><span class="n">store_summary</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">limit_scaling</span><span class="p">)</span>
+        <span class="n">half_life</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span>
+            <span class="n">limit_scaling</span><span class="p">,</span>
+            <span class="n">n_atoms</span><span class="o">=</span><span class="n">converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">(</span>
+                <span class="n">target_mass</span><span class="o">=</span><span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;target_mass&quot;</span><span class="p">)),</span>
+            <span class="n">livetime</span><span class="o">=</span><span class="n">klz_detector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;livetime&quot;</span><span class="p">))</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;</span><span class="se">\n</span><span class="s">########################################</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot;Signal: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot;Calculated limit scaling of </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot; --&gt; equivalent to </span><span class="si">%.4f</span><span class="s"> events</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+            <span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">limit_scaling</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;Calculated limit half life of </span><span class="si">%.4g</span><span class="s"> y</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot; --&gt; KamLAND-Zen equivalent limit: </span><span class="si">%.4g</span><span class="s"> y</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot;########################################</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+            <span class="p">(</span><span class="n">half_life</span><span class="p">,</span> <span class="n">klz_limit</span><span class="p">))</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s">&quot;KamLAND-Zen (plot-grab) Majoron limits script&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--from_file&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">ReadableDir</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to config file containing arg values&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span> <span class="s">&quot;--save_path&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">ReadableDir</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Path to save all ouput files to. &quot;</span>
+                        <span class="s">&quot;Overrides default from output module.&quot;</span><span class="p">)</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--lower_bound&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s">&quot;Estimate lower bound on limit &quot;</span>
+                       <span class="s">&quot;due to plot-grab errors&quot;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;--upper_bound&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s">&quot;Estimate upper bound on limit &quot;</span>
+                       <span class="s">&quot;due plot-grab errors&quot;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">__default_save_path__</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">save_path</span>
+
+    <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.limit.limit &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.limit.limit</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.output</span> <span class="kn">as</span> <span class="nn">output</span>
+<span class="kn">from</span> <span class="nn">echidna.errors.custom_errors</span> <span class="kn">import</span> <span class="n">LimitError</span><span class="p">,</span> <span class="n">CompatibilityError</span>
+<span class="kn">from</span> <span class="nn">echidna.limit</span> <span class="kn">import</span> <span class="n">summary</span>
+<span class="kn">from</span> <span class="nn">echidna.output</span> <span class="kn">import</span> <span class="n">store</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+<div class="viewcode-block" id="Limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit.Limit">[docs]</a><span class="k">class</span> <span class="nc">Limit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to handle main limit setting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      signal (:class:`echidna.core.spectra.Spectra`): signal spectrum you wish</span>
+<span class="sd">        to obtain a limit for.</span>
+<span class="sd">      fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a</span>
+<span class="sd">        a limit with.</span>
+<span class="sd">      shrink (bool, optional): If set to True, :meth:`shrink` method is</span>
+<span class="sd">        called on the signal spectrum before limit setting, shrinking to</span>
+<span class="sd">        ROI.</span>
+<span class="sd">      per_bin (bool, optional): If set to True, the values of the test</span>
+<span class="sd">        statistic over spectral dimensions (per bin) will be stored.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum you wish</span>
+<span class="sd">        to obtain a limit for.</span>
+<span class="sd">      _fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a</span>
+<span class="sd">        a limit with.</span>
+<span class="sd">      _stats (:class:`numpy.ndarray`): Data container for test</span>
+<span class="sd">        statistic values.</span>
+<span class="sd">      _per_bin (bool): If set to True, the values of the test statistic</span>
+<span class="sd">        over spectral dimensions (per bin) will be stored.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">fitter</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">per_bin</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">fitter</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="ow">not</span> <span class="n">per_bin</span> <span class="ow">and</span> <span class="n">fitter</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Mismatch in per_bin flags. To use per_bin &quot;</span>
+                             <span class="s">&quot;effectively, both Fitter and Limit instances &quot;</span>
+                             <span class="s">&quot;should have per_bin enabled.</span><span class="se">\n</span><span class="s"> fitter: </span><span class="si">%s</span><span class="se">\n</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;limit: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">,</span> <span class="n">per_bin</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span> <span class="o">=</span> <span class="n">per_bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Limit&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span> <span class="o">=</span> <span class="n">fitter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">check_fit_config</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">set_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="n">shrink</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">signal</span>
+
+<div class="viewcode-block" id="Limit.get_array_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit.Limit.get_array_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_array_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mf">2.71</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the limit from an array containing statisics</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          array (:class:`numpy.array`): The array you want to set a limit for.</span>
+<span class="sd">          limit (float, optional): The value of the test statisic which</span>
+<span class="sd">            corresponds to the limit you want to set. The default is 2.71</span>
+<span class="sd">            which corresponds to 90% CL when using a chi-squared test</span>
+<span class="sd">            statistic.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          CompatibilityError: If the length of the array is not equal to the</span>
+<span class="sd">            number of signal scalings.</span>
+<span class="sd">          LimitError: If all values in the array are below limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The signal scaling at the limit you are setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;rate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CompatibilityError</span><span class="p">(</span><span class="s">&quot;Array length and number of signal &quot;</span>
+                                     <span class="s">&quot;scalings is different.&quot;</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>  <span class="c"># is array</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_entries</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">array</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">counts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">raise</span> <span class="n">LimitError</span><span class="p">(</span><span class="s">&quot;Unable to find limit. Max stat: </span><span class="si">%s</span><span class="s">, Limit: </span><span class="si">%s</span><span class="s">&quot;</span>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">limit</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Limit.get_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit.Limit.get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mf">2.71</span><span class="p">,</span> <span class="n">stat_zero</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">store_summary</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the limit using the signal spectrum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit (float, optional): The value of the test statisic which</span>
+<span class="sd">            corresponds to the limit you want to set. The default is 2.71</span>
+<span class="sd">            which corresponds to 90% CL when using a chi-squared test</span>
+<span class="sd">            statistic.</span>
+<span class="sd">          stat_zero (float or :class:`numpy.ndarray`, optional): Enables</span>
+<span class="sd">            calculation of e.g. delta chi-squared. Include values of</span>
+<span class="sd">            test statistic for zero signal contribution, so these can be</span>
+<span class="sd">            subtracted from the values of the test statistic, with signal.</span>
+<span class="sd">          store_summary (bool, optional):  If True (default) then a hdf5 file</span>
+<span class="sd">            is produced containing best fit values for systematics, total</span>
+<span class="sd">            delta chi-squared and penalty chi_squared of each systematic as a</span>
+<span class="sd">            function of signal scaling. The prior and sigma values used are</span>
+<span class="sd">            also stored. A log file is also produced for the values of best</span>
+<span class="sd">            fits and penalty chi_squared of each systematic,</span>
+<span class="sd">            total chi_squared, number of degrees of freedom and signal scaling</span>
+<span class="sd">            at the requested limit.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If stat_zero is not a numpy array, when per_bin is</span>
+<span class="sd">            enabled.</span>
+<span class="sd">          LimitError: If all values in the array are below limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The signal scaling at the limit you are setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;rate&quot;</span><span class="p">)</span>
+
+        <span class="c"># Create stats array</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stat_zero</span><span class="p">:</span>  <span class="c"># If supplied specific stat_zero use this</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stat_zero</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;For per_bin enabled, &quot;</span>
+                                    <span class="s">&quot;stat_zero should be a numpy array&quot;</span><span class="p">)</span>
+                <span class="n">min_per_bin</span> <span class="o">=</span> <span class="n">stat_zero</span>
+                <span class="n">min_stat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">stat_zero</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">min_per_bin</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">min_stat</span> <span class="o">=</span> <span class="n">stat_zero</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># check zero signal stat in case its not in self._stats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">remove_signal</span><span class="p">()</span>
+            <span class="n">min_stat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+            <span class="n">fit_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_results</span><span class="p">()</span>
+            <span class="n">minimum_position</span> <span class="o">=</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">get_minimum_position</span><span class="p">()</span>
+            <span class="c"># Get per_bin array getting stats at minimum position</span>
+            <span class="n">min_per_bin</span> <span class="o">=</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">get_stat</span><span class="p">(</span><span class="n">minimum_position</span><span class="p">)</span>
+
+        <span class="c"># Create summary</span>
+        <span class="n">scales</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="n">summary_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>  <span class="c"># want full Summary class</span>
+            <span class="n">limit_summary</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">Summary</span><span class="p">(</span>
+                <span class="n">summary_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span>
+                <span class="n">spectra_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span>
+                <span class="n">fit_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># use ReducedSummary</span>
+            <span class="n">limit_summary</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">ReducedSummary</span><span class="p">(</span>
+                <span class="n">summary_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span>
+                <span class="n">spectra_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span>
+                <span class="n">fit_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">())</span>
+        <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_scales</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+
+        <span class="c"># Set prior and sigma values</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">cur_par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+            <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_prior</span><span class="p">(</span><span class="n">cur_par</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(),</span> <span class="n">par_name</span><span class="p">)</span>
+            <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_sigma</span><span class="p">(</span><span class="n">cur_par</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(),</span> <span class="n">par_name</span><span class="p">)</span>
+
+        <span class="c"># Loop through signal scalings</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">scale</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">get_values</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;signal scale: </span><span class="si">%.4g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="mf">0.</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_signal</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">set_signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># want no signal contribution</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">remove_signal</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Removing signal in fit for scale </span><span class="si">%.4g</span><span class="s">&quot;</span> <span class="o">%</span>
+                                     <span class="n">scale</span><span class="p">)</span>
+
+            <span class="n">stat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>  <span class="c"># best-fit test statistic for this scale</span>
+            <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat</span>
+
+            <span class="n">fit_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_results</span><span class="p">()</span>  <span class="c"># get results</span>
+            <span class="n">results_summary</span> <span class="o">=</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">par_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results_summary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_best_fit</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;best_fit&quot;</span><span class="p">),</span>
+                                           <span class="n">i</span><span class="p">,</span> <span class="n">par_name</span><span class="p">)</span>
+                <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_penalty_term</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;penalty_term&quot;</span><span class="p">),</span>
+                                               <span class="n">i</span><span class="p">,</span> <span class="n">par_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="n">minimum_position</span> <span class="o">=</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">get_minimum_position</span><span class="p">()</span>
+                <span class="c"># Get per_bin array getting stats at minimum position</span>
+                <span class="n">min_per_bin</span> <span class="o">=</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">get_raw_stat</span><span class="p">(</span><span class="n">minimum_position</span><span class="p">)</span>
+                <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_stat</span><span class="p">(</span><span class="n">min_per_bin</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># just use single stat</span>
+                <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_stat</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="c"># Find array minimum - use whichever is largest out of array min and</span>
+        <span class="c"># previously calculated min_stat</span>
+        <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">min_stat</span><span class="p">:</span>
+            <span class="n">min_stat</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+                <span class="c"># Now we want the corresponding per_bin values</span>
+                <span class="n">min_per_bin</span> <span class="o">=</span> <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_raw_stat</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">argmin</span><span class="p">())</span>
+
+        <span class="c"># Convert stats to delta - subtracting minimum</span>
+        <span class="n">stats</span> <span class="o">-=</span> <span class="n">min_stat</span>
+        <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_stats</span><span class="p">(</span><span class="n">limit_summary</span><span class="o">.</span><span class="n">get_raw_stats</span><span class="p">()</span> <span class="o">-</span> <span class="n">min_per_bin</span><span class="p">)</span>
+
+        <span class="c"># Also want to know index of minimum</span>
+        <span class="n">min_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># Slice from min_bin upwards</span>
+            <span class="n">log_text</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="n">i_limit</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">min_bin</span><span class="p">:]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_values</span><span class="p">()[</span><span class="n">min_bin</span> <span class="o">+</span> <span class="n">i_limit</span><span class="p">]</span>
+            <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+            <span class="n">limit_summary</span><span class="o">.</span><span class="n">set_limit_idx</span><span class="p">(</span><span class="n">min_bin</span> <span class="o">+</span> <span class="n">i_limit</span><span class="p">)</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">===== Limit Summary =====</span><span class="se">\n</span><span class="s">Limit found at:</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Signal Decays: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">limit</span>
+            <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;--- systematic: </span><span class="si">%s</span><span class="s"> ---</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Best fit: </span><span class="si">%4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_best_fit</span><span class="p">(</span><span class="n">i_limit</span><span class="p">,</span> <span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Prior: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(</span><span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Sigma: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Penalty term: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_penalty_term</span><span class="p">(</span><span class="n">i_limit</span><span class="p">,</span>
+                                                            <span class="n">parameter</span><span class="p">))</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;----------------------------</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Test statistic: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">stats</span><span class="p">[</span><span class="n">i_limit</span><span class="p">]</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;N.D.F.: 1</span><span class="se">\n</span><span class="s">&quot;</span>  <span class="c"># Only fit one dof currently</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">log_text</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">store_summary</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="n">timestamp</span> <span class="o">=</span> <span class="s">&quot;%.f&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>  <span class="c"># seconds since epoch</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">__default_save_path__</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">timestamp</span> <span class="o">+</span> <span class="s">&quot;.hdf5&quot;</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump_summary</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="n">limit_summary</span><span class="p">)</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
+                           <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;data&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fixed_background</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fixed_background</span><span class="p">(),</span>
+                               <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;fixed&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_floating_backgrounds</span><span class="p">():</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                               <span class="n">group_name</span><span class="o">=</span><span class="n">background</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                           <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;signal&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saved summary of </span><span class="si">%s</span><span class="s"> to file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                  <span class="p">(</span><span class="n">limit_summary</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">limit</span>
+
+        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">detail</span><span class="p">:</span>
+            <span class="c"># Slice from min_bin upwards</span>
+            <span class="n">log_text</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="n">i_limit</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">min_bin</span><span class="p">:])</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_values</span><span class="p">()[</span><span class="n">min_bin</span> <span class="o">+</span> <span class="n">i_limit</span><span class="p">]</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">===== Limit Summary =====</span><span class="se">\n</span><span class="s">No limit found:</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Signal Decays (at max stat): </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">limit</span>
+            <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;--- systematic: </span><span class="si">%s</span><span class="s"> ---</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Best fit: </span><span class="si">%4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_best_fit</span><span class="p">(</span><span class="n">i_limit</span><span class="p">,</span> <span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Prior: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_prior</span><span class="p">(</span><span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Sigma: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">(</span><span class="n">parameter</span><span class="p">))</span>
+                <span class="n">log_text</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;Penalty term: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_penalty_term</span><span class="p">(</span><span class="n">i_limit</span><span class="p">,</span>
+                                                            <span class="n">parameter</span><span class="p">))</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;----------------------------</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Test statistic: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">stats</span><span class="p">[</span><span class="n">i_limit</span><span class="p">]</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;N.D.F.: 1</span><span class="se">\n</span><span class="s">&quot;</span>  <span class="c"># Only fit one dof currently</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">log_text</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">store_summary</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="n">timestamp</span> <span class="o">=</span> <span class="s">&quot;%.f&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>  <span class="c"># seconds since epoch</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">__default_save_path__</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">limit_summary</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">timestamp</span> <span class="o">+</span> <span class="s">&quot;.hdf5&quot;</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump_summary</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="n">limit_summary</span><span class="p">)</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
+                           <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;data&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fixed_background</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_fixed_background</span><span class="p">(),</span>
+                               <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;fixed&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">get_floating_backgrounds</span><span class="p">():</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                               <span class="n">group_name</span><span class="o">=</span><span class="n">background</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span>
+                           <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="s">&quot;signal&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saved summary of </span><span class="si">%s</span><span class="s"> to file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                  <span class="p">(</span><span class="n">limit_summary</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">fname</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Recieived: IndexError: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">detail</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">LimitError</span><span class="p">(</span><span class="s">&quot;Unable to find limit. Max stat: </span><span class="si">%s</span><span class="s">, Limit: </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">limit</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Limit.get_statistics"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit.Limit.get_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the test statistics for all signal scalings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Of test statisics for all signal scalings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">signal_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">get_fit_config</span><span class="p">()</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="n">signal_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;rate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="mf">0.</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">set_signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">remove_signal</span><span class="p">()</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Limit.sum_entries"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.limit.Limit.sum_entries">[docs]</a>    <span class="k">def</span> <span class="nf">sum_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sums entries of an array which contains arrays as entries.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          array (:class:`numpy.array`): The array you want to sum the</span>
+<span class="sd">            elements of.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The input array with its entries summed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">array</span><span class="p">:</span>
+            <span class="n">new_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_array</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

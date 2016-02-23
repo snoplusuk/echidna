@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -56,7 +57,9 @@
 <span class="kn">import</span> <span class="nn">rat</span>
 <span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">RAT</span>
 <span class="kn">from</span> <span class="nn">ROOT</span> <span class="kn">import</span> <span class="n">TChain</span>
+
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">SpectraConfig</span>
 <span class="kn">import</span> <span class="nn">echidna.core.dsextract</span> <span class="kn">as</span> <span class="nn">dsextract</span>
 
 
@@ -68,14 +71,14 @@
 <span class="sd">      fill a spectrum.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
-<span class="sd">        being filled.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`): The spectrum which is being</span>
+<span class="sd">        filled.</span>
 <span class="sd">      chain (ROOT.TChain): Chain containing the events.</span>
-<span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
-<span class="sd">        respective extractors.</span>
+<span class="sd">      extractors (dict): Keys are the variable names and the values are</span>
+<span class="sd">       their respective extractors.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      :class:`echidna.core.spectra.Spectra`: The filled spectrum.</span>
+<span class="sd">      :class:`spectra.Spectra`: The filled spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">check_next</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -107,8 +110,8 @@
 <span class="sd">      mc (and/or truth) and reco paremeters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
-<span class="sd">        being filled.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`): The spectrum which is being</span>
+<span class="sd">        filled.</span>
 <span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
 <span class="sd">        for the root file.</span>
 <span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
@@ -155,8 +158,8 @@
 <span class="sd">      reco paremeters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
-<span class="sd">        being filled.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`): The spectrum which is being</span>
+<span class="sd">        filled.</span>
 <span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
 <span class="sd">        for the root file.</span>
 <span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
@@ -191,8 +194,8 @@
 <span class="sd">      mc or truth paremeters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`): The spectrum which is</span>
-<span class="sd">        being filled.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`): The spectrum which is being</span>
+<span class="sd">        filled.</span>
 <span class="sd">      dsreder (ROOT.RAT.DU.DSReader): rat&#39;s data structure reader</span>
 <span class="sd">        for the root file.</span>
 <span class="sd">      extractors (dict): Keys are the variable names and the values are their</span>
@@ -231,12 +234,11 @@
 <span class="sd">      filename (str): A root file to study</span>
 <span class="sd">      spectrum_name (str, optional): A name of future spectrum. Not</span>
 <span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      config (:class:`echidna.core.spectra.SpectraConfig` or string, optional):</span>
-<span class="sd">        The config or directory to the config for the spectrum.</span>
-<span class="sd">        Not requried when appending a spectrum.</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
-<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
-<span class="sd">        new spectrum.</span>
+<span class="sd">      config (:class:`SpectraConfig` or string, optional): The config</span>
+<span class="sd">        or directory to the config for the spectrum. Not requried when</span>
+<span class="sd">        appending a spectrum.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`, optional): Spectrum you wish</span>
+<span class="sd">        to append. Not required when creating a new spectrum.</span>
 <span class="sd">      bipo (bool, optional): Applies the bipo cut if set to True.</span>
 <span class="sd">        Default is False.</span>
 <span class="sd">      kwargs (dict): Passed to and checked by the dsextractor.</span>
@@ -247,10 +249,10 @@
 <span class="sd">      IndexError: Unknown dimension type (not mc, truth or reco).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">      :class:`echidna.core.spectra.Spectra`: The filled spectrum.</span>
+<span class="sd">      :class:`spectra.Spectra`: The filled spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="n">dsreader</span> <span class="o">=</span> <span class="n">RAT</span><span class="o">.</span><span class="n">DU</span><span class="o">.</span><span class="n">DSReader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">spectrum_name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">config</span><span class="p">:</span>
@@ -295,11 +297,10 @@
 <span class="sd">      filename (str): The ntuple to study</span>
 <span class="sd">      spectrum_name (str, optional): A name of future spectrum. Not</span>
 <span class="sd">        required when appending a spectrum.</span>
-<span class="sd">      config (:class:`spectra.SpectraConfig` or string, optional): The config</span>
+<span class="sd">      config (:class:`SpectraConfig` or string, optional): The config</span>
 <span class="sd">        or directory to the config for the spectrum</span>
-<span class="sd">      spectrum (:class:`echidna.core.spectra.Spectra`, optional):</span>
-<span class="sd">        Spectrum you wish to append. Not required when creating a</span>
-<span class="sd">        new spectrum.</span>
+<span class="sd">      spectrum (:class:`spectra.Spectra`, optional): Spectrum you wish</span>
+<span class="sd">        to append. Not required when creating a new spectrum.</span>
 <span class="sd">      bipo (bool, optional): Applies the bipo cut if set to True.</span>
 <span class="sd">        Default is False.</span>
 <span class="sd">      kwargs (dict): Passed to and checked by the dsextractor.</span>
@@ -313,7 +314,7 @@
     <span class="n">chain</span> <span class="o">=</span> <span class="n">TChain</span><span class="p">(</span><span class="s">&quot;output&quot;</span><span class="p">)</span>
     <span class="n">chain</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">spectrum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">spectrum_name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">config</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Name not set when creating new spectra.&quot;</span><span class="p">)</span>
@@ -387,6 +388,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

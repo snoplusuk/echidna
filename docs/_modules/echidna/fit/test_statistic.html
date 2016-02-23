@@ -1,0 +1,600 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.fit.test_statistic &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.fit.test_statistic</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Module to hold classes for various test statistics that can be used</span>
+<span class="sd">for fitting.</span>
+
+<span class="sd">.. note:: All forms of chi-squared are as defined in:</span>
+
+<span class="sd">  * S. Baker &amp; R. D. Cousins, Nucl. Inst. and Meth. in Phys. Res. 211,</span>
+<span class="sd">    437-442 (1984)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+
+
+<div class="viewcode-block" id="TestStatistic"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic">[docs]</a><span class="k">class</span> <span class="nc">TestStatistic</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for the calculation of a test statistic.</span>
+
+<span class="sd">    The calculation of any test statistic is based on one spectrum</span>
+<span class="sd">    containing observed events and one containing expected events. It</span>
+<span class="sd">    is assumed that the observed events form the &quot;data&quot; spectrum and</span>
+<span class="sd">    the expected events form the spectrum predicted by the model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of test statistic.</span>
+<span class="sd">      per_bin (bool): If True (default) the statistic in each bin is</span>
+<span class="sd">        returned as a :class:`numpy.array`. If False one value for the</span>
+<span class="sd">        statistic is returned for the entire array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of test statistic.</span>
+<span class="sd">      _per_bin (bool): If True the statistic in each bin is returned as</span>
+<span class="sd">        a :class:`numpy.array`. If False one value for the statistic is</span>
+<span class="sd">        returned for the entire array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>  <span class="c"># Only required for python 2</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span> <span class="o">=</span> <span class="n">per_bin</span>
+
+<div class="viewcode-block" id="TestStatistic.get_name"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Name of test statistic, stored in :attr:`_name`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="TestStatistic.compute_statistic"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic.compute_statistic">[docs]</a>    <span class="k">def</span> <span class="nf">compute_statistic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Compute the value of the test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.ndarray`): 1D array containing the</span>
+<span class="sd">            observed data points.</span>
+<span class="sd">          expected (:class:`numpy.ndarray`): 1D array containing the</span>
+<span class="sd">            expected values predicted by the model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float or :class:`numpy.array`): Computed value(s) of test</span>
+<span class="sd">            statistic. A float is returned if :attr:`_per_bin` is</span>
+<span class="sd">            False. Otherwise an array of computed test statistic</span>
+<span class="sd">            values, for each bin, is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Incompatible shape </span><span class="si">%s</span><span class="s"> for observed array, &quot;</span>
+                            <span class="s">&quot;expected 1-D array&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">observed</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Incompatible shape </span><span class="si">%s</span><span class="s"> for expected array, &quot;</span>
+                            <span class="s">&quot;expected 1-D array&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s">&quot;Number of bins mismatch, for observed with </span><span class="si">%d</span><span class="s"> bins, &quot;</span>
+                <span class="s">&quot;and expected with </span><span class="si">%d</span><span class="s"> bins&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bin</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stats</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+    <span class="c"># Method adapted from http://codereview.stackexchange.com/a/47115</span></div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="TestStatistic._compute"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic._compute">[docs]</a>    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Calculated test statistic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="TestStatistic._get_stats"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic._get_stats">[docs]</a>    <span class="k">def</span> <span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the test statistic for each bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If arrays are different lengths.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Calculated chi squared for each bin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="TestStatistic.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.TestStatistic.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates a penalty term value, for a given fit parameter,</span>
+<span class="sd">        for this test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          current_value (float): current value of a given fit parameter</span>
+<span class="sd">          prior (float): Prior value of a given fit parameter</span>
+<span class="sd">          sigma (float): Sigma value of a given fit parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Value of the penalty term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+</div></div>
+<div class="viewcode-block" id="BakerCousinsChi"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.BakerCousinsChi">[docs]</a><span class="k">class</span> <span class="nc">BakerCousinsChi</span><span class="p">(</span><span class="n">TestStatistic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test statistic class for calculating the Baker-Cousins</span>
+<span class="sd">    chi-squared (poisson likelihood) test statistic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of test statistic.</span>
+<span class="sd">      per_bin (bool): If True (default) the statistic in each bin is</span>
+<span class="sd">        returned as a :class:`numpy.array`. If False one value for the</span>
+<span class="sd">        statistic is returned for the entire array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of test statistic.</span>
+<span class="sd">      _per_bin (bool): If True the statistic in each bin is returned as</span>
+<span class="sd">        a :class:`numpy.array`. If False one value for the statistic is</span>
+<span class="sd">        returned for the entire array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BakerCousinsChi</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;baker_cousins&quot;</span><span class="p">,</span> <span class="n">per_bin</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the chi-squared.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Calculated Baker-Cousins chi squared</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Convert to arrays, if observed and expected are floats</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">observed</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">expected</span><span class="p">])</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="n">observed</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">exp</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exp</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">exp</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">obs</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">exp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">exp</span> <span class="o">-</span> <span class="n">obs</span> <span class="o">+</span> <span class="n">obs</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs</span> <span class="o">/</span> <span class="n">exp</span><span class="p">)</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">bin_value</span>
+        <span class="k">return</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">total</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets chi squared for each bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If arrays are different lengths.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Calculated chi squared for each bin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">not_per_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="n">observed</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">exp</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">observed</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exp</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">exp</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">obs</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">exp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">exp</span> <span class="o">-</span> <span class="n">obs</span> <span class="o">+</span> <span class="n">obs</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs</span> <span class="o">/</span> <span class="n">exp</span><span class="p">)</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bin_value</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">stats</span><span class="p">),</span> <span class="n">not_per_bin</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Sum of chi squared array and value returned by &quot;</span>
+                             <span class="s">&quot;_compute method for same observed and expected &quot;</span>
+                             <span class="s">&quot;do not match!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stats</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BakerCousinsChi.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.BakerCousinsChi.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates a penalty term value, for a given fit parameter,</span>
+<span class="sd">        for the BakerCousinsChi test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          current_value (float): current value of a given fit parameter</span>
+<span class="sd">          prior (float): Prior value of a given fit parameter</span>
+<span class="sd">          sigma (float): Sigma value of a given fit parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Value of the penalty term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">current_value</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sigma</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+
+</div></div>
+<div class="viewcode-block" id="BakerCousinsLL"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.BakerCousinsLL">[docs]</a><span class="k">class</span> <span class="nc">BakerCousinsLL</span><span class="p">(</span><span class="n">TestStatistic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test statistic class for calculating the Baker-Cousins log likelihood</span>
+<span class="sd">      ratio test statistic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of test statistic.</span>
+<span class="sd">      per_bin (bool): If True (default) the statistic in each bin is</span>
+<span class="sd">        returned as a :class:`numpy.array`. If False one value for the</span>
+<span class="sd">        statistic is returned for the entire array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of test statistic.</span>
+<span class="sd">      _per_bin (bool): If True the statistic in each bin is returned as</span>
+<span class="sd">        a :class:`numpy.array`. If False one value for the statistic is</span>
+<span class="sd">        returned for the entire array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BakerCousinsLL</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;baker_cousins_ll&quot;</span><span class="p">,</span> <span class="n">per_bin</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the log likelihood.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Calculated log-likelihood value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Convert to arrays, if observed and expected are floats</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">observed</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">expected</span><span class="p">])</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span>\
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">bin_value</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets chi squared for each bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Calculated log-likelihood for each bin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span>\
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bin_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BakerCousinsLL.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.BakerCousinsLL.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates a penalty term value, for a given fit parameter,</span>
+<span class="sd">        for the BakerCousinsLL test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          current_value (float): current value of a given fit parameter</span>
+<span class="sd">          prior (float): Prior value of a given fit parameter</span>
+<span class="sd">          sigma (float): Sigma value of a given fit parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Value of the penalty term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">current_value</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+</div></div>
+<div class="viewcode-block" id="Neyman"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.Neyman">[docs]</a><span class="k">class</span> <span class="nc">Neyman</span><span class="p">(</span><span class="n">TestStatistic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test statistic class for calculating the Neyman chi-squared test</span>
+<span class="sd">    statistic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of test statistic.</span>
+<span class="sd">      per_bin (bool): If True (default) the statistic in each bin is</span>
+<span class="sd">        returned as a :class:`numpy.array`. If False one value for the</span>
+<span class="sd">        statistic is returned for the entire array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of test statistic.</span>
+<span class="sd">      _per_bin (bool): If True the statistic in each bin is returned as</span>
+<span class="sd">        a :class:`numpy.array`. If False one value for the statistic is</span>
+<span class="sd">        returned for the entire array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Neyman</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;neyman&quot;</span><span class="p">,</span> <span class="n">per_bin</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates chi squared.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Calculated Neyman&#39;s chi squared</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Convert to arrays, if observed and expected are floats</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">observed</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">expected</span><span class="p">])</span>
+        <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">bin_value</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets chi squared for each bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Calculated chi squared for each bin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bin_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Neyman.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.Neyman.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates a penalty term value, for a given fit parameter,</span>
+<span class="sd">        for the Neyman chi squared test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          current_value (float): current value of a given fit parameter</span>
+<span class="sd">          prior (float): Prior value of a given fit parameter</span>
+<span class="sd">          sigma (float): Sigma value of a given fit parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Value of the penalty term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">current_value</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+</div></div>
+<div class="viewcode-block" id="Pearson"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.Pearson">[docs]</a><span class="k">class</span> <span class="nc">Pearson</span><span class="p">(</span><span class="n">TestStatistic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Test statistic class for calculating the Pearson chi-squared test</span>
+<span class="sd">    statistic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of test statistic.</span>
+<span class="sd">      per_bin (bool): If True (default) the statistic in each bin is</span>
+<span class="sd">        returned as a :class:`numpy.array`. If False one value for the</span>
+<span class="sd">        statistic is returned for the entire array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of test statistic.</span>
+<span class="sd">      _per_bin (bool): If True the statistic in each bin is returned as</span>
+<span class="sd">        a :class:`numpy.array`. If False one value for the statistic is</span>
+<span class="sd">        returned for the entire array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_bin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Pearson</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;pearson&quot;</span><span class="p">,</span> <span class="n">per_bin</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates chi squared.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If arrays are different lengths.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Calculated Pearson&#39;s chi squared</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Convert to arrays, if observed and expected are floats</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">observed</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">expected</span><span class="p">])</span>
+        <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># Limit of zero</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">bin_value</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets chi squared for each bin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          observed (:class:`numpy.array` or float): Number of observed</span>
+<span class="sd">            events</span>
+<span class="sd">          expected (:class:`numpy.array` or float): Number of expected</span>
+<span class="sd">            events</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: Calculated chi squared for each bin</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Chosen due to backgrounds with low rates in ROI</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-34</span>  <span class="c"># In the limit of zero</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">epsilon</span>
+            <span class="k">if</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bin_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Pearson.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.test_statistic.Pearson.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_value</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates a penalty term value, for a given fit parameter,</span>
+<span class="sd">        for the Pearson chi squared test statistic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          current_value (float): current value of a given fit parameter</span>
+<span class="sd">          prior (float): Prior value of a given fit parameter</span>
+<span class="sd">          sigma (float): Sigma value of a given fit parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Value of the penalty term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">current_value</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="up" title="echidna package" href="echidna.html" />
     <link rel="next" title="echidna.util package" href="echidna.util.html" />
@@ -95,67 +96,84 @@ False for Pass/Fail and a message.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-echidna.test.test_chi_squared">
-<span id="echidna-test-test-chi-squared-module"></span><h2>echidna.test.test_chi_squared module<a class="headerlink" href="#module-echidna.test.test_chi_squared" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-echidna.test.test_minimise">
+<span id="echidna-test-test-minimise-module"></span><h2>echidna.test.test_minimise module<a class="headerlink" href="#module-echidna.test.test_minimise" title="Permalink to this headline">¶</a></h2>
+<p>Tests minimise module.</p>
+<p>Tests the <code class="xref py py-meth docutils literal"><span class="pre">GridSearch.fin_minimum()</span></code>, method - an alternative to
+calling <code class="xref py py-meth docutils literal"><span class="pre">numpy.argmin()</span></code> and <code class="xref py py-meth docutils literal"><span class="pre">numpy.nanmin()</span></code>, which are used
+by default.</p>
+<p>The main part of this test is verifying the <code class="xref py py-class docutils literal"><span class="pre">GridSearch</span></code> class,
+particularly the <cite>meth:`GridSearch.minimise</cite> method.</p>
 <dl class="class">
-<dt id="echidna.test.test_chi_squared.TestChiSquared">
-<em class="property">class </em><code class="descclassname">echidna.test.test_chi_squared.</code><code class="descname">TestChiSquared</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_chi_squared.html#TestChiSquared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_chi_squared.TestChiSquared" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.test.test_minimise.TestGridSearch">
+<em class="property">class </em><code class="descclassname">echidna.test.test_minimise.</code><code class="descname">TestGridSearch</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_minimise.html#TestGridSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_minimise.TestGridSearch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for the class <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.minimise.GridSearch</span></code>.</p>
 <dl class="method">
-<dt id="echidna.test.test_chi_squared.TestChiSquared.test_get_chi_squared">
-<code class="descname">test_get_chi_squared</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_chi_squared.html#TestChiSquared.test_get_chi_squared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_chi_squared.TestChiSquared.test_get_chi_squared" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests get chi squared method</p>
-<p>Tests functionality of the ChiSquared class and its principal
-method in different use case scenarios</p>
+<dt id="echidna.test.test_minimise.TestGridSearch._funct">
+<code class="descname">_funct</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_minimise.html#TestGridSearch._funct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_minimise.TestGridSearch._funct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable to pass to minimiser.</p>
+<p>Fits A**2 + B**2 to C**2.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: Test statistic values
+float: Penalty term - in this case always zero.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_chi_squared.TestChiSquared.test_log_likelihood">
-<code class="descname">test_log_likelihood</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_chi_squared.html#TestChiSquared.test_log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_chi_squared.TestChiSquared.test_log_likelihood" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test the log likelihood function</p>
-<p>Tests that the function calculates accurate values</p>
+<dt id="echidna.test.test_minimise.TestGridSearch.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_minimise.html#TestGridSearch.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_minimise.TestGridSearch.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up attributes for tests.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_A</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Test spectrum A - to use in test</li>
+<li><strong>_B</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Test spectrum B - to use in test</li>
+<li><strong>_C</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Test spectrum C - to use in test</li>
+<li><strong>_test_statistic</strong> (<code class="xref py py-class docutils literal"><span class="pre">test_statistic.BakerCousinsChi</span></code>) &#8211; Test
+statistic to use in test</li>
+<li><strong>_default_grid_search</strong> (<code class="xref py py-class docutils literal"><span class="pre">GridSearch</span></code>) &#8211; GridSearch using
+default method (numpy) for minimisation.</li>
+<li><strong>_grid_search</strong> (<code class="xref py py-class docutils literal"><span class="pre">GridSearch</span></code>) &#8211; GridSearch using
+<code class="xref py py-meth docutils literal"><span class="pre">GridSearch.find_minimum()</span></code>, to find minimum.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_chi_squared.TestChiSquared.test_neyman_chi_squared">
-<code class="descname">test_neyman_chi_squared</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_chi_squared.html#TestChiSquared.test_neyman_chi_squared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_chi_squared.TestChiSquared.test_neyman_chi_squared" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test the neyman chi squared function</p>
-<p>Tests that the function calculates accurate values</p>
+<dt id="echidna.test.test_minimise.TestGridSearch.test_find_minimum">
+<code class="descname">test_find_minimum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_minimise.html#TestGridSearch.test_find_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_minimise.TestGridSearch.test_find_minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the <code class="xref py py-meth docutils literal"><span class="pre">GridSearch.find_minimum()</span></code> method.</p>
+<dl class="docutils">
+<dt>Tests:</dt>
+<dd><ul class="first last simple">
+<li>That <code class="xref py py-meth docutils literal"><span class="pre">GridSearch.find_minimum()</span></code> correctly locates the
+minimum.</li>
+<li>That <code class="xref py py-meth docutils literal"><span class="pre">GridSearch.find_minimum()</span></code> exhibits the correct
+behaviour when there are two minima.</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_chi_squared.TestChiSquared.test_pearson_chi_squared">
-<code class="descname">test_pearson_chi_squared</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_chi_squared.html#TestChiSquared.test_pearson_chi_squared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_chi_squared.TestChiSquared.test_pearson_chi_squared" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test the pearson chi squared function</p>
-<p>Tests that the function calculates accurate values</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-echidna.test.test_limit_setting">
-<span id="echidna-test-test-limit-setting-module"></span><h2>echidna.test.test_limit_setting module<a class="headerlink" href="#module-echidna.test.test_limit_setting" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="echidna.test.test_limit_setting.TestLimitSetting">
-<em class="property">class </em><code class="descclassname">echidna.test.test_limit_setting.</code><code class="descname">TestLimitSetting</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_limit_setting.html#TestLimitSetting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_limit_setting.TestLimitSetting" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
-<dl class="method">
-<dt id="echidna.test.test_limit_setting.TestLimitSetting.setUp">
-<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_limit_setting.html#TestLimitSetting.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_limit_setting.TestLimitSetting.setUp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets up the signal and background for limit setting.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">
-<code class="descname">test_get_limit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_limit_setting.html#TestLimitSetting.test_get_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_limit_setting.TestLimitSetting.test_get_limit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test main limit setting code</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="echidna.test.test_limit_setting.TestLimitSetting.test_init">
-<code class="descname">test_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_limit_setting.html#TestLimitSetting.test_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_limit_setting.TestLimitSetting.test_init" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test initialisation of the class.</p>
-<p>Checks that the CompatibilityError is raised when necessary.</p>
+<dt id="echidna.test.test_minimise.TestGridSearch.test_minimise">
+<code class="descname">test_minimise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_minimise.html#TestGridSearch.test_minimise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_minimise.TestGridSearch.test_minimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the <code class="xref py py-meth docutils literal"><span class="pre">GridSearch.minimise()</span></code> method.</p>
+<p>Floats A, B and C (rates) and fits A^2 + B^2 to C^2, using a
+a <code class="xref py py-class docutils literal"><span class="pre">test_statistic.BakerCousinsChi</span></code> test statistic.</p>
+<p>The fitted rates should form the pythagorean triple:
+5^2 + 12^2 = 13^2.</p>
 </dd></dl>
 
 </dd></dl>
@@ -169,13 +187,13 @@ method in different use case scenarios</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
 <dl class="method">
 <dt id="echidna.test.test_scale.TestScale.fit_gaussian_energy">
-<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_scale.html#TestScale.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_scale.TestScale.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_scale.html#TestScale.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_scale.TestScale.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a gausian to the energy of a spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be fitted</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Spectrum to be fitted</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
 integral (float) of the spectrum.</td>
@@ -228,13 +246,13 @@ entries.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
 <dl class="method">
 <dt id="echidna.test.test_shift.TestShift.fit_gaussian_energy">
-<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_shift.html#TestShift.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_shift.TestShift.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a gausian to the energy of a spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be fitted</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Spectrum to be fitted</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
 integral (float) of the spectrum.</td>
@@ -289,13 +307,13 @@ method.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
 <dl class="method">
 <dt id="echidna.test.test_smear.TestSmear.fit_gaussian_energy">
-<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_gaussian_energy</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.fit_gaussian_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.fit_gaussian_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a gausian to the energy of a spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be smeared</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Spectrum to be smeared</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
 integral (float) of the spectrum.</td>
@@ -308,15 +326,34 @@ integral (float) of the spectrum.</td>
 
 <dl class="method">
 <dt id="echidna.test.test_smear.TestSmear.fit_gaussian_radius">
-<code class="descname">fit_gaussian_radius</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.fit_gaussian_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.fit_gaussian_radius" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_gaussian_radius</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.fit_gaussian_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.fit_gaussian_radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a gausian to the radius of a spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#module-echidna.core.spectra" title="echidna.core.spectra"><em>core.spectra</em></a>) &#8211; Spectrum to be smeared</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Spectrum to be smeared</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and integral (float)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.fit_poisson_energy">
+<code class="descname">fit_poisson_energy</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.fit_poisson_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.fit_poisson_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a gausian to the energy of a spectrum.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<code class="xref py py-class docutils literal"><span class="pre">spectra.Spectra</span></code>) &#8211; Spectrum to be smeared</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean (float), sigma (float) and
+integral (float) of the spectrum.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
 </tr>
@@ -343,9 +380,27 @@ integral (float) of the spectrum.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_random_energy_ly">
-<code class="descname">test_random_energy_ly</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_ly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_ly" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests the random gaussian smearing method for energy light yield.</p>
+<dt id="echidna.test.test_smear.TestSmear.poisson">
+<code class="descname">poisson</code><span class="sig-paren">(</span><em>x</em>, <em>*p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.poisson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.poisson" title="Permalink to this definition">¶</a></dt>
+<dd><p>A poisson used for fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>float</em>) &#8211; Position the gaussian is calculated at.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Value of poisson at x for given parameters (float)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.test_random_energy_res_gauss">
+<code class="descname">test_random_energy_res_gauss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_res_gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_res_gauss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the random gaussian smearing method for energy resolution.</p>
 <p>Creates a delta function and fits the mean and sigma after smearing.
 Mean and sigma are checked against set values within 1 %.
 Integral of smeared spectrum is checked against original number of
@@ -353,13 +408,12 @@ entries.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_random_energy_res">
-<code class="descname">test_random_energy_res</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_res" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.test.test_smear.TestSmear.test_random_energy_res_poiss">
+<code class="descname">test_random_energy_res_poiss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_random_energy_res_poiss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_random_energy_res_poiss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tests the random gaussian smearing method for energy resolution.</p>
-<p>Creates a delta function and fits the mean and sigma after smearing.
-Mean and sigma are checked against set values within 1 %.
-Integral of smeared spectrum is checked against original number of
-entries.</p>
+<p>Creates a delta function and fits the mean after smearing.
+Mean is checked against set values within 1 %. Integral of
+smeared spectrum is checked against original number of entries.</p>
 </dd></dl>
 
 <dl class="method">
@@ -373,8 +427,8 @@ entries.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_ly">
-<code class="descname">test_weight_energy_ly</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_ly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_ly" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_ly_gauss">
+<code class="descname">test_weight_energy_ly_gauss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_ly_gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_ly_gauss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tests the weighted gaussian smearing method for energy
 by light yield.</p>
 <p>Creates a delta function and fits the mean and sigma after smearing.
@@ -384,13 +438,32 @@ entries.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_res">
-<code class="descname">test_weight_energy_res</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_res" title="Permalink to this definition">¶</a></dt>
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_ly_poiss">
+<code class="descname">test_weight_energy_ly_poiss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_ly_poiss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_ly_poiss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the weighted poisson smearing method for energy
+by light yield.</p>
+<p>Creates a delta function and fits the mean after smearing.
+Mean is checked against set values within 1 %. Integral of smeared
+spectrum is checked against original number of entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_res_gauss">
+<code class="descname">test_weight_energy_res_gauss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_res_gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_res_gauss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tests the weighted gaussian smearing method for energy resolution.</p>
 <p>Creates a delta function and fits the mean and sigma after smearing.
 Mean and sigma are checked against set values within 1 %.
 Integral of smeared spectrum is checked against original number of
 entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_smear.TestSmear.test_weight_energy_res_poiss">
+<code class="descname">test_weight_energy_res_poiss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_smear.html#TestSmear.test_weight_energy_res_poiss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_smear.TestSmear.test_weight_energy_res_poiss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the weighted poisson smearing method for energy resolution.</p>
+<p>Creates a delta function and fits the mean after smearing.
+Mean is checked against set values within 1 %. Integral of smeared
+spectrum is checked against original number of entries.</p>
 </dd></dl>
 
 <dl class="method">
@@ -463,6 +536,54 @@ entries.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-echidna.test.test_test_statistic">
+<span id="echidna-test-test-test-statistic-module"></span><h2>echidna.test.test_test_statistic module<a class="headerlink" href="#module-echidna.test.test_test_statistic" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic">
+<em class="property">class </em><code class="descclassname">echidna.test.test_test_statistic.</code><code class="descname">TestTestStatistic</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for the <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.TestStatistic</span></code>
+class and it&#8217;s derived classes.</p>
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.test_abstract_base_class">
+<code class="descname">test_abstract_base_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.test_abstract_base_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.test_abstract_base_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the base class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.test_log_likelihood">
+<code class="descname">test_log_likelihood</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.test_log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.test_log_likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.BakerCousinLL</span></code>
+class that calculates the log likelihood ratio.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.test_neyman">
+<code class="descname">test_neyman</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.test_neyman"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.test_neyman" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the Neyman chi-squared class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.test_pearson">
+<code class="descname">test_pearson</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.test_pearson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.test_pearson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the Pearson chi-squared class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.test.test_test_statistic.TestTestStatistic.test_poisson_likelihood_chi">
+<code class="descname">test_poisson_likelihood_chi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/test/test_test_statistic.html#TestTestStatistic.test_poisson_likelihood_chi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.test.test_test_statistic.TestTestStatistic.test_poisson_likelihood_chi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.BakerCousinChi</span></code>
+class that calculates the poisson likelihood chi-squared.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-echidna.test">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-echidna.test" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -479,13 +600,13 @@ entries.</p>
 <li><a class="reference internal" href="#">echidna.test package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-echidna.test.physics_tests">echidna.test.physics_tests module</a></li>
-<li><a class="reference internal" href="#module-echidna.test.test_chi_squared">echidna.test.test_chi_squared module</a></li>
-<li><a class="reference internal" href="#module-echidna.test.test_limit_setting">echidna.test.test_limit_setting module</a></li>
+<li><a class="reference internal" href="#module-echidna.test.test_minimise">echidna.test.test_minimise module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_scale">echidna.test.test_scale module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_shift">echidna.test.test_shift module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_smear">echidna.test.test_smear module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_spectra">echidna.test.test_spectra module</a></li>
 <li><a class="reference internal" href="#module-echidna.test.test_store">echidna.test.test_store module</a></li>
+<li><a class="reference internal" href="#module-echidna.test.test_test_statistic">echidna.test.test_test_statistic module</a></li>
 <li><a class="reference internal" href="#module-echidna.test">Module contents</a></li>
 </ul>
 </li>
@@ -542,6 +663,7 @@ entries.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

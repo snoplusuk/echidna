@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -60,9 +61,11 @@
 
 <span class="sd">.. note:: Similar methods are available in all other smearing classes.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
 <span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
 
 
 <div class="viewcode-block" id="Smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear">[docs]</a><span class="k">class</span> <span class="nc">Smear</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -80,7 +83,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialise the Smear class by seeding the random number generator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_sigma</span> <span class="o">=</span> <span class="mf">5.</span>
 
@@ -96,7 +99,8 @@
 <span class="sd">          Returns:</span>
 <span class="sd">            float: Value of the gaussian at the given position</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span>
+                <span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span>
 </div>
 <div class="viewcode-block" id="Smear.get_bin_mean"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.Smear.get_bin_mean">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="nb">bin</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculates the mean value of a bin.</span>
@@ -156,17 +160,45 @@
     <span class="sd">&quot;&quot;&quot; The class which smears energy. It accepts resolution in terms of light</span>
 <span class="sd">      yield (LY) in units of NHit per MeV.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">      poisson (bool): If True, use poisson smearing.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">      _light_yield (float): The light yield of the scintillator in NHits per</span>
 <span class="sd">        MeV.</span>
+<span class="sd">      _poisson_smear (Bool): True if poisson smearing is to be applied. False</span>
+<span class="sd">        if gaussian smearing is to be applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialises the class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearLY</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_light_yield&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="mf">200.</span>  <span class="c"># NHits/MeV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="o">=</span> <span class="n">poisson</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c"># Nhit/MeV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span> <span class="o">=</span> <span class="p">{}</span>
 
+<div class="viewcode-block" id="EnergySmearLY.calc_poisson_energy"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.calc_poisson_energy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_poisson_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lamb</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the value of a poisson whose integral is equal to</span>
+<span class="sd">        one at position x with a given lambda value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          x : Number of events</span>
+<span class="sd">          lamb : Lambda of the poisson</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of the poisson at the given position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">photons</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">lamb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span>
+        <span class="k">if</span> <span class="n">photons</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">[</span><span class="n">photons</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">photons</span><span class="o">+</span><span class="mi">1</span><span class="p">)))))</span>
+        <span class="n">log_pois</span> <span class="o">=</span> <span class="p">(</span><span class="n">photons</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="o">-</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">[</span><span class="n">photons</span><span class="p">]</span> <span class="o">-</span>
+                    <span class="n">expected</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_pois</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="EnergySmearLY.calc_smear_ly"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.calc_smear_ly">[docs]</a>    <span class="k">def</span> <span class="nf">calc_smear_ly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_ly</span><span class="p">,</span> <span class="n">cur_ly</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculates the value of light yield (ly) required to smear a</span>
 <span class="sd">          data set which has already been smeared with a light yield of cur_ly</span>
@@ -210,7 +242,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Sigma equivalent to sqrt(energy/_light_yield)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">energy</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">energy</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="EnergySmearLY.set_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">light_yield</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sets the light yield</span>
@@ -228,22 +260,23 @@
                              <span class="s">&quot;must be greater than zero.&quot;</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="EnergySmearLY.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
-<span class="sd">          to a window of width specified by the number of sigma depending on</span>
-<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`spectra.Spectra` by</span>
+<span class="sd">        calculating a Gaussian PDF for each bin. Weights are then</span>
+<span class="sd">        applied to a window of width specified by the number of sigma</span>
+<span class="sd">        depending on the value of the Gaussian PDF at the mean of the</span>
+<span class="sd">        bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is energy_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish</span>
+<span class="sd">            to smear. The default is energy_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -284,15 +317,19 @@
                             <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
                                 <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
-                            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
-                                                              <span class="n">mean</span><span class="p">,</span>
-                                                              <span class="n">sigma</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                                <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_poisson_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                                        <span class="n">mean</span><span class="p">))</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                                  <span class="n">mean</span><span class="p">,</span>
+                                                                  <span class="n">sigma</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
                     <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
                                       <span class="o">**</span><span class="n">data</span><span class="p">)</span>
@@ -301,23 +338,23 @@
         <span class="k">return</span> <span class="n">smeared_spec</span>
 </div>
 <div class="viewcode-block" id="EnergySmearLY.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearLY.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
-<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
-<span class="sd">          of points generated is equivalent to the number of entries in that</span>
-<span class="sd">          bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`spectra.Spectra` by</span>
+<span class="sd">        generating a number of random points from  Gaussian PDF generated</span>
+<span class="sd">        from that bins mean value and the corresponding sigma. The number</span>
+<span class="sd">        of points generated is equivalent to the number of entries in that</span>
+<span class="sd">        bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is energy_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to</span>
+<span class="sd">            smear. The default is energy_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -347,7 +384,14 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                        <span class="n">photons</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span>
+                                   <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">mean_e</span> <span class="o">*</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)))</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">photons</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span>
+                                     <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)))</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -362,17 +406,45 @@
 
 <span class="sd">    Inherits from :class:`Smear`</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">      poisson (bool): If True, use poisson smearing.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">      _energy_resolution (float): Energy resolution in :math:`\sqrt{MeV}`</span>
 <span class="sd">        e.g. 0.05 for :math:`\sigma = 5\%/\sqrt{E[MeV]}`.</span>
+<span class="sd">      _poisson_smear (Bool): True if poisson smearing is to be applied.</span>
+<span class="sd">        False if gaussian smearing is to be applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialise the class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EnergySmearRes</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;energy_resolution&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c"># 5%/sqrt(MeV)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="o">=</span> <span class="n">poisson</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c"># Nhit/MeV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span> <span class="o">=</span> <span class="p">{}</span>
 
+<div class="viewcode-block" id="EnergySmearRes.calc_poisson_energy"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.calc_poisson_energy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_poisson_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lamb</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the value of a poisson whose integral is equal to</span>
+<span class="sd">        one at position x with a given lambda value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          x : Number of events</span>
+<span class="sd">          lamb : Lambda of the poisson</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of the poisson at the given position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">photons</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">lamb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span>
+        <span class="k">if</span> <span class="n">photons</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">[</span><span class="n">photons</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">photons</span><span class="o">+</span><span class="mi">1</span><span class="p">)))))</span>
+        <span class="n">log_pois</span> <span class="o">=</span> <span class="p">(</span><span class="n">photons</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="o">-</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log_factorial</span><span class="p">[</span><span class="n">photons</span><span class="p">]</span> <span class="o">-</span>
+                    <span class="n">expected</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_pois</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="EnergySmearRes.calc_smear_resoluton"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.calc_smear_resoluton">[docs]</a>    <span class="k">def</span> <span class="nf">calc_smear_resoluton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_res</span><span class="p">,</span> <span class="n">cur_res</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculates the value of resolution required to smear a data set</span>
 <span class="sd">          which has already been smeared with a resolution of cur_res to</span>
@@ -418,7 +490,7 @@
 <span class="sd">          float: Sigma (MeV) equivalent to energy_resolution *</span>
 <span class="sd">            :math:`\sqrt{energy}`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolution</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="EnergySmearRes.set_resolution"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.set_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">set_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the energy resolution in :math:`\sqrt{MeV}`</span>
@@ -438,22 +510,22 @@
                              <span class="s">&quot;must be between 0. and 1.&quot;</span> <span class="o">%</span> <span class="n">resolution</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="EnergySmearRes.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
-<span class="sd">          to a window of width specified by the number of sigma depending on</span>
-<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`spectra.Spectra` by</span>
+<span class="sd">        calculating a Gaussian PDF for each bin. Weights are then applied</span>
+<span class="sd">        to a window of width specified by the number of sigma depending on</span>
+<span class="sd">        the value of the Gaussian PDF at the mean of the bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is energy_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to</span>
+<span class="sd">            smear. The default is energy_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -494,15 +566,19 @@
                             <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
                                 <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
-                            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
-                                                              <span class="n">mean</span><span class="p">,</span>
-                                                              <span class="n">sigma</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                                <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_poisson_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                                        <span class="n">mean</span><span class="p">))</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span>
+                                                                  <span class="n">mean</span><span class="p">,</span>
+                                                                  <span class="n">sigma</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
                     <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
                                       <span class="o">**</span><span class="n">data</span><span class="p">)</span>
@@ -511,23 +587,23 @@
         <span class="k">return</span> <span class="n">smeared_spec</span>
 </div>
 <div class="viewcode-block" id="EnergySmearRes.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.EnergySmearRes.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;energy_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
-<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
-<span class="sd">          of points generated is equivalent to the number of entries in that</span>
-<span class="sd">          bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the energy of a :class:`spectra.Spectra` by</span>
+<span class="sd">        generating a number of random points from  Gaussian PDF</span>
+<span class="sd">        generated from that bins mean value and the corresponding</span>
+<span class="sd">        sigma. The number of points generated is equivalent to the</span>
+<span class="sd">        number of entries in that bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is energy_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to</span>
+<span class="sd">            smear. The default is energy_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -557,7 +633,14 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poisson_smear</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                        <span class="n">photons</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span>
+                                   <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">mean_e</span> <span class="o">*</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)))</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">photons</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_light_yield</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span>
+                                     <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_e</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)))</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -570,8 +653,13 @@
     <span class="sd">&quot;&quot;&quot; The class which smears the radius. It accepts resolution in terms of</span>
 <span class="sd">      sigma in units of mm.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">      poisson (bool): If True, use poisson smearing.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">      _resolution (float): The position resolution (mm).</span>
+<span class="sd">      _poisson_smear (Bool): True if poisson smearing is to be applied.</span>
+<span class="sd">        False if gaussian smearing is to be applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -639,22 +727,23 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="RadialSmear.weighted_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.weighted_smear">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;radial_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          calculating a Gaussian PDF for each bin. Weights are then applied</span>
-<span class="sd">          to a window of width specified by the number of sigma depending on</span>
-<span class="sd">          the value of the Gaussian PDF at the mean of the bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`spectra.Spectra` by</span>
+<span class="sd">        calculating a Gaussian PDF for each bin. Weights are then</span>
+<span class="sd">        applied to a window of width specified by the number of sigma</span>
+<span class="sd">        depending on the value of the Gaussian PDF at the mean of the</span>
+<span class="sd">        bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is radial_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to</span>
+<span class="sd">            smear. The default is radial_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -695,7 +784,7 @@
                             <span class="n">high</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> \
                                 <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-                        <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                        <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
                             <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_gaussian</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span>
                                                               <span class="n">mean</span><span class="p">,</span>
                                                               <span class="n">sigma</span><span class="p">))</span>
@@ -703,7 +792,7 @@
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">widths</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">radius</span>
                     <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">entries</span><span class="o">*</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">total_weight</span><span class="p">,</span>
                                       <span class="o">**</span><span class="n">data</span><span class="p">)</span>
@@ -712,23 +801,23 @@
         <span class="k">return</span> <span class="n">smeared_spec</span>
 </div>
 <div class="viewcode-block" id="RadialSmear.random_smear"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.smear.RadialSmear.random_smear">[docs]</a>    <span class="k">def</span> <span class="nf">random_smear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="s">&quot;radial_mc&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`echidna.core.spectra.Spectra` by</span>
-<span class="sd">          generating a number of random points from  Gaussian PDF generated</span>
-<span class="sd">          from that bins mean value and the corresponding sigma. The number</span>
-<span class="sd">          of points generated is equivalent to the number of entries in that</span>
-<span class="sd">          bin.</span>
+        <span class="sd">&quot;&quot;&quot; Smears the radius of a :class:`spectra.Spectra` by</span>
+<span class="sd">        generating a number of random points from  Gaussian PDF</span>
+<span class="sd">        generated from that bins mean value and the corresponding</span>
+<span class="sd">        sigma. The number of points generated is equivalent to the</span>
+<span class="sd">        number of entries in that bin.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum you wish</span>
-<span class="sd">            to smear.</span>
-<span class="sd">          par (string, optional): The name of the parameter you wish to smear.</span>
-<span class="sd">            The default is radial_mc.</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum you wish to</span>
+<span class="sd">            smear.</span>
+<span class="sd">          par (string, optional): The name of the parameter you wish to</span>
+<span class="sd">            smear. The default is radial_mc.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          IndexError: If par is not in the specta config.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The smeared spectrum</span>
+<span class="sd">          :class:`spectra.Spectra`: The smeared spectrum</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the spectrum&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
@@ -758,7 +847,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">data</span><span class="p">[</span><span class="n">par_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_r</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_r</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">smeared_spec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -804,6 +893,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

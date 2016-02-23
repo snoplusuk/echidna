@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -66,12 +67,13 @@
 <span class="sd">  To specify a save directory, include a -s flag followed by path to</span>
 <span class="sd">  the required save destination.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
-<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">SpectraConfig</span>
 <span class="kn">import</span> <span class="nn">echidna.core.fill_spectrum</span> <span class="kn">as</span> <span class="nn">fill_spectrum</span>
 <span class="kn">import</span> <span class="nn">echidna.output.plot_root</span> <span class="kn">as</span> <span class="nn">plot</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">csv</span>
 
 
 <div class="viewcode-block" id="read_and_dump_ntuple"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.dump_spectra_ntuple.read_and_dump_ntuple">[docs]</a><span class="k">def</span> <span class="nf">read_and_dump_ntuple</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span> <span class="n">save_path</span><span class="p">,</span> <span class="n">bipo</span><span class="p">,</span>
@@ -92,7 +94,7 @@
 <span class="sd">      outer_radius (float): Used for calculating the radial3 parameter.</span>
 <span class="sd">        See :class:`echidna.core.dsextract` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">outer_radius</span><span class="p">:</span>
         <span class="k">if</span> <span class="s">&quot;radial3&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_dims</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Outer radius passed as an command line arg &quot;</span>
@@ -118,7 +120,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">      Spec (:class:`echidna.core.spectra.Spectra`): Spectrum object</span>
 <span class="sd">        to be plotted</span>
-<span class="sd">      config (:class:`echidna.core.spectra.Config`): configuration object</span>
+<span class="sd">      config (:class:`SpectraConfig`): configuration object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
         <span class="n">plot</span><span class="o">.</span><span class="n">plot_projection</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
@@ -164,13 +166,11 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bipo</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
-
-
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">:</span>      <span class="c"># If passed text file: read, format and dump</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">:</span>  <span class="c"># If passed text file: read, format and dump</span>
         <span class="n">path_list</span><span class="p">,</span> <span class="n">half_life_list</span> <span class="o">=</span> <span class="n">read_tab_delim_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">read_text_file</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">half_life</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path_list</span><span class="p">,</span> <span class="n">half_life_list</span><span class="p">):</span>
             <span class="n">spectrum_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="n">read_and_dump_ntuple</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span>
+            <span class="n">read_and_dump_ntuple</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">spectrum_name</span><span class="p">,</span>
                                  <span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">bipo</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">fv_radius</span><span class="p">,</span>
                                  <span class="n">args</span><span class="o">.</span><span class="n">outer_radius</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c"># If args passed directly, deal with them</span>
@@ -218,6 +218,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

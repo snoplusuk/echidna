@@ -12,18 +12,10 @@ echidna.test.physics_tests module
     :undoc-members:
     :show-inheritance:
 
-echidna.test.test_chi_squared module
-------------------------------------
+echidna.test.test_minimise module
+---------------------------------
 
-.. automodule:: echidna.test.test_chi_squared
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-echidna.test.test_limit_setting module
---------------------------------------
-
-.. automodule:: echidna.test.test_limit_setting
+.. automodule:: echidna.test.test_minimise
     :members:
     :undoc-members:
     :show-inheritance:
@@ -64,6 +56,14 @@ echidna.test.test_store module
 ------------------------------
 
 .. automodule:: echidna.test.test_store
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.test.test_test_statistic module
+---------------------------------------
+
+.. automodule:: echidna.test.test_test_statistic
     :members:
     :undoc-members:
     :show-inheritance:

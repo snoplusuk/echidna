@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -48,11 +49,14 @@
           <div class="body" role="main">
             
   <h1>Source code for echidna.test.test_shift</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">echidna.core.shift</span> <span class="kn">as</span> <span class="nn">shift</span>
-<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
+
+<span class="kn">import</span> <span class="nn">echidna.core.shift</span> <span class="kn">as</span> <span class="nn">shift</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">SpectraConfig</span>
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
 
 
 <div class="viewcode-block" id="TestShift"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift">[docs]</a><span class="k">class</span> <span class="nc">TestShift</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -68,16 +72,16 @@
 <span class="sd">          float: Value of gaussian at x for given parameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">A</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">p</span>
-        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">A</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">A</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="TestShift.fit_gaussian_energy"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.fit_gaussian_energy">[docs]</a>    <span class="k">def</span> <span class="nf">fit_gaussian_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">):</span>
+<div class="viewcode-block" id="TestShift.fit_gaussian_energy"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.fit_gaussian_energy">[docs]</a>    <span class="k">def</span> <span class="nf">fit_gaussian_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Fits a gausian to the energy of a spectrum.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectra (core.spectra): Spectrum to be fitted</span>
+<span class="sd">          spectrum (:class:`spectra.Spectra`): Spectrum to be fitted</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          tuple: mean (float), sigma (float) and</span>
@@ -85,15 +89,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">energy_width</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-        <span class="n">energy_low</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span>
-        <span class="n">spectra_proj</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spectra_proj</span><span class="p">)):</span>
-            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectra_proj</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">energy_width</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+        <span class="n">energy_low</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_low</span><span class="p">()</span>
+        <span class="n">spectrum_proj</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="s">&quot;energy_mc&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spectrum_proj</span><span class="p">)):</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spectrum_proj</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">energy_low</span><span class="o">+</span><span class="n">energy_width</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mf">0.5</span><span class="p">))</span>
         <span class="n">pars0</span> <span class="o">=</span> <span class="p">[</span><span class="mf">300.</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
         <span class="n">coeff</span><span class="p">,</span> <span class="n">var_mtrx</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gaussian</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">pars0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">coeff</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">coeff</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="TestShift.test_shift"><a class="viewcode-back" href="../../../echidna.test.html#echidna.test.test_shift.TestShift.test_shift">[docs]</a>    <span class="k">def</span> <span class="nf">test_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Tests the variable shifting method.</span>
@@ -108,16 +112,16 @@
 <span class="sd">        This is then repeated for a shift of 0.2 MeV to test the shift_by_bin</span>
 <span class="sd">        method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
         <span class="n">test_decays</span> <span class="o">=</span> <span class="mi">10000</span>
-        <span class="n">config_path</span> <span class="o">=</span> <span class="s">&quot;echidna/config/example.yml&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="s">&quot;echidna/config/spectra_example.yml&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
         <span class="n">test_spectra</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">Spectra</span><span class="p">(</span><span class="s">&quot;Test&quot;</span><span class="p">,</span> <span class="n">test_decays</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">mean_energy</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c"># MeV</span>
         <span class="n">sigma_energy</span> <span class="o">=</span> <span class="mf">0.2</span>  <span class="c"># MeV</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">test_decays</span><span class="p">):</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma_energy</span><span class="p">)</span>
-            <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> \
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma_energy</span><span class="p">)</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> \
                 <span class="n">test_spectra</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="s">&quot;radial_mc&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span>
             <span class="n">test_spectra</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">energy_mc</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">radial_mc</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
         <span class="n">mean_energy</span><span class="p">,</span> <span class="n">sigma_energy</span><span class="p">,</span> <span class="n">integral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gaussian_energy</span><span class="p">(</span>
@@ -200,6 +204,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

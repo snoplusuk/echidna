@@ -1,0 +1,994 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.core.parameter &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.core.parameter</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Echidna&#39;s parameter module.</span>
+
+<span class="sd">Contains :class:`Parameter` and all classes that inherit from it.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The base class for creating parameter classes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      type_name (string): The type of the parameter.</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _type (string): The type of the parameter.</span>
+<span class="sd">      _name (str): The name of this parameter</span>
+<span class="sd">      _low (float): The lower limit to float the parameter from</span>
+<span class="sd">      _high (float): The higher limit to float the parameter from</span>
+<span class="sd">      _bins (int): The number of steps between low and high values</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_name</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise config class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">type_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Parameter.get_bins"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_bins">[docs]</a>    <span class="k">def</span> <span class="nf">get_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the number of bins.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Number of bins for this parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span>
+</div>
+<div class="viewcode-block" id="Parameter.get_high"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_high">[docs]</a>    <span class="k">def</span> <span class="nf">get_high</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the high value of the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The high value of the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+</div>
+<div class="viewcode-block" id="Parameter.get_low"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_low">[docs]</a>    <span class="k">def</span> <span class="nf">get_low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the low value of the parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The low value the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+</div>
+<div class="viewcode-block" id="Parameter.get_name"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the name of the parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The name of the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="Parameter.get_type"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the type of the parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The type of the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span>
+</div>
+<div class="viewcode-block" id="Parameter.get_width"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.get_width">[docs]</a>    <span class="k">def</span> <span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the width of the binning for the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Bin width.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Parameter.to_dict"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.Parameter.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Represent the properties of the parameter in a dictionary.</span>
+
+<span class="sd">        .. note:: The attributes :attr:`_name`, :attr:`_type` are never</span>
+<span class="sd">          included in the dictionary. This is because it is expected</span>
+<span class="sd">          that the dictionary returned here will usually be used as</span>
+<span class="sd">          part of a larger dictionary where type and/or parameter_name</span>
+<span class="sd">          are keys.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Representation of the parameter in the form of a</span>
+<span class="sd">            dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameter_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span>
+        <span class="k">return</span> <span class="n">parameter_dict</span>
+
+</div></div>
+<div class="viewcode-block" id="FitParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter">[docs]</a><span class="k">class</span> <span class="nc">FitParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple data container that holds information for a fit parameter</span>
+<span class="sd">    (i.e. a systematic to float).</span>
+
+<span class="sd">    .. warning:: The sigma value can be explicitly set as None. This</span>
+<span class="sd">      is so that you disable a penalty term for a floating parameter.</span>
+<span class="sd">      If a parameter is being floated, but sigma is None, then no</span>
+<span class="sd">      penalty term will be added for the parameter.</span>
+
+<span class="sd">    .. note:: The :class:`FitParameter` class offers three different</span>
+<span class="sd">      scales for constructing the array of values for the parameter.</span>
+
+<span class="sd">    These are:</span>
+
+<span class="sd">      * **linear**: A standard linear scale is the default option. This</span>
+<span class="sd">        creates an array of equally spaced values, starting at</span>
+<span class="sd">        :obj:`low` and ending at :obj:`high` (*includive*). The array</span>
+<span class="sd">        will contain :obj:`bins` values.</span>
+<span class="sd">      * **logscale**: This creates an array of values that are equally</span>
+<span class="sd">        spaced in log-space, but increase exponentially in linear-space,</span>
+<span class="sd">        starting at :obj:`low` and ending at :obj:`high` (*includive*).</span>
+<span class="sd">        The array will contain :obj:`bins` values.</span>
+<span class="sd">      * **logscale_deviation**: This creates an array of values -</span>
+<span class="sd">        centred around the prior - whose absolute deviations from the</span>
+<span class="sd">        prior are equally spaced in log-space, but increase</span>
+<span class="sd">        exponentially in linear-space. The values start at :obj:`low`</span>
+<span class="sd">        and end at :obj:`high` (*includive*). The array will contain</span>
+<span class="sd">        :obj:`bins` values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      prior (float): The prior of the parameter</span>
+<span class="sd">      sigma (float): The sigma of the parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+<span class="sd">      dimension (string, optional): The spectral dimension to which the</span>
+<span class="sd">        fit parameter applies.</span>
+<span class="sd">      values (:class:`numpy.array`, optional): Array of parameter</span>
+<span class="sd">        values to test in fit.</span>
+<span class="sd">      best_fit (float, optional): Best-fit value calculated by fit.</span>
+<span class="sd">      penalty_term (float, optional): Penalty term value at best fit.</span>
+<span class="sd">      logscale (bool, optional): Flag to create an logscale array of</span>
+<span class="sd">        values, rather than a linear array.</span>
+<span class="sd">      base (float, optional): Base to use when creating an logscale</span>
+<span class="sd">        array. Default is base-e.</span>
+<span class="sd">      logscale_deviation (bool, optional): Flag to create a logscale deviation</span>
+<span class="sd">        array of values rather than a linear or logscale array.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _prior (float): The prior of the parameter</span>
+<span class="sd">      _sigma (float): The sigma of the parameter</span>
+<span class="sd">      _dimension (string): The spectral dimension to which the fit</span>
+<span class="sd">        parameter applies.</span>
+<span class="sd">      _values (:class:`numpy.array`): Array of parameter values to</span>
+<span class="sd">        test in fit.</span>
+<span class="sd">      _best_fit (float): Best-fit value calculated by fit.</span>
+<span class="sd">      _penalty_term (float): Penalty term value at best fit.</span>
+<span class="sd">      _logscale (bool): Flag to create an logscale array of values,</span>
+<span class="sd">        rather than a linear array.</span>
+<span class="sd">      _base (float): Base to use when creating an logscale array.</span>
+<span class="sd">        Default is base-e</span>
+<span class="sd">      _logscale_deviation (bool): Flag to create a logscale deviation</span>
+<span class="sd">        array of values rather than a linear or logscale array.</span>
+<span class="sd">      _bin_boundaries (:class:`numpy.array`): Array of bin boundaries</span>
+<span class="sd">        corresponding to :attr:`_values`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">current_value</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">penalty_term</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">best_fit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">logscale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">e</span><span class="p">,</span>
+                 <span class="n">logscale_deviation</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise FitParameter class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FitParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;fit&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;fit_parameter&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s">&quot;Setting sigma explicitly as None for </span><span class="si">%s</span><span class="s"> - &quot;</span>
+                <span class="s">&quot;No penalty term will be added for this parameter!&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dimension</span> <span class="o">=</span> <span class="n">dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="o">=</span> <span class="n">current_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span> <span class="o">=</span> <span class="n">best_fit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_term</span> <span class="o">=</span> <span class="n">penalty_term</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">logscale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Setting logscale </span><span class="si">%s</span><span class="s"> for parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                              <span class="p">(</span><span class="n">logscale</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot; --&gt; with base: </span><span class="si">%.4g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">base</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">logscale_deviation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Recieved logscale_deviation flag that &quot;</span>
+                                     <span class="s">&quot;will not have any effect&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span> <span class="o">=</span> <span class="n">logscale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_base</span> <span class="o">=</span> <span class="n">base</span>
+        <span class="k">elif</span> <span class="n">logscale_deviation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Setting logscale_deviation </span><span class="si">%s</span><span class="s"> for parameter </span><span class="si">%s</span><span class="s">&quot;</span>
+                              <span class="o">%</span> <span class="p">(</span><span class="n">logscale_deviation</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span> <span class="o">=</span> <span class="n">logscale_deviation</span>
+
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="FitParameter.apply_to"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.apply_to">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Applies current value of fit parameter to spectrum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum to which current value</span>
+<span class="sd">            of parameter should be applied.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Spectra`): Modified spectrum.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="FitParameter.check_values"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.check_values">[docs]</a>    <span class="k">def</span> <span class="nf">check_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; For symmetric arrays, check that the prior is in the values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If prior is not in the values array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">values</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">==</span>
+                         <span class="n">numpy</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mi">12</span><span class="p">)):</span>
+            <span class="n">log_text</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Values: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">log_text</span> <span class="o">+=</span> <span class="s">&quot;Prior: </span><span class="si">%.4g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">log_text</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Prior not in values array. &quot;</span>
+                             <span class="s">&quot;This can be achieved with an odd number &quot;</span>
+                             <span class="s">&quot;of bins and symmetric low and high values &quot;</span>
+                             <span class="s">&quot;about the prior.&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_best_fit"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_best_fit">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Best fit value of parameter - stored in</span>
+<span class="sd">            :attr:`_best_fit`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If the value of :attr:`_best_fit` has not yet</span>
+<span class="sd">            been set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Best fit value for parameter&quot;</span> <span class="o">+</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has not been set&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_bin_boundaries"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_bin_boundaries">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns an array of bin boundaries, based on the :attr:`_low`,</span>
+<span class="sd">        :attr:`_high` and :attr:`_bins` parameters, and any flags</span>
+<span class="sd">        (:attr:`_logscale` or :attr:`_logscale_deviation`) that have</span>
+<span class="sd">        been applied.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.array`): Array of bin_baoundaries for the</span>
+<span class="sd">            parameter values stored in :attr:`_values`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># Generate array of values</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c"># set low = -log(high)</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Correcting fit parameter value &lt;= 0.0&quot;</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot; --&gt; changed to </span><span class="si">%.4g</span><span class="s"> (previously </span><span class="si">%.4g</span><span class="s">)&quot;</span> <span class="o">%</span>
+                                  <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">)</span>
+                <span class="n">width</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">low</span><span class="p">))</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+                    <span class="n">low</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span> <span class="n">high</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span>
+                    <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span>
+                <span class="n">width</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">deltas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span>
+                    <span class="n">num</span><span class="o">=</span><span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.</span>
+                <span class="n">neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">deltas</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neg</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bin_boundaries</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_current_value"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_current_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_current_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Current value of fit parameter - stored in</span>
+<span class="sd">            :attr:`_current_value`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value not yet set &quot;</span> <span class="o">+</span>
+                             <span class="s">&quot;for parameter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_dimension"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_dimension">[docs]</a>    <span class="k">def</span> <span class="nf">get_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Dimension to which fit parameter is applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dimension</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_penalty_term"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the value of the penalty term at the best fit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Penalty term value of parameter at best fit - stored in</span>
+<span class="sd">            :attr:`_penalty_term`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If the value of :attr:`_penalty_term` has not yet</span>
+<span class="sd">            been set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_term</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Penalty term value for parameter&quot;</span> <span class="o">+</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">+</span> <span class="s">&quot; has not been set&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_term</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_pre_convolved"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_pre_convolved">[docs]</a>    <span class="k">def</span> <span class="nf">get_pre_convolved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Appends the name and current value of a the :class:`FitParameter`</span>
+
+<span class="sd">        .. note:: Before any calls to this function, the base directory</span>
+<span class="sd">          should be of the form::</span>
+
+<span class="sd">              ../hyphen-separated-dimensions/spectrum_name/</span>
+
+<span class="sd">          and a base filename of the form ``spectrum_name``.</span>
+
+<span class="sd">        .. note:: Each call to this method, then appends the name of</span>
+<span class="sd">          the :class:`FitParamter` to the ``directory`` and its current</span>
+<span class="sd">          value to the ``filename``. So for three :class:`FitParameters``,</span>
+<span class="sd">          after three calls to this method, the directory should be e.g.::</span>
+
+<span class="sd">              ../energy_mc-radial3_mc/Te130_0n2b/syst1/syst2/syst3/</span>
+
+<span class="sd">          and the filename might be::</span>
+
+<span class="sd">              Te130_0n2b_250.0_0.012_1.07</span>
+
+<span class="sd">        .. note:: To construct the full path to pass to</span>
+<span class="sd">          :func:`echidna.output.store.load`, the ``directory`` and</span>
+<span class="sd">          ``filename`` returned by the last call to this method,</span>
+<span class="sd">          should be added together, and appended with ``&quot;.hdf5&quot;``.</span>
+
+<span class="sd">              path = director + filename + &quot;.hdf5&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          directory (string): Current or base directory containing</span>
+<span class="sd">            pre-convolved :class:`Spectra` object</span>
+<span class="sd">          name (string): Current or base name of :class:`Spectra`</span>
+<span class="sd">            object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Directory containing pre-convolved :class:`Spectra`,</span>
+<span class="sd">            appended with name of this :class:`FitParameter`</span>
+<span class="sd">          string: Name of pre-convolved :class:`Spectra`, appended with</span>
+<span class="sd">            current value of this :class:`FitParameter`</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value of fit parameter </span><span class="si">%s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;has not been set&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">directory</span> <span class="o">+=</span> <span class="s">&quot;_</span><span class="si">%s</span><span class="s">/&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+        <span class="n">value_string</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span>
+        <span class="c"># Strip leading/trailling zeros in filename</span>
+        <span class="n">filename</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&quot;_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">value_string</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&quot;0&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">directory</span><span class="p">,</span> <span class="n">filename</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_prior"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_prior">[docs]</a>    <span class="k">def</span> <span class="nf">get_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Prior value of fit parameter - stored in</span>
+<span class="sd">            :attr:`_prior`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_sigma"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Sigma of fit parameter - stored in :attr:`_sigma`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_values"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns an array of values, based on the :attr:`_low`,</span>
+<span class="sd">        :attr:`_high` and :attr:`_bins` parameters, and any flags</span>
+<span class="sd">        (:attr:`_logscale` or :attr:`_logscale_deviation`) that have</span>
+<span class="sd">        been applied.</span>
+
+<span class="sd">        .. warning:: Calling this method with the</span>
+<span class="sd">          :attr:`logscale_deviation` flag enabled, may alter the value</span>
+<span class="sd">          of :attr:`_low`, as this scale must be symmetric about the</span>
+<span class="sd">          prior.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.array`): Array of parameter values to test in</span>
+<span class="sd">            fit. Stored in :attr:`_values`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># Generate array of values</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span><span class="p">:</span>
+                <span class="c"># Create an array that is equally spaced in log-space</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Creating logscale array of values &quot;</span>
+                                  <span class="s">&quot;for parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c"># set low = -log(high)</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Correcting fit parameter value &lt;= 0.0&quot;</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot; --&gt; changed to </span><span class="si">%.4g</span><span class="s"> (previously </span><span class="si">%.4g</span><span class="s">)&quot;</span> <span class="o">%</span>
+                                  <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">,</span>
+                                              <span class="n">base</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span><span class="p">:</span>
+                <span class="c"># Create an array with the prior as the central value, and</span>
+                <span class="c"># then absolute deviations from the prior that are</span>
+                <span class="c"># linearly spaced in log-space.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Creating logscale_deviation array of &quot;</span>
+                                  <span class="s">&quot;values for parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span>
+                <span class="n">deltas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">),</span>
+                                        <span class="n">num</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">deltas</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-</span> <span class="mf">1.</span>
+                <span class="n">neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">deltas</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neg</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">):</span>
+                    <span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s">&quot;Changing value of attr _low, from </span><span class="si">%.4g</span><span class="s"> to </span><span class="si">%.4g</span><span class="s">, &quot;</span>
+                        <span class="s">&quot;for parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># Create a normal linear array</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Creating linear array of values &quot;</span>
+                                  <span class="s">&quot;for parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_value_at"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_value_at">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Access the parameter value at a given index in the array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          index (int): Index of parameter value requested.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Parameter value at the given index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FitParameter.get_value_index"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.get_value_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the index corresponding to a given parameter value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          value (float): Parameter value for which to get corresponding</span>
+<span class="sd">            index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Index of corresponding to the given parameter value.</span>
+
+<span class="sd">        .. warning:: If there are multiple occurences of ``value`` in</span>
+<span class="sd">          the array of parameter values, only the index of the first</span>
+<span class="sd">          occurence will be returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span> <span class="o">==</span> <span class="n">value</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;No value </span><span class="si">%.2g</span><span class="s"> found in parameter values &quot;</span> <span class="o">+</span>
+                             <span class="s">&quot;for parameter </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="FitParameter.set_best_fit"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.set_best_fit">[docs]</a>    <span class="k">def</span> <span class="nf">set_best_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_fit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set value for :attr:`_best_fit`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          best_fit (float): Best fit value for parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span> <span class="o">=</span> <span class="n">best_fit</span>
+</div>
+<div class="viewcode-block" id="FitParameter.set_current_value"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.set_current_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_current_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set value for :attr:`_current_value`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          value (float): Current value of fit parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="o">=</span> <span class="n">value</span>
+</div>
+<div class="viewcode-block" id="FitParameter.set_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.set_par">[docs]</a>    <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a fitting parameter&#39;s values after initialisation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          kwargs (dict): keyword arguments</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Keyword arguments include:</span>
+
+<span class="sd">            * prior (float): Value to set the prior to of the parameter</span>
+<span class="sd">            * sigma (float): Value to set the sigma to of the parameter</span>
+<span class="sd">            * low (float): Value to set the lower limit to of the parameter</span>
+<span class="sd">            * high (float): Value to set the higher limit to of the parameter</span>
+<span class="sd">            * bins (float): Value to set the size of the bins between low and</span>
+<span class="sd">              high of the parameter</span>
+<span class="sd">            * logscale (bool): Flag to create an logscale array of</span>
+<span class="sd">              values, rather than a linear array.</span>
+<span class="sd">            * base (float): Base to use when creating an logscale array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: Unknown variable type passed as a kwarg.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;prior&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;sigma&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Setting sigma explicitly as None - &quot;</span>
+                                         <span class="s">&quot;No penalty term will be applied&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;low&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;high&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;bins&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;logscale&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;base&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;logscale_deviation&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;dimension&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dimension</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Unhandled parameter name / type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="FitParameter.set_penalty_term"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.set_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty_term</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set value for :attr:`_penalty_term`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          penalty_term (float): Value for penalty term of parameter at</span>
+<span class="sd">            best fit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_term</span> <span class="o">=</span> <span class="n">penalty_term</span>
+</div>
+<div class="viewcode-block" id="FitParameter.to_dict"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.FitParameter.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Represent the properties of the parameter in a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          basic (bool, optional): If True, only the basic properties:</span>
+<span class="sd">            prior, sigma, low, high and bins are included.</span>
+
+<span class="sd">        .. note:: The attributes :attr:`_name`, :attr:`_dimension`,</span>
+<span class="sd">          :attr:`_values` and :attr:`_logger` are never included in</span>
+<span class="sd">          the dictionary. For the first two this is because it is</span>
+<span class="sd">          expected that the dictionary returned here will usually be</span>
+<span class="sd">          used as part of a larger dictionary where dimension and</span>
+<span class="sd">          parameter_name are keys. The :attr:`values` attribute is not</span>
+<span class="sd">          included because this is a lrge numpy array. The logger is</span>
+<span class="sd">          not included as this is for internal use only.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Representation of the parameter in the form of a</span>
+<span class="sd">            dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameter_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># Add basic attributes</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;prior&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prior</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;sigma&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;low&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;high&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;logscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;base&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;logscale_deviation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logscale_deviation</span>
+        <span class="k">if</span> <span class="n">basic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parameter_dict</span>
+        <span class="c"># Add non-basic attributes</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;current_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;best_fit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span>
+        <span class="n">parameter_dict</span><span class="p">[</span><span class="s">&quot;penalty_term&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span>
+        <span class="k">return</span> <span class="n">parameter_dict</span>
+
+</div></div>
+<div class="viewcode-block" id="RateParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.RateParameter">[docs]</a><span class="k">class</span> <span class="nc">RateParameter</span><span class="p">(</span><span class="n">FitParameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Data container that holds information for a rate parameter that</span>
+<span class="sd">    is included in the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      prior (float): The prior of the parameter</span>
+<span class="sd">      sigma (float): The sigma of the parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+<span class="sd">      logscale (bool, optional): Flag to create an logscale array of</span>
+<span class="sd">        values, rather than a linear array.</span>
+<span class="sd">      base (float, optional): Base to use when creating an logscale array.</span>
+<span class="sd">      kwargs (dict): Other keyword arguments to pass to</span>
+<span class="sd">        :class:`FitParameter`</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _logscale (bool): Flag to create an logscale array of values,</span>
+<span class="sd">        rather than a linear array.</span>
+<span class="sd">      _base (float): Base to use when creating an logscale array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span>
+                 <span class="n">bins</span><span class="p">,</span> <span class="n">logscale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">e</span><span class="p">,</span>
+                 <span class="n">logscale_deviation</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RateParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">logscale</span><span class="o">=</span><span class="n">logscale</span><span class="p">,</span>
+            <span class="n">base</span><span class="o">=</span><span class="n">base</span><span class="p">,</span> <span class="n">logscale_deviation</span><span class="o">=</span><span class="n">logscale_deviation</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RateParameter.apply_to"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.RateParameter.apply_to">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Scales spectrum to current value of rate parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum which should be scaled</span>
+<span class="sd">            to current rate value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Spectra`): Scaled spectrum.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value of rate parameter </span><span class="si">%s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;has not been set&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">spectrum</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spectrum</span>
+
+</div></div>
+<div class="viewcode-block" id="ResolutionParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ResolutionParameter">[docs]</a><span class="k">class</span> <span class="nc">ResolutionParameter</span><span class="p">(</span><span class="n">FitParameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Data container that holds information for a resulution parameter</span>
+<span class="sd">    that is included in the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      prior (float): The prior of the parameter</span>
+<span class="sd">      sigma (float): The sigma of the parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+<span class="sd">      dimension (string): The spectral dimension to which the</span>
+<span class="sd">        resolution parameter applies.</span>
+<span class="sd">      kwargs (dict): Other keyword arguments to pass to</span>
+<span class="sd">        :class:`FitParameter`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span>
+                 <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ResolutionParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResolutionParameter.apply_to"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ResolutionParameter.apply_to">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Smears spectrum to current value of resolution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum which should be smeared.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Spectra`): Smeared spectrum.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value of rate parameter </span><span class="si">%s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;has not been set&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;ResolutionParameter.apply_to not yet implemented&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ScaleParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ScaleParameter">[docs]</a><span class="k">class</span> <span class="nc">ScaleParameter</span><span class="p">(</span><span class="n">FitParameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Data container that holds information for a scale parameter</span>
+<span class="sd">    that is included in the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      prior (float): The prior of the parameter</span>
+<span class="sd">      sigma (float): The sigma of the parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+<span class="sd">      dimension (string): The spectral dimension to which the scale</span>
+<span class="sd">        parameter applies.</span>
+<span class="sd">      kwargs (dict): Other keyword arguments to pass to</span>
+<span class="sd">        :class:`FitParameter`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span>
+                 <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScaleParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScaleParameter.apply_to"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ScaleParameter.apply_to">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convolves spectrum with current value of scale parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum to be convolved.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Spectra`): Convolved spectrum.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value of scale parameter </span><span class="si">%s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;has not been set&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;ScaleParameter.apply_to not yet implemented&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ShiftParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ShiftParameter">[docs]</a><span class="k">class</span> <span class="nc">ShiftParameter</span><span class="p">(</span><span class="n">FitParameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Data container that holds information for a shift parameter</span>
+<span class="sd">    that is included in the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      prior (float): The prior of the parameter</span>
+<span class="sd">      sigma (float): The sigma of the parameter</span>
+<span class="sd">      low (float): The lower limit to float the parameter from</span>
+<span class="sd">      high (float): The higher limit to float the parameter from</span>
+<span class="sd">      bins (int): The number of steps between low and high values</span>
+<span class="sd">      dimension (string): The spectral dimension to which the shift</span>
+<span class="sd">        parameter applies.</span>
+<span class="sd">      kwargs (dict): Other keyword arguments to pass to</span>
+<span class="sd">        :class:`FitParameter`</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span>
+                 <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ShiftParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ShiftParameter.apply_to"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.ShiftParameter.apply_to">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convolves spectrum with current value of shift parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum to be convolved.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Spectra`): Convolved spectrum.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If :attr:`_current_value` is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Current value of shift parameter </span><span class="si">%s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;has not been set&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;ShiftParameter.apply_to not yet implemented&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SpectraParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter">[docs]</a><span class="k">class</span> <span class="nc">SpectraParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple data container that holds information for a Spectra parameter</span>
+<span class="sd">    (i.e. axis of the spectrum).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (str): The name of this parameter</span>
+<span class="sd">      low (float): The lower limit of this parameter</span>
+<span class="sd">      high (float): The upper limit of this parameter</span>
+<span class="sd">      bins (int): The number of bins for this parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraParameter class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectraParameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;spectra&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span>
+                                               <span class="n">bins</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpectraParameter.get_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the bin index which contains value x.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          x (float): Value you wish to find the bin index for.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: If x is less than parameter lower bounds</span>
+<span class="sd">          ValueError: If x is more than parameter upper bounds</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Bin index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is below parameter lower bound </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is above parameter upper bound </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin_boundaries"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_boundaries">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the bin boundaries for the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Bin boundaries for the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin_centre"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_centre">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates the central value of a given bin</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          bin (int): Bin number.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If bin is not int</span>
+<span class="sd">          ValueError: If bin is less than zero</span>
+<span class="sd">          ValueError: If bin is greater than the number of bins - 1</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: value of bin centre</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">!=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Must pass an integer value&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) must be zero or positive&quot;</span> <span class="o">%</span> <span class="nb">bin</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) is out of range. Max = </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="nb">bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_bin_centres"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_centres">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the bin centres of the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Bin centres of parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.get_unit"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.get_unit">[docs]</a>    <span class="k">def</span> <span class="nf">get_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the default unit for a given parameter</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          Exception: Unknown parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Unit of the parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;energy&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;MeV&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;radial&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;mm&quot;</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.round"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.round">[docs]</a>    <span class="k">def</span> <span class="nf">round</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Round the value to nearest bin edge</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          x (float): Value to round.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The value of the closest bin edge to x</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="SpectraParameter.set_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.parameter.SpectraParameter.set_par">[docs]</a>    <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a limit / binning parameter after initialisation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          kwargs (dict): keyword arguments</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">          Keyword arguments include:</span>
+
+<span class="sd">            * low (float): Value to set the lower limit to of the parameter</span>
+<span class="sd">            * high (float): Value to set the higher limit to of the parameter</span>
+<span class="sd">            * bins (int): Value to set the number of bins of the parameter</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: Unknown variable type passed as a kwarg.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;low&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;high&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;bins&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Unhandled parameter name / type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

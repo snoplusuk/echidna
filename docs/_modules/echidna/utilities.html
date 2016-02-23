@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
@@ -51,7 +52,17 @@
 <span class="sd">&quot;&quot;&quot; Utilities module to include functions that may be useful throughout</span>
 <span class="sd">echidna.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna</span>
+<span class="kn">import</span> <span class="nn">echidna.output</span> <span class="kn">as</span> <span class="nn">output</span>
+
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">colorlog</span> <span class="kn">import</span> <span class="n">ColoredFormatter</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
 
 
 <div class="viewcode-block" id="Timer"><a class="viewcode-back" href="../../echidna.html#echidna.utilities.Timer">[docs]</a><span class="k">class</span> <span class="nc">Timer</span><span class="p">:</span>
@@ -80,7 +91,162 @@
 <span class="sd">          _interval (float): time elapsed during code block</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
+
+</div></div>
+<div class="viewcode-block" id="get_array_errors"><a class="viewcode-back" href="../../echidna.html#echidna.utilities.get_array_errors">[docs]</a><span class="k">def</span> <span class="nf">get_array_errors</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">lin_err</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">frac_err</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">log10</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">log10</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lin_err</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">value</span> <span class="o">+</span> <span class="n">lin_err</span>
+        <span class="k">elif</span> <span class="n">frac_err</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">frac_err</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Must provide either lin_err or frac_err&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">log10</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="n">errors</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">errors</span> <span class="o">-</span> <span class="n">array</span>
+    <span class="n">errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">errors</span>
+
+</div>
+<div class="viewcode-block" id="DispatchingFormatter"><a class="viewcode-back" href="../../echidna.html#echidna.utilities.DispatchingFormatter">[docs]</a><span class="k">class</span> <span class="nc">DispatchingFormatter</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Dispatch formatter for logger and it&#39;s sub logger.</span>
+
+<span class="sd">    Adapted from: https://stackoverflow.com/questions/1741972/</span>
+<span class="sd">      how-to-use-different-formatters-with-the-same-logging-handler-in-python.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      formatters (dict): Dictionary of named formatters</span>
+<span class="sd">      default_formatter (:class:`logging.Formatter`): Default formatter</span>
+<span class="sd">        to use when no named formatter matches.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatters</span><span class="p">,</span> <span class="n">default_formatter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_formatters</span> <span class="o">=</span> <span class="n">formatters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_formatter</span> <span class="o">=</span> <span class="n">default_formatter</span>
+
+<div class="viewcode-block" id="DispatchingFormatter.format"><a class="viewcode-back" href="../../echidna.html#echidna.utilities.DispatchingFormatter.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Format each record accordingly</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          record (:class:`logging.LogRecord`): Log record to format.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`logging.Formatter`: Appropriate Formatter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Search from record&#39;s logger up to it&#39;s parents:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">logger</span><span class="p">:</span>
+            <span class="c"># Check if suitable formatter for current logger exists:</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_formatters</span><span class="p">:</span>
+                <span class="n">formatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_formatters</span><span class="p">[</span><span class="n">logger</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># If no formatter found, just use default:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_formatter</span>
+        <span class="k">return</span> <span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+</div></div>
+<span class="n">logger_set</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># Create flag for logger set/un-set</span>
+
+
+<div class="viewcode-block" id="start_logging"><a class="viewcode-back" href="../../echidna.html#echidna.utilities.start_logging">[docs]</a><span class="k">def</span> <span class="nf">start_logging</span><span class="p">(</span><span class="n">short_name</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">script_name</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Function to initialise logging output.</span>
+
+<span class="sd">    Adapted from:</span>
+<span class="sd">    https://docs.python.org/2/howto/logging-cookbook.html#</span>
+<span class="sd">    logging-to-multiple-destinations</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      short_name (bool, optional): If true the log name is always</span>
+<span class="sd">        &#39;echidna.log&#39;</span>
+<span class="sd">      script_name (string, optional): Name of script to add to log</span>
+<span class="sd">        filename</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      :class:`logging.Logger`: Logger to use in script.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">logger_set</span>  <span class="c"># use module-level variable</span>
+
+    <span class="c"># Get current module</span>
+    <span class="n">current_module</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getouterframes</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">current_module</span> <span class="o">=</span> <span class="n">current_module</span><span class="p">[</span>
+        <span class="n">current_module</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">current_module</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">logger_set</span><span class="p">:</span>  <span class="c"># Don&#39;t need to create</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting script: </span><span class="si">%s</span><span class="s">.py&quot;</span> <span class="o">%</span> <span class="n">current_module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">current_module</span><span class="p">)</span>
+
+    <span class="c"># Set up logging to file</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">__default_save_path__</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;echidna&quot;</span>
+    <span class="k">if</span> <span class="n">script_name</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">+=</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">current_module</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">short_name</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">+=</span> <span class="s">&quot;.</span><span class="si">%s</span><span class="s">.</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+    <span class="n">filename</span> <span class="o">+=</span> <span class="s">&quot;.log&quot;</span>
+
+    <span class="c"># Format filename.py:XX [function_name()] LEVEL: message</span>
+    <span class="n">FORMAT</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%(filename)s</span><span class="s">:</span><span class="si">%(lineno)s</span><span class="s"> [</span><span class="si">%(funcName)s</span><span class="s">()] &quot;</span>
+              <span class="s">&quot;</span><span class="si">%(levelname)-8s</span><span class="s">: </span><span class="si">%(message)s</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>  <span class="c"># Include all logging levels in file</span>
+        <span class="n">format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="n">path</span><span class="o">+</span><span class="n">filename</span><span class="p">,</span>
+        <span class="n">filemode</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c"># Define Handler which writes INFO messages or higher to the sys.stdout</span>
+    <span class="n">console</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="c"># Set a format which is simpler for console use - and in COLOUR!</span>
+    <span class="n">FORMAT</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%(reset)s%(log_color)s%(name)-20s</span><span class="s">: </span><span class="si">%(message)s</span><span class="s">&quot;</span>
+    <span class="n">color_formatter</span> <span class="o">=</span> <span class="n">ColoredFormatter</span><span class="p">(</span>
+        <span class="n">FORMAT</span><span class="p">,</span>
+        <span class="n">log_colors</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">&quot;DEBUG&quot;</span><span class="p">:</span> <span class="s">&quot;cyan&quot;</span><span class="p">,</span>
+            <span class="s">&quot;INFO&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">,</span>
+            <span class="s">&quot;WARNING&quot;</span><span class="p">:</span> <span class="s">&quot;yellow&quot;</span><span class="p">,</span>
+            <span class="s">&quot;ERROR&quot;</span><span class="p">:</span> <span class="s">&quot;red&quot;</span><span class="p">,</span>
+            <span class="s">&quot;CRITICAL&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_red&quot;</span><span class="p">})</span>
+    <span class="n">extra_formatter</span> <span class="o">=</span> <span class="n">ColoredFormatter</span><span class="p">(</span>
+        <span class="s">&quot;</span><span class="si">%(reset)s%(log_color)s%(message)s</span><span class="s">&quot;</span><span class="p">,</span>
+        <span class="n">log_colors</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">&quot;DEBUG&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">,</span>
+            <span class="s">&quot;INFO&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">,</span>
+            <span class="s">&quot;WARNING&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">,</span>
+            <span class="s">&quot;ERROR&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">,</span>
+            <span class="s">&quot;CRITICAL&quot;</span><span class="p">:</span> <span class="s">&quot;white,bg_black&quot;</span><span class="p">})</span>
+
+    <span class="c"># tell handler when to use each formatter</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">DispatchingFormatter</span><span class="p">(</span>
+        <span class="n">formatters</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;extra&quot;</span><span class="p">:</span> <span class="n">extra_formatter</span><span class="p">},</span>
+        <span class="n">default_formatter</span><span class="o">=</span><span class="n">color_formatter</span><span class="p">))</span>
+    <span class="c"># add the handler to the root logger</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console</span><span class="p">)</span>
+
+    <span class="c"># Start logging</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;echidna-v</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">echidna</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saving logfile to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">path</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting script: </span><span class="si">%s</span><span class="s">.py&quot;</span> <span class="o">%</span> <span class="n">current_module</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;extra&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Use the &#39;extra&#39; logger at any time &quot;</span>
+                                    <span class="s">&quot;to add extra information.&quot;</span><span class="p">)</span>
+
+    <span class="c"># Mark logger as set</span>
+    <span class="n">logger_set</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">current_module</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
@@ -120,6 +286,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

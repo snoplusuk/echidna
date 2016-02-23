@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="index.html" />
     <link rel="next" title="echidna.calc package" href="echidna.calc.html" />
     <link rel="prev" title="Welcome to echidna’s documentation!" href="index.html" /> 
@@ -68,8 +69,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="echidna.core.html">echidna.core package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.config">echidna.core.config module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.dsextract">echidna.core.dsextract module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.parameter">echidna.core.parameter module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.scale">echidna.core.scale module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.shift">echidna.core.shift module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.core.html#module-echidna.core.smear">echidna.core.smear module</a></li>
@@ -83,11 +86,19 @@
 <li class="toctree-l2"><a class="reference internal" href="echidna.errors.html#module-echidna.errors">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="echidna.fit.html">echidna.fit package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.fit">echidna.fit.fit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.fit_results">echidna.fit.fit_results module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.minimise">echidna.fit.minimise module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.test_statistic">echidna.fit.test_statistic module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.fit.html#module-echidna.fit">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="echidna.limit.html">echidna.limit package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.chi_squared">echidna.limit.chi_squared module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit_config">echidna.limit.limit_config module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit_setting">echidna.limit.limit_setting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit">echidna.limit.limit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.summary">echidna.limit.summary module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.limit.html#module-echidna.limit">Module contents</a></li>
 </ul>
 </li>
@@ -113,16 +124,16 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.Xe136_majoron_limit">echidna.scripts.Xe136_majoron_limit module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.combine_hdf5">echidna.scripts.combine_hdf5 module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_scaled">echidna.scripts.dump_scaled module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_shifted">echidna.scripts.dump_shifted module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_smeared">echidna.scripts.dump_smeared module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_spectra_ntuple">echidna.scripts.dump_spectra_ntuple module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_spectra_root">echidna.scripts.dump_spectra_root module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.klz_majoron_limits">echidna.scripts.klz_majoron_limits module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.multi_ntuple_spectrum">echidna.scripts.multi_ntuple_spectrum module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.plot_summary">echidna.scripts.plot_summary module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.rebin">echidna.scripts.rebin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.snoplus_majoron_limit">echidna.scripts.snoplus_majoron_limit module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.zero_nu_limit">echidna.scripts.zero_nu_limit module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts">Module contents</a></li>
 </ul>
@@ -130,19 +141,20 @@
 <li class="toctree-l1"><a class="reference internal" href="echidna.test.html">echidna.test package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.physics_tests">echidna.test.physics_tests module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_chi_squared">echidna.test.test_chi_squared module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_limit_setting">echidna.test.test_limit_setting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_minimise">echidna.test.test_minimise module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_scale">echidna.test.test_scale module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_shift">echidna.test.test_shift module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_smear">echidna.test.test_smear module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_spectra">echidna.test.test_spectra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_store">echidna.test.test_store module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_test_statistic">echidna.test.test_test_statistic module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.test.html#module-echidna.test">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="echidna.util.html">echidna.util package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="echidna.util.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.util.html#module-echidna.util.root_help">echidna.util.root_help module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="echidna.util.html#module-echidna.util.strings">echidna.util.strings module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="echidna.util.html#module-echidna.util">Module contents</a></li>
 </ul>
 </li>
@@ -156,6 +168,45 @@
 <span id="echidna-utilities-module"></span><h2>echidna.utilities module<a class="headerlink" href="#module-echidna.utilities" title="Permalink to this headline">¶</a></h2>
 <p>Utilities module to include functions that may be useful throughout
 echidna.</p>
+<dl class="class">
+<dt id="echidna.utilities.DispatchingFormatter">
+<em class="property">class </em><code class="descclassname">echidna.utilities.</code><code class="descname">DispatchingFormatter</code><span class="sig-paren">(</span><em>formatters</em>, <em>default_formatter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/utilities.html#DispatchingFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.utilities.DispatchingFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatch formatter for logger and it&#8217;s sub logger.</p>
+<dl class="docutils">
+<dt>Adapted from: <a class="reference external" href="https://stackoverflow.com/questions/1741972/">https://stackoverflow.com/questions/1741972/</a></dt>
+<dd>how-to-use-different-formatters-with-the-same-logging-handler-in-python.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>formatters</strong> (<em>dict</em>) &#8211; Dictionary of named formatters</li>
+<li><strong>default_formatter</strong> (<code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code>) &#8211; Default formatter
+to use when no named formatter matches.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.utilities.DispatchingFormatter.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/utilities.html#DispatchingFormatter.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.utilities.DispatchingFormatter.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format each record accordingly</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>record</strong> (<code class="xref py py-class docutils literal"><span class="pre">logging.LogRecord</span></code>) &#8211; Log record to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code>: Appropriate Formatter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="echidna.utilities.Timer">
 <em class="property">class </em><code class="descclassname">echidna.utilities.</code><code class="descname">Timer</code><a class="reference internal" href="_modules/echidna/utilities.html#Timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.utilities.Timer" title="Permalink to this definition">¶</a></dt>
@@ -198,6 +249,37 @@ echidna.</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="echidna.utilities.get_array_errors">
+<code class="descclassname">echidna.utilities.</code><code class="descname">get_array_errors</code><span class="sig-paren">(</span><em>array</em>, <em>lin_err=0.01</em>, <em>frac_err=None</em>, <em>log=False</em>, <em>log10=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/utilities.html#get_array_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.utilities.get_array_errors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="echidna.utilities.start_logging">
+<code class="descclassname">echidna.utilities.</code><code class="descname">start_logging</code><span class="sig-paren">(</span><em>short_name=False</em>, <em>script_name=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/utilities.html#start_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.utilities.start_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to initialise logging output.</p>
+<p>Adapted from:
+<a class="reference external" href="https://docs.python.org/2/howto/logging-cookbook">https://docs.python.org/2/howto/logging-cookbook</a>.html#
+logging-to-multiple-destinations</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>short_name</strong> (<em>bool, optional</em>) &#8211; If true the log name is always
+&#8216;echidna.log&#8217;</li>
+<li><strong>script_name</strong> (<em>string, optional</em>) &#8211; Name of script to add to log
+filename</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">logging.Logger</span></code>: Logger to use in script.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -273,6 +355,7 @@ echidna.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

@@ -9,6 +9,7 @@ Subpackages
     echidna.calc
     echidna.core
     echidna.errors
+    echidna.fit
     echidna.limit
     echidna.output
     echidna.scripts

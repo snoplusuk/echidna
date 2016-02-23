@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -68,12 +69,13 @@
 <span class="sd">  To specify a save directory, include a -s flag followed by path to</span>
 <span class="sd">  the required save destination.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">echidna.output.store</span> <span class="kn">as</span> <span class="nn">store</span>
-<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">SpectraConfig</span>
 <span class="kn">import</span> <span class="nn">echidna.core.fill_spectrum</span> <span class="kn">as</span> <span class="nn">fill_spectrum</span>
 <span class="kn">import</span> <span class="nn">echidna.output.plot_root</span> <span class="kn">as</span> <span class="nn">plot</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
 
 
 <div class="viewcode-block" id="create_combined_ntuple_spectrum"><a class="viewcode-back" href="../../../echidna.scripts.html#echidna.scripts.multi_ntuple_spectrum.create_combined_ntuple_spectrum">[docs]</a><span class="k">def</span> <span class="nf">create_combined_ntuple_spectrum</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">bkgnd_name</span><span class="p">,</span>
@@ -83,16 +85,19 @@
 <span class="sd">    hdf5 file.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      data_path (str): Path to directory containing the ntuples to be evaluated</span>
+<span class="sd">      data_path (str): Path to directory containing the ntuples to be</span>
+<span class="sd">        evaluated</span>
 <span class="sd">      config_path (str): Path to config file</span>
 <span class="sd">      bkgnd_name (str): Name of the background being processed</span>
-<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be dumped</span>
+<span class="sd">      save_path (str): Path to a directory where the hdf5 files will be</span>
+<span class="sd">        dumped</span>
 <span class="sd">      bipo (bool): Apply Bi*Po* cuts when extracting data if True.</span>
-<span class="sd">      fv_radius (float): Cut events outside the fiducial volume of this radius.</span>
-<span class="sd">      outer_radius (float): Used for calculating the radial3 parameter. </span>
-<span class="sd">        See :class:`echidna.core.dsextract` for details.</span>
+<span class="sd">      fv_radius (float): Cut events outside the fiducial volume of this</span>
+<span class="sd">        radius.</span>
+<span class="sd">      outer_radius (float): Used for calculating the radial3 parameter.</span>
+<span class="sd">        See :mod:`echidna.core.dsextract` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">spectra</span><span class="o">.</span><span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">SpectraConfig</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
     <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">outer_radius</span><span class="p">:</span>
         <span class="k">if</span> <span class="s">&quot;radial3&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_dims</span><span class="p">():</span>
@@ -216,6 +221,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

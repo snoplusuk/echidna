@@ -1,0 +1,626 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.fit.fit_results &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.fit.fit_results</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Fit results module, containing ``FitResults`` class.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+
+<div class="viewcode-block" id="FitResults"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults">[docs]</a><span class="k">class</span> <span class="nc">FitResults</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for handling results of the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): The</span>
+<span class="sd">        configuration for fit. This should be a direct copy of the</span>
+<span class="sd">        ``FitConfig`` in :class:`echidna.limit.fit.Fit`.</span>
+<span class="sd">      spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The</span>
+<span class="sd">        for spectra configuration. The recommended spectrum config to</span>
+<span class="sd">        include here is the one from the data spectrum, to which you</span>
+<span class="sd">        are fitting.</span>
+<span class="sd">      name (str, optional): Name of this :class:`FitResults` class</span>
+<span class="sd">        instance. If no name is supplied, name from fit_results will be</span>
+<span class="sd">        taken and appended with &quot;_results&quot;.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): The</span>
+<span class="sd">        configuration for fit. This should be a direct copy of the</span>
+<span class="sd">        ``FitConfig`` in :class:`echidna.limit.fit.Fit`.</span>
+<span class="sd">      _spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The</span>
+<span class="sd">        for spectra configuration. The recommended spectrum config to</span>
+<span class="sd">        include here is the one from the data spectrum, to which you</span>
+<span class="sd">        are fitting.</span>
+<span class="sd">      _name (string): Name of this :class:`FitResults` class instance.</span>
+<span class="sd">      _stats (:class:`numpy.ndarray`): Array of values of the test</span>
+<span class="sd">        statistic calculated during the fit.</span>
+<span class="sd">      _penalty_terms (:class:`numpy.ndarray`): Array of values of the</span>
+<span class="sd">        penalty terms calculated during the fit.</span>
+<span class="sd">      _minimum_value (float): Minimum value of the array returned by</span>
+<span class="sd">        :meth:`get_fit_data`.</span>
+<span class="sd">      _minimum_position (tuple): Position of the test statistic minimum</span>
+<span class="sd">        value. The tuple contains the indices along each fit parameter</span>
+<span class="sd">        (dimension), acting as coordinates of the position of the</span>
+<span class="sd">        minimum.</span>
+<span class="sd">      _resets (int): Number of times the grid has been reset.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; fit_results = FitResults(fitter.get_config(), data.get_config())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span> <span class="o">=</span> <span class="n">spectra_config</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">fit_config</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;_results&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">stats_shape</span> <span class="o">=</span> <span class="n">fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span> <span class="o">+</span> <span class="n">spectra_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">stats_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_value</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_position</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="FitResults.get_fit_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`echidna.limit.fit.FitConfig`): Configuration of fit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_minimum_position"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_minimum_position">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          (float): Position of the minimum value in the array returned</span>
+<span class="sd">            by :meth:`get_fit_data`, stored in :attr:`_minimum_position`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_position</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_minimum_value"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_minimum_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimum_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          (float): Minimum value of the array returned by</span>
+<span class="sd">            :meth:`get_fit_data`, stored in :attr:`_minimum_value`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_value</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_name"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Name of fit results object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_resets"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_resets">[docs]</a>    <span class="k">def</span> <span class="nf">get_resets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Number of times the grid has been reset (:attr:`_resets`).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the array of penalty terms.</span>
+
+<span class="sd">        .. note:: Unlike the :class:`echidna.fit.summary.Summary` class</span>
+<span class="sd">          individual penalty contributions from each fit parameter are</span>
+<span class="sd">          not stored here, only the total penalty term value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          indices (tuple): The index along each fit parameter dimension</span>
+<span class="sd">            specifying the coordinates from which to retrieve the total</span>
+<span class="sd">            penalty term value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.</span>
+<span class="sd">            Values of the penalty term calculated during the fit.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">          IndexError: If the number of indices supplied does not match</span>
+<span class="sd">            the dimensions of the fit</span>
+<span class="sd">          IndexError: If the indices supplied are out of bounds for</span>
+<span class="sd">            the fit dimensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;dimension mismatch, indices supplied contian &quot;</span>
+                             <span class="s">&quot;</span><span class="si">%d</span><span class="s"> dimensions but fit contains </span><span class="si">%d</span><span class="s"> dimensions &quot;</span>
+                             <span class="s">&quot;(parameters)&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="s">&quot;indices </span><span class="si">%s</span><span class="s"> out of bounds for fit with dimensions </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_penalty_terms"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_penalty_terms">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the array of penalty terms.</span>
+
+<span class="sd">        .. note:: Unlike the :class:`echidna.fit.summary.Summary` class</span>
+<span class="sd">          individual penalty contributions from each fit parameter are</span>
+<span class="sd">          not stored here, only the total penalty term value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.</span>
+<span class="sd">            Values of the penalty term calculated during the fit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_raw_stat"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_raw_stat">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the raw test statistic(s) from array at the given indices.</span>
+
+<span class="sd">        .. warning:: This has no penalty term contributions added.</span>
+
+<span class="sd">        .. note:: Unlike :meth:`get_stat`, here you can specify indices</span>
+<span class="sd">          for any number of fit parameters dimensions, so to get a</span>
+<span class="sd">          slice of the raw array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          indices (tuple): Index along each fit parameter (dimension)</span>
+<span class="sd">            specifiying the coordinates in the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float or :class:`numpy.ndarray`): The raw test statistic(s)</span>
+<span class="sd">            at the given indices.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_raw_stats"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_raw_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the raw test statistics array.</span>
+
+<span class="sd">        .. warning:: This has no penalty term contributions added.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The raw test statistics values at each</span>
+<span class="sd">            combination of fit parameter values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_stat"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_stat">[docs]</a>    <span class="k">def</span> <span class="nf">get_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Combines the test-statistic array (collapsed to the parameter</span>
+<span class="sd">        values grid - i.e. summed over spectral bins) with the penalty</span>
+<span class="sd">        term grid of the same shape, for a single bin, specified by</span>
+<span class="sd">        indices.</span>
+
+<span class="sd">        .. warning:: Penalty term contributions **are** included here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          indices (tuple): The index along each fit parameter dimension</span>
+<span class="sd">            specifying the coordinates from which to retrieve the test</span>
+<span class="sd">            statistic value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float): Combination of the value of the test statistic</span>
+<span class="sd">            calculated during the fit and the penalty term value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">          IndexError: If the number of indices supplied does not match</span>
+<span class="sd">            the dimensions of the fit</span>
+<span class="sd">          IndexError: If the indices supplied are out of bounds for</span>
+<span class="sd">            the fit dimensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;dimension mismatch, indices supplied contian &quot;</span>
+                             <span class="s">&quot;</span><span class="si">%d</span><span class="s"> dimensions but fit contains </span><span class="si">%d</span><span class="s"> dimensions &quot;</span>
+                             <span class="s">&quot;(parameters)&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="s">&quot;indices </span><span class="si">%s</span><span class="s"> out of bounds for fit with dimensions </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
+
+        <span class="c"># Collapse by summing over spectral dimensions</span>
+        <span class="k">for</span> <span class="n">dim_size</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="n">combined</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># always last axis</span>
+
+        <span class="c"># Add penalties</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">combined</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">combined</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_stats"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Combines the test-statistic array (collapsed to the parameter</span>
+<span class="sd">        values grid - i.e. summed over spectral bins) with the penalty</span>
+<span class="sd">        term grid of the same shape.</span>
+
+<span class="sd">        .. warning:: Penalty term contributions **are** included here.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.ndarray`): Array combining the values of the</span>
+<span class="sd">            test statistic calculated during the fit and the penalty</span>
+<span class="sd">            term values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">)</span>
+
+        <span class="c"># Collapse by summing over spectral dimensions</span>
+        <span class="k">for</span> <span class="n">dim_size</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="n">combined</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># always last axis</span>
+
+        <span class="c"># Add penalties</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">combined</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span>
+        <span class="k">return</span> <span class="n">combined</span>
+</div>
+<div class="viewcode-block" id="FitResults.get_summary"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.get_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a summary of the fit parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Results of fit. Dictionary with fit parameter names as</span>
+<span class="sd">            keys and a nested dictionary as values containing the keys</span>
+<span class="sd">            best_fit and penalty_term with the corresponding values for the</span>
+<span class="sd">            parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fit_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+            <span class="n">fit_results</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;best_fit&quot;</span><span class="p">:</span> <span class="n">parameter</span><span class="o">.</span><span class="n">get_best_fit</span><span class="p">(),</span>
+                                <span class="s">&quot;penalty_term&quot;</span><span class="p">:</span> <span class="n">parameter</span><span class="o">.</span><span class="n">get_penalty_term</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="n">fit_results</span>
+</div>
+<div class="viewcode-block" id="FitResults.nd_project_stat"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.nd_project_stat">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Projects the test statistic values, at given the given</span>
+<span class="sd">        indices, onto the axes specified by fit and spectral parameters.</span>
+
+<span class="sd">        .. warning:: If only **fit** parameters are specified all</span>
+<span class="sd">          spectral dimensions are collapsed and penalty term</span>
+<span class="sd">          contributions **are** included. If any **spectral**</span>
+<span class="sd">          parameters are provided penalty term contributions **are</span>
+<span class="sd">          not** included.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          indices (tuple): The index along each fit parameter dimension</span>
+<span class="sd">            specifying the coordinates from which to retrieve the test</span>
+<span class="sd">            statistic value.</span>
+<span class="sd">          *parameters (string): Names of a valid fit or spectral</span>
+<span class="sd">            parameters onto which to project the test statistic values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Projection of :attr:`_stats` array,</span>
+<span class="sd">            at the given indices, onto the given parameter axes.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">          IndexError: If the parameter names supplied do not match</span>
+<span class="sd">            any of those stored in the fit or spectra configs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">(),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Can apply penalty term contributions</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stat</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># No penalty terms, use raw stats</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_raw_stat</span><span class="p">(</span><span class="n">indices</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">(),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())):</span>
+                <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
+<div class="viewcode-block" id="FitResults.nd_project_stats"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.nd_project_stats">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Projects the test statistic values onto the axes specified</span>
+<span class="sd">        by fit and spectral parameters.</span>
+
+<span class="sd">        .. warning:: If only **fit** parameters are specified all</span>
+<span class="sd">          spectral dimensions are collapsed and penalty term</span>
+<span class="sd">          contributions **are** included. If any **spectral**</span>
+<span class="sd">          parameters are provided penalty term contributions **are</span>
+<span class="sd">          not** included.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          *parameters (string): Names of a valid fit or spectral</span>
+<span class="sd">            parameters onto which to project the test statistic values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Projection of :attr:`_stats` array</span>
+<span class="sd">            onto the given parameter axes.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter names supplied do not match</span>
+<span class="sd">            any of those stored in the fit or spectra configs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">(),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Can apply penalty term contributions</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># No penalty terms, use raw stats</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_raw_stats</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">(),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())):</span>
+                <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
+<div class="viewcode-block" id="FitResults.reset_grids"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.reset_grids">[docs]</a>    <span class="k">def</span> <span class="nf">reset_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Resets the grids stored in :attr:`_stats` and</span>
+<span class="sd">          :attr:`_penalty_terms`, including shape.</span>
+
+<span class="sd">        .. warning:: If fit parameters have been added/removed, calling</span>
+<span class="sd">          this method will increase/decrease the dimensions of the grid</span>
+<span class="sd">          to compensate for this change.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">+=</span> <span class="s">&quot;_</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">new_name</span> <span class="o">+=</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">part</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resets</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">new_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_resets</span><span class="p">)</span>
+        <span class="n">stats_shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span> <span class="o">+</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">stats_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_fit_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the fit config.</span>
+
+<span class="sd">        .. warning:: This will automatically call :meth:`reset_grid`</span>
+<span class="sd">          to update the grid based on the new fit config</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): The</span>
+<span class="sd">            configuration for fit. This should be a direct copy of the</span>
+<span class="sd">            :class:`echidna.core.spectra.GlobalFitConfig` object in</span>
+<span class="sd">            :class:`echidna.limit.fit.Fit`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_grid</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_minimum_position"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_minimum_position">[docs]</a>    <span class="k">def</span> <span class="nf">set_minimum_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">          minimum_position (float): Position of the minimum value of</span>
+<span class="sd">            the array returned by :meth:`get_fit_data`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_position</span> <span class="o">=</span> <span class="n">minimum_position</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_minimum_value"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_minimum_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_minimum_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">          minimum_value (float): Minimum value of the array returned by</span>
+<span class="sd">            :meth:`get_fit_data`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_value</span> <span class="o">=</span> <span class="n">minimum_value</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_penalty_terms"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_penalty_terms">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty_terms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the array containing penalty term values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          penalty_terms (:class:`numpy.ndarray`): The array of penalty</span>
+<span class="sd">            term values</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If penalty_terms is not an :class:`numpy.ndarray`</span>
+<span class="sd">          ValueError: If the penalty_terms array does not have the required</span>
+<span class="sd">            shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">penalty_terms</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;penalty_terms must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">penalty_terms</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;penalty_terms array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">penalty_terms</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">penalty_terms</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_penalty_term"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty_term</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the total penalty term value at the point in the array</span>
+<span class="sd">        specified by indices.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          penalty_term (float): Best fit value of a fit parameter.</span>
+<span class="sd">          indices (tuple): The index along each fit parameter dimension</span>
+<span class="sd">            specifying the coordinates from which to set the total</span>
+<span class="sd">            penalty term value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If penalty_term is not a float.</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">          IndexError: If the number of indices supplied does not match</span>
+<span class="sd">            the dimensions of the fit</span>
+<span class="sd">          IndexError: If the indices supplied are out of bounds for</span>
+<span class="sd">            the fit dimensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">penalty_term</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;penalty_term must be a float&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;dimension mismatch, indices supplied contian &quot;</span>
+                             <span class="s">&quot;</span><span class="si">%d</span><span class="s"> dimensions but fit contains </span><span class="si">%d</span><span class="s"> dimensions &quot;</span>
+                             <span class="s">&quot;(parameters)&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="s">&quot;indices </span><span class="si">%s</span><span class="s"> out of bounds for fit with dimensions </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_term</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_spectra_config"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_spectra_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_spectra_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the spectra config.</span>
+
+<span class="sd">        .. warning:: This will automatically call :meth:`reset_grid`</span>
+<span class="sd">          to update the grid based on the new fit config</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The</span>
+<span class="sd">            configuration for the spectra. This should usually be a</span>
+<span class="sd">            direct copy of the :class:`echidna.core.spectra.SpectraConfig`</span>
+<span class="sd">            in the data spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">spectra_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_grid</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_stat"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_stat">[docs]</a>    <span class="k">def</span> <span class="nf">set_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the test statistic values in array at the point</span>
+<span class="sd">        specified by indices</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          stat (:class:`numpy.ndarray`): Values of the test statistic.</span>
+<span class="sd">          indices (tuple): Position in the array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If the indices supplied are not at tuple</span>
+<span class="sd">          IndexError: If the number of indices supplied does not match</span>
+<span class="sd">            the dimensions of the fit</span>
+<span class="sd">          IndexError: If the indices supplied are out of bounds for</span>
+<span class="sd">            the fit dimensions</span>
+<span class="sd">          TypeError: If stat is not a :class:`numpy.ndarray`.</span>
+<span class="sd">          ValueError: If the stats array has incorrect shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;indices supplied must be a tuple of integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;dimension mismatch, indices supplied contian &quot;</span>
+                             <span class="s">&quot;</span><span class="si">%d</span><span class="s"> dimensions but fit contains </span><span class="si">%d</span><span class="s"> dimensions &quot;</span>
+                             <span class="s">&quot;(parameters)&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="s">&quot;indices </span><span class="si">%s</span><span class="s"> out of bounds for fit with dimensions </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;stat must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;stat array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat</span>
+</div>
+<div class="viewcode-block" id="FitResults.set_stats"><a class="viewcode-back" href="../../../echidna.fit.html#echidna.fit.fit_results.FitResults.set_stats">[docs]</a>    <span class="k">def</span> <span class="nf">set_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stats</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the total test statistics array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          stats (:class:`numpy.ndarray`): The total test statistics array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If stats is not a :class:`numpy.ndarray`.</span>
+<span class="sd">          ValueError: If the stats array has incorrect shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;stats must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;stats array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">stats</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,914 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.limit.summary &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.limit.summary</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="Summary"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary">[docs]</a><span class="k">class</span> <span class="nc">Summary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This class contains the summary data for a given fit parameter when a</span>
+<span class="sd">      limit has been set with a signal spectrum. It stores arrays of signal</span>
+<span class="sd">      scales used in the limit setting and the corresponding best fits and</span>
+<span class="sd">      penalty  term values for the given fit parameter as well as the prior</span>
+<span class="sd">      and sigma values of the fit parameter used. The total test statistic</span>
+<span class="sd">      values are also stored as an array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of the summary object.</span>
+<span class="sd">      num_scales (int): Number of signal scales used in the limit setting.</span>
+<span class="sd">      spectra_config (:class:`echidna.core.spectra.SpectraConfig`): Config</span>
+<span class="sd">        for the signal spectrum.</span>
+<span class="sd">      fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Fit</span>
+<span class="sd">        config used during limit setting.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of the summary object.</span>
+<span class="sd">      _num_scales (int): Number of signal scales used in the limit setting.</span>
+<span class="sd">      _spectra_config (:class:`echidna.core.spectra.SpectraConfig`): Config</span>
+<span class="sd">        for the signal spectrum.</span>
+<span class="sd">      _fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Fit</span>
+<span class="sd">        config used during limit setting.</span>
+<span class="sd">      _best_fits (:class:`numpy.ndarray`): The best fit values of the fit</span>
+<span class="sd">        parameter for each corresponding signal scale.</span>
+<span class="sd">      _penalty_terms (:class:`numpy.ndarray`): The penalty term values of the</span>
+<span class="sd">        fit parameter for each corresponding signal scale.</span>
+<span class="sd">      _scales (:class:`numpy.ndarray`): The signal scales used in the limit</span>
+<span class="sd">        setting.</span>
+<span class="sd">      _stats (:class:`numpy.ndarray`): The total test statistic values for</span>
+<span class="sd">        each corresponding signal scale.</span>
+<span class="sd">      _priors (float): The prior values of each fit parameter</span>
+<span class="sd">      _sigma (float): The systematic uncertainty value of the fit parameter</span>
+<span class="sd">      _limit (float): Signal determined to be the limit</span>
+<span class="sd">      _limit_idx (int): Position in :attr:`_scales` array corresponding</span>
+<span class="sd">        to limit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_scales</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialises the summary data container</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;Summary&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_scales</span> <span class="o">=</span> <span class="n">num_scales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span> <span class="o">=</span> <span class="n">spectra_config</span>
+        <span class="n">spectra_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
+        <span class="n">pars_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_scales</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">pars_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">pars_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">num_scales</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">stats_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">num_scales</span><span class="p">])</span> <span class="o">+</span> <span class="n">spectra_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">stats_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_idx</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Summary.get_best_fits"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_best_fits">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the best_fits array.</span>
+
+<span class="sd">        If a parameter name is specified, the array returned will</span>
+<span class="sd">        contain only the best-fit value of this parameter, for each</span>
+<span class="sd">        signal scale. Otherwise, the best-fit value for each fit</span>
+<span class="sd">        parameter, at each signal scale, is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get best-fit values</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The best fit(s) at each signal scaling</span>
+<span class="sd">            for the fit parameter(s).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># return full best_fits array</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span>
+        <span class="k">elif</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Create a new numpy array to fill</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_scales</span><span class="p">)</span>
+
+            <span class="c"># Get parameter index</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">best_fits</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_fits</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_best_fit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_best_fit">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">parameter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the best_fit from array at idx</span>
+
+<span class="sd">        If a parameter name is specified, only the best-fit value of</span>
+<span class="sd">        this parameter, at the given index, will be returned.</span>
+<span class="sd">        Otherwise, the best-fit value for each fit parameter, at the</span>
+<span class="sd">        given index, is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get the best-fit value</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float or :class:`numpy.ndarray`): returns:</span>
+
+<span class="sd">            float: The best fit value of the fit parameter at idx in</span>
+<span class="sd">              the array.</span>
+<span class="sd">            :class:`numpy.ndarray`: If a parameter value is supplied,</span>
+<span class="sd">              the best-fit values for each fit parameter are returned.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># return all best fit values at idx</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Get parameter index</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">par_num</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_fit_config"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the fit config of the summary object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.GlobalFitConfig`: The fit config</span>
+<span class="sd">            of the summary object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span>
+</div>
+<div class="viewcode-block" id="Summary.get_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_limit">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the limit scaling determined.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: Signal scaling corresponding to the limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span>
+</div>
+<div class="viewcode-block" id="Summary.get_limit_idx"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_limit_idx">[docs]</a>    <span class="k">def</span> <span class="nf">get_limit_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the position in :attr:`scales` corresponding to the</span>
+<span class="sd">        determined limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Position in :attr:`_scales` corresponding to the limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_idx</span>
+</div>
+<div class="viewcode-block" id="Summary.get_name"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the name of the summary object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Name of the summary object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="Summary.get_num_scales"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_num_scales">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the number of scales in the summary object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Number of scales</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_scales</span>
+</div>
+<div class="viewcode-block" id="Summary.get_penalty_terms"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_penalty_terms">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the penalty_terms array</span>
+
+<span class="sd">        If a parameter name is specified, the array returned will</span>
+<span class="sd">        contain only the penalty term value of this parameter, for each</span>
+<span class="sd">        signal scale. Otherwise, the penalty term value for each fit</span>
+<span class="sd">        parameter, at each signal scale, is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get the penalty term values</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The values of the penalty terms of the fit</span>
+<span class="sd">            parameter(s) at each signal scale.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># return full penalty_terms array</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span>
+        <span class="k">elif</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Create a new numpy array to fill</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_scales</span><span class="p">)</span>
+
+            <span class="c"># Get parameter index</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">penalty_terms</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_terms</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_penalty_term"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">get_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">parameter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the penalty_term from array at idx</span>
+
+<span class="sd">        If a parameter name is specified, only the penalty term value of</span>
+<span class="sd">        this parameter, at the given index, will be returned.</span>
+<span class="sd">        Otherwise, the penalty term value for each fit parameter, at the</span>
+<span class="sd">        given index, is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get the penalty term value</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float or :class:`numpy.ndarray`: returns:</span>
+
+<span class="sd">            float: The penalty term value of the fit parameter at idx</span>
+<span class="sd">              in the array.</span>
+<span class="sd">            :class:`numpy.ndarray`: If a parameter value is supplied,</span>
+<span class="sd">              the penalty term values for each fit parameter are</span>
+<span class="sd">              returned.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># return all penalty term values at idx</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="c"># Get parameter index</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">par_num</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_priors"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_priors">[docs]</a>    <span class="k">def</span> <span class="nf">get_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the priors array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The priors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span>
+</div>
+<div class="viewcode-block" id="Summary.get_prior"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_prior">[docs]</a>    <span class="k">def</span> <span class="nf">get_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the prior for the given parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get the penalty term value</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The prior for the given parameter</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_raw_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_raw_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the raw test statistics array.</span>
+
+<span class="sd">        .. warning:: This has no penalty term contributions added.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The raw test statistics at the</span>
+<span class="sd">            corresponding signal scales.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span>
+</div>
+<div class="viewcode-block" id="Summary.get_raw_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_raw_stat">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the raw test statistic(s) from array at idx.</span>
+
+<span class="sd">        .. warning:: This has no penalty term contributions added.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (float or :class:`numpy.ndarray`): The raw test statistic(s) at idx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Summary.get_scales"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_scales">[docs]</a>    <span class="k">def</span> <span class="nf">get_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the signal scales array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The signal scales used in the limit setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span>
+</div>
+<div class="viewcode-block" id="Summary.get_scale"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_scale">[docs]</a>    <span class="k">def</span> <span class="nf">get_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the signal scale from array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The signal scale at idx in the array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Summary.get_sigmas"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_sigmas">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigmas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sigmas array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The systematic uncertainty for each</span>
+<span class="sd">            fit parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span>
+</div>
+<div class="viewcode-block" id="Summary.get_sigma"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sigma for the given parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameter (string, optional): Name of a valid fit parameter</span>
+<span class="sd">            for which to get the penalty term value</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The systematic uncertainty for the given parameter</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: If the parameter name supplied does not match</span>
+<span class="sd">            any of those stored in the fit config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># unrecognised parameter</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Summary.get_spectra_config"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_spectra_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_spectra_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the spectra config of the summary object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.SpectraConfig`: The spectra config</span>
+<span class="sd">            of the summary object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span>
+</div>
+<div class="viewcode-block" id="Summary.get_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the total test statistics array.</span>
+
+<span class="sd">        .. warning:: Penalty term contributions are added here.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The total test statistics at the corresponding</span>
+<span class="sd">            signal scales.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_penalties</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">total_stats</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="n">axis</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c"># first axis is always signal scale</span>
+            <span class="n">total_stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">total_stats</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_stats</span> <span class="o">+</span> <span class="n">total_penalties</span>
+</div>
+<div class="viewcode-block" id="Summary.get_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.get_stat">[docs]</a>    <span class="k">def</span> <span class="nf">get_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the total test statistic from array at idx</span>
+
+<span class="sd">        .. warning:: Penalty term contributions are added here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The total stat at idx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_penalty</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_penalty_term</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+        <span class="n">total_stat</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="n">axis</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c"># first axis is always signal scale</span>
+            <span class="n">total_stat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">total_stat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_stat</span> <span class="o">+</span> <span class="n">total_penalty</span>
+</div>
+<div class="viewcode-block" id="Summary.nd_project_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.nd_project_stats">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Projects the raw test statistic values (at each signal</span>
+<span class="sd">        scale) onto the axes specified by the spectral parameters.</span>
+
+<span class="sd">        This allows you to see the values of the test statistic per-bin</span>
+<span class="sd">        in a given dimension.</span>
+
+<span class="sd">        .. warning:: No penalty term contributions are included here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameters (string): Names of a valid spectal parameters onto</span>
+<span class="sd">            which to project the test statistic values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Projection of the :attr:`_stat`</span>
+<span class="sd">            array onto the given spectral parameter axes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="n">axis</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c"># first axis is always signal scale</span>
+            <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
+<div class="viewcode-block" id="Summary.nd_project_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.nd_project_stat">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Projects the raw test statistic values at the given index</span>
+<span class="sd">        onto the axes specified by the spectral parameters.</span>
+
+<span class="sd">        This allows you to see the values of the test statistic per-bin</span>
+<span class="sd">        in a given dimension.</span>
+
+<span class="sd">        .. warning:: No penalty term contributions are included here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): The index of the array.</span>
+<span class="sd">          parameters (string): Names of a valid spectal parameters onto</span>
+<span class="sd">            which to project the test statistic values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: Projection of the :attr:`_stat`</span>
+<span class="sd">            array, at idx, onto the given spectral parameter axes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
+<div class="viewcode-block" id="Summary.set_best_fits"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_best_fits">[docs]</a>    <span class="k">def</span> <span class="nf">set_best_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_fits</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the array containing best fit values of the fit parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          best_fits (:class:`numpy.ndarray`): The best fits array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If best_fits is not an :class:`numpy.ndarray`</span>
+<span class="sd">          ValueError: If the best_fits array does not have the required</span>
+<span class="sd">            shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">best_fits</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;best_fits must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">best_fits</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;best_fits array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">best_fits</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span> <span class="o">=</span> <span class="n">best_fits</span>
+</div>
+<div class="viewcode-block" id="Summary.set_best_fit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_best_fit">[docs]</a>    <span class="k">def</span> <span class="nf">set_best_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_fit</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the best fit value of the fit parameter in array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          best_fit (float): Best fit value of a fit parameter.</span>
+<span class="sd">          idx (int): Index in the array.</span>
+<span class="sd">          parameter (string): Name of a valid fit parameter for which</span>
+<span class="sd">            to set the best-fit value</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If best_fit is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">best_fit</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;best_fit must be a float&quot;</span><span class="p">)</span>
+        <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">par_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_fit</span>
+</div>
+<div class="viewcode-block" id="Summary.set_limit"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_limit">[docs]</a>    <span class="k">def</span> <span class="nf">set_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the limit scaling determined.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit (float): Signal scaling corresponding to the limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="n">limit</span>
+</div>
+<div class="viewcode-block" id="Summary.set_limit_idx"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_limit_idx">[docs]</a>    <span class="k">def</span> <span class="nf">set_limit_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the position in :attr:`scales` corresponding to the</span>
+<span class="sd">        determined limit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          limit_idx (int): Position in :attr:`_scales` corresponding to</span>
+<span class="sd">            the limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_idx</span> <span class="o">=</span> <span class="n">limit_idx</span>
+</div>
+<div class="viewcode-block" id="Summary.set_name"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the name of the summary object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          name (string): Name of the summary object</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If name is not a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Name must be a string&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+</div>
+<div class="viewcode-block" id="Summary.set_penalty_terms"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_penalty_terms">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty_terms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the array containing penalty term values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          penalty_terms (:class:`numpy.ndarray`): The array of penalty</span>
+<span class="sd">            term values</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If penalty_terms is not an :class:`numpy.ndarray`</span>
+<span class="sd">          ValueError: If the penalty_terms array does not have the required</span>
+<span class="sd">            shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">penalty_terms</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;penalty_terms must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">penalty_terms</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;penalty_terms array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">penalty_terms</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">penalty_terms</span>
+</div>
+<div class="viewcode-block" id="Summary.set_penalty_term"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_penalty_term">[docs]</a>    <span class="k">def</span> <span class="nf">set_penalty_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty_term</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the penalty term value of the fit parameter in array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          penalty_term (float): Best fit value of a fit parameter.</span>
+<span class="sd">          idx (int): Index in the array.</span>
+<span class="sd">          parameter (string): Name of a valid fit parameter for which</span>
+<span class="sd">            to set the penalty term value</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If penalty_term is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">penalty_term</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;penalty_term must be a float&quot;</span><span class="p">)</span>
+        <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">par_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">penalty_term</span>
+</div>
+<div class="viewcode-block" id="Summary.set_prior"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the prior value of fit parameter to store.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          prior (float): Prior values for given fit parameter</span>
+<span class="sd">          parameter (string): Name of a valid fit parameter for which</span>
+<span class="sd">            to set the prior value</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If prior is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;prior must be a float&quot;</span><span class="p">)</span>
+        <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">prior</span>
+</div>
+<div class="viewcode-block" id="Summary.set_priors"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_priors">[docs]</a>    <span class="k">def</span> <span class="nf">set_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">priors</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the priors array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          priors (:class:`numpy.ndarray`): Array of prior values to set.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If priors is not a numpy array.</span>
+<span class="sd">          ValueError: If the priors array does not have the required</span>
+<span class="sd">            shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;priors must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">priors</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;priors array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">priors</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_priors</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span> <span class="o">=</span> <span class="n">priors</span>
+</div>
+<div class="viewcode-block" id="Summary.set_scales"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_scales">[docs]</a>    <span class="k">def</span> <span class="nf">set_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scales</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the signal scales array</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          scales (:class:`numpy.ndarray`): The signal scales array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If scales is not a :class:`numpy.ndarray`.</span>
+<span class="sd">          ValueError: If length of scales array is not equal to the</span>
+<span class="sd">            number of signal scales.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;scales must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scales</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;scales array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">scales</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scales</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span> <span class="o">=</span> <span class="n">scales</span>
+</div>
+<div class="viewcode-block" id="Summary.set_scale"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_scale">[docs]</a>    <span class="k">def</span> <span class="nf">set_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the signal scale in array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          scale (float): The signal scale.</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If scale is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;scale must be a float&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span>
+</div>
+<div class="viewcode-block" id="Summary.set_sigma"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_sigma">[docs]</a>    <span class="k">def</span> <span class="nf">set_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the systematic uncertainty value of the fit parameter to store.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): The systematic uncertainty value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If sigma is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Sigma set explicitly as None for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                     <span class="n">parameter</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;sigma must be a float&quot;</span><span class="p">)</span>
+        <span class="n">par_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">[</span><span class="n">par_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+</div>
+<div class="viewcode-block" id="Summary.set_sigmas"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_sigmas">[docs]</a>    <span class="k">def</span> <span class="nf">set_sigmas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the sigmas array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigmas (:class:`numpy.ndarray`): Array of sigma values to set.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If sigmas is not a numpy array.</span>
+<span class="sd">          ValueError: If the sigmas array does not have the required</span>
+<span class="sd">            shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;sigmas must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sigmas</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;sigmas array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sigmas</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span> <span class="o">=</span> <span class="n">sigmas</span>
+</div>
+<div class="viewcode-block" id="Summary.set_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_stats">[docs]</a>    <span class="k">def</span> <span class="nf">set_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stats</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the total test statistics array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          stats (:class:`numpy.ndarray`): The total test statistics array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If stats is not a :class:`numpy.ndarray`.</span>
+<span class="sd">          ValueError: If the stats array has incorrect shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;stats must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;stats array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">stats</span>
+</div>
+<div class="viewcode-block" id="Summary.set_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.Summary.set_stat">[docs]</a>    <span class="k">def</span> <span class="nf">set_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the test statistic values in array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          stat (:class:`numpy.ndarray`): Values of the test statistic.</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If stat is not a :class:`numpy.ndarray`.</span>
+<span class="sd">          ValueError: If the stats array has incorrect shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;stat must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;stat array has incorrect shape (</span><span class="si">%s</span><span class="s">), &quot;</span>
+                             <span class="s">&quot;expected shape is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat</span>
+
+</div></div>
+<div class="viewcode-block" id="ReducedSummary"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary">[docs]</a><span class="k">class</span> <span class="nc">ReducedSummary</span><span class="p">(</span><span class="n">Summary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This class provides similar functionality to the :class:`Summary`</span>
+<span class="sd">    class, but is slightly reduced by the fact that test-statistic</span>
+<span class="sd">    values for the spectral dimensions (per-bin) are not stored.</span>
+
+<span class="sd">    .. warning:: This class assumes that any test statistic values</span>
+<span class="sd">      set in the 1-D stats array, already have the correct penalty term</span>
+<span class="sd">      contributions added.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): Name of the summary object.</span>
+<span class="sd">      num_scales (int): Number of signal scales used in the limit setting.</span>
+<span class="sd">      spectra_config (:class:`echidna.core.spectra.SpectraConfig`): Config</span>
+<span class="sd">        for the signal spectrum.</span>
+<span class="sd">      fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Fit</span>
+<span class="sd">        config used during limit setting.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): Name of the summary object.</span>
+<span class="sd">      _num_scales (int): Number of signal scales used in the limit setting.</span>
+<span class="sd">      _spectra_config (:class:`echidna.core.spectra.SpectraConfig`): Config</span>
+<span class="sd">        for the signal spectrum.</span>
+<span class="sd">      _fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): Fit</span>
+<span class="sd">        config used during limit setting.</span>
+<span class="sd">      _best_fits (:class:`numpy.ndarray`): The best fit values of the fit</span>
+<span class="sd">        parameter for each corresponding signal scale.</span>
+<span class="sd">      _penalty_terms (:class:`numpy.ndarray`): The penalty term values of the</span>
+<span class="sd">        fit parameter for each corresponding signal scale.</span>
+<span class="sd">      _scales (:class:`numpy.ndarray`): The signal scales used in the limit</span>
+<span class="sd">        setting.</span>
+<span class="sd">      _stats (:class:`numpy.ndarray`): The total test statistic values for</span>
+<span class="sd">        each corresponding signal scale.</span>
+<span class="sd">      _priors (float): The prior values of each fit parameter</span>
+<span class="sd">      _sigma (float): The systematic uncertainty value of the fit parameter</span>
+<span class="sd">      _limit (float): Signal determined to be the limit</span>
+<span class="sd">      _limit_idx (int): Position in :attr:`_scales` array corresponding</span>
+<span class="sd">        to limit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_scales</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">,</span> <span class="n">fit_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialises the summary data container</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;ReducedSummary&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_scales</span> <span class="o">=</span> <span class="n">num_scales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_config</span> <span class="o">=</span> <span class="n">spectra_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
+        <span class="n">pars_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_scales</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_fits</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">pars_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalty_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">pars_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">num_scales</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">stats_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">num_scales</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">stats_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_priors</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_idx</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="ReducedSummary.get_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary.get_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the total test statistics array.</span>
+
+<span class="sd">        .. warning:: Assumes penalty term contributions are already</span>
+<span class="sd">          included.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.array`: The total test statistics at the corresponding</span>
+<span class="sd">            signal scales.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span>
+</div>
+<div class="viewcode-block" id="ReducedSummary.get_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary.get_stat">[docs]</a>    <span class="k">def</span> <span class="nf">get_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the total test statistic from array at idx</span>
+
+<span class="sd">        .. warning:: Assumes penalty term contributions are already</span>
+<span class="sd">          included.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The total stat at idx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="ReducedSummary.nd_project_stats"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary.nd_project_stats">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; *** NOT VALID IN THIS CLASS ***</span>
+<span class="sd">        Projects the raw test statistic values (at each signal</span>
+<span class="sd">        scale) onto the axes specified by the spectral parameters.</span>
+
+<span class="sd">        This allows you to see the values of the test statistic per-bin</span>
+<span class="sd">        in a given dimension.</span>
+
+<span class="sd">        .. warning:: No penalty term contributions are included here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameters (string): Names of a valid spectal parameters onto</span>
+<span class="sd">            which to project the test statistic values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          AttributeError: If used from this class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;ReducedSummary class has no attribute &quot;</span>
+                             <span class="s">&quot;nd_project_stats&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ReducedSummary.nd_project_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary.nd_project_stat">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; *** NOT VALID IN THIS CLASS ***</span>
+<span class="sd">        Projects the raw test statistic values at the given index</span>
+<span class="sd">        onto the axes specified by the spectral parameters.</span>
+
+<span class="sd">        This allows you to see the values of the test statistic per-bin</span>
+<span class="sd">        in a given dimension.</span>
+
+<span class="sd">        .. warning:: No penalty term contributions are included here.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          idx (int): The index of the array.</span>
+<span class="sd">          parameters (string): Names of a valid spectal parameters onto</span>
+<span class="sd">            which to project the test statistic values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          AttributeError: If used from this class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;ReducedSummary class has no attribute &quot;</span>
+                             <span class="s">&quot;nd_project_stats&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ReducedSummary.set_stat"><a class="viewcode-back" href="../../../echidna.limit.html#echidna.limit.summary.ReducedSummary.set_stat">[docs]</a>    <span class="k">def</span> <span class="nf">set_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the test statistic values in array at idx</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          stat (float): Value of the test statistic.</span>
+<span class="sd">          idx (int): Index in the array.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          TypeError: If stat is not a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;stat must be a numpy array&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

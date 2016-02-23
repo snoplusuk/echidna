@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -59,7 +60,6 @@
 <span class="kn">from</span> <span class="nn">echidna.calc</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
 <span class="kn">import</span> <span class="nn">echidna.test.physics_tests</span> <span class="kn">as</span> <span class="nn">physics_tests</span>
 
-
 <div class="viewcode-block" id="DBIsotope"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope">[docs]</a><span class="k">class</span> <span class="nc">DBIsotope</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Class which calculates expected counts for a DBD isotope</span>
 <span class="sd">      over a given experiment livetime.</span>
@@ -75,17 +75,11 @@
 <span class="sd">      loading (float, optional): Loading of isotope with 0 to 1</span>
 <span class="sd">        equivalent to 0% to 100%. Default is stored in</span>
 <span class="sd">        :class:`echidna.calc.constants`</span>
-<span class="sd">      fv_radius (float, optional): Radius of fiducial volume in mm.</span>
-<span class="sd">        Default is stored in :class:`echidna.calc.constants`</span>
 <span class="sd">      scint_density (float, optional): Density of liquid scintillator in</span>
 <span class="sd">        kg/mm^3. Default is stored in :class:`echidna.calc.constants`</span>
 <span class="sd">      outer_radius (float, optional): Radius of outer container</span>
 <span class="sd">        containing fiducial volume, e.g. AV, in mm. Default is stored in</span>
 <span class="sd">        :class:`echidna.calc.constants`</span>
-<span class="sd">      roi_efficiency (float, optional): Efficiency factor of ROI.</span>
-<span class="sd">        Calculated by dividing the integral of the spectrum, shrunk to</span>
-<span class="sd">        the ROI, by the integral of the full spectrum. Default is</span>
-<span class="sd">        0.62465 (-0.5 to 1.5 sigma integral of a standard gaussian)</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">      _name (string): Name of the isotope.</span>
@@ -97,29 +91,19 @@
 <span class="sd">      _matrix_element (float): Matrix element of the isotope.</span>
 <span class="sd">      _loading (float): Loading of isotope with 0 to 1 equivalent to 0%</span>
 <span class="sd">        to 100%. Default is stored in :class:`echidna.calc.constants`</span>
-<span class="sd">      _fv_radius (float): Radius of fiducial volume in mm. Default is</span>
-<span class="sd">        stored in :class:`echidna.calc.constants`</span>
 <span class="sd">      _scint_density (float): Density of liquid scintillator in</span>
 <span class="sd">        kg/mm^3. Default is stored in :class:`echidna.calc.constants`</span>
 <span class="sd">      _outer_radius (float): Radius of outer container containing</span>
 <span class="sd">        fiducial volume, e.g. AV, in mm. Default is stored in</span>
 <span class="sd">        :class:`echidna.calc.constants`</span>
-<span class="sd">      _roi_efficiency (float): Efficiency factor of ROI. Calculated by</span>
-<span class="sd">        dividing the integral of the spectrum, shrunk to the ROI, by</span>
-<span class="sd">        the integral of the full spectrum. Default is 0.62465 (-0.5 to</span>
-<span class="sd">        1.5 sigma integral of a standard gaussian)</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">      ValueError: If abundance is &lt; 0. or &gt; 1.</span>
 <span class="sd">      ValueError: If :obj:`outer_radius` is negative or zero.</span>
-<span class="sd">      ValueError: If :obj:`fv_radius` is not between zero and</span>
-<span class="sd">        :obj:`outer_radius`.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">atm_weight_iso</span><span class="p">,</span> <span class="n">atm_weight_nat</span><span class="p">,</span> <span class="n">abundance</span><span class="p">,</span>
-                 <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scint_density</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">roi_efficiency</span><span class="o">=</span><span class="mf">0.62465</span><span class="p">):</span>
+                 <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scint_density</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">abundance</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">abundance</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Abundance ranges from 0 to 1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
@@ -141,25 +125,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">outer_radius</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span>
-        <span class="k">if</span> <span class="n">fv_radius</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">fv_radius</span> <span class="o">&lt;=</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">fv_radius</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;FV radius must be between zero and outer &quot;</span>
-                                 <span class="s">&quot;radius&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span> <span class="o">=</span> <span class="n">fv_radius</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span>
         <span class="k">if</span> <span class="n">scint_density</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scint_density</span> <span class="o">=</span> <span class="n">scint_density</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scint_density</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">_scint_density</span>
-        <span class="c"># Defaults to standard Gaussian efficiency for</span>
-        <span class="c"># -1/2 sigma to +3/2 sigma ROI</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_roi_efficiency</span> <span class="o">=</span> <span class="n">roi_efficiency</span>
-        <span class="k">if</span> <span class="n">roi_efficiency</span> <span class="o">!=</span> <span class="mf">0.62465</span><span class="p">:</span>
-            <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Warning: using calculated ROI efficiency </span><span class="si">%.4f</span><span class="s"> &quot;</span>
-                   <span class="s">&quot;not default (0.62465)&quot;</span> <span class="o">%</span> <span class="n">roi_efficiency</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DBIsotope.get_n_atoms"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.get_n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scint_density</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="DBIsotope.get_n_atoms"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.get_n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scint_density</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                     <span class="n">target_mass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scint_mass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Calculates the number of atoms of the double-beta isotope.</span>
 
@@ -170,8 +141,6 @@
 <span class="sd">        .. warning:: All args default to SNO+ specific values!</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          fv_radius (float, optional): Radius of fiducial volume in mm.</span>
-<span class="sd">            Default is stored as a class variable.</span>
 <span class="sd">          loading (float, optional): Loading of isotope with 0 to 1</span>
 <span class="sd">            equivalent to 0% to 100%. Default is stored as a class</span>
 <span class="sd">            variable.</span>
@@ -188,8 +157,6 @@
 <span class="sd">        Raises:</span>
 <span class="sd">          ValueError: If :obj:`loading` is not between zero and 1.</span>
 <span class="sd">          ValueError: If :obj:`outer_radius` is negative or zero.</span>
-<span class="sd">          ValueError: If :obj:`fv_radius` is not between zero and</span>
-<span class="sd">            :obj:`outer_radius`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">          float: Number of atoms.</span>
@@ -200,10 +167,6 @@
             <span class="n">outer_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outer_radius</span>
         <span class="k">if</span> <span class="n">outer_radius</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Outer radius must be positive and non-zero&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">fv_radius</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># use class variable</span>
-            <span class="n">fv_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fv_radius</span>
-        <span class="k">if</span> <span class="n">fv_radius</span> <span class="o">&lt;=</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">fv_radius</span> <span class="o">&gt;</span> <span class="n">outer_radius</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;FV radius must be between zero and outer radius&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">loading</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># use class variable</span>
             <span class="n">loading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loading</span>
         <span class="k">if</span> <span class="n">loading</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">loading</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
@@ -220,10 +183,7 @@
             <span class="n">mass_nat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atm_weight_nat</span><span class="o">*</span><span class="n">const</span><span class="o">.</span><span class="n">_atomic_mass_unit</span>  <span class="c"># kg/atom</span>
             <span class="n">mass_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abundance</span><span class="o">*</span><span class="n">mass_iso</span><span class="o">/</span><span class="n">mass_nat</span>
 
-            <span class="c"># Volume fraction</span>
-            <span class="n">volume_fraction</span> <span class="o">=</span> <span class="n">fv_radius</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">outer_radius</span><span class="o">**</span><span class="mi">3</span>
-            <span class="n">target_mass</span> <span class="o">=</span> <span class="n">mass_fraction</span> <span class="o">*</span> <span class="n">volume_fraction</span> <span class="o">*</span> <span class="n">loading</span> <span class="o">*</span>\
-                <span class="n">scint_mass</span>
+            <span class="n">target_mass</span> <span class="o">=</span> <span class="n">mass_fraction</span> <span class="o">*</span> <span class="n">loading</span> <span class="o">*</span> <span class="n">scint_mass</span>
 
         <span class="n">n_atoms</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_mass</span><span class="o">*</span><span class="n">const</span><span class="o">.</span><span class="n">_n_avagadro</span><span class="p">)</span> <span class="o">/</span>\
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atm_weight_iso</span><span class="o">*</span><span class="mf">1.e-3</span><span class="p">)</span>
@@ -296,14 +256,12 @@
                           <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phase_space</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrix_element</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span>
                            <span class="n">half_life</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.activity_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.activity_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">activity_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.activity_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.activity_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">activity_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts activity to number of counts, assuming constant activity.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          activity (float): Initial activity of the isotope in</span>
 <span class="sd">            :math:`years^{-1}`.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) calculates counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -316,18 +274,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">roi_cut</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">activity</span><span class="o">*</span><span class="n">livetime</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_roi_efficiency</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">activity</span><span class="o">*</span><span class="n">livetime</span>
+        <span class="k">return</span> <span class="n">activity</span><span class="o">*</span><span class="n">livetime</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.counts_to_activity"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_activity">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.counts_to_activity"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_activity">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts counts to activity, assuming constant activity.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          counts (float): Number of counts.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) assumes counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -340,13 +293,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">roi_cut</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">counts</span><span class="o">/</span><span class="p">(</span><span class="n">livetime</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_roi_efficiency</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">counts</span><span class="o">/</span><span class="n">livetime</span>
+        <span class="k">return</span> <span class="n">counts</span><span class="o">/</span><span class="n">livetime</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.counts_to_eff_mass"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_eff_mass">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_eff_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                           <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.counts_to_eff_mass"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_eff_mass">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_eff_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts from signal counts to effective majorana mass.</span>
 
 <span class="sd">        Args:</span>
@@ -354,8 +303,6 @@
 <span class="sd">            specified.</span>
 <span class="sd">          n_atoms (float, optional): Number of isotope atoms/nuclei that could</span>
 <span class="sd">            potentially decay to produce signal.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) assumes counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -370,20 +317,16 @@
             <span class="n">n_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
-        <span class="n">half_life</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span>
-                                             <span class="n">roi_cut</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
+        <span class="n">half_life</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="n">half_life</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.eff_mass_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.eff_mass_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">eff_mass_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eff_mass</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                           <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.eff_mass_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.eff_mass_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">eff_mass_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eff_mass</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts from effective majorana mass to signal counts.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          eff_mass (float): Effective majorana mass in eV.</span>
 <span class="sd">          n_atoms (float, optional): Number of isotope atoms/nuclei that could</span>
 <span class="sd">            potentially decay to produce signal.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) calculates counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -403,10 +346,9 @@
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
         <span class="n">half_life</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eff_mass_to_half_life</span><span class="p">(</span><span class="n">eff_mass</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">half_life_to_counts</span><span class="p">(</span><span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">roi_cut</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">half_life_to_counts</span><span class="p">(</span><span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.half_life_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.half_life_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">half_life_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                            <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.half_life_to_counts"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.half_life_to_counts">[docs]</a>    <span class="k">def</span> <span class="nf">half_life_to_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts from isotope&#39;s half-life to signal counts.</span>
 
 <span class="sd">        Args:</span>
@@ -414,8 +356,6 @@
 <span class="sd">            years.</span>
 <span class="sd">          n_atoms (float, optional): Number of isotope atoms/nuclei that could</span>
 <span class="sd">            potentially decay to produce signal.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) calculates counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -431,10 +371,9 @@
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
         <span class="n">activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">half_life_to_activity</span><span class="p">(</span><span class="n">half_life</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity_to_counts</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">roi_cut</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity_to_counts</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="DBIsotope.counts_to_half_life"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_half_life">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_half_life</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                            <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
+<div class="viewcode-block" id="DBIsotope.counts_to_half_life"><a class="viewcode-back" href="../../../echidna.calc.html#echidna.calc.decay.DBIsotope.counts_to_half_life">[docs]</a>    <span class="k">def</span> <span class="nf">counts_to_half_life</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts from signal count to isotope&#39;s half-life.</span>
 
 <span class="sd">        Args:</span>
@@ -442,8 +381,6 @@
 <span class="sd">            specified.</span>
 <span class="sd">          n_atoms (float, optional): Number of isotope atoms/nuclei that could</span>
 <span class="sd">            potentially decay to produce signal.</span>
-<span class="sd">          roi_cut (bool, optional): If True (default) assumes counts</span>
-<span class="sd">            in the ROI, not counts in the full spectrum.</span>
 <span class="sd">          livetime (float, optional): Amount of years of data taking.</span>
 <span class="sd">            Default is 5 years.</span>
 
@@ -458,7 +395,7 @@
             <span class="n">n_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">livetime</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Livetime should be positive and non zero&quot;</span><span class="p">)</span>
-        <span class="n">activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts_to_activity</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">roi_cut</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
+        <span class="n">activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counts_to_activity</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity_to_half_life</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">)</span>
 
 </div></div>
@@ -486,20 +423,14 @@
     <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">3.69e-14</span>  <span class="c"># PRC 85, 034316 (2012)</span>
     <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">4.03</span>  <span class="c"># IBM-2 PRC 87, 014315 (2013)</span>
 
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">roi_efficiency</span><span class="p">:</span>
-        <span class="n">te130_converter</span> <span class="o">=</span> <span class="n">DBIsotope</span><span class="p">(</span><span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">Te130_atm_weight</span><span class="p">,</span>
-                                    <span class="n">TeNat_atm_weight</span><span class="p">,</span> <span class="n">Te130_abundance</span><span class="p">,</span>
-                                    <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">,</span>
-                                    <span class="n">signal</span><span class="o">.</span><span class="n">get_roi</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;efficiency&quot;</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">te130_converter</span> <span class="o">=</span> <span class="n">DBIsotope</span><span class="p">(</span><span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">Te130_atm_weight</span><span class="p">,</span>
-                                    <span class="n">TeNat_atm_weight</span><span class="p">,</span> <span class="n">Te130_abundance</span><span class="p">,</span>
-                                    <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">)</span>
+    <span class="n">te130_converter</span> <span class="o">=</span> <span class="n">DBIsotope</span><span class="p">(</span><span class="s">&quot;Te130&quot;</span><span class="p">,</span> <span class="n">Te130_atm_weight</span><span class="p">,</span>
+                                <span class="n">TeNat_atm_weight</span><span class="p">,</span> <span class="n">Te130_abundance</span><span class="p">,</span>
+                                <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">)</span>
 
     <span class="c"># Check get_n_atoms for 0.3% loading, no FV cut</span>
     <span class="n">expected</span> <span class="o">=</span> <span class="mf">3.7573e27</span>  <span class="c"># SNO+-doc-1728v2</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
-        <span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">fv_radius</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="p">)</span>
+        <span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span><span class="p">,</span> <span class="s">&quot;(no FV cut)&quot;</span>
 
     <span class="c"># Check get_n_atoms with SNO+ defaults</span>
@@ -519,20 +450,17 @@
     <span class="n">Xe136_abundance</span> <span class="o">=</span> <span class="mf">0.9093</span>  <span class="c"># PRC 86, 021601 (2012)</span>
     <span class="n">phase_space</span> <span class="o">=</span> <span class="mf">1433.0e-17</span>  <span class="c"># PRC 85, 034316 (2012)</span>
     <span class="n">matrix_element</span> <span class="o">=</span> <span class="mf">3.33</span>  <span class="c"># IBM-2 PRC 87, 014315 (2013)</span>
-    <span class="n">fv_radius</span> <span class="o">=</span> <span class="mf">1200.</span>  <span class="c"># mm, PRC 86, 021601 (2012)</span>
     <span class="n">loading</span> <span class="o">=</span> <span class="mf">0.0244</span>  <span class="c"># 2.44%, PRC 86, 021601 (2012)</span>
     <span class="n">scint_density</span> <span class="o">=</span> <span class="mf">756.28e-9</span>  <span class="c"># kg/mm^3 calculated A Back 2015-07-22</span>
     <span class="n">outer_radius</span> <span class="o">=</span> <span class="mf">1540.</span>  <span class="c"># mm, PRC 86, 021601 (2012)</span>
 
     <span class="n">xe136_converter</span> <span class="o">=</span> <span class="n">DBIsotope</span><span class="p">(</span><span class="s">&quot;Xe136&quot;</span><span class="p">,</span> <span class="n">Xe136_atm_weight</span><span class="p">,</span> <span class="n">XeEn_atm_weight</span><span class="p">,</span>
                                 <span class="n">Xe136_abundance</span><span class="p">,</span> <span class="n">phase_space</span><span class="p">,</span> <span class="n">matrix_element</span><span class="p">,</span>
-                                <span class="n">loading</span><span class="p">,</span> <span class="n">fv_radius</span><span class="p">,</span> <span class="n">outer_radius</span><span class="p">,</span>
-                                <span class="n">scint_density</span><span class="p">)</span>
+                                <span class="n">loading</span><span class="p">,</span> <span class="n">outer_radius</span><span class="p">,</span> <span class="n">scint_density</span><span class="p">)</span>
 
     <span class="n">expected</span> <span class="o">=</span> <span class="mf">5.3985e+26</span>  <span class="c"># Calculated - A Back 2015-06-30</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
-        <span class="n">xe136_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span>
-        <span class="n">fv_radius</span><span class="o">=</span><span class="n">fv_radius</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="n">loading</span><span class="p">,</span>
+        <span class="n">xe136_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">loading</span><span class="o">=</span><span class="n">loading</span><span class="p">,</span>
         <span class="n">scint_density</span><span class="o">=</span><span class="n">scint_density</span><span class="p">,</span> <span class="n">outer_radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span><span class="p">,</span> <span class="s">&quot;(KamLAND-Zen)&quot;</span>
 
@@ -541,7 +469,7 @@
     <span class="n">half_life</span> <span class="o">=</span> <span class="mf">5.17e25</span>  <span class="c"># y, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_activity</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">half_life</span><span class="o">=</span><span class="n">half_life</span><span class="p">,</span>
-        <span class="n">n_atoms</span><span class="o">=</span><span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">(</span><span class="n">fv_radius</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="p">))</span>
+        <span class="n">n_atoms</span><span class="o">=</span><span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">())</span>
     <span class="k">print</span> <span class="n">message</span><span class="p">,</span> <span class="s">&quot;(no FV cut)&quot;</span>
 
     <span class="c"># Check activity_to_half_life</span>
@@ -549,7 +477,7 @@
     <span class="n">activity</span> <span class="o">=</span> <span class="mf">50.4</span>  <span class="c"># /y, SNO+-doc-2593v8</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">activity_to_half_life</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">activity</span><span class="o">=</span><span class="n">activity</span><span class="p">,</span>
-        <span class="n">n_atoms</span><span class="o">=</span><span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">(</span><span class="n">fv_radius</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="p">))</span>
+        <span class="n">n_atoms</span><span class="o">=</span><span class="n">te130_converter</span><span class="o">.</span><span class="n">get_n_atoms</span><span class="p">())</span>
     <span class="k">print</span> <span class="n">message</span><span class="p">,</span> <span class="s">&quot;(no FV cut)&quot;</span>
 
     <span class="c"># Check eff_mass_to_half_life</span>
@@ -571,19 +499,19 @@
     <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)</span>
     <span class="n">expected</span> <span class="o">=</span> <span class="mf">31.2</span>
     <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
-    <span class="n">activity</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">activity</span> <span class="o">=</span> <span class="mf">50.4</span> 
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">activity_to_counts</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">activity</span><span class="o">=</span><span class="n">activity</span><span class="p">,</span>
-        <span class="n">livetime</span><span class="o">=</span><span class="n">livetime</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">livetime</span><span class="o">=</span><span class="n">livetime</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check counts_to_activity</span>
     <span class="c"># /y SNO+-doc-2593v8 - adjusted to FV</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="mf">50.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_fv_radius</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="n">const</span><span class="o">.</span><span class="n">_av_radius</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="mf">50.4</span>
     <span class="n">counts</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">counts_to_activity</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span>
-        <span class="n">livetime</span><span class="o">=</span><span class="n">livetime</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">livetime</span><span class="o">=</span><span class="n">livetime</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check counts_to_eff_mass</span>
@@ -592,7 +520,7 @@
     <span class="n">counts</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8 (3 sigma CL @ 5 y livetime)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">counts_to_eff_mass</span><span class="p">,</span>
-        <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check eff_mass_to_counts</span>
@@ -601,7 +529,7 @@
     <span class="n">eff_mass</span> <span class="o">=</span> <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_eff_mass</span><span class="p">(</span><span class="mf">5.17e25</span><span class="p">)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">eff_mass_to_counts</span><span class="p">,</span>
-        <span class="n">expected</span><span class="p">,</span> <span class="n">eff_mass</span><span class="o">=</span><span class="n">eff_mass</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">expected</span><span class="p">,</span> <span class="n">eff_mass</span><span class="o">=</span><span class="n">eff_mass</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check half_life_to_counts</span>
@@ -609,7 +537,7 @@
     <span class="n">half_life</span> <span class="o">=</span> <span class="mf">5.17e25</span>  <span class="c"># y, SNO+-doc-2593v8 (3 sigma @ 5 y livetime)</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">half_life_to_counts</span><span class="p">,</span>
-        <span class="n">expected</span><span class="p">,</span> <span class="n">half_life</span><span class="o">=</span><span class="n">half_life</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">expected</span><span class="p">,</span> <span class="n">half_life</span><span class="o">=</span><span class="n">half_life</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="c"># Check counts_to_half_life</span>
@@ -617,12 +545,42 @@
     <span class="n">counts</span> <span class="o">=</span> <span class="mf">31.2</span>  <span class="c"># ROI counts, SNO+-doc-2593v8</span>
     <span class="n">result</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">physics_tests</span><span class="o">.</span><span class="n">test_function_float</span><span class="p">(</span>
         <span class="n">te130_converter</span><span class="o">.</span><span class="n">counts_to_half_life</span><span class="p">,</span>
-        <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span> <span class="n">roi_cut</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">expected</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">message</span>
 
     <span class="k">print</span> <span class="s">&quot;============&quot;</span>
 
-</div>
+
+<span class="c"># Matrix elements - dictionary with Spectra name as key and matrix element as</span>
+<span class="c">#                   value.</span></div>
+<span class="n">matrix_elements</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c"># REF: F. Simkovic et al. Phys. Rev. C. 79, 055501 1-10 (2009)</span>
+    <span class="c"># Averaged over min and max values from columns 2, 4 &amp; 6 in Table III</span>
+    <span class="s">&quot;Xe136_0n2b_n1&quot;</span><span class="p">:</span> <span class="mf">2.205</span><span class="p">,</span>
+    <span class="s">&quot;Xe136_0n2b_n2&quot;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+    <span class="c"># REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 2</span>
+    <span class="c"># Assuming two Majorons emitted i.e. only type IE or IID modes</span>
+    <span class="s">&quot;Xe136_0n2b_n3&quot;</span><span class="p">:</span> <span class="mf">1.e-3</span><span class="p">,</span>
+    <span class="c"># REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 2</span>
+    <span class="s">&quot;Xe136_0n2b_n7&quot;</span><span class="p">:</span> <span class="mf">1.e-3</span>
+    <span class="p">}</span>
+
+<span class="c"># Phase space factors - dictionary with Spectra name as key and phase space</span>
+<span class="c">#                       factor as value.</span>
+<span class="n">phase_spaces</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c"># REF: Suhonen, J. &amp; Civitarese, O. Physics Reports, Elsevier BV, 300</span>
+    <span class="c"># 123-214 (1998)</span>
+    <span class="c"># Table 6</span>
+    <span class="s">&quot;Xe136_0n2b_n1&quot;</span><span class="p">:</span> <span class="mf">6.02e-16</span><span class="p">,</span>
+    <span class="s">&quot;Xe136_0n2b_n2&quot;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+    <span class="c"># Assuming two Majorons emitted i.e. only type IE or IID modes</span>
+    <span class="c"># REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 3</span>
+    <span class="s">&quot;Xe136_0n2b_n3&quot;</span><span class="p">:</span> <span class="mf">1.06e-17</span><span class="p">,</span>
+    <span class="c"># REF: M. Hirsh et al. Phys. Lett. B. 372, 8-14 (1996) - Table 3</span>
+    <span class="s">&quot;Xe136_0n2b_n7&quot;</span><span class="p">:</span> <span class="mf">4.54e-17</span>
+    <span class="p">}</span>
+
+
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">argparse</span>
 
@@ -633,9 +591,6 @@
                                      <span class="s">&quot;script and validation.&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span> <span class="s">&quot;--signal&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">ReadableDir</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s">&quot;Supply path for signal hdf5 file&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-e&quot;</span><span class="p">,</span> <span class="s">&quot;--roi_efficiency&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&quot;If ROI efficiency should be calculated to &quot;</span>
-                        <span class="s">&quot;override default value&quot;</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="n">test</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
@@ -678,6 +633,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

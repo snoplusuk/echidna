@@ -1,0 +1,2101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.fit package &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="index.html" />
+    <link rel="up" title="echidna package" href="echidna.html" />
+    <link rel="next" title="echidna.limit package" href="echidna.limit.html" />
+    <link rel="prev" title="echidna.errors package" href="echidna.errors.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.limit.html" title="echidna.limit package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="echidna.errors.html" title="echidna.errors package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" accesskey="U">echidna package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="echidna-fit-package">
+<h1>echidna.fit package<a class="headerlink" href="#echidna-fit-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-echidna.fit.fit">
+<span id="echidna-fit-fit-module"></span><h2>echidna.fit.fit module<a class="headerlink" href="#module-echidna.fit.fit" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="echidna.fit.fit.Fit">
+<em class="property">class </em><code class="descclassname">echidna.fit.fit.</code><code class="descname">Fit</code><span class="sig-paren">(</span><em>roi</em>, <em>test_statistic</em>, <em>fit_config=None</em>, <em>data=None</em>, <em>fixed_backgrounds=None</em>, <em>floating_backgrounds=None</em>, <em>signal=None</em>, <em>shrink=True</em>, <em>per_bin=False</em>, <em>minimiser=None</em>, <em>fit_results=None</em>, <em>use_pre_made=False</em>, <em>pre_made_base_dir=None</em>, <em>single_bin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to handle fitting.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The <a class="reference internal" href="#echidna.fit.fit.Fit" title="echidna.fit.fit.Fit"><code class="xref py py-class docutils literal"><span class="pre">Fit</span></code></a> initialisation will try to set
+atrributes using the values provided. If a value is not provided
+echidna will attempt to set the default. If this is not possible
+a warning will be raised and you will have to set this attribute
+manually before calling <a class="reference internal" href="#echidna.fit.fit.Fit.fit" title="echidna.fit.fit.Fit.fit"><code class="xref py py-meth docutils literal"><span class="pre">fit()</span></code></a>.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>roi</strong> (<em>dictionary</em>) &#8211; Region Of Interest you want to fit in. The format of
+roi is e.g. {&#8220;energy&#8221;: (2.4, 2.6), &#8220;radial3&#8221;: (0., 0.2)}</li>
+<li><strong>test_statistic</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.TestStatistic</span></code>) &#8211; An
+appropriate class for calculating test statistics.</li>
+<li><strong>fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">FitConfig</span></code>, optional) &#8211; Config class for fit -
+usually loaded from file.</li>
+<li><strong>data</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Data spectrum you want to
+fit.</li>
+<li><strong>fixed_background</strong> (<em>dict, optional</em>) &#8211; Dictionary containing all fixed
+backgrounds, with <a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> as keys
+and priors (float) as values.</li>
+<li><strong>floating_backgrounds</strong> &#8211; one
+<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a> for each background to float.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default),
+<code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code> method is called on all spectra shrinking them to
+the ROI.</li>
+<li><strong>minimiser</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.minimiser.Minimiser</span></code>, optional) &#8211; Object
+to handle the minimisation.</li>
+<li><strong>fit_results</strong> (<code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code>, optional) &#8211; Specify a separate
+Fit Results class.</li>
+<li><strong>use_pre_made</strong> (<em>bool, optional</em>) &#8211; Flag whether to load a pre-made spectrum
+for each systematic value, or apply convolutions on the fly.</li>
+<li><strong>pre_made_dir</strong> (<em>string, optional</em>) &#8211; Directory in which pre-made convolved
+spectra are stored.</li>
+<li><strong>single_bin</strong> (<em>bool, optional</em>) &#8211; Flag for a single bin fit (e.g. simple
+counting experiment).</li>
+<li><strong>per_bin</strong> (<em>bool, optional</em>) &#8211; Flag to monitor values of test
+statistic, per bin included in the fit (ROI)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_logger</strong> (<em>loggging.Logger</em>) &#8211; Logger for <a class="reference internal" href="#echidna.fit.fit.Fit" title="echidna.fit.fit.Fit"><code class="xref py py-class docutils literal"><span class="pre">Fit</span></code></a> class.</li>
+<li><strong>_roi</strong> (<em>dictionary</em>) &#8211; Region Of Interest you want to fit in. The format of
+roi is e.g. {&#8220;energy&#8221;: (2.4, 2.6), &#8220;radial3&#8221;: (0., 0.2)}</li>
+<li><strong>_test_statistic</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.TestStatistic</span></code>) &#8211; An
+appropriate class for calculating test statistics.</li>
+<li><strong>_fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">FitConfig</span></code>) &#8211; Config class for fit -
+usually loaded from file.</li>
+<li><strong>_data</strong> &#8211; Data spectrum you want to
+fit.</li>
+<li><strong>_floating_backgrounds</strong> &#8211; one <a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>
+for each background to float.</li>
+<li><strong>_fit_results</strong> (<code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code>) &#8211; Specify a separate
+Fit Results class.</li>
+<li><strong>_checked</strong> (<em>bool</em>) &#8211; If True then the fit class is ready to be used.</li>
+<li><strong>_use_pre_made</strong> (<em>bool</em>) &#8211; Flag whether to load a pre-made spectrum
+for each systematic value, or apply convolutions on the fly.</li>
+<li><strong>_pre_made_dir</strong> (<em>string</em>) &#8211; Directory in which pre-made convolved
+spectra are stored.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.fit.fit.Fit._funct">
+<code class="descname">_funct</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit._funct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit._funct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable to pass to minimiser.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>list</em>) &#8211; List of fit parameter values to test in the
+current iteration.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">containing:<dl class="docutils">
+<dt><code class="xref py py-class docutils literal"><span class="pre">numpy.ndrray</span></code>: Values of the test statistic given</dt>
+<dd>the current values of the fit parameters.</dd>
+<dt>float: Total penalty term to be applied to the test</dt>
+<dd>statistic.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If <code class="xref py py-attr docutils literal"><span class="pre">_floating_backgrounds</span></code> is None. This
+method requires at least one floating background.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method should not be called directly, it is
+intended to be passed to an appropriate minimiser and
+called from within the minimisation algorithm.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method should not be used if there are no
+floating backgrounds.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.append_fixed_background">
+<code class="descname">append_fixed_background</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.append_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.append_fixed_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the fixed background with more spectra.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra_dict</strong> (<em>dict</em>) &#8211; Dictionary containing spectra as keys and
+prior counts as values.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default), <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code>
+method is called on the spectra shrinking it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.check_all_spectra">
+<code class="descname">check_all_spectra</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.check_all_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.check_all_spectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures that all spectra can be used for fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the data spectra exists and its roi pars have
+not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the data spectrum has not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If neither fixed background nor at least
+one floating background, has been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the fixed background spectra exists and its
+roi pars have not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the signal spectra exists and its
+roi pars have not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the floating backgrounds spectra exists and
+their roi pars have not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the floating backgrounds spectra exists and
+their roi pars have not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the floating backgrounds spectra exists and
+length of their roi pars is different to the number of floating
+backgrounds.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.check_fit_config">
+<code class="descname">check_fit_config</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.check_fit_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.check_fit_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that a spectra has a fit config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectra you want to
+check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If spectra has no fit config</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.check_fitter">
+<code class="descname">check_fitter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.check_fitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.check_fitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the Fit class is ready to be used for fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If fit config contains no parameters</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If number of floating backgrounds and number of
+spectral fit parameters do not match.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; 
+If <code class="xref py py-attr docutils literal"><span class="pre">_minimiser</span></code> has not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; 
+If <code class="xref py py-attr docutils literal"><span class="pre">_fit_results</span></code> has not been set.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If (un)expected per_bin flag in minimiser.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If (un)expected integer value for num_bins, in
+fit_results.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If (un)expected per_bin flag in test_statistic.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.check_roi">
+<code class="descname">check_roi</code><span class="sig-paren">(</span><em>roi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.check_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.check_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the ROI used to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>roi</strong> (<em>dict</em>) &#8211; roi you want to check.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If roi is not a dict</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If value in roi dict is not a list or a tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">CompatibilityError</span></code> &#8211; 
+If the length of a value in the roi dict is
+not 2.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.check_spectra">
+<code class="descname">check_spectra</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.check_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.check_spectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the spectra you want to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectra you want to
+check.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If roi low value and spectra low value are not equal.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If roi high value and spectra high value are not equal.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the value of the test statistic used for fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">float or <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>: The resulting test statisic(s)
+dependent upon what method is used to compute the statistic.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_data">
+<code class="descname">get_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the data you are fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The data you are fitting.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_fit_config">
+<code class="descname">get_fit_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_fit_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_fit_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_fit_results">
+<code class="descname">get_fit_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_fit_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_fit_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the fit results object for the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.fit.FitResults</span></code>: FitResults for the fit.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_fixed_background">
+<code class="descname">get_fixed_background</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_fixed_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the fixed background you are fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The fixed background you are
+fitting.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_floating_backgrounds">
+<code class="descname">get_floating_backgrounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_floating_backgrounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_floating_backgrounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the floating backgrounds you are fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The floating backgrounds you are fitting.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_minimiser">
+<code class="descname">get_minimiser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_minimiser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_minimiser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the minimiser you are using.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">echidna.limit.minimise.Minimiser</span></code>: The minimiser</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_roi">
+<code class="descname">get_roi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the region of interest (roi)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The region of interest</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_roi_pars">
+<code class="descname">get_roi_pars</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_roi_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_roi_pars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the parameters of a spectra that contain the roi.</p>
+<blockquote>
+<div>the roi parameters for.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Of the names of the spectra parameters which contain the roi.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_signal">
+<code class="descname">get_signal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the signal you are fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>: The fixed background you are
+fitting.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.get_test_statistic">
+<code class="descname">get_test_statistic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.get_test_statistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.get_test_statistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the class instance you are using to calculate the test
+statistic used in the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic.TestStatistic</span></code>): The class
+instance used to calculate test statistics.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.load_pre_made">
+<code class="descname">load_pre_made</code><span class="sig-paren">(</span><em>spectrum</em>, <em>global_pars</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.load_pre_made"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.load_pre_made" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pre-made convolved spectra.</p>
+<p>This method is used to load a pre-made spectra convolved with
+certain resolution, energy-scale or shift values, or a
+combination of two or more at given values.</p>
+<p>The method loads the loads the correct spectra from HDF5s,
+stored in the given directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectrum
+to convolve.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>): Convolved spectrum,
+ready for applying further systematics or fitting.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.make_fixed_background">
+<code class="descname">make_fixed_background</code><span class="sig-paren">(</span><em>spectra_dict</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.make_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.make_fixed_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a spectrum for fixed backgrounds and stores it in the class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spectra_dict</strong> (<em>dict</em>) &#8211; Dictionary containing spectra as keys and
+prior counts as values.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default), <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code>
+method is called on the spectra shrinking it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.remove_signal">
+<code class="descname">remove_signal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.remove_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.remove_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the signal spectra from the class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_data">
+<code class="descname">set_data</code><span class="sig-paren">(</span><em>data</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the data you want to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Data spectrum you
+want to fit.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default), <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code>
+method is called on the spectra shrinking it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_fit_config">
+<code class="descname">set_fit_config</code><span class="sig-paren">(</span><em>fit_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_fit_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_fit_config" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.FitConfig</span></code>) &#8211; Config
+for fit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If fit_config is not of type <code class="xref py py-class docutils literal"><span class="pre">FitConfig</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_fit_results">
+<code class="descname">set_fit_results</code><span class="sig-paren">(</span><em>fit_results=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_fit_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_fit_results" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_results</strong> (<code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code>, optional) &#8211; The fit results
+instance.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If fit config contains no parameters.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_fixed_background">
+<code class="descname">set_fixed_background</code><span class="sig-paren">(</span><em>fixed_background</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_fixed_background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_fixed_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the fixed background you want to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fixed_background</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The
+fixed background spectrum you want to fit.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default) <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code>
+method is called on the spectra shrinking it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_floating_backgrounds">
+<code class="descname">set_floating_backgrounds</code><span class="sig-paren">(</span><em>floating_backgrounds</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_floating_backgrounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_floating_backgrounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the floating backgrounds you want to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>floating_backgrounds</strong> (<em>list</em>) &#8211; List of backgrounds you want to float
+in the fit.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default), <code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code>
+method is called on the spectra shrinking it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_minimiser">
+<code class="descname">set_minimiser</code><span class="sig-paren">(</span><em>minimiser=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_minimiser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_minimiser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the minimiser to use in fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minimiser</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.minimise.Minimiser</span></code>, optional) &#8211; The
+minimiser to use in the fit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If fit config contains no parameters.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_pre_made_dir">
+<code class="descname">set_pre_made_dir</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_pre_made_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_pre_made_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the directory in which pre-made convolved spectra are
+stored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>directory</strong> (<em>string</em>) &#8211; Directory in which pre-made spectra are
+located.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_roi">
+<code class="descname">set_roi</code><span class="sig-paren">(</span><em>roi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the region of interest you want to fit in.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>roi</strong> (<em>dictionary</em>) &#8211; The Region Of Interest you want to fit in.
+The format of roi is
+e.g. {&#8220;energy&#8221;: (2.4, 2.6), &#8220;radial3&#8221;: (0., 0.2)}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_signal">
+<code class="descname">set_signal</code><span class="sig-paren">(</span><em>signal</em>, <em>shrink=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the signal you want to fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; The signal
+spectrum you want to fit.</li>
+<li><strong>shrink</strong> (<em>bool, optional</em>) &#8211; If set to True (default)
+<code class="xref py py-meth docutils literal"><span class="pre">shrink()</span></code> method is called on the spectra shrinking
+it to the ROI.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.set_test_statistic">
+<code class="descname">set_test_statistic</code><span class="sig-paren">(</span><em>test_statistic</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.set_test_statistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.set_test_statistic" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Sets the method you want to use to calculate test statistics in</dt>
+<dd><p class="first">the fit.</p>
+<blockquote class="last">
+<div>An appropriate class for calculating test statistics.</div></blockquote>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.shrink_all">
+<code class="descname">shrink_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.shrink_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.shrink_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shrinks all the spectra used in the fit to the roi.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit.Fit.shrink_spectra">
+<code class="descname">shrink_spectra</code><span class="sig-paren">(</span><em>spectra</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit.html#Fit.shrink_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit.Fit.shrink_spectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shrinks the spectra used in the fit to the roi.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra</strong> (<a class="reference internal" href="echidna.core.html#echidna.core.spectra.Spectra" title="echidna.core.spectra.Spectra"><code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.Spectra</span></code></a>) &#8211; Spectra you want to
+shrink to the roi.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.fit.fit_results">
+<span id="echidna-fit-fit-results-module"></span><h2>echidna.fit.fit_results module<a class="headerlink" href="#module-echidna.fit.fit_results" title="Permalink to this headline">¶</a></h2>
+<p>Fit results module, containing <code class="docutils literal"><span class="pre">FitResults</span></code> class.</p>
+<dl class="class">
+<dt id="echidna.fit.fit_results.FitResults">
+<em class="property">class </em><code class="descclassname">echidna.fit.fit_results.</code><code class="descname">FitResults</code><span class="sig-paren">(</span><em>fit_config</em>, <em>spectra_config</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for handling results of the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code>) &#8211; The
+configuration for fit. This should be a direct copy of the
+<code class="docutils literal"><span class="pre">FitConfig</span></code> in <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.Fit</span></code>.</li>
+<li><strong>spectra_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>) &#8211; The
+for spectra configuration. The recommended spectrum config to
+include here is the one from the data spectrum, to which you
+are fitting.</li>
+<li><strong>name</strong> (<em>str, optional</em>) &#8211; Name of this <a class="reference internal" href="#echidna.fit.fit_results.FitResults" title="echidna.fit.fit_results.FitResults"><code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code></a> class
+instance. If no name is supplied, name from fit_results will be
+taken and appended with &#8220;_results&#8221;.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code>) &#8211; The
+configuration for fit. This should be a direct copy of the
+<code class="docutils literal"><span class="pre">FitConfig</span></code> in <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.Fit</span></code>.</li>
+<li><strong>_spectra_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>) &#8211; The
+for spectra configuration. The recommended spectrum config to
+include here is the one from the data spectrum, to which you
+are fitting.</li>
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of this <a class="reference internal" href="#echidna.fit.fit_results.FitResults" title="echidna.fit.fit_results.FitResults"><code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code></a> class instance.</li>
+<li><strong>_stats</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array of values of the test
+statistic calculated during the fit.</li>
+<li><strong>_penalty_terms</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array of values of the
+penalty terms calculated during the fit.</li>
+<li><strong>_minimum_value</strong> (<em>float</em>) &#8211; Minimum value of the array returned by
+<code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>.</li>
+<li><strong>_minimum_position</strong> (<em>tuple</em>) &#8211; Position of the test statistic minimum
+value. The tuple contains the indices along each fit parameter
+(dimension), acting as coordinates of the position of the
+minimum.</li>
+<li><strong>_resets</strong> (<em>int</em>) &#8211; Number of times the grid has been reset.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">fit_results</span> <span class="o">=</span> <span class="n">FitResults</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_fit_config">
+<code class="descname">get_fit_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_fit_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_fit_config" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.FitConfig</span></code>): Configuration of fit.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_minimum_position">
+<code class="descname">get_minimum_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_minimum_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_minimum_position" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(float): Position of the minimum value in the array returned
+by <code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>, stored in <code class="xref py py-attr docutils literal"><span class="pre">_minimum_position</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_minimum_value">
+<code class="descname">get_minimum_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_minimum_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_minimum_value" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(float): Minimum value of the array returned by
+<code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>, stored in <code class="xref py py-attr docutils literal"><span class="pre">_minimum_value</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Name of fit results object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_penalty_term">
+<code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the array of penalty terms.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unlike the <code class="xref py py-class docutils literal"><span class="pre">echidna.fit.summary.Summary</span></code> class
+individual penalty contributions from each fit parameter are
+not stored here, only the total penalty term value.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>indices</strong> (<em>tuple</em>) &#8211; The index along each fit parameter dimension
+specifying the coordinates from which to retrieve the total
+penalty term value.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>): Array stored in <code class="xref py py-attr docutils literal"><span class="pre">_penalty_terms</span></code>.
+Values of the penalty term calculated during the fit.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the number of indices supplied does not match
+the dimensions of the fit</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the indices supplied are out of bounds for
+the fit dimensions</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_penalty_terms">
+<code class="descname">get_penalty_terms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_penalty_terms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_penalty_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the array of penalty terms.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unlike the <code class="xref py py-class docutils literal"><span class="pre">echidna.fit.summary.Summary</span></code> class
+individual penalty contributions from each fit parameter are
+not stored here, only the total penalty term value.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>): Array stored in <code class="xref py py-attr docutils literal"><span class="pre">_penalty_terms</span></code>.
+Values of the penalty term calculated during the fit.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_raw_stat">
+<code class="descname">get_raw_stat</code><span class="sig-paren">(</span><em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_raw_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_raw_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the raw test statistic(s) from array at the given indices.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This has no penalty term contributions added.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unlike <a class="reference internal" href="#echidna.fit.fit_results.FitResults.get_stat" title="echidna.fit.fit_results.FitResults.get_stat"><code class="xref py py-meth docutils literal"><span class="pre">get_stat()</span></code></a>, here you can specify indices
+for any number of fit parameters dimensions, so to get a
+slice of the raw array.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> (<em>tuple</em>) &#8211; Index along each fit parameter (dimension)
+specifiying the coordinates in the array.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(float or <code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>): The raw test statistic(s)
+at the given indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_raw_stats">
+<code class="descname">get_raw_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_raw_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_raw_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the raw test statistics array.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This has no penalty term contributions added.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>: The raw test statistics values at each
+combination of fit parameter values.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_resets">
+<code class="descname">get_resets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_resets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_resets" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Number of times the grid has been reset (<code class="xref py py-attr docutils literal"><span class="pre">_resets</span></code>).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_stat">
+<code class="descname">get_stat</code><span class="sig-paren">(</span><em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the test-statistic array (collapsed to the parameter
+values grid - i.e. summed over spectral bins) with the penalty
+term grid of the same shape, for a single bin, specified by
+indices.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Penalty term contributions <strong>are</strong> included here.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>indices</strong> (<em>tuple</em>) &#8211; The index along each fit parameter dimension
+specifying the coordinates from which to retrieve the test
+statistic value.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(float): Combination of the value of the test statistic
+calculated during the fit and the penalty term value.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the number of indices supplied does not match
+the dimensions of the fit</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the indices supplied are out of bounds for
+the fit dimensions</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_stats">
+<code class="descname">get_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the test-statistic array (collapsed to the parameter
+values grid - i.e. summed over spectral bins) with the penalty
+term grid of the same shape.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Penalty term contributions <strong>are</strong> included here.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>): Array combining the values of the
+test statistic calculated during the fit and the penalty
+term values.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.get_summary">
+<code class="descname">get_summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.get_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.get_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a summary of the fit parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Results of fit. Dictionary with fit parameter names as
+keys and a nested dictionary as values containing the keys
+best_fit and penalty_term with the corresponding values for the
+parameter.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.nd_project_stat">
+<code class="descname">nd_project_stat</code><span class="sig-paren">(</span><em>indices</em>, <em>*parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.nd_project_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.nd_project_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projects the test statistic values, at given the given
+indices, onto the axes specified by fit and spectral parameters.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If only <strong>fit</strong> parameters are specified all
+spectral dimensions are collapsed and penalty term
+contributions <strong>are</strong> included. If any <strong>spectral</strong>
+parameters are provided penalty term contributions <strong>are
+not</strong> included.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>indices</strong> &#8211; The index along each fit parameter dimension
+specifying the coordinates from which to retrieve the test
+statistic value.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: Projection of <code class="xref py py-attr docutils literal"><span class="pre">_stats</span></code> array,
+at the given indices, onto the given parameter axes.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the parameter names supplied do not match
+any of those stored in the fit or spectra configs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.nd_project_stats">
+<code class="descname">nd_project_stats</code><span class="sig-paren">(</span><em>*parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.nd_project_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.nd_project_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projects the test statistic values onto the axes specified
+by fit and spectral parameters.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>If only <strong>fit</strong> parameters are specified all
+spectral dimensions are collapsed and penalty term
+contributions <strong>are</strong> included. If any <strong>spectral</strong>
+parameters are provided penalty term contributions <strong>are
+not</strong> included.</p>
+<blockquote class="last">
+<div>parameters onto which to project the test statistic values.</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>: Projection of <code class="xref py py-attr docutils literal"><span class="pre">_stats</span></code> array
+onto the given parameter axes.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the parameter names supplied do not match
+any of those stored in the fit or spectra configs.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.reset_grids">
+<code class="descname">reset_grids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.reset_grids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.reset_grids" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Resets the grids stored in <code class="xref py py-attr docutils literal"><span class="pre">_stats</span></code> and</dt>
+<dd><code class="xref py py-attr docutils literal"><span class="pre">_penalty_terms</span></code>, including shape.</dd>
+</dl>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If fit parameters have been added/removed, calling
+this method will increase/decrease the dimensions of the grid
+to compensate for this change.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_fit_config">
+<code class="descname">set_fit_config</code><span class="sig-paren">(</span><em>fit_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_fit_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_fit_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the fit config.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This will automatically call <code class="xref py py-meth docutils literal"><span class="pre">reset_grid()</span></code>
+to update the grid based on the new fit config</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code>) &#8211; The
+configuration for fit. This should be a direct copy of the
+<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code> object in
+<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.Fit</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_minimum_position">
+<code class="descname">set_minimum_position</code><span class="sig-paren">(</span><em>minimum_position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_minimum_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_minimum_position" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minimum_position</strong> (<em>float</em>) &#8211; Position of the minimum value of
+the array returned by <code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_minimum_value">
+<code class="descname">set_minimum_value</code><span class="sig-paren">(</span><em>minimum_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_minimum_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_minimum_value" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minimum_value</strong> (<em>float</em>) &#8211; Minimum value of the array returned by
+<code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_penalty_term">
+<code class="descname">set_penalty_term</code><span class="sig-paren">(</span><em>penalty_term</em>, <em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the total penalty term value at the point in the array
+specified by indices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>penalty_term</strong> (<em>float</em>) &#8211; Best fit value of a fit parameter.</li>
+<li><strong>indices</strong> (<em>tuple</em>) &#8211; The index along each fit parameter dimension
+specifying the coordinates from which to set the total
+penalty term value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If penalty_term is not a float.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the number of indices supplied does not match
+the dimensions of the fit</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the indices supplied are out of bounds for
+the fit dimensions</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_penalty_terms">
+<code class="descname">set_penalty_terms</code><span class="sig-paren">(</span><em>penalty_terms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_penalty_terms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_penalty_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the array containing penalty term values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>penalty_terms</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; The array of penalty
+term values</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If penalty_terms is not an <code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code></li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the penalty_terms array does not have the required
+shape.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_spectra_config">
+<code class="descname">set_spectra_config</code><span class="sig-paren">(</span><em>spectra_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_spectra_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_spectra_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the spectra config.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This will automatically call <code class="xref py py-meth docutils literal"><span class="pre">reset_grid()</span></code>
+to update the grid based on the new fit config</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectra_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>) &#8211; The
+configuration for the spectra. This should usually be a
+direct copy of the <code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>
+in the data spectrum.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_stat">
+<code class="descname">set_stat</code><span class="sig-paren">(</span><em>stat</em>, <em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the test statistic values in array at the point
+specified by indices</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stat</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Values of the test statistic.</li>
+<li><strong>indices</strong> (<em>tuple</em>) &#8211; Position in the array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If the indices supplied are not at tuple</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the number of indices supplied does not match
+the dimensions of the fit</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; 
+If the indices supplied are out of bounds for
+the fit dimensions</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If stat is not a <code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the stats array has incorrect shape.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.fit_results.FitResults.set_stats">
+<code class="descname">set_stats</code><span class="sig-paren">(</span><em>stats</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/fit_results.html#FitResults.set_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.fit_results.FitResults.set_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the total test statistics array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>stats</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; The total test statistics array.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; 
+If stats is not a <code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If the stats array has incorrect shape.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.fit.minimise">
+<span id="echidna-fit-minimise-module"></span><h2>echidna.fit.minimise module<a class="headerlink" href="#module-echidna.fit.minimise" title="Permalink to this headline">¶</a></h2>
+<p>Module containing classes that act as minimisers in a fit.</p>
+<dl class="class">
+<dt id="echidna.fit.minimise.GridSearch">
+<em class="property">class </em><code class="descclassname">echidna.fit.minimise.</code><code class="descname">GridSearch</code><span class="sig-paren">(</span><em>fit_config</em>, <em>spectra_config</em>, <em>name=None</em>, <em>per_bin=False</em>, <em>use_numpy=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.fit.fit_results.FitResults" title="echidna.fit.fit_results.FitResults"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.fit_results.FitResults</span></code></a>, <a class="reference internal" href="#echidna.fit.minimise.Minimiser" title="echidna.fit.minimise.Minimiser"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.minimise.Minimiser</span></code></a></p>
+<p>A grid-search minimisation algorithm.</p>
+<p>Although this is minimisation, it makes more sense for the class to
+inherit from <code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code>, as the <code class="xref py py-attr docutils literal"><span class="pre">_stats</span></code> attribute is
+the same in both classes, as is the <code class="xref py py-attr docutils literal"><span class="pre">_fit_config</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code>) &#8211; Configuration
+for fit. This should be a direct copy of the <code class="docutils literal"><span class="pre">FitConfig</span></code>
+in <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.Fit</span></code>.</li>
+<li><strong>spectra_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>) &#8211; The
+for spectra configuration. The recommended spectrum config to
+include here is the one from the data spectrum, to which you
+are fitting.</li>
+<li><strong>name</strong> (<em>str, optional</em>) &#8211; Name of this <code class="xref py py-class docutils literal"><span class="pre">FitResults</span></code> class
+instance. If no name is supplied, name from fit_results will be
+taken and appended with &#8220;_results&#8221;.</li>
+<li><strong>per_bin</strong> (<em>bool, optional</em>) &#8211; Flag if minimiser should expect a
+test statistic value per-bin.</li>
+<li><strong>use_numpy</strong> (<em>bool, optional</em>) &#8211; Flag to indicate whether to use the
+built-in numpy functions for minimisation and locating the
+minimum, or use the <a class="reference internal" href="#echidna.fit.minimise.GridSearch.find_minimum" title="echidna.fit.minimise.GridSearch.find_minimum"><code class="xref py py-meth docutils literal"><span class="pre">find_minimum()</span></code></a> method. Default is to
+use numpy.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_fit_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.GlobalFitConfig</span></code>) &#8211; The
+configuration for fit. This should be a direct copy of the
+<code class="docutils literal"><span class="pre">FitConfig</span></code> in <code class="xref py py-class docutils literal"><span class="pre">echidna.limit.fit.Fit</span></code>.</li>
+<li><strong>_spectra_config</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.core.spectra.SpectraConfig</span></code>) &#8211; The
+for spectra configuration. The recommended spectrum config to
+include here is the one from the data spectrum, to which you
+are fitting.</li>
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of this <a class="reference internal" href="#echidna.fit.minimise.GridSearch" title="echidna.fit.minimise.GridSearch"><code class="xref py py-class docutils literal"><span class="pre">GridSearch</span></code></a> class instance.</li>
+<li><strong>_stats</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array of values of the test
+statistic calculated during the fit.</li>
+<li><strong>_penalties</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array of values of the
+penalty terms calculated during the fit.</li>
+<li><strong>_minimum_value</strong> (<em>float</em>) &#8211; Minimum value of the array returned by
+<code class="xref py py-meth docutils literal"><span class="pre">get_fit_data()</span></code>.</li>
+<li><strong>_minimum_position</strong> (<em>tuple</em>) &#8211; Position of the test statistic minimum
+value. The tuple contains the indices along each fit parameter
+(dimension), acting as coordinates of the position of the
+minimum.</li>
+<li><strong>_resets</strong> (<em>int</em>) &#8211; Number of times the grid has been reset.</li>
+<li><strong>_type</strong> (<em>string</em>) &#8211; Type of minimiser, e.g. GridSearch</li>
+<li><strong>_per_bin</strong> (<em>bool, optional</em>) &#8211; Flag if minimiser should expect a
+test statistic value per-bin.</li>
+<li><strong>_use_numpy</strong> (<em>bool, optional</em>) &#8211; Flag to indicate whether to use the
+built-in numpy functions for minimisation and locating the
+minimum, or use the <a class="reference internal" href="#echidna.fit.minimise.GridSearch.find_minimum" title="echidna.fit.minimise.GridSearch.find_minimum"><code class="xref py py-meth docutils literal"><span class="pre">find_minimum()</span></code></a> method. Default is to
+use numpy.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.fit.minimise.GridSearch._get_fit_par_values">
+<code class="descname">_get_fit_par_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch._get_fit_par_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch._get_fit_par_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal method. Gets next array of parameter values to
+test in fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><ul class="first last">
+<li><p class="first">(<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>): Next array of parameter values to &#8211;</p>
+<p>test in fit.</p>
+</li>
+<li><p class="first">(<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>): Indices of these parameter values.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.minimise.GridSearch._get_values">
+<code class="descname">_get_values</code><span class="sig-paren">(</span><em>index</em>, <em>values</em>, <em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch._get_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch._get_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal method. Called recursively to populate the array
+of current parameter values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><ul class="first last">
+<li><p class="first">(<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>): Next array of parameter values to &#8211;</p>
+<p>test in fit.</p>
+</li>
+<li><p class="first">(<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>): Indices of these parameter values.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.minimise.GridSearch._update_coords">
+<code class="descname">_update_coords</code><span class="sig-paren">(</span><em>coords</em>, <em>new_coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch._update_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch._update_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal method called by <a class="reference internal" href="#echidna.fit.minimise.GridSearch.find_minimum" title="echidna.fit.minimise.GridSearch.find_minimum"><code class="xref py py-meth docutils literal"><span class="pre">find_minimum()</span></code></a> to update the
+stored co-ordinates of minima.</p>
+<p>This method takes the new co-ordinates in <code class="docutils literal"><span class="pre">new_coords</span></code> and
+works out the indices to select the correct (previously-
+calculated) co-ordinates for the positions of minima, in the
+inner dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>coords</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; 2D array containing the
+previously calculated co-ordinates for the inner dimensions.</li>
+<li><strong>new_coords</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array containing the
+co-ordinates of each minima calculated for the current
+dimension.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>): 2D array containing the updated
+arrays of co-ordinates, for all dimensions processed so far.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.minimise.GridSearch.find_minimum">
+<code class="descname">find_minimum</code><span class="sig-paren">(</span><em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch.find_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch.find_minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alternative method for finding the minimum.</p>
+<p>Starting from the innermost dimension, locates the minima
+along the axis - effectively minimising over lots of 1D arrays.
+Once the minima are located, this axis is collapsed down to
+next innermost, storing just the values at the minima. The
+position of each minima is also stored in the <code class="docutils literal"><span class="pre">coords</span></code> array.</p>
+<p>This process is then repeated for the next innermost array.
+However now when we locate the position of each minima, we
+also wish to get the corresponding position calculated at the
+previous dimension - the <a class="reference internal" href="#echidna.fit.minimise.GridSearch._update_coords" title="echidna.fit.minimise.GridSearch._update_coords"><code class="xref py py-meth docutils literal"><span class="pre">_update_coords()</span></code></a> does this,
+concatenating the current locations with the previous ones
+so we start to build up an array of co-ordinates.</p>
+<p>As the code works outwards through the dimensions, the
+number of co-ordinates are added, but the choice of co-ordinates
+is reduced. Until the outermost dimension is processed and then
+<em>ideally</em> only one minimum value and one set of co-ordinates
+remains.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; Array to minimise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Minimum value in array.
+tuple: Location (co-ordinates) of minimum.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the exact minimum value is repeated more than
+once in the array, the location with the lowest coordinate
+values (starting from the outermost dimension) will be
+returned. E.g. if two equal minima are at (4, 10, 15) and
+(41, 2, 12), the location (4, 10, 15) would be returned</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.minimise.GridSearch.minimise">
+<code class="descname">minimise</code><span class="sig-paren">(</span><em>funct</em>, <em>test_statistic</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#GridSearch.minimise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.GridSearch.minimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to perform the minimisation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>funct</strong> (<em>callable</em>) &#8211; Callable function to calculate the value
+of the test statistic you wish to minimise, for each
+combination of parameter values tested. The function must
+only accept, as arguments, a variable-sized array of
+parameter values. E.g. <code class="docutils literal"><span class="pre">def</span> <span class="pre">funct(*args)</span></code>. Within the
+echidna framework, the <code class="xref py py-meth docutils literal"><span class="pre">echidna.limit.fit.Fit.funct()</span></code>
+method is the recommened callable to use here.</li>
+<li><strong>test_statistic</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic</span></code>) &#8211; The
+test_statistic object used to calcualte the test statistics.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
+<li><strong>_minimum_value</strong> (<em>float</em>) &#8211; Minimum value of test statistic found.</li>
+<li><strong>_minimum_position</strong> (<em>tuple</em>) &#8211; Position of minimum.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Minimum value found during minimisation.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.fit.minimise.Minimiser">
+<em class="property">class </em><code class="descclassname">echidna.fit.minimise.</code><code class="descname">Minimiser</code><span class="sig-paren">(</span><em>name</em>, <em>per_bin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#Minimiser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.Minimiser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for minimiser objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of minimiser.</li>
+<li><strong>per_bin</strong> (<em>bool, optional</em>) &#8211; Flag if minimiser should expect a
+test statistic value per-bin.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of minimiser.</li>
+<li><strong>_per_bin</strong> (<em>bool, optional</em>) &#8211; Flag if minimiser should expect a
+test statistic value per-bin.</li>
+<li><strong>_type</strong> (<em>string</em>) &#8211; Type of minimiser, e.g. GridSearch</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.fit.minimise.Minimiser.minimise">
+<code class="descname">minimise</code><span class="sig-paren">(</span><em>funct</em>, <em>test_statistic</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/minimise.html#Minimiser.minimise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.minimise.Minimiser.minimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class method to override.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>funct</strong> (<em>callable</em>) &#8211; Callable function to calculate the value
+of the test statistic you wish to minimise, for each
+combination of parameter values tested. The function must
+only accept, as arguments, a variable-sized array of
+parameter values. E.g. <code class="docutils literal"><span class="pre">def</span> <span class="pre">funct(*args)</span></code>. Within the
+echidna framework, the <code class="xref py py-meth docutils literal"><span class="pre">echidna.limit.fit.Fit.funct()</span></code>
+method is the recommened callable to use here.</li>
+<li><strong>test_statistic</strong> (<code class="xref py py-class docutils literal"><span class="pre">echidna.limit.test_statistic</span></code>) &#8211; The
+test_statistic object used to calcualte the test statistics.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Minimum value found during minimisation.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.fit.test_statistic">
+<span id="echidna-fit-test-statistic-module"></span><h2>echidna.fit.test_statistic module<a class="headerlink" href="#module-echidna.fit.test_statistic" title="Permalink to this headline">¶</a></h2>
+<p>Module to hold classes for various test statistics that can be used
+for fitting.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>All forms of chi-squared are as defined in:</p>
+<ul class="last simple">
+<li>S. Baker &amp; R. D. Cousins, Nucl. Inst. and Meth. in Phys. Res. 211,
+437-442 (1984)</li>
+</ul>
+</div>
+<dl class="class">
+<dt id="echidna.fit.test_statistic.BakerCousinsChi">
+<em class="property">class </em><code class="descclassname">echidna.fit.test_statistic.</code><code class="descname">BakerCousinsChi</code><span class="sig-paren">(</span><em>per_bin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#BakerCousinsChi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.BakerCousinsChi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.fit.test_statistic.TestStatistic" title="echidna.fit.test_statistic.TestStatistic"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.test_statistic.TestStatistic</span></code></a></p>
+<p>Test statistic class for calculating the Baker-Cousins
+chi-squared (poisson likelihood) test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>per_bin</strong> (<em>bool</em>) &#8211; If True (default) the statistic in each bin is
+returned as a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the
+statistic is returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>_per_bin</strong> (<em>bool</em>) &#8211; If True the statistic in each bin is returned as
+a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the statistic is
+returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="echidna.fit.test_statistic.BakerCousinsChi.get_penalty_term">
+<em class="property">classmethod </em><code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>current_value</em>, <em>prior</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#BakerCousinsChi.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.BakerCousinsChi.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a penalty term value, for a given fit parameter,
+for the BakerCousinsChi test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_value</strong> (<em>float</em>) &#8211; current value of a given fit parameter</li>
+<li><strong>prior</strong> (<em>float</em>) &#8211; Prior value of a given fit parameter</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; Sigma value of a given fit parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the penalty term</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.fit.test_statistic.BakerCousinsLL">
+<em class="property">class </em><code class="descclassname">echidna.fit.test_statistic.</code><code class="descname">BakerCousinsLL</code><span class="sig-paren">(</span><em>per_bin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#BakerCousinsLL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.BakerCousinsLL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.fit.test_statistic.TestStatistic" title="echidna.fit.test_statistic.TestStatistic"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.test_statistic.TestStatistic</span></code></a></p>
+<dl class="docutils">
+<dt>Test statistic class for calculating the Baker-Cousins log likelihood</dt>
+<dd>ratio test statistic.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>per_bin</strong> (<em>bool</em>) &#8211; If True (default) the statistic in each bin is
+returned as a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the
+statistic is returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>_per_bin</strong> (<em>bool</em>) &#8211; If True the statistic in each bin is returned as
+a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the statistic is
+returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="echidna.fit.test_statistic.BakerCousinsLL.get_penalty_term">
+<em class="property">classmethod </em><code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>current_value</em>, <em>prior</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#BakerCousinsLL.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.BakerCousinsLL.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a penalty term value, for a given fit parameter,
+for the BakerCousinsLL test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_value</strong> (<em>float</em>) &#8211; current value of a given fit parameter</li>
+<li><strong>prior</strong> (<em>float</em>) &#8211; Prior value of a given fit parameter</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; Sigma value of a given fit parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the penalty term</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.fit.test_statistic.Neyman">
+<em class="property">class </em><code class="descclassname">echidna.fit.test_statistic.</code><code class="descname">Neyman</code><span class="sig-paren">(</span><em>per_bin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#Neyman"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.Neyman" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.fit.test_statistic.TestStatistic" title="echidna.fit.test_statistic.TestStatistic"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.test_statistic.TestStatistic</span></code></a></p>
+<p>Test statistic class for calculating the Neyman chi-squared test
+statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>per_bin</strong> (<em>bool</em>) &#8211; If True (default) the statistic in each bin is
+returned as a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the
+statistic is returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>_per_bin</strong> (<em>bool</em>) &#8211; If True the statistic in each bin is returned as
+a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the statistic is
+returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="echidna.fit.test_statistic.Neyman.get_penalty_term">
+<em class="property">classmethod </em><code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>current_value</em>, <em>prior</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#Neyman.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.Neyman.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a penalty term value, for a given fit parameter,
+for the Neyman chi squared test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_value</strong> (<em>float</em>) &#8211; current value of a given fit parameter</li>
+<li><strong>prior</strong> (<em>float</em>) &#8211; Prior value of a given fit parameter</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; Sigma value of a given fit parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the penalty term</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.fit.test_statistic.Pearson">
+<em class="property">class </em><code class="descclassname">echidna.fit.test_statistic.</code><code class="descname">Pearson</code><span class="sig-paren">(</span><em>per_bin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#Pearson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.Pearson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#echidna.fit.test_statistic.TestStatistic" title="echidna.fit.test_statistic.TestStatistic"><code class="xref py py-class docutils literal"><span class="pre">echidna.fit.test_statistic.TestStatistic</span></code></a></p>
+<p>Test statistic class for calculating the Pearson chi-squared test
+statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>per_bin</strong> (<em>bool</em>) &#8211; If True (default) the statistic in each bin is
+returned as a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the
+statistic is returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>_per_bin</strong> (<em>bool</em>) &#8211; If True the statistic in each bin is returned as
+a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the statistic is
+returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="echidna.fit.test_statistic.Pearson.get_penalty_term">
+<em class="property">classmethod </em><code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>current_value</em>, <em>prior</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#Pearson.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.Pearson.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a penalty term value, for a given fit parameter,
+for the Pearson chi squared test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_value</strong> (<em>float</em>) &#8211; current value of a given fit parameter</li>
+<li><strong>prior</strong> (<em>float</em>) &#8211; Prior value of a given fit parameter</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; Sigma value of a given fit parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the penalty term</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="echidna.fit.test_statistic.TestStatistic">
+<em class="property">class </em><code class="descclassname">echidna.fit.test_statistic.</code><code class="descname">TestStatistic</code><span class="sig-paren">(</span><em>name</em>, <em>per_bin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for the calculation of a test statistic.</p>
+<p>The calculation of any test statistic is based on one spectrum
+containing observed events and one containing expected events. It
+is assumed that the observed events form the &#8220;data&#8221; spectrum and
+the expected events form the spectrum predicted by the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>per_bin</strong> (<em>bool</em>) &#8211; If True (default) the statistic in each bin is
+returned as a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the
+statistic is returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>_name</strong> (<em>string</em>) &#8211; Name of test statistic.</li>
+<li><strong>_per_bin</strong> (<em>bool</em>) &#8211; If True the statistic in each bin is returned as
+a <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>. If False one value for the statistic is
+returned for the entire array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="echidna.fit.test_statistic.TestStatistic._compute">
+<code class="descname">_compute</code><span class="sig-paren">(</span><em>observed</em>, <em>expected</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic._compute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic._compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>observed</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code> or float) &#8211; Number of observed
+events</li>
+<li><strong>expected</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code> or float) &#8211; Number of expected
+events</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Calculated test statistic.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.test_statistic.TestStatistic._get_stats">
+<code class="descname">_get_stats</code><span class="sig-paren">(</span><em>observed</em>, <em>expected</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic._get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic._get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the test statistic for each bin.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>observed</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code> or float) &#8211; Number of observed
+events</li>
+<li><strong>expected</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code> or float) &#8211; Number of expected
+events</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; 
+If arrays are different lengths.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>: Calculated chi squared for each bin.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.test_statistic.TestStatistic.compute_statistic">
+<code class="descname">compute_statistic</code><span class="sig-paren">(</span><em>observed</em>, <em>expected</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic.compute_statistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic.compute_statistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the value of the test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>observed</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; 1D array containing the
+observed data points.</li>
+<li><strong>expected</strong> (<code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code>) &#8211; 1D array containing the
+expected values predicted by the model.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(float or <code class="xref py py-class docutils literal"><span class="pre">numpy.array</span></code>): Computed value(s) of test
+statistic. A float is returned if <code class="xref py py-attr docutils literal"><span class="pre">_per_bin</span></code> is
+False. Otherwise an array of computed test statistic
+values, for each bin, is returned.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.test_statistic.TestStatistic.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Name of test statistic, stored in <code class="xref py py-attr docutils literal"><span class="pre">_name</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="echidna.fit.test_statistic.TestStatistic.get_penalty_term">
+<code class="descname">get_penalty_term</code><span class="sig-paren">(</span><em>current_value</em>, <em>prior</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/echidna/fit/test_statistic.html#TestStatistic.get_penalty_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#echidna.fit.test_statistic.TestStatistic.get_penalty_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a penalty term value, for a given fit parameter,
+for this test statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_value</strong> (<em>float</em>) &#8211; current value of a given fit parameter</li>
+<li><strong>prior</strong> (<em>float</em>) &#8211; Prior value of a given fit parameter</li>
+<li><strong>sigma</strong> (<em>float</em>) &#8211; Sigma value of a given fit parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Value of the penalty term</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-echidna.fit">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-echidna.fit" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">echidna.fit package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-echidna.fit.fit">echidna.fit.fit module</a></li>
+<li><a class="reference internal" href="#module-echidna.fit.fit_results">echidna.fit.fit_results module</a></li>
+<li><a class="reference internal" href="#module-echidna.fit.minimise">echidna.fit.minimise module</a></li>
+<li><a class="reference internal" href="#module-echidna.fit.test_statistic">echidna.fit.test_statistic module</a></li>
+<li><a class="reference internal" href="#module-echidna.fit">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="echidna.errors.html"
+                        title="previous chapter">echidna.errors package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="echidna.limit.html"
+                        title="next chapter">echidna.limit package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/echidna.fit.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="echidna.limit.html" title="echidna.limit package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="echidna.errors.html" title="echidna.errors package"
+             >previous</a> |</li>
+        <li><a href="index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="echidna.html" >echidna package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

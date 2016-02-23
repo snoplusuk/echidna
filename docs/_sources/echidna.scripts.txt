@@ -11,14 +11,6 @@ Subpackages
 Submodules
 ----------
 
-echidna.scripts.Xe136_majoron_limit module
-------------------------------------------
-
-.. automodule:: echidna.scripts.Xe136_majoron_limit
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 echidna.scripts.combine_hdf5 module
 -----------------------------------
 
@@ -67,6 +59,14 @@ echidna.scripts.dump_spectra_root module
     :undoc-members:
     :show-inheritance:
 
+echidna.scripts.klz_majoron_limits module
+-----------------------------------------
+
+.. automodule:: echidna.scripts.klz_majoron_limits
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 echidna.scripts.multi_ntuple_spectrum module
 --------------------------------------------
 
@@ -75,18 +75,18 @@ echidna.scripts.multi_ntuple_spectrum module
     :undoc-members:
     :show-inheritance:
 
-echidna.scripts.rebin module
-----------------------------
+echidna.scripts.plot_summary module
+-----------------------------------
 
-.. automodule:: echidna.scripts.rebin
+.. automodule:: echidna.scripts.plot_summary
     :members:
     :undoc-members:
     :show-inheritance:
 
-echidna.scripts.snoplus_majoron_limit module
---------------------------------------------
+echidna.scripts.rebin module
+----------------------------
 
-.. automodule:: echidna.scripts.snoplus_majoron_limit
+.. automodule:: echidna.scripts.rebin
     :members:
     :undoc-members:
     :show-inheritance:

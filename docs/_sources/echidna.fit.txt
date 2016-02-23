@@ -1,0 +1,46 @@
+echidna.fit package
+===================
+
+Submodules
+----------
+
+echidna.fit.fit module
+----------------------
+
+.. automodule:: echidna.fit.fit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.fit.fit_results module
+------------------------------
+
+.. automodule:: echidna.fit.fit_results
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.fit.minimise module
+---------------------------
+
+.. automodule:: echidna.fit.minimise
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+echidna.fit.test_statistic module
+---------------------------------
+
+.. automodule:: echidna.fit.test_statistic
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: echidna.fit
+    :members:
+    :undoc-members:
+    :show-inheritance:

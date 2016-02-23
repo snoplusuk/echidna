@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -48,8 +49,9 @@
           <div class="body" role="main">
             
   <h1>Source code for echidna.core.scale</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">echidna.core.spectra</span> <span class="kn">as</span> <span class="nn">spectra</span>
 
 
 <div class="viewcode-block" id="Scale"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.scale.Scale">[docs]</a><span class="k">class</span> <span class="nc">Scale</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -90,12 +92,13 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">          spectrum (float): The spectrum you want to scale.</span>
-<span class="sd">          dimension (string): The dimension of the spectrum you want to scale.</span>
-<span class="sd">          kwargs (dict): To passed to the interpolation function in</span>
-<span class="sd">            :class:`echidna.core.spectra.Spectra`</span>
+<span class="sd">          dimension (string): The dimension of the spectrum you want to</span>
+<span class="sd">            scale.</span>
+<span class="sd">          kwargs (dict): To be passed to</span>
+<span class="sd">            :meth:`spectra.Spectra.interpolate1d`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.Spectra`: The scaled spectrum.</span>
+<span class="sd">          :class:`spectra.Spectra`: The scaled spectrum.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">prescale_sum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">interpolation</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">interpolate1d</span><span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -246,6 +249,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

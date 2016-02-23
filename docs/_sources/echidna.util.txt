@@ -12,6 +12,14 @@ echidna.util.root_help module
     :undoc-members:
     :show-inheritance:
 
+echidna.util.strings module
+---------------------------
+
+.. automodule:: echidna.util.strings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

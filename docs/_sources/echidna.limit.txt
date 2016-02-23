@@ -4,26 +4,18 @@ echidna.limit package
 Submodules
 ----------
 
-echidna.limit.chi_squared module
---------------------------------
+echidna.limit.limit module
+--------------------------
 
-.. automodule:: echidna.limit.chi_squared
+.. automodule:: echidna.limit.limit
     :members:
     :undoc-members:
     :show-inheritance:
 
-echidna.limit.limit_config module
----------------------------------
+echidna.limit.summary module
+----------------------------
 
-.. automodule:: echidna.limit.limit_config
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-echidna.limit.limit_setting module
-----------------------------------
-
-.. automodule:: echidna.limit.limit_setting
+.. automodule:: echidna.limit.summary
     :members:
     :undoc-members:
     :show-inheritance:

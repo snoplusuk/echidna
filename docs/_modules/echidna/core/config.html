@@ -1,0 +1,911 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>echidna.core.config &mdash; echidna  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <link rel="top" title="echidna  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for echidna.core.config</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot; Echidna&#39;s config module.</span>
+
+<span class="sd">Contains the :class:`Config` class and all classes that inherit from it.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">echidna.core.parameter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">RateParameter</span><span class="p">,</span> <span class="n">ScaleParameter</span><span class="p">,</span>
+                                    <span class="n">ShiftParameter</span><span class="p">,</span> <span class="n">ResolutionParameter</span><span class="p">,</span>
+                                    <span class="n">SpectraParameter</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+
+<div class="viewcode-block" id="Config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config">[docs]</a><span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The base class for creating config classes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name (string): The name of the config.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _name (string): The name of the config.</span>
+<span class="sd">      _type (string): The type of the config, this affects it&#39;s</span>
+<span class="sd">        parameter types</span>
+<span class="sd">      _parameters (:class:`collections.OrderedDict`): Dictionary of</span>
+<span class="sd">        parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise config class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&quot;general&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+
+<div class="viewcode-block" id="Config.add_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.add_par">[docs]</a>    <span class="k">def</span> <span class="nf">add_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add parameter to the config.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          par (:class:`echidna.core.spectra.Parameter`): The parameter you want</span>
+<span class="sd">            to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">par</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Config.dump"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Abstract base class method to override.</span>
+
+<span class="sd">        Dumps the config to a config dictionary, containing all</span>
+<span class="sd">        parameters. The dictionary has the form specified in the</span>
+<span class="sd">        :meth:`Config.load` method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing all the information on the</span>
+<span class="sd">            parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;The dump method can only be used &quot;</span>
+                                  <span class="s">&quot;when overriden in a derived class.&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Config.dump_to_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.dump_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">dump_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Abstract base class method to override.</span>
+
+<span class="sd">        Write config to YAML file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          path (string, optional): Location to save yaml file to,</span>
+<span class="sd">            default is the current directory.</span>
+<span class="sd">          filename (string, optional): Filename for yaml file. If no</span>
+<span class="sd">            filename is supplied, the default is &quot;spectra_config.yml&quot;.</span>
+<span class="sd">            If a blank filename &quot;&quot; is given the config&#39;s name is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;The dump_to_file method can only be used &quot;</span>
+                                  <span class="s">&quot;when overriden in a derived class.&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config.get_index"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the index of a parameter within the existing set</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          parameter (string): Name of the parameter.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: parameter is not in the config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: Index of the parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">parameter</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config.get_name"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Name of :class:`Config` class instance - stored in</span>
+<span class="sd">            :attr:`_name`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="Config.get_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_par">[docs]</a>    <span class="k">def</span> <span class="nf">get_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a named FitParameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          name (string): Name of the parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Parameter`: Named parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Config.get_par_by_index"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_par_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_par_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get parameter corresponding to given index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          index (int): Index of parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.Parameter`: Corresponding</span>
+<span class="sd">            parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config.get_pars"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_pars">[docs]</a>    <span class="k">def</span> <span class="nf">get_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get list of all parameter names in the config.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: List of parameter names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Config.get_shape"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_shape">[docs]</a>    <span class="k">def</span> <span class="nf">get_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the shape of the parameter space.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          tuple: A tuple constructed of the number of bins for each</span>
+<span class="sd">            parameter in the config - this can be thought of as the</span>
+<span class="sd">            full shape of the parameter space, whether it is the shape</span>
+<span class="sd">            of the parameter space for the fit, or the shape of the</span>
+<span class="sd">            spectral dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">get_bins</span><span class="p">()</span> <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()])</span>
+</div>
+<div class="viewcode-block" id="Config.get_type"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: Type of :class:`Config` class instance - stored in</span>
+<span class="sd">            :attr:`_name`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Config.load"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;config&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Abstract base class method to override.</span>
+
+<span class="sd">        Initialise Config class from a config dictionary (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (dict): Dictionary to create config out of.</span>
+<span class="sd">          name (string, optional): Name to assign to the</span>
+<span class="sd">            :class:`Config`. If no name is supplied the default</span>
+<span class="sd">            &#39;spectra_config&#39; will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Config`): A config object containing the parameters</span>
+<span class="sd">            from the config dictionary.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          KeyError: If the :obj:`config` dictionary has the wrong format.</span>
+
+<span class="sd">        .. warning:: :obj:`config` dict must have valid format.</span>
+
+<span class="sd">        Valid format is::</span>
+
+<span class="sd">            {&quot;parameters&quot;: {</span>
+<span class="sd">                &quot;&lt;parameter&gt;&quot;: {</span>
+<span class="sd">                    &quot;low&quot;: &lt;low&gt;,</span>
+<span class="sd">                    &quot;high&quot;: &lt;high&gt;,</span>
+<span class="sd">                    &quot;bins&quot;: &lt;bins&gt;}}}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;The load method can only be used &quot;</span>
+                                  <span class="s">&quot;when overriden in a derived class.&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Config.load_from_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.Config.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Abstract base class method to override.</span>
+
+<span class="sd">        Initialise Config class from a config file (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          filename (str): path to config file</span>
+<span class="sd">          name (string, optional): Assign a name to the :class:`Config`</span>
+<span class="sd">            created. If no name is supplied, the default is &#39;config&#39;.</span>
+<span class="sd">            If a blank string is supplied, the name of the file will</span>
+<span class="sd">            be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`Config`): A config object containing the parameters</span>
+<span class="sd">            in the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;The load_from_file method can only be used &quot;</span>
+                                  <span class="s">&quot;when overriden in a derived class.&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="GlobalFitConfig"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig">[docs]</a><span class="k">class</span> <span class="nc">GlobalFitConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configuration container for floating systematics and fitting Spectra</span>
+<span class="sd">      objects.  Able to load directly with a set list of FitParameters or</span>
+<span class="sd">      from yaml configuration files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      config_name (string): Name of config</span>
+<span class="sd">      parameters (:class:`collections.OrderedDict`): List of</span>
+<span class="sd">        FitParameter objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise GlobalFitConfig class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GlobalFitConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&quot;global_fit&quot;</span>
+
+<div class="viewcode-block" id="GlobalFitConfig.add_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.add_config">[docs]</a>    <span class="k">def</span> <span class="nf">add_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add pars from a :class:`echidna.core.spectra.Config` to this</span>
+<span class="sd">          :class:`echidna.core.spectra.GlobalFitConfig`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (:class:`echidna.core.spectra.Config`): Config to be added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="s">&quot;spectra_fit&quot;</span><span class="p">:</span>
+            <span class="n">spectra_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">_spectra_name</span>
+            <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">spectra_name</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">par_name</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+                <span class="n">par</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_par</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="s">&quot;spectra&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="s">&quot;global_fit&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_par</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">),</span> <span class="s">&quot;global&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Cannot add </span><span class="si">%s</span><span class="s">-type config to a config &quot;</span>
+                             <span class="s">&quot;of type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.add_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.add_par">[docs]</a>    <span class="k">def</span> <span class="nf">add_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">par_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add parameter to the global fit config.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          par (:class:`echidna.core.spectra.FitParameter`): Parameter you want</span>
+<span class="sd">            to add.</span>
+<span class="sd">          par_type (string): The type of parameter (global or spectra).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">par_type</span> <span class="o">!=</span> <span class="s">&#39;global&#39;</span> <span class="ow">and</span> <span class="n">par_type</span> <span class="o">!=</span> <span class="s">&#39;spectra&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an invalid par_type. Must be &#39;global&#39; or &quot;</span>
+                             <span class="s">&quot;&#39;spectra&#39;.&quot;</span> <span class="o">%</span> <span class="n">par_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">par</span><span class="o">.</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;par&#39;</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span> <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">par_type</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.dump"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Dumps the config to a global fit config dictionary,</span>
+<span class="sd">        containing all the &#39;global&#39; parameters, and a spectral fit</span>
+<span class="sd">        comfig dictionary (if required), containing any &#39;spectral&#39;</span>
+<span class="sd">        parameters that have been added. The dictionaries have,</span>
+<span class="sd">        respectively, the forms specified in the</span>
+<span class="sd">        :meth:`GlobalFitConfig.load` and</span>
+<span class="sd">        :meth:`echidna.core.spectra.SpectralFitConfig.load` methods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing all the information on the</span>
+<span class="sd">            &#39;global&#39; parameters.</span>
+<span class="sd">          dict: Dictionary containing all the information on the</span>
+<span class="sd">            &#39;spectral&#39; parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Global fit parameters</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;global_fit_parameters&quot;</span>
+        <span class="n">global_fit_config</span> <span class="o">=</span> <span class="p">{</span><span class="n">main_key</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_global_pars</span><span class="p">():</span>
+            <span class="n">dimension</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_dimension</span><span class="p">()</span>
+
+            <span class="c"># Make entry for dimensions - as required</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">global_fit_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">global_fit_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="n">name</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+            <span class="c"># Remove dimension from name, if required</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">dimension</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c"># Get parameter dict from par</span>
+            <span class="n">global_fit_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dimension</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">basic</span><span class="p">)</span>
+
+        <span class="c"># Spectral fit parameters</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_parameters&quot;</span>
+        <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="p">{</span><span class="n">main_key</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_spectra_pars</span><span class="p">():</span>
+            <span class="c"># No dimesnions required here</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+
+            <span class="c"># Get parameter dict from par</span>
+            <span class="n">spectral_fit_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">basic</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">global_fit_config</span><span class="p">,</span> <span class="n">spectral_fit_config</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.dump_to_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.dump_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">dump_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">global_fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">spectral_fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write config(s) to YAML file. Separate files are created</span>
+<span class="sd">        for global and spectral parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          path (string, optional): Location to save yaml file(s) to,</span>
+<span class="sd">            default is the current directory.</span>
+<span class="sd">          global_fname (string, optional): Filename for global</span>
+<span class="sd">            parameters yaml file. If no filename is supplied, the</span>
+<span class="sd">            default is &quot;global_fit_config.yml&quot;. If a blank filename &quot;&quot;</span>
+<span class="sd">            is given the config&#39;s name is used (+ &quot;_global&quot;).</span>
+<span class="sd">          spectral_fname (string, optional): Filename for spectral</span>
+<span class="sd">            parameters yaml file. If no filename is supplied, the</span>
+<span class="sd">            default is &quot;spectral_fit_config.yml&quot;. If a blank filename &quot;&quot;</span>
+<span class="sd">            is given the config&#39;s name is used (+ &quot;_spectral&quot;).</span>
+<span class="sd">          basic (bool, optional): If True, only the basic properties:</span>
+<span class="sd">            prior, sigma, low, high and bins are included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">global_fit_config</span><span class="p">,</span> <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">basic</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">global_fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">global_fname</span> <span class="o">=</span> <span class="s">&quot;global_fit_config&quot;</span>
+        <span class="k">elif</span> <span class="n">global_fname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">global_fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&quot;.yml&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">global_fname</span><span class="p">:</span>
+            <span class="n">global_fname</span> <span class="o">+=</span> <span class="s">&quot;.yml&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">global_fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">global_fit_config</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">spectral_fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_config&quot;</span>
+        <span class="k">elif</span> <span class="n">spectral_fname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&quot;.yml&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectral_fname</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">+=</span> <span class="s">&quot;.yml&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">spectral_fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">spectral_fit_config</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.get_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.get_par">[docs]</a>    <span class="k">def</span> <span class="nf">get_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get requested parameter:</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          name (string): Name of the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.FitParameter`: The requested parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;par&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.get_global_pars"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.get_global_pars">[docs]</a>    <span class="k">def</span> <span class="nf">get_global_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the parameters which are applied to all spectra</span>
+<span class="sd">          simultaneously.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Of :class:`echidna.core.spectra.FitParameter` objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;global&#39;</span><span class="p">:</span>
+                <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;par&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">pars</span>
+</div>
+<div class="viewcode-block" id="GlobalFitConfig.get_spectra_pars"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.get_spectra_pars">[docs]</a>    <span class="k">def</span> <span class="nf">get_spectra_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the parameters that are applied to individual spectra.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: Of :class:`echidna.core.spectra.FitParameter` objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;spectra&#39;</span><span class="p">:</span>
+                <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;par&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">pars</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GlobalFitConfig.load"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">global_config</span><span class="p">,</span> <span class="n">spectral_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+             <span class="n">name</span><span class="o">=</span><span class="s">&quot;global_fit_config&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise GlobalFitConfig class from a config dictionary</span>
+<span class="sd">        (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (dict): Dictionary to create config out of.</span>
+<span class="sd">          spectral_config (dict): Dictionary of spectral fit parameters</span>
+<span class="sd">            to create config out of.</span>
+<span class="sd">          name (string, optional): Name to assign to the</span>
+<span class="sd">            :class:`GlobalFitConfig`. If no name is supplied the</span>
+<span class="sd">            default &#39;global_fit_config&#39; will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`echidna.core.spectra.GlobalFitConfig`): A config object</span>
+<span class="sd">            containing the parameters in the file called filename.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          KeyError: If the :obj:`global_config` dictionary does not</span>
+<span class="sd">            start with the key &#39;global_fit_parameters&#39; as this suggests</span>
+<span class="sd">            the dictionary has the wrong format.</span>
+<span class="sd">          IndexError: If an invalid global fit parameter name is</span>
+<span class="sd">            encountered.</span>
+<span class="sd">          KeyError: If the :obj:`spectral_config` dictionary does not</span>
+<span class="sd">            start with the key &#39;spectral_fit_parameters&#39; as this</span>
+<span class="sd">            suggests the dictionary has the wrong format.</span>
+<span class="sd">          IndexError: If an invalid spectral fit parameter name is</span>
+<span class="sd">            encountered.</span>
+
+<span class="sd">        .. warning:: :obj:`config` dict must have valid format.</span>
+
+<span class="sd">        Valid format is::</span>
+
+<span class="sd">            {&quot;gloabal_fit_parameters&quot;: {</span>
+<span class="sd">                &quot;&lt;spectral_dimension&gt;&quot;: {</span>
+<span class="sd">                    &quot;&lt;parameter_name&gt;&quot;: {</span>
+<span class="sd">                        &quot;prior&quot;: &lt;prior&gt;,</span>
+<span class="sd">                        &quot;sigma&quot;: &lt;sigma&gt;,</span>
+<span class="sd">                        &quot;low&quot;: &lt;low&gt;,</span>
+<span class="sd">                        &quot;high&quot;: &lt;high&gt;,</span>
+<span class="sd">                        &quot;bins&quot;: &lt;bins&gt;}}}}</span>
+
+<span class="sd">        For spectral config see :meth:`SpectralFitConfig.load`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;global_fit_parameters&quot;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">main_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">global_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Cannot read global_config dictionary. &quot;</span>
+                           <span class="s">&quot;Please check it has the correct form&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">global_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">syst</span> <span class="ow">in</span> <span class="n">global_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dim</span><span class="p">]:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span> <span class="o">+</span> <span class="n">syst</span>
+                <span class="k">if</span> <span class="n">syst</span> <span class="o">==</span> <span class="s">&#39;resolution&#39;</span> <span class="ow">or</span> <span class="n">syst</span> <span class="o">==</span> <span class="s">&#39;resolution_ly&#39;</span><span class="p">:</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;par&#39;</span><span class="p">:</span> <span class="n">ResolutionParameter</span><span class="p">(</span>
+                            <span class="n">name</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">global_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dim</span><span class="p">][</span><span class="n">syst</span><span class="p">]),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;global&#39;</span><span class="p">}</span>
+                <span class="k">elif</span> <span class="n">syst</span> <span class="o">==</span> <span class="s">&#39;shift&#39;</span><span class="p">:</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;par&#39;</span><span class="p">:</span> <span class="n">ShiftParameter</span><span class="p">(</span>
+                            <span class="n">name</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">global_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dim</span><span class="p">][</span><span class="n">syst</span><span class="p">]),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;global&#39;</span><span class="p">}</span>
+                <span class="k">elif</span> <span class="n">syst</span> <span class="o">==</span> <span class="s">&#39;scale&#39;</span><span class="p">:</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;par&#39;</span><span class="p">:</span> <span class="n">ScaleParameter</span><span class="p">(</span>
+                            <span class="n">name</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">global_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">dim</span><span class="p">][</span><span class="n">syst</span><span class="p">]),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;global&#39;</span><span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a valid global fit parameter.&quot;</span>
+                                     <span class="o">%</span> <span class="n">syst</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spectral_config</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+        <span class="c"># Add spectral fit parameters:</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_parameters&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spectral_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">main_key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Cannot read config dictionary. &quot;</span>
+                           <span class="s">&quot;Please check it has the correct form&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">syst</span> <span class="ow">in</span> <span class="n">spectral_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s">&quot;rate&quot;</span> <span class="ow">in</span> <span class="n">syst</span><span class="p">:</span>
+                <span class="n">parameters</span><span class="p">[</span><span class="n">syst</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;par&#39;</span><span class="p">:</span> <span class="n">RateParameter</span><span class="p">(</span>
+                        <span class="n">syst</span><span class="p">,</span> <span class="o">**</span><span class="n">spectral_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">syst</span><span class="p">]),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;spectral&#39;</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown systematic in config: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">syst</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GlobalFitConfig.load_from_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.GlobalFitConfig.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sf_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise GlobalFitConfig class from a config file (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          filename (string): path to config file</span>
+<span class="sd">          sf_filename (string, optional): path to a separate spectral</span>
+<span class="sd">            fit config file, to include.</span>
+<span class="sd">          name (string, optional): Assign a name to the</span>
+<span class="sd">            :class:`GlobalFitConfig` created. If no name is supplied,</span>
+<span class="sd">            the default is &#39;global_fit_config&#39;. If a blank string is</span>
+<span class="sd">            supplied, the name of the file will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`echidna.core.spectra.GlobalFitConfig`): A config object</span>
+<span class="sd">            containing the parameters in the file called filename.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">sf_filename</span><span class="p">:</span>
+            <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">sf_filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">spectral_config</span><span class="o">=</span><span class="n">spectral_fit_config</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">spectral_config</span><span class="o">=</span><span class="n">spectral_fit_config</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SpectraFitConfig"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraFitConfig">[docs]</a><span class="k">class</span> <span class="nc">SpectraFitConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configuration container for floating systematics and fitting Spectra</span>
+<span class="sd">      objects.  Able to load directly with a set list of FitParameters or</span>
+<span class="sd">      from yaml configuration files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      config_name (string): Name of config</span>
+<span class="sd">      parameters (:class:`collections.OrderedDict`): List of</span>
+<span class="sd">        FitParameter objects</span>
+<span class="sd">      spectra_name (string): Name of the spectra associated with the</span>
+<span class="sd">         :class:`echidna.core.spectra.SpectraFitConfig`</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      _spectra_name (string): Name of the spectra associated with the</span>
+<span class="sd">        :class:`echidna.core.spectra.SpectraFitConfig`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraFitConfig class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectraFitConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&quot;spectra_fit&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_name</span> <span class="o">=</span> <span class="n">spectra_name</span>
+
+<div class="viewcode-block" id="SpectraFitConfig.dump"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraFitConfig.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Dumps the config to a spectral fit comfig dictionary,</span>
+<span class="sd">        containing all &#39;spectral&#39; fit parameters. The dictionary has</span>
+<span class="sd">        the form specified in the :meth:`SpectralFitConfig.load`</span>
+<span class="sd">        method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing all the information on the</span>
+<span class="sd">            &#39;spectral&#39; parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Spectral fit parameters</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_parameters&quot;</span>
+        <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="p">{</span><span class="n">main_key</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+
+            <span class="c"># Get parameter dict from par</span>
+            <span class="n">spectral_fit_config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">parameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">basic</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">spectral_fit_config</span>
+</div>
+<div class="viewcode-block" id="SpectraFitConfig.dump_to_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraFitConfig.dump_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">dump_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">spectral_fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">basic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write config(s) to YAML file. Separate files are created</span>
+<span class="sd">        for global and spectral parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          path (string, optional): Location to save yaml file(s) to,</span>
+<span class="sd">            default is the current directory.</span>
+<span class="sd">          spectral_fname (string, optional): Filename for spectral</span>
+<span class="sd">            parameters yaml file. If no filename is supplied, the</span>
+<span class="sd">            default is &quot;spectral_fit_config.yml&quot;. If a blank filename &quot;&quot;</span>
+<span class="sd">            is given the config&#39;s name is used (+ &quot;_spectral&quot;).</span>
+<span class="sd">          basic (bool, optional): If True, only the basic properties:</span>
+<span class="sd">            prior, sigma, low, high and bins are included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spectral_fit_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">basic</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spectral_fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_config&quot;</span>
+        <span class="k">elif</span> <span class="n">spectral_fname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&quot;.yml&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectral_fname</span><span class="p">:</span>
+            <span class="n">spectral_fname</span> <span class="o">+=</span> <span class="s">&quot;.yml&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">spectral_fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">spectral_fit_config</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="SpectraFitConfig.load"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraFitConfig.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;spectral_fit_config&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraFitConfig class from a config dictionary</span>
+<span class="sd">        (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (dict): Dictionary to create config out of.</span>
+<span class="sd">          name (string, optional): Name to assign to the</span>
+<span class="sd">            :class:`SpectraFitConfig`. If no name is supplied the</span>
+<span class="sd">            default &#39;spectral_fit_config&#39; will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`SpectraFitConfig`): A config object containing the</span>
+<span class="sd">            parameters from the config dictionary.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          KeyError: If the :obj:`config` dictionary does not start with</span>
+<span class="sd">            the key &#39;spectral_fit_parameters&#39; as this suggests the</span>
+<span class="sd">            dictionary has the wrong format.</span>
+<span class="sd">          IndexError: If an invalid spectral fit parameter name is</span>
+<span class="sd">            encountered.</span>
+
+<span class="sd">        .. warning:: :obj:`config` dict must have valid format.</span>
+
+<span class="sd">        Valid format is::</span>
+
+<span class="sd">            {&quot;spectral_fit_parameters&quot;: {</span>
+<span class="sd">                &quot;&lt;parameter_name&gt;&quot;: {</span>
+<span class="sd">                    &quot;prior&quot;: &lt;prior&gt;,</span>
+<span class="sd">                    &quot;sigma&quot;: &lt;sigma&gt;,</span>
+<span class="sd">                    &quot;low&quot;: &lt;low&gt;,</span>
+<span class="sd">                    &quot;high&quot;: &lt;high&gt;,</span>
+<span class="sd">                    &quot;bins&quot;: &lt;bins&gt;}}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;spectral_fit_parameters&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">main_key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Cannot read config dictionary. &quot;</span>
+                           <span class="s">&quot;Please check it has the correct form&quot;</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">syst</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">main_key</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s">&quot;rate&quot;</span> <span class="ow">in</span> <span class="n">syst</span><span class="p">:</span>
+                <span class="n">parameters</span><span class="p">[</span><span class="n">syst</span><span class="p">]</span> <span class="o">=</span> <span class="n">RateParameter</span><span class="p">(</span><span class="n">syst</span><span class="p">,</span>
+                                                 <span class="o">**</span><span class="n">config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">syst</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown systematic in config: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">syst</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="SpectraFitConfig.load_from_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraFitConfig.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraFitConfig class from a config file (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          filename (str): path to config file</span>
+<span class="sd">          spectra_name (string): Name of the spectra associated with the</span>
+<span class="sd">            :class:`echidna.core.spectra.SpectraFitConfig`</span>
+<span class="sd">          name (string, optional): Assign a name to the</span>
+<span class="sd">            :class:`SpectraFitConfig` created. If no name is supplied,</span>
+<span class="sd">            the default is &#39;spectral_fit_config&#39;. If a blank string is</span>
+<span class="sd">            supplied, the name of the file will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`SpectraFitConfig`): A config object containing the</span>
+<span class="sd">            parameters in the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">spectra_name</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SpectraConfig"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig">[docs]</a><span class="k">class</span> <span class="nc">SpectraConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configuration container for Spectra objects.  Able to load</span>
+<span class="sd">    directly with a set list of SpectraParameters or from yaml</span>
+<span class="sd">    configuration files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      parameters (:class:`collections.OrderedDict`): List of</span>
+<span class="sd">        SpectraParameter objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraConfig class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectraConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&quot;spectra&quot;</span>
+
+<div class="viewcode-block" id="SpectraConfig.dump"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Dumps the spectra config to a config dictionary, containing</span>
+<span class="sd">        all spectra parameters. The dictionary has the form specified</span>
+<span class="sd">        in the :meth:`SpectraConfig.load` method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing all the information on the</span>
+<span class="sd">            spectra parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Spectral parameters</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;parameters&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">main_key</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+
+            <span class="c"># Get parameter dict from par</span>
+            <span class="n">config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">parameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">config</span>
+</div>
+<div class="viewcode-block" id="SpectraConfig.dump_to_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.dump_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">dump_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write spectra config to YAML file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          path (string, optional): Location to save yaml file to,</span>
+<span class="sd">            default is the current directory.</span>
+<span class="sd">          filename (string, optional): Filename for yaml file. If no</span>
+<span class="sd">            filename is supplied, the default is &quot;spectra_config.yml&quot;.</span>
+<span class="sd">            If a blank filename &quot;&quot; is given the config&#39;s name is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;spectra_config&quot;</span>
+        <span class="k">elif</span> <span class="n">filename</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&quot;.yml&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">+=</span> <span class="s">&quot;.yml&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="SpectraConfig.load"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;config&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraConfig class from a config dictionary</span>
+<span class="sd">        (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (dict): Dictionary to create spectra config out of.</span>
+<span class="sd">          name (string, optional): Name to assign to the</span>
+<span class="sd">            :class:`SpectraConfig`. If no name is supplied the default</span>
+<span class="sd">            &#39;spectra_config&#39; will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`SpectraConfig`): A config object containing the</span>
+<span class="sd">            spectra parameters from the config dictionary.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          KeyError: If the :obj:`config` dictionary does not start with</span>
+<span class="sd">            the key &#39;parameters&#39; as this suggests the dictionary has</span>
+<span class="sd">            the wrong format.</span>
+
+<span class="sd">        .. warning:: :obj:`config` must have valid format.</span>
+
+<span class="sd">        Valid format is::</span>
+
+<span class="sd">            {&quot;parameters&quot;: {</span>
+<span class="sd">                &quot;&lt;spectral_parameter&gt;&quot;: {</span>
+<span class="sd">                    &quot;low&quot;: &lt;low&gt;,</span>
+<span class="sd">                    &quot;high&quot;: &lt;high&gt;.</span>
+<span class="sd">                    &quot;bins&quot;: &lt;bins&gt;}}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">main_key</span> <span class="o">=</span> <span class="s">&quot;parameters&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">main_key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Cannot read config dictionary. &quot;</span>
+                           <span class="s">&quot;Please check it has the correct form&quot;</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">main_key</span><span class="p">]:</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpectraParameter</span><span class="p">(</span>
+                <span class="n">parameter</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">[</span><span class="n">main_key</span><span class="p">][</span><span class="n">parameter</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="SpectraConfig.load_from_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise SpectraConfig class from a config file</span>
+<span class="sd">        (classmethod).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          filename (str): path to config file</span>
+<span class="sd">          name (string, optional): Assign a name to the</span>
+<span class="sd">            :class:`SpectraConfig` created. If no name is supplied, the</span>
+<span class="sd">            default is &#39;spectra_config&#39;. If a blank string is supplied,</span>
+<span class="sd">            the name of the file will be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`SpectraConfig`): A config object containing the</span>
+<span class="sd">            parameters in the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SpectraConfig.get_dims"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.get_dims">[docs]</a>    <span class="k">def</span> <span class="nf">get_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get list of dimension names.</span>
+<span class="sd">        The _mc, _reco and _truth suffixes are removed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          list: List of the dimensions names of the config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par</span><span class="p">:</span>
+                <span class="n">dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
+            <span class="n">dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">dims</span>
+</div>
+<div class="viewcode-block" id="SpectraConfig.get_dim"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.get_dim">[docs]</a>    <span class="k">def</span> <span class="nf">get_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the dimension of par.</span>
+<span class="sd">        The _mc, _reco and _truth suffixes are removed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          par (string): Name of the parameter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The dimension of par</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
+        <span class="k">return</span> <span class="n">dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="SpectraConfig.get_dim_type"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.config.SpectraConfig.get_dim_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_dim_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the type of the dimension i.e. mc, reco or truth.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dim (string): The name of the dimension</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: dim is not in the spectra.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          string: The type of the dimension (mc, reco or truth)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">par_split</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">cur_dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par_split</span><span class="p">:</span>
+                <span class="n">cur_dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
+            <span class="k">if</span> <span class="n">cur_dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">dim</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;No </span><span class="si">%s</span><span class="s"> dimension in spectra&quot;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">echidna  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
+    </div>
+  </body>
+</html>

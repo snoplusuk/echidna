@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>echidna.errors.custom_errors &mdash; echidna  documentation</title>
+    <title>echidna.util.strings &mdash; echidna  documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -48,18 +48,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for echidna.errors.custom_errors</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="CompatibilityError"><a class="viewcode-back" href="../../../echidna.errors.html#echidna.errors.custom_errors.CompatibilityError">[docs]</a><span class="k">class</span> <span class="nc">CompatibilityError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Exception raised when two :class: `spectra.Spectra` are not</span>
-<span class="sd">    compatible.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span>
+  <h1>Source code for echidna.util.strings</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">random</span>
 
-</div>
-<div class="viewcode-block" id="LimitError"><a class="viewcode-back" href="../../../echidna.errors.html#echidna.errors.custom_errors.LimitError">[docs]</a><span class="k">class</span> <span class="nc">LimitError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Exception raised when a limit has not been found.</span>
+<div class="viewcode-block" id="id_generator"><a class="viewcode-back" href="../../../echidna.util.html#echidna.util.strings.id_generator">[docs]</a><span class="k">def</span> <span class="nf">id_generator</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">chars</span><span class="o">=</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="o">+</span>\
+                     <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns a random string</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      size (int, optional): Size of string</span>
+<span class="sd">      chars (string, optional): Charachters to select from randomly.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      string: Random string.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
+    <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">))</span></div>
 </pre></div>
 
           </div>

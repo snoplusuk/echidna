@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="index.html" /> 
   </head>
   <body role="document">
@@ -60,8 +61,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="echidna.core.html">echidna.core package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.config">echidna.core.config module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.dsextract">echidna.core.dsextract module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.parameter">echidna.core.parameter module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.scale">echidna.core.scale module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.shift">echidna.core.shift module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.core.html#module-echidna.core.smear">echidna.core.smear module</a></li>
@@ -75,11 +78,19 @@
 <li class="toctree-l4"><a class="reference internal" href="echidna.errors.html#module-echidna.errors">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="echidna.fit.html">echidna.fit package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.fit">echidna.fit.fit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.fit_results">echidna.fit.fit_results module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.minimise">echidna.fit.minimise module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#module-echidna.fit.test_statistic">echidna.fit.test_statistic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.fit.html#module-echidna.fit">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="echidna.limit.html">echidna.limit package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.chi_squared">echidna.limit.chi_squared module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit_config">echidna.limit.limit_config module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit_setting">echidna.limit.limit_setting module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.limit">echidna.limit.limit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit.summary">echidna.limit.summary module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.limit.html#module-echidna.limit">Module contents</a></li>
 </ul>
 </li>
@@ -97,16 +108,16 @@
 <li class="toctree-l3"><a class="reference internal" href="echidna.scripts.html">echidna.scripts package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.Xe136_majoron_limit">echidna.scripts.Xe136_majoron_limit module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.combine_hdf5">echidna.scripts.combine_hdf5 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_scaled">echidna.scripts.dump_scaled module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_shifted">echidna.scripts.dump_shifted module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_smeared">echidna.scripts.dump_smeared module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_spectra_ntuple">echidna.scripts.dump_spectra_ntuple module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.dump_spectra_root">echidna.scripts.dump_spectra_root module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.klz_majoron_limits">echidna.scripts.klz_majoron_limits module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.multi_ntuple_spectrum">echidna.scripts.multi_ntuple_spectrum module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.plot_summary">echidna.scripts.plot_summary module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.rebin">echidna.scripts.rebin module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.snoplus_majoron_limit">echidna.scripts.snoplus_majoron_limit module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts.zero_nu_limit">echidna.scripts.zero_nu_limit module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.scripts.html#module-echidna.scripts">Module contents</a></li>
 </ul>
@@ -114,19 +125,20 @@
 <li class="toctree-l3"><a class="reference internal" href="echidna.test.html">echidna.test package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.physics_tests">echidna.test.physics_tests module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_chi_squared">echidna.test.test_chi_squared module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_limit_setting">echidna.test.test_limit_setting module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_minimise">echidna.test.test_minimise module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_scale">echidna.test.test_scale module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_shift">echidna.test.test_shift module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_smear">echidna.test.test_smear module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_spectra">echidna.test.test_spectra module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_store">echidna.test.test_store module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test.test_test_statistic">echidna.test.test_test_statistic module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.test.html#module-echidna.test">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="echidna.util.html">echidna.util package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="echidna.util.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.util.html#module-echidna.util.root_help">echidna.util.root_help module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="echidna.util.html#module-echidna.util.strings">echidna.util.strings module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="echidna.util.html#module-echidna.util">Module contents</a></li>
 </ul>
 </li>
@@ -185,6 +197,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

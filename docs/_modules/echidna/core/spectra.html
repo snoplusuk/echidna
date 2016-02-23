@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -48,286 +49,14 @@
           <div class="body" role="main">
             
   <h1>Source code for echidna.core.spectra</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
 
+<span class="kn">from</span> <span class="nn">echidna.core.config</span> <span class="kn">import</span> <span class="n">SpectraFitConfig</span>
 
-<div class="viewcode-block" id="SpectraParameter"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter">[docs]</a><span class="k">class</span> <span class="nc">SpectraParameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple data container that holds information for a Spectra parameter</span>
-<span class="sd">    (i.e. axis of the spectrum).</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">      name (str): The name of this parameter</span>
-<span class="sd">      low (float): The lower limit of this parameter</span>
-<span class="sd">      high (float): The upper limit of this parameter</span>
-<span class="sd">      bins (int): The number of bins for this parameter</span>
 
-<span class="sd">    Attributes:</span>
-<span class="sd">      _name (str): The name of this parameter</span>
-<span class="sd">      _low (float): The lower limit of this parameter</span>
-<span class="sd">      _high (float): The upper limit of this parameter</span>
-<span class="sd">      _bins (int): The number of bins for this parameter</span>
-<span class="sd">      _dimension (int): The position in the data array for this parameter.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise SpectraParameter class</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="n">high</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="n">low</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="n">bins</span>
-
-<div class="viewcode-block" id="SpectraParameter.set_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.set_par">[docs]</a>    <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set a limit / binning parameter after initialisation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          kwargs (dict): keyword arguments</span>
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">          Keyword arguments include:</span>
-
-<span class="sd">            * low (float): Value to set the lower limit to of the parameter</span>
-<span class="sd">            * high (float): Value to set the higher limit to of the parameter</span>
-<span class="sd">            * bins (int): Value to set the number of bins of the parameter</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          TypeError: Unknown variable type passed as a kwarg.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;low&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;high&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="n">kw</span> <span class="o">==</span> <span class="s">&quot;bins&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Unhandled parameter name / type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.get_width"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_width">[docs]</a>    <span class="k">def</span> <span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the width of the binning for the parameter</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          float: Bin width.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.get_unit"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_unit">[docs]</a>    <span class="k">def</span> <span class="nf">get_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the default unit for a given parameter</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          Exception: Unknown parameter.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          string: Unit of the parameter</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;energy&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s">&quot;MeV&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;radial&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s">&quot;mm&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;time&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s">&quot;years&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is an unknown parameter&quot;</span>
-                            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.round"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.round">[docs]</a>    <span class="k">def</span> <span class="nf">round</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Round the value to nearest bin edge</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          x (float): Value to round.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          float: The value of the closest bin edge to x</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.get_bin_centre"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centre">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bin</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Calculates the central value of a given bin</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          bin (int): Bin number.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          TypeError: If bin is not int</span>
-<span class="sd">          ValueError: If bin is less than zero</span>
-<span class="sd">          ValueError: If bin is greater than the number of bins - 1</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          float: value of bin centre</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Must pass an integer value&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) must be zero or positive&quot;</span> <span class="o">%</span> <span class="nb">bin</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">bin</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Bin number (</span><span class="si">%s</span><span class="s">) is out of range. Max = </span><span class="si">%s</span><span class="s">&quot;</span>
-                             <span class="o">%</span> <span class="p">(</span><span class="nb">bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="p">(</span><span class="nb">bin</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.get_bin_centres"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centres">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin_centres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Returns the bin centres of the parameter</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`numpy.ndarray`: Bin centres of parameter.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-</div>
-<div class="viewcode-block" id="SpectraParameter.get_bin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin">[docs]</a>    <span class="k">def</span> <span class="nf">get_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Gets the bin index which contains value x.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          x (float): Value you wish to find the bin index for.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          ValueError: If x is less than parameter lower bounds</span>
-<span class="sd">          ValueError: If x is more than parameter upper bounds</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          int: Bin index</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is below parameter lower bound </span><span class="si">%s</span><span class="s">&quot;</span>
-                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is above parameter upper bound </span><span class="si">%s</span><span class="s">&quot;</span>
-                             <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-
-</div></div>
-<div class="viewcode-block" id="SpectraConfig"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig">[docs]</a><span class="k">class</span> <span class="nc">SpectraConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Configuration container for Spectra objects.  Able to load</span>
-<span class="sd">    directly with a set list of SpectraParameters or from yaml</span>
-<span class="sd">    configuration files.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      parameters (:class:`collections.OrderedDict`): List of</span>
-<span class="sd">        SpectraParameter objects</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">      _parameters (:class:`collections.OrderedDict`): List of</span>
-<span class="sd">        SpectraParameter objects</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise SpectraConfig class</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="SpectraConfig.load_from_file"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise SpectraConfig class from a config file (classmethod).</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          filename (str) path to config file</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.SpectraConfig`: A config object</span>
-<span class="sd">            containing the parameters in the file called filename.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">))</span>
-        <span class="n">parameters</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;parameters&#39;</span><span class="p">]:</span>
-            <span class="n">parameters</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpectraParameter</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;parameters&#39;</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s">&#39;low&#39;</span><span class="p">],</span>
-                                             <span class="n">config</span><span class="p">[</span><span class="s">&#39;parameters&#39;</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s">&#39;high&#39;</span><span class="p">],</span>
-                                             <span class="n">config</span><span class="p">[</span><span class="s">&#39;parameters&#39;</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s">&#39;bins&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_par"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_par">[docs]</a>    <span class="k">def</span> <span class="nf">get_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get a named SpectraParameter.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          name (string): Name of the parameter.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.SpectraParameter`: Named parameter.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_pars"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_pars">[docs]</a>    <span class="k">def</span> <span class="nf">get_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get list of all parameter names in the config.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          list: List of parameter names</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_index"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the index of a parameter within the existing set</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          parameter (string): Name of the parameter.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          IndexError: parameter is not in the config.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          int: Index of the parameter</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
-            <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">parameter</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">i</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Unknown parameter </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parameter</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_dims"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_dims">[docs]</a>    <span class="k">def</span> <span class="nf">get_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get list of dimension names.</span>
-<span class="sd">        The _mc, _reco and _truth suffixes are removed.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          list: List of the dimensions names of the config.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par</span><span class="p">:</span>
-                <span class="n">dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
-            <span class="n">dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">dims</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_dim"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_dim">[docs]</a>    <span class="k">def</span> <span class="nf">get_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get the dimension of par.</span>
-<span class="sd">        The _mc, _reco and _truth suffixes are removed.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          par (string): Name of the parameter</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          The dimension of par</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="n">dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
-        <span class="k">return</span> <span class="n">dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</div>
-<div class="viewcode-block" id="SpectraConfig.get_dim_type"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.SpectraConfig.get_dim_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_dim_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the type of the dimension i.e. mc, reco or truth.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          dim (string): The name of the dimension</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          IndexError: dim is not in the spectra.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          string: The type of the dimension (mc, reco or truth)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="n">par_split</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">cur_dim</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">par_split</span><span class="p">:</span>
-                <span class="n">cur_dim</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">+</span><span class="s">&quot;_&quot;</span>
-            <span class="k">if</span> <span class="n">cur_dim</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">dim</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;No </span><span class="si">%s</span><span class="s"> dimension in spectra&quot;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">)</span>
-
-</div></div>
 <div class="viewcode-block" id="Spectra"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra">[docs]</a><span class="k">class</span> <span class="nc">Spectra</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; This class contains a spectra as a function of energy, radius and time.</span>
 
@@ -358,7 +87,7 @@
 <span class="sd">      _rois (dict): Dictionary containing the details of any ROI, along</span>
 <span class="sd">        any axis, which has been defined.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">,</span> <span class="n">spectra_config</span><span class="p">,</span> <span class="n">fit_config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialise the spectra data container.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">spectra_config</span>
@@ -368,6 +97,7 @@
             <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">bins</span><span class="p">),</span>
                                  <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">fit_config</span>
         <span class="c"># Flag for indicating bipo cut. HDF5 does not support bool so</span>
         <span class="c"># 0 = no cut and 1 = cut</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bipo</span> <span class="o">=</span> <span class="mi">0</span>
@@ -376,323 +106,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_decays</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Spectra.get_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the config of the spectra.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`echidna.core.spectra.SpectraConfig`: The config of</span>
-<span class="sd">            the spectra.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
-</div>
-<div class="viewcode-block" id="Spectra.fill"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Fill the bin with weight.  Note that values for all named</span>
-<span class="sd">        parameters in the spectra&#39;s config (e.g. energy, radial) must be</span>
-<span class="sd">        passed.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          weight (float, optional): Defaults to 1.0, weight to fill the bin</span>
-<span class="sd">            with.</span>
-<span class="sd">          kwargs (float): Named values (e.g. for energy_mc, radial_mc)</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          Exception: Parameter in kwargs is not in config.</span>
-<span class="sd">          Exception: Parameter in config is not in kwargs.</span>
-<span class="sd">          ValueError: If the energy, radius or time is beyond the bin limits.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c"># Check all keys in kwargs are in the config parameters and visa versa</span>
-        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Unknown parameter </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Missing parameter </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span> <span class="o">&lt;=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">&lt;</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> out of range: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]))</span>
-        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span>
-                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span>
-                             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">*</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">bins</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">weight</span>
-</div>
-<div class="viewcode-block" id="Spectra.shrink_to_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink_to_roi">[docs]</a>    <span class="k">def</span> <span class="nf">shrink_to_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower_limit</span><span class="p">,</span> <span class="n">upper_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Shrink spectrum to a defined Region of Interest (ROI)</span>
-
-<span class="sd">        Shrinks spectrum to given ROI and saves ROI parameters.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          lower_limit (float): Lower bound of ROI, along given axis.</span>
-<span class="sd">          upper_limit (float): Upper bound of ROI, along given axis.</span>
-<span class="sd">          dimension (str): Name of the dimension to shrink.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">integral_full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Save integral of full spectrum</span>
-
-        <span class="c"># Shrink to ROI</span>
-        <span class="n">kw_low</span> <span class="o">=</span> <span class="n">dimension</span><span class="o">+</span><span class="s">&quot;_low&quot;</span>
-        <span class="n">kw_high</span> <span class="o">=</span> <span class="n">dimension</span><span class="o">+</span><span class="s">&quot;_high&quot;</span>
-        <span class="n">kw_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">kw_low</span><span class="p">:</span> <span class="n">lower_limit</span><span class="p">,</span>
-                   <span class="n">kw_high</span><span class="p">:</span> <span class="n">upper_limit</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">kw_args</span><span class="p">)</span>
-
-        <span class="c"># Calculate efficiency</span>
-        <span class="n">integral_roi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Integral of spectrum over ROI</span>
-        <span class="n">efficiency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_roi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_full</span><span class="p">)</span>
-        <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;low&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span>
-                                 <span class="s">&quot;high&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span>
-                                 <span class="s">&quot;efficiency&quot;</span><span class="p">:</span> <span class="n">efficiency</span><span class="p">}</span>
-</div>
-<div class="viewcode-block" id="Spectra.get_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Access information about a predefined ROI for a given dimension</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          dict: Dictionary containing parameters defining the ROI, on</span>
-<span class="sd">            the given dimension.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
-</div>
-<div class="viewcode-block" id="Spectra.set_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.set_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sets plotting style.</span>
-
-<span class="sd">        Styles should be valid pyplot style strings e.g. &quot;b-&quot;, for a</span>
-<span class="sd">        blue line, or dictionaries of strings e.g. {&quot;color&quot;: &quot;red&quot;}.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          style (string): Pyplot-style plotting style.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="n">style</span>
-</div>
-<div class="viewcode-block" id="Spectra.get_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_style">[docs]</a>    <span class="k">def</span> <span class="nf">get_style</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns:</span>
-<span class="sd">          string/dict: :attr:`_style` - pyplot-style plotting style.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style</span>
-</div>
-<div class="viewcode-block" id="Spectra.project"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Project the histogram along an axis for a given dimension.</span>
-<span class="sd">        Note that the dimension must be one of the named parameters in</span>
-<span class="sd">        the SpectraConfig.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          dimension (str): parameter to project onto</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`numpy.ndarray`: The projection of the histogram onto the</span>
-<span class="sd">            given axis</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
-        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">axis</span> <span class="o">&lt;</span> <span class="n">i_axis</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">projection</span>
-</div>
-<div class="viewcode-block" id="Spectra.surface"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.surface">[docs]</a>    <span class="k">def</span> <span class="nf">surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension1</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Project the histogram along two axes for the given dimensions.</span>
-<span class="sd">        Note that the dimensions must be one of the named parameters in</span>
-<span class="sd">        the SpectraConfig.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          dimension1 (str): first parameter to project onto</span>
-<span class="sd">          dimension1 (str): second parameter to project onto</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          IndexError: Axis of dimension1 is out of range</span>
-<span class="sd">          IndexError: Axis of dimension2 is out of range</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          :class:`numpy.ndarray`: The 2d surface of the histogram.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">axis1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension1</span><span class="p">)</span>
-        <span class="n">axis2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension2</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">axis1</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">axis1</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Axis index </span><span class="si">%s</span><span class="s"> out of range&quot;</span> <span class="o">%</span> <span class="n">axis1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">axis2</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">axis2</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Axis index </span><span class="si">%s</span><span class="s"> out of range&quot;</span> <span class="o">%</span> <span class="n">axis2</span><span class="p">)</span>
-        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())):</span>
-            <span class="k">if</span> <span class="n">i_axis</span> <span class="o">!=</span> <span class="n">axis1</span> <span class="ow">and</span> <span class="n">i_axis</span> <span class="o">!=</span> <span class="n">axis2</span><span class="p">:</span>
-                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_axis</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">projection</span>
-</div>
-<div class="viewcode-block" id="Spectra.sum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Calculate and return the sum of the `_data` values.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          float: The sum of the values in the `_data` histogram.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-</div>
-<div class="viewcode-block" id="Spectra.scale"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Scale THIS spectra to represent *num_decays* worth of decays over</span>
-<span class="sd">        the entire unshrunken spectra.</span>
-
-<span class="sd">        This rescales each bin by the ratio of *num_decays* to</span>
-<span class="sd">        *self._num_decays*, i.e. it changes the spectra from representing</span>
-<span class="sd">        *self._num_decays* to *num_decays*. *self._num_decays* is updated</span>
-<span class="sd">        to equal *num_decays* after.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          num_decays (float): Number of decays this spectra should represent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">num_decays</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
-        <span class="c"># Make sure self._num_decays stays as a float</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_decays</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="Spectra.shrink"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink">[docs]</a>    <span class="k">def</span> <span class="nf">shrink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Shrink the data such that it only contains values between low and</span>
-<span class="sd">        high for a given dimension by slicing. This updates the internal bin</span>
-<span class="sd">        information as well as the data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          kwargs (float): Named parameters to slice on; note that these</span>
-<span class="sd">            must be of the form [name]_low or [name]_high where [name]</span>
-<span class="sd">            is a dimension present in the SpectraConfig.</span>
-
-<span class="sd">        .. note:</span>
-
-<span class="sd">          The logic in this method is the same for each dimension, first</span>
-<span class="sd">          check the new values are within the existing ones</span>
-<span class="sd">          (can only compress). Then calculate the low bin number and high bin</span>
-<span class="sd">          number (relative to the existing binning low).</span>
-<span class="sd">          Finally update all the bookeeping and slice.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          IndexError: Parameter which is being shrank does not exist in the</span>
-<span class="sd">            config file.</span>
-<span class="sd">          ValueError: [parameter]_low value is lower than the parameters lower</span>
-<span class="sd">            bound.</span>
-<span class="sd">          ValueError: [parameter]_high value is lower than the parameters</span>
-<span class="sd">            higher bound.</span>
-<span class="sd">          IndexError: Suffix to [parameter] is not _high or _low.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c"># First check dimensions and bounds in kwargs are valid</span>
-        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()</span>
-            <span class="n">high_low</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">par</span> <span class="o">=</span> <span class="n">arg</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">high_low</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
-            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the config&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">high_low</span> <span class="o">==</span> <span class="s">&quot;low&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">):</span>
-                    <span class="k">continue</span>  <span class="c"># To avoid floating point errors</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is below existing bound for </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span>
-                                     <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="n">par</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">high_low</span> <span class="o">==</span> <span class="s">&quot;high&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">):</span>
-                    <span class="k">continue</span>  <span class="c"># To avoid floating point errors</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is above existing bound for </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span>
-                                     <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="n">par</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> index invalid. Index must be of the form&quot;</span>
-                                 <span class="s">&quot;[dimension name]_high or&quot;</span>
-                                 <span class="s">&quot;[dimension name]_low&quot;</span> <span class="o">%</span> <span class="n">arg</span><span class="p">)</span>
-        <span class="n">slices_low</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">slices_high</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
-            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
-            <span class="n">kw_low</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_low&quot;</span> <span class="o">%</span> <span class="n">par_name</span>
-            <span class="n">kw_high</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_high&quot;</span> <span class="o">%</span> <span class="n">par_name</span>
-            <span class="k">if</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_low&quot;</span> <span class="o">%</span> <span class="n">par_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span>
-            <span class="k">if</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_high&quot;</span> <span class="o">%</span> <span class="n">par_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span>
-            <span class="c"># Round down the low bin</span>
-            <span class="n">low_bin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">]</span> <span class="o">-</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-            <span class="c"># Round up the high bin</span>
-            <span class="n">high_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">]</span> <span class="o">-</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span>
-                                  <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-            <span class="c"># new_low is the new lower first bin edge</span>
-            <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-            <span class="c"># new_high is the new upper last bin edge</span>
-            <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-            <span class="c"># Correct floating point errors: If the difference between</span>
-            <span class="c"># input high/low and calculated new high/low is approximately</span>
-            <span class="c"># equal (&lt;1%) to a bin width then assume user requested the bin</span>
-            <span class="c"># above/below to be cut.</span>
-            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">new_high</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">0.99</span> <span class="o">*</span>
-                                                         <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()):</span>
-                <span class="k">print</span> <span class="p">(</span><span class="s">&quot;WARNING: Correcting possible floating point error in &quot;</span>
-                       <span class="s">&quot;spectra.Spectra.shrink</span><span class="se">\n</span><span class="si">%s</span><span class="s"> was the input. </span><span class="si">%s</span><span class="s"> is the &quot;</span>
-                       <span class="s">&quot;calculated value for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">],</span>
-                                                    <span class="n">new_low</span><span class="p">,</span> <span class="n">kw_low</span><span class="p">))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">new_high</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">high_bin</span> <span class="o">-=</span> <span class="mi">1</span>
-                    <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">high_bin</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
-                <span class="k">print</span> <span class="s">&quot;Corrected </span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kw_low</span><span class="p">,</span> <span class="n">new_low</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">new_low</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">0.99</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()):</span>
-                <span class="k">print</span> <span class="p">(</span><span class="s">&quot;WARNING: Correcting possible floating point error in &quot;</span>
-                       <span class="s">&quot;spectra.Spectra.shrink</span><span class="se">\n</span><span class="si">%s</span><span class="s"> was the input. </span><span class="si">%s</span><span class="s"> is the &quot;</span>
-                       <span class="s">&quot;calculated value for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">],</span>
-                                                    <span class="n">new_low</span><span class="p">,</span> <span class="n">kw_low</span><span class="p">))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">new_low</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">low_bin</span> <span class="o">-=</span> <span class="mi">1</span>
-                    <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">low_bin</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-                <span class="k">print</span> <span class="s">&quot;Corrected </span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kw_low</span><span class="p">,</span> <span class="n">new_low</span><span class="p">)</span>
-            <span class="n">slices_high</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">high_bin</span><span class="p">)</span>
-            <span class="n">slices_low</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">low_bin</span><span class="p">)</span>
-            <span class="n">new_bins</span> <span class="o">=</span> <span class="n">high_bin</span> <span class="o">-</span> <span class="n">low_bin</span>
-            <span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">new_low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">new_high</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">new_bins</span><span class="p">)</span>
-        <span class="c"># First set up the command then evaluate. Hacky but hey ho.</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;self._data[&quot;</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">slices_low</span><span class="p">)):</span>
-            <span class="n">low</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slices_low</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">high</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slices_high</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">cmd</span> <span class="o">+=</span> <span class="n">low</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="o">+</span><span class="n">high</span><span class="o">+</span><span class="s">&quot;,&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;]&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="Spectra.cut"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.cut">[docs]</a>    <span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Similar to :meth:`shrink`, but updates scaling information.</span>
-
-<span class="sd">        If a spectrum is cut using :meth:`shrink`, subsequent calls to</span>
-<span class="sd">        :meth:`scale` the spectrum must still scale the *full* spectrum</span>
-<span class="sd">        i.e. before any cuts. The user supplies the number of decays</span>
-<span class="sd">        the full spectrum should now represent.</span>
-
-<span class="sd">        However, sometimes it is more useful to be able specify the</span>
-<span class="sd">        number of events the revised spectrum should represent. This</span>
-<span class="sd">        method updates the scaling information, so that it becomes the</span>
-<span class="sd">        new *full* spectrum.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          kwargs (float): Named parameters to slice on; note that these</span>
-<span class="sd">            must be of the form [name]_low or [name]_high where [name]</span>
-<span class="sd">            is a dimension present in the SpectraConfig.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">initial_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Store initial count</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">new_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="n">reduction_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">initial_count</span><span class="p">)</span>
-        <span class="c"># This reduction factor tells us how much the number of detected events</span>
-        <span class="c"># has been reduced by shrinking the spectrum. We want the number of</span>
-        <span class="c"># decays that the spectrum should now represent to be reduced by the</span>
-        <span class="c"># same factor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">*=</span> <span class="n">reduction_factor</span>
-</div>
 <div class="viewcode-block" id="Spectra.add"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds a spectrum to current spectra object.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          spectrum (:class:`echidna.core.spectra.Spectra`): Spectrum to add.</span>
+<span class="sd">          spectrum (:class:`Spectra`): Spectrum to add.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          ValueError: spectrum has different dimenstions to the current</span>
@@ -763,6 +181,188 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_events</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_raw_events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">+=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">_num_decays</span>
 </div>
+<div class="viewcode-block" id="Spectra.cut"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.cut">[docs]</a>    <span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Similar to :meth:`shrink`, but updates scaling information.</span>
+
+<span class="sd">        If a spectrum is cut using :meth:`shrink`, subsequent calls to</span>
+<span class="sd">        :meth:`scale` the spectrum must still scale the *full* spectrum</span>
+<span class="sd">        i.e. before any cuts. The user supplies the number of decays</span>
+<span class="sd">        the full spectrum should now represent.</span>
+
+<span class="sd">        However, sometimes it is more useful to be able specify the</span>
+<span class="sd">        number of events the revised spectrum should represent. This</span>
+<span class="sd">        method updates the scaling information, so that it becomes the</span>
+<span class="sd">        new *full* spectrum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          kwargs (float): Named parameters to slice on; note that these</span>
+<span class="sd">            must be of the form [name]_low or [name]_high where [name]</span>
+<span class="sd">            is a dimension present in the SpectraConfig.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Store initial count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">reduction_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">initial_count</span><span class="p">)</span>
+        <span class="c"># This reduction factor tells us how much the number of detected events</span>
+        <span class="c"># has been reduced by shrinking the spectrum. We want the number of</span>
+        <span class="c"># decays that the spectrum should now represent to be reduced by the</span>
+        <span class="c"># same factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">*=</span> <span class="n">reduction_factor</span>
+</div>
+<div class="viewcode-block" id="Spectra.fill"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Fill the bin with weight.  Note that values for all named</span>
+<span class="sd">        parameters in the spectra&#39;s config (e.g. energy, radial) must be</span>
+<span class="sd">        passed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          weight (float, optional): Defaults to 1.0, weight to fill the bin</span>
+<span class="sd">            with.</span>
+<span class="sd">          kwargs (float): Named values (e.g. for energy_mc, radial_mc)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          Exception: Parameter in kwargs is not in config.</span>
+<span class="sd">          Exception: Parameter in config is not in kwargs.</span>
+<span class="sd">          ValueError: If the energy, radius or time is beyond the bin limits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Check all keys in kwargs are in the config parameters and visa versa</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Unknown parameter </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Missing parameter </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span> <span class="o">&lt;=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">&lt;</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> out of range: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]))</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span>
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span> <span class="o">-</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">*</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">_bins</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">bins</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">weight</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_bipo"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_bipo">[docs]</a>    <span class="k">def</span> <span class="nf">get_bipo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the BiPo flag value of the spectra (no BiPo cut = 0,</span>
+<span class="sd">        BiPo cut = 1)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          int: The BiPo flag value of the spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bipo</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the config of the spectra.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.SpectraConfig`: The config of</span>
+<span class="sd">            the spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_data"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          (:class:`numpy.ndarray`): The spectral data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_fit_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the config of the spectra.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`echidna.core.spectra.SpectraConfig`: The config of</span>
+<span class="sd">            the spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_name"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string: The name of the spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_num_decays"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_num_decays">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_decays</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          float: The number of decays the spectrum represents (copy).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>  <span class="c"># Don&#39;t want to edit accidentally!</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Access information about a predefined ROI for a given dimension</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          dict: Dictionary containing parameters defining the ROI, on</span>
+<span class="sd">            the given dimension.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Spectra.get_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.get_style">[docs]</a>    <span class="k">def</span> <span class="nf">get_style</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          string/dict: :attr:`_style` - pyplot-style plotting style.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style</span>
+</div>
+<div class="viewcode-block" id="Spectra.interpolate1d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.interpolate1d">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Interpolates a given dimension of a spectra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dimension (string): Dimension you want to interpolate.</span>
+<span class="sd">          kind (string): Method of interpolation.</span>
+<span class="sd">            See :class:`scipy.interpolate.interp1d` for available methods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`scipy.interpolate.interp1d`: Interpolation function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_bin_centres</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Spectra.nd_project"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.nd_project">[docs]</a>    <span class="k">def</span> <span class="nf">nd_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Project the histogram along an arbitary number of axes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dimensions (str): List of axes to project onto</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The nd projection of the histogram.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dimensions</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())):</span>
+            <span class="k">if</span> <span class="n">i_axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
+<div class="viewcode-block" id="Spectra.project"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Project the histogram along an axis for a given dimension.</span>
+<span class="sd">        Note that the dimension must be one of the named parameters in</span>
+<span class="sd">        the SpectraConfig.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dimension (str): parameter to project onto</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The projection of the histogram onto the</span>
+<span class="sd">            given axis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="o">&lt;</span> <span class="n">i_axis</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span>
+</div>
 <div class="viewcode-block" id="Spectra.rebin"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.rebin">[docs]</a>    <span class="k">def</span> <span class="nf">rebin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_bins</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Rebin spectra data into a smaller spectra of the same rank whose</span>
 <span class="sd">        dimensions are factors of the original dimensions.</span>
@@ -798,20 +398,220 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_bins</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Spectra.interpolate1d"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.interpolate1d">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Interpolates a given dimension of a spectra.</span>
+<div class="viewcode-block" id="Spectra.scale"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_decays</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Scale THIS spectra to represent *num_decays* worth of decays over</span>
+<span class="sd">        the entire unshrunken spectra.</span>
+
+<span class="sd">        This rescales each bin by the ratio of *num_decays* to</span>
+<span class="sd">        *self._num_decays*, i.e. it changes the spectra from representing</span>
+<span class="sd">        *self._num_decays* to *num_decays*. *self._num_decays* is updated</span>
+<span class="sd">        to equal *num_decays* after.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          dimension (string): Dimension you want to interpolate.</span>
-<span class="sd">          kind (string): Method of interpolation.</span>
-<span class="sd">            See :class:`scipy.interpolate.interp1d` for available methods.</span>
+<span class="sd">          num_decays (float): Number of decays this spectra should represent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">num_decays</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span><span class="p">)</span>
+        <span class="c"># Make sure self._num_decays stays as a float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_decays</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_decays</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Spectra.set_fit_config"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.set_fit_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_fit_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the config of the spectra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          config (:class:`echidna.core.spectra.SpectraFitConfig`): The fit</span>
+<span class="sd">            config to assign to the spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">SpectraFitConfig</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Invalid config type: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Spectra.set_style"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.set_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets plotting style.</span>
+
+<span class="sd">        Styles should be valid pyplot style strings e.g. &quot;b-&quot;, for a</span>
+<span class="sd">        blue line, or dictionaries of strings e.g. {&quot;color&quot;: &quot;red&quot;}.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          style (string, dict): Pyplot-style plotting style.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style</span> <span class="o">=</span> <span class="n">style</span>
+</div>
+<div class="viewcode-block" id="Spectra.shrink"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink">[docs]</a>    <span class="k">def</span> <span class="nf">shrink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shrink the data such that it only contains values between low and</span>
+<span class="sd">        high for a given dimension by slicing. This updates the internal bin</span>
+<span class="sd">        information as well as the data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          kwargs (float): Named parameters to slice on; note that these</span>
+<span class="sd">            must be of the form [name]_low or [name]_high where [name]</span>
+<span class="sd">            is a dimension present in the SpectraConfig.</span>
+
+<span class="sd">        .. note:</span>
+
+<span class="sd">          The logic in this method is the same for each dimension, first</span>
+<span class="sd">          check the new values are within the existing ones</span>
+<span class="sd">          (can only compress). Then calculate the low bin number and high bin</span>
+<span class="sd">          number (relative to the existing binning low).</span>
+<span class="sd">          Finally update all the bookeeping and slice.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: Parameter which is being shrank does not exist in the</span>
+<span class="sd">            config file.</span>
+<span class="sd">          ValueError: [parameter]_low value is lower than the parameters lower</span>
+<span class="sd">            bound.</span>
+<span class="sd">          ValueError: [parameter]_high value is lower than the parameters</span>
+<span class="sd">            higher bound.</span>
+<span class="sd">          IndexError: Suffix to [parameter] is not _high or _low.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># First check dimensions and bounds in kwargs are valid</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">high_low</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">arg</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">high_low</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not a parameter in the config&quot;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">high_low</span> <span class="o">==</span> <span class="s">&quot;low&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">):</span>
+                    <span class="k">continue</span>  <span class="c"># To avoid floating point errors</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is below existing bound for </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span>
+                                     <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="n">par</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_low</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">high_low</span> <span class="o">==</span> <span class="s">&quot;high&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">):</span>
+                    <span class="k">continue</span>  <span class="c"># To avoid floating point errors</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is above existing bound for </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span>
+                                     <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">],</span> <span class="n">par</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="o">.</span><span class="n">_high</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> index invalid. Index must be of the form&quot;</span>
+                                 <span class="s">&quot;[dimension name]_high or&quot;</span>
+                                 <span class="s">&quot;[dimension name]_low&quot;</span> <span class="o">%</span> <span class="n">arg</span><span class="p">)</span>
+        <span class="n">slices_low</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">slices_high</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">():</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+            <span class="n">kw_low</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_low&quot;</span> <span class="o">%</span> <span class="n">par_name</span>
+            <span class="n">kw_high</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_high&quot;</span> <span class="o">%</span> <span class="n">par_name</span>
+            <span class="k">if</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_low&quot;</span> <span class="o">%</span> <span class="n">par_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span>
+            <span class="k">if</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_high&quot;</span> <span class="o">%</span> <span class="n">par_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span>
+            <span class="c"># Round down the low bin</span>
+            <span class="n">low_bin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">]</span> <span class="o">-</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="c"># Round up the high bin</span>
+            <span class="n">high_bin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">]</span> <span class="o">-</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span> <span class="o">/</span>
+                                  <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="c"># new_low is the new lower first bin edge</span>
+            <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="c"># new_high is the new upper last bin edge</span>
+            <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+            <span class="c"># Correct floating point errors: If the difference between</span>
+            <span class="c"># input high/low and calculated new high/low is approximately</span>
+            <span class="c"># equal (&lt;1%) to a bin width then assume user requested the bin</span>
+            <span class="c"># above/below to be cut.</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">new_high</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">0.99</span> <span class="o">*</span>
+                                                         <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()):</span>
+                <span class="c"># print (&quot;WARNING: Correcting possible floating point error in&quot;</span>
+                <span class="c">#       &quot;spectra.Spectra.shrink\n%s was the input. %s is the &quot;</span>
+                <span class="c">#        &quot;calculated value for %s&quot; % (kwargs[kw_low],</span>
+                <span class="c">#                                     new_low, kw_low))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">new_high</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_high</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">high_bin</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">high_bin</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">new_high</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">high_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">())</span>
+                <span class="c"># print &quot;Corrected %s to %s&quot; % (kw_low, new_low)</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">new_low</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">0.99</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()):</span>
+                <span class="c"># print (&quot;WARNING: Correcting possible floating point error in&quot;</span>
+                <span class="c">#       &quot;spectra.Spectra.shrink\n%s was the input. %s is the &quot;</span>
+                <span class="c">#       &quot;calculated value for %s&quot; % (kwargs[kw_low],</span>
+                <span class="c">#                                    new_low, kw_low))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">new_low</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw_low</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">low_bin</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low_bin</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">new_low</span> <span class="o">=</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span> <span class="o">+</span> <span class="n">low_bin</span> <span class="o">*</span> <span class="n">par</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+                <span class="k">print</span> <span class="s">&quot;Corrected </span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kw_low</span><span class="p">,</span> <span class="n">new_low</span><span class="p">)</span>
+            <span class="n">slices_high</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">high_bin</span><span class="p">)</span>
+            <span class="n">slices_low</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">low_bin</span><span class="p">)</span>
+            <span class="n">new_bins</span> <span class="o">=</span> <span class="n">high_bin</span> <span class="o">-</span> <span class="n">low_bin</span>
+            <span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">new_low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">new_high</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">new_bins</span><span class="p">)</span>
+        <span class="c"># First set up the command then evaluate. Hacky but hey ho.</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;self._data[&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">slices_low</span><span class="p">)):</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slices_low</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slices_high</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">cmd</span> <span class="o">+=</span> <span class="n">low</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="o">+</span><span class="n">high</span><span class="o">+</span><span class="s">&quot;,&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;]&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Spectra.shrink_to_roi"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.shrink_to_roi">[docs]</a>    <span class="k">def</span> <span class="nf">shrink_to_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower_limit</span><span class="p">,</span> <span class="n">upper_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shrink spectrum to a defined Region of Interest (ROI)</span>
+
+<span class="sd">        Shrinks spectrum to given ROI and saves ROI parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          lower_limit (float): Lower bound of ROI, along given axis.</span>
+<span class="sd">          upper_limit (float): Upper bound of ROI, along given axis.</span>
+<span class="sd">          dimension (str): Name of the dimension to shrink.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">integral_full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Save integral of full spectrum</span>
+
+        <span class="c"># Shrink to ROI</span>
+        <span class="n">kw_low</span> <span class="o">=</span> <span class="n">dimension</span><span class="o">+</span><span class="s">&quot;_low&quot;</span>
+        <span class="n">kw_high</span> <span class="o">=</span> <span class="n">dimension</span><span class="o">+</span><span class="s">&quot;_high&quot;</span>
+        <span class="n">kw_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">kw_low</span><span class="p">:</span> <span class="n">lower_limit</span><span class="p">,</span>
+                   <span class="n">kw_high</span><span class="p">:</span> <span class="n">upper_limit</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrink</span><span class="p">(</span><span class="o">**</span><span class="n">kw_args</span><span class="p">)</span>
+
+        <span class="c"># Calculate efficiency</span>
+        <span class="n">integral_roi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c"># Integral of spectrum over ROI</span>
+        <span class="n">efficiency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_roi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">integral_full</span><span class="p">)</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rois</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;low&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_low</span><span class="p">,</span>
+                                 <span class="s">&quot;high&quot;</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">_high</span><span class="p">,</span>
+                                 <span class="s">&quot;efficiency&quot;</span><span class="p">:</span> <span class="n">efficiency</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="Spectra.sum"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculate and return the sum of the `_data` values.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          :class:`scipy.interpolate.interp1d`: Interpolation function.</span>
+<span class="sd">          float: The sum of the values in the `_data` histogram.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_par</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span><span class="o">.</span><span class="n">get_bin_centres</span><span class="p">()</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Spectra.surface"><a class="viewcode-back" href="../../../echidna.core.html#echidna.core.spectra.Spectra.surface">[docs]</a>    <span class="k">def</span> <span class="nf">surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension1</span><span class="p">,</span> <span class="n">dimension2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Project the histogram along two axes for the given dimensions.</span>
+<span class="sd">        Note that the dimensions must be one of the named parameters in</span>
+<span class="sd">        the SpectraConfig.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dimension1 (str): first parameter to project onto</span>
+<span class="sd">          dimension1 (str): second parameter to project onto</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          IndexError: Axis of dimension1 is out of range</span>
+<span class="sd">          IndexError: Axis of dimension2 is out of range</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          :class:`numpy.ndarray`: The 2d surface of the histogram.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">axis1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension1</span><span class="p">)</span>
+        <span class="n">axis2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">dimension2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis1</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">axis1</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Axis index </span><span class="si">%s</span><span class="s"> out of range&quot;</span> <span class="o">%</span> <span class="n">axis1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis2</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">axis2</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Axis index </span><span class="si">%s</span><span class="s"> out of range&quot;</span> <span class="o">%</span> <span class="n">axis2</span><span class="p">)</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_pars</span><span class="p">())):</span>
+            <span class="k">if</span> <span class="n">i_axis</span> <span class="o">!=</span> <span class="n">axis1</span> <span class="ow">and</span> <span class="n">i_axis</span> <span class="o">!=</span> <span class="n">axis2</span><span class="p">:</span>
+                <span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projection</span></div></div>
 </pre></div>
 
           </div>
@@ -851,6 +651,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>

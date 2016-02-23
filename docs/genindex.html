@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="top" title="echidna  documentation" href="index.html" /> 
   </head>
   <body role="document">
@@ -52,6 +53,7 @@
 <div class="genindex-jumpbox">
  <a href="#_"><strong>_</strong></a>
  | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
@@ -85,15 +87,41 @@
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting._get_chi_squared">_get_chi_squared() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic._compute">_compute() (echidna.fit.test_statistic.TestStatistic method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit._funct">_funct() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.test.html#echidna.test.test_minimise.TestGridSearch._funct">(echidna.test.test_minimise.TestGridSearch method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch._get_fit_par_values">_get_fit_par_values() (echidna.fit.minimise.GridSearch method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic._get_stats">_get_stats() (echidna.fit.test_statistic.TestStatistic method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch._get_values">_get_values() (echidna.fit.minimise.GridSearch method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="echidna.output.html#echidna.output.store._load_old">_load_old() (in module echidna.output.store)</a>
   </dt>
 
       
   <dt><a href="echidna.output.html#echidna.output.plot._produce_axis">_produce_axis() (in module echidna.output.plot)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.output.html#echidna.output.plot._produce_bins">_produce_bins() (in module echidna.output.plot)</a>
   </dt>
@@ -108,6 +136,10 @@
 
       
   <dt><a href="echidna.core.html#echidna.core.fill_spectrum._root_mix">_root_mix() (in module echidna.core.fill_spectrum)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch._update_coords">_update_coords() (echidna.fit.minimise.GridSearch method)</a>
   </dt>
 
   </dl></td>
@@ -129,25 +161,61 @@
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.add_chi_squared">add_chi_squared() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.add_config">add_config() (echidna.core.config.GlobalFitConfig method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_chi_squareds">add_chi_squareds() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.add_par">add_par() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.add_par">(echidna.core.config.GlobalFitConfig method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.append_fixed_background">append_fixed_background() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_minima">add_minima() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.apply_to">apply_to() (echidna.core.parameter.FitParameter method)</a>
   </dt>
 
-      
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_penalty_value">add_penalty_value() (echidna.limit.limit_setting.SystAnalyser method)</a>
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.RateParameter.apply_to">(echidna.core.parameter.RateParameter method)</a>
   </dt>
 
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.ResolutionParameter.apply_to">(echidna.core.parameter.ResolutionParameter method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.ScaleParameter.apply_to">(echidna.core.parameter.ScaleParameter method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.ShiftParameter.apply_to">(echidna.core.parameter.ShiftParameter method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.add_preferred_value">add_preferred_value() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.BakerCousinsChi">BakerCousinsChi (class in echidna.fit.test_statistic)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.BakerCousinsLL">BakerCousinsLL (class in echidna.fit.test_statistic)</a>
   </dt>
 
   </dl></td>
@@ -160,6 +228,16 @@
   <dt><a href="echidna.core.html#echidna.core.smear.Smear.calc_gaussian">calc_gaussian() (echidna.core.smear.Smear method)</a>
   </dt>
 
+      
+  <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearLY.calc_poisson_energy">calc_poisson_energy() (echidna.core.smear.EnergySmearLY method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearRes.calc_poisson_energy">(echidna.core.smear.EnergySmearRes method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearLY.calc_smear_ly">calc_smear_ly() (echidna.core.smear.EnergySmearLY method)</a>
   </dt>
@@ -175,9 +253,35 @@
 
       </dl></dd>
       
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.check_all_spectra">check_all_spectra() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.check_fit_config">check_fit_config() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.check_fitter">check_fitter() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.check_roi">check_roi() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.check_spectra">check_spectra() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.check_values">check_values() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.output.html#echidna.output.plot_chi_squared.chi_squared_map">chi_squared_map() (in module echidna.output.plot_chi_squared)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.output.html#echidna.output.plot_chi_squared_root.chi_squared_vs_half_life">chi_squared_vs_half_life() (in module echidna.output.plot_chi_squared_root)</a>
   </dt>
@@ -197,21 +301,15 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.ChiSquared">ChiSquared (class in echidna.limit.chi_squared)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
   <dt><a href="echidna.errors.html#echidna.errors.custom_errors.CompatibilityError">CompatibilityError</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_background">configure_background() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic.compute_statistic">compute_statistic() (echidna.fit.test_statistic.TestStatistic method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.configure_signal">configure_signal() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config">Config (class in echidna.core.config)</a>
   </dt>
 
       
@@ -248,16 +346,60 @@
   <dt><a href="echidna.output.html#echidna.output.store.dict_to_string">dict_to_string() (in module echidna.output.store)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.output.html#echidna.output.store.dump">dump() (in module echidna.output.store)</a>
+  <dt><a href="echidna.html#echidna.utilities.DispatchingFormatter">DispatchingFormatter (class in echidna.utilities)</a>
   </dt>
 
+      
+  <dt><a href="echidna.core.html#echidna.core.config.Config.dump">dump() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.dump">(echidna.core.config.GlobalFitConfig method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.dump">(echidna.core.config.SpectraConfig method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraFitConfig.dump">(echidna.core.config.SpectraFitConfig method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.output.html#echidna.output.store.dump">(in module echidna.output.store)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.output.html#echidna.output.store.dump_ndarray">dump_ndarray() (in module echidna.output.store)</a>
   </dt>
 
+      
+  <dt><a href="echidna.output.html#echidna.output.store.dump_summary">dump_summary() (in module echidna.output.store)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.config.Config.dump_to_file">dump_to_file() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.dump_to_file">(echidna.core.config.GlobalFitConfig method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.dump_to_file">(echidna.core.config.SpectraConfig method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraFitConfig.dump_to_file">(echidna.core.config.SpectraFitConfig method)</a>
+  </dt>
+
+      </dl></dd>
   </dl></td>
 </tr></table>
 
@@ -285,11 +427,19 @@
   </dt>
 
       
+  <dt><a href="echidna.core.html#module-echidna.core.config">echidna.core.config (module)</a>
+  </dt>
+
+      
   <dt><a href="echidna.core.html#module-echidna.core.dsextract">echidna.core.dsextract (module)</a>
   </dt>
 
       
   <dt><a href="echidna.core.html#module-echidna.core.fill_spectrum">echidna.core.fill_spectrum (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#module-echidna.core.parameter">echidna.core.parameter (module)</a>
   </dt>
 
       
@@ -317,19 +467,35 @@
   </dt>
 
       
+  <dt><a href="echidna.fit.html#module-echidna.fit">echidna.fit (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#module-echidna.fit.fit">echidna.fit.fit (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#module-echidna.fit.fit_results">echidna.fit.fit_results (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#module-echidna.fit.minimise">echidna.fit.minimise (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#module-echidna.fit.test_statistic">echidna.fit.test_statistic (module)</a>
+  </dt>
+
+      
   <dt><a href="echidna.limit.html#module-echidna.limit">echidna.limit (module)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#module-echidna.limit.chi_squared">echidna.limit.chi_squared (module)</a>
+  <dt><a href="echidna.limit.html#module-echidna.limit.limit">echidna.limit.limit (module)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#module-echidna.limit.limit_config">echidna.limit.limit_config (module)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.limit.html#module-echidna.limit.limit_setting">echidna.limit.limit_setting (module)</a>
+  <dt><a href="echidna.limit.html#module-echidna.limit.summary">echidna.limit.summary (module)</a>
   </dt>
 
       
@@ -372,6 +538,8 @@
   <dt><a href="echidna.scripts.html#module-echidna.scripts.dump_scaled">echidna.scripts.dump_scaled (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.scripts.html#module-echidna.scripts.dump_shifted">echidna.scripts.dump_shifted (module)</a>
   </dt>
@@ -380,8 +548,6 @@
   <dt><a href="echidna.scripts.html#module-echidna.scripts.dump_smeared">echidna.scripts.dump_smeared (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.scripts.html#module-echidna.scripts.dump_spectra_ntuple">echidna.scripts.dump_spectra_ntuple (module)</a>
   </dt>
@@ -391,15 +557,19 @@
   </dt>
 
       
+  <dt><a href="echidna.scripts.html#module-echidna.scripts.klz_majoron_limits">echidna.scripts.klz_majoron_limits (module)</a>
+  </dt>
+
+      
   <dt><a href="echidna.scripts.html#module-echidna.scripts.multi_ntuple_spectrum">echidna.scripts.multi_ntuple_spectrum (module)</a>
   </dt>
 
       
-  <dt><a href="echidna.scripts.html#module-echidna.scripts.rebin">echidna.scripts.rebin (module)</a>
+  <dt><a href="echidna.scripts.html#module-echidna.scripts.plot_summary">echidna.scripts.plot_summary (module)</a>
   </dt>
 
       
-  <dt><a href="echidna.scripts.html#module-echidna.scripts.snoplus_majoron_limit">echidna.scripts.snoplus_majoron_limit (module)</a>
+  <dt><a href="echidna.scripts.html#module-echidna.scripts.rebin">echidna.scripts.rebin (module)</a>
   </dt>
 
       
@@ -408,10 +578,6 @@
 
       
   <dt><a href="echidna.scripts.tutorials.html#module-echidna.scripts.tutorials.getting_started">echidna.scripts.tutorials.getting_started (module)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.scripts.html#module-echidna.scripts.Xe136_majoron_limit">echidna.scripts.Xe136_majoron_limit (module)</a>
   </dt>
 
       
@@ -427,11 +593,7 @@
   </dt>
 
       
-  <dt><a href="echidna.test.html#module-echidna.test.test_chi_squared">echidna.test.test_chi_squared (module)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.test.html#module-echidna.test.test_limit_setting">echidna.test.test_limit_setting (module)</a>
+  <dt><a href="echidna.test.html#module-echidna.test.test_minimise">echidna.test.test_minimise (module)</a>
   </dt>
 
       
@@ -455,11 +617,19 @@
   </dt>
 
       
+  <dt><a href="echidna.test.html#module-echidna.test.test_test_statistic">echidna.test.test_test_statistic (module)</a>
+  </dt>
+
+      
   <dt><a href="echidna.util.html#module-echidna.util">echidna.util (module)</a>
   </dt>
 
       
   <dt><a href="echidna.util.html#module-echidna.util.root_help">echidna.util.root_help (module)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.util.html#module-echidna.util.strings">echidna.util.strings (module)</a>
   </dt>
 
       
@@ -517,6 +687,18 @@
   </dt>
 
       
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch.find_minimum">find_minimum() (echidna.fit.minimise.GridSearch method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit">Fit (class in echidna.fit.fit)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.fit">fit() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.test.html#echidna.test.test_scale.TestScale.fit_gaussian_energy">fit_gaussian_energy() (echidna.test.test_scale.TestScale method)</a>
   </dt>
 
@@ -530,10 +712,26 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.fit_gaussian_radius">fit_gaussian_radius() (echidna.test.test_smear.TestSmear method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.fit_gaussian_radius">fit_gaussian_radius() (echidna.test.test_smear.TestSmear method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.fit_poisson_energy">fit_poisson_energy() (echidna.test.test_smear.TestSmear method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter">FitParameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults">FitResults (class in echidna.fit.fit_results)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.html#echidna.utilities.DispatchingFormatter.format">format() (echidna.utilities.DispatchingFormatter method)</a>
   </dt>
 
       
@@ -621,19 +819,47 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_actual_counts">get_actual_counts() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.html#echidna.utilities.get_array_errors">get_array_errors() (in module echidna.utilities)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin">get_bin() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.limit.Limit.get_array_limit">get_array_limit() (echidna.limit.limit.Limit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centre">get_bin_centre() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_best_fit">get_best_fit() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_best_fit">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_best_fits">get_best_fits() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.get_bin_centres">get_bin_centres() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin">get_bin() (echidna.core.parameter.SpectraParameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_bin_boundaries">get_bin_boundaries() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_boundaries">(echidna.core.parameter.SpectraParameter method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_centre">get_bin_centre() (echidna.core.parameter.SpectraParameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.get_bin_centres">get_bin_centres() (echidna.core.parameter.SpectraParameter method)</a>
   </dt>
 
       
@@ -641,87 +867,121 @@
   </dt>
 
       
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_bins">get_bins() (echidna.core.parameter.Parameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_bipo">get_bipo() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.core.html#echidna.core.smear.Smear.get_bounds">get_bounds() (echidna.core.smear.Smear method)</a>
   </dt>
 
-      
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared">get_chi_squared() (echidna.limit.chi_squared.ChiSquared method)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.ChiSquared.get_chi_squared_per_bin">get_chi_squared_per_bin() (echidna.limit.chi_squared.ChiSquared method)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_chi_squareds">get_chi_squareds() (echidna.limit.limit_config.LimitConfig method)</a>
-  </dt>
-
-      <dd><dl>
-        
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_chi_squareds">(echidna.limit.limit_setting.SystAnalyser method)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_config">get_config() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_count">get_count() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_current_value">get_current_value() (echidna.core.parameter.FitParameter method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_counts_down">get_counts_down() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_data">get_data() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_data">(echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.get_dim">get_dim() (echidna.core.config.SpectraConfig method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_current_count">get_current_count() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.get_dim_type">get_dim_type() (echidna.core.config.SpectraConfig method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_dim">get_dim() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_dimension">get_dimension() (echidna.core.parameter.FitParameter method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_dim_type">get_dim_type() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.get_dims">get_dims() (echidna.core.config.SpectraConfig method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_dims">get_dims() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_fit_config">get_fit_config() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_fit_config">(echidna.fit.fit.Fit method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_fit_config">(echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_fit_config">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_fit_results">get_fit_results() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_first_bin_above">get_first_bin_above() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_fixed_background">get_fixed_background() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_index">get_index() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_floating_backgrounds">get_floating_backgrounds() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_last_bin_above">get_last_bin_above() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.get_global_pars">get_global_pars() (echidna.core.config.GlobalFitConfig method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_limit">get_limit() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_high">get_high() (echidna.core.parameter.Parameter method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_limit_count">get_limit_count() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_index">get_index() (echidna.core.config.Config method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_limit_no_float">get_limit_no_float() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.limit.Limit.get_limit">get_limit() (echidna.limit.limit.Limit method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_limit">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_limit_idx">get_limit_idx() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_minima">get_minima() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_low">get_low() (echidna.core.parameter.Parameter method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_minimum">get_minimum() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_minimiser">get_minimiser() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_minimum_position">get_minimum_position() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_minimum_value">get_minimum_value() (echidna.fit.fit_results.FitResults method)</a>
   </dt>
 
       
@@ -729,7 +989,37 @@
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_name">get_name() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_name">get_name() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_name">(echidna.core.parameter.Parameter method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_name">(echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_name">(echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic.get_name">(echidna.fit.test_statistic.TestStatistic method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_name">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_num_decays">get_num_decays() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_num_scales">get_num_scales() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
@@ -737,19 +1027,109 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_par">get_par() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_par">get_par() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.get_par">(echidna.core.config.GlobalFitConfig method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_par_by_index">get_par_by_index() (echidna.core.config.Config method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_pars">get_pars() (echidna.core.config.Config method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.get_pars">get_pars() (echidna.core.spectra.SpectraConfig method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_penalty_term">get_penalty_term() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_penalty_term">(echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.BakerCousinsChi.get_penalty_term">(echidna.fit.test_statistic.BakerCousinsChi class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.BakerCousinsLL.get_penalty_term">(echidna.fit.test_statistic.BakerCousinsLL class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.Neyman.get_penalty_term">(echidna.fit.test_statistic.Neyman class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.Pearson.get_penalty_term">(echidna.fit.test_statistic.Pearson class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic.get_penalty_term">(echidna.fit.test_statistic.TestStatistic method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_penalty_term">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_penalty_terms">get_penalty_terms() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_penalty_terms">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_pre_convolved">get_pre_convolved() (echidna.core.parameter.FitParameter method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_penalty_values">get_penalty_values() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_prior">get_prior() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_prior">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_priors">get_priors() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_preferred_values">get_preferred_values() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_raw_stat">get_raw_stat() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_raw_stat">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_raw_stats">get_raw_stats() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_raw_stats">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_resets">get_resets() (echidna.fit.fit_results.FitResults method)</a>
   </dt>
 
       
@@ -770,8 +1150,30 @@
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_roi">get_roi() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_roi">(echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_roi_pars">get_roi_pars() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_scale">get_scale() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
       
   <dt><a href="echidna.core.html#echidna.core.scale.Scale.get_scale_factor">get_scale_factor() (echidna.core.scale.Scale method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_scales">get_scales() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_shape">get_shape() (echidna.core.config.Config method)</a>
   </dt>
 
       
@@ -779,10 +1181,14 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearLY.get_sigma">get_sigma() (echidna.core.smear.EnergySmearLY method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_sigma">get_sigma() (echidna.core.parameter.FitParameter method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearLY.get_sigma">(echidna.core.smear.EnergySmearLY method)</a>
+  </dt>
+
         
   <dt><a href="echidna.core.html#echidna.core.smear.EnergySmearRes.get_sigma">(echidna.core.smear.EnergySmearRes method)</a>
   </dt>
@@ -792,28 +1198,82 @@
   </dt>
 
         
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.get_sigma">(echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_sigma">(echidna.limit.summary.Summary method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_signal_counts">get_signal_counts() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_sigmas">get_sigmas() (echidna.limit.summary.Summary method)</a>
   </dt>
 
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_signal">get_signal() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_spectra_config">get_spectra_config() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.get_spectra_pars">get_spectra_pars() (echidna.core.config.GlobalFitConfig method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_stat">get_stat() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary.get_stat">(echidna.limit.summary.ReducedSummary method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_stat">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.limit.Limit.get_statistics">get_statistics() (echidna.limit.limit.Limit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_stats">get_stats() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary.get_stats">(echidna.limit.summary.ReducedSummary method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.get_stats">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.get_style">get_style() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser.get_syst_values">get_syst_values() (echidna.limit.limit_setting.SystAnalyser method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.get_summary">get_summary() (echidna.fit.fit_results.FitResults method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.get_target">get_target() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.get_test_statistic">get_test_statistic() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.get_unit">get_unit() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.get_type">get_type() (echidna.core.config.Config method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_type">(echidna.core.parameter.Parameter method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.get_unit">get_unit() (echidna.core.parameter.SpectraParameter method)</a>
   </dt>
 
       
@@ -877,6 +1337,14 @@
 
       </dl></dd>
       
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_value_at">get_value_at() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_value_index">get_value_index() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.core.html#echidna.core.dsextract.EnergyExtractMC.get_value_ntuple">get_value_ntuple() (echidna.core.dsextract.EnergyExtractMC method)</a>
   </dt>
 
@@ -937,7 +1405,19 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.get_width">get_width() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.get_values">get_values() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.get_width">get_width() (echidna.core.parameter.Parameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig">GlobalFitConfig (class in echidna.core.config)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch">GridSearch (class in echidna.fit.minimise)</a>
   </dt>
 
   </dl></td>
@@ -967,6 +1447,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="echidna.util.html#echidna.util.strings.id_generator">id_generator() (in module echidna.util.strings)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.interpolate1d">interpolate1d() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
@@ -977,21 +1463,53 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig">LimitConfig (class in echidna.limit.limit_config)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.limit.Limit">Limit (class in echidna.limit.limit)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting">LimitSetting (class in echidna.limit.limit_setting)</a>
+  <dt><a href="echidna.errors.html#echidna.errors.custom_errors.LimitError">LimitError</a>
   </dt>
 
       
-  <dt><a href="echidna.output.html#echidna.output.store.load">load() (in module echidna.output.store)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.load">load() (echidna.core.config.Config class method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.load">(echidna.core.config.GlobalFitConfig class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.load">(echidna.core.config.SpectraConfig class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraFitConfig.load">(echidna.core.config.SpectraFitConfig class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.output.html#echidna.output.store.load">(in module echidna.output.store)</a>
+  </dt>
+
+      </dl></dd>
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig.load_from_file">load_from_file() (echidna.core.spectra.SpectraConfig class method)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.Config.load_from_file">load_from_file() (echidna.core.config.Config class method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.config.GlobalFitConfig.load_from_file">(echidna.core.config.GlobalFitConfig class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig.load_from_file">(echidna.core.config.SpectraConfig class method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraFitConfig.load_from_file">(echidna.core.config.SpectraFitConfig class method)</a>
+  </dt>
+
+      </dl></dd>
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
@@ -999,11 +1517,11 @@
   </dt>
 
       
-  <dt><a href="echidna.output.html#echidna.output.store.load_old">load_old() (in module echidna.output.store)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.load_pre_made">load_pre_made() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.log_likelihood">log_likelihood() (in module echidna.limit.chi_squared)</a>
+  <dt><a href="echidna.output.html#echidna.output.store.load_summary">load_summary() (in module echidna.output.store)</a>
   </dt>
 
   </dl></td>
@@ -1018,22 +1536,28 @@
 
       <dd><dl>
         
-  <dt><a href="echidna.scripts.html#echidna.scripts.Xe136_majoron_limit.main">(in module echidna.scripts.Xe136_majoron_limit)</a>
-  </dt>
-
-        
-  <dt><a href="echidna.scripts.html#echidna.scripts.snoplus_majoron_limit.main">(in module echidna.scripts.snoplus_majoron_limit)</a>
-  </dt>
-
-        
-  <dt><a href="echidna.scripts.tutorials.html#echidna.scripts.tutorials.getting_started.main">(in module echidna.scripts.tutorials.getting_started)</a>
+  <dt><a href="echidna.scripts.html#echidna.scripts.klz_majoron_limits.main">(in module echidna.scripts.klz_majoron_limits)</a>
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.make_fixed_background">make_fixed_background() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.make_fixed_background">make_fixed_background() (in module echidna.limit.limit_setting)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.GridSearch.minimise">minimise() (echidna.fit.minimise.GridSearch method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.Minimiser.minimise">(echidna.fit.minimise.Minimiser method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.minimise.Minimiser">Minimiser (class in echidna.fit.minimise)</a>
   </dt>
 
   </dl></td>
@@ -1043,7 +1567,41 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.neyman_chi_squared">neyman_chi_squared() (in module echidna.limit.chi_squared)</a>
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.nd_project">nd_project() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.nd_project_stat">nd_project_stat() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary.nd_project_stat">(echidna.limit.summary.ReducedSummary method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.nd_project_stat">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.nd_project_stats">nd_project_stats() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary.nd_project_stats">(echidna.limit.summary.ReducedSummary method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.nd_project_stats">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.Neyman">Neyman (class in echidna.fit.test_statistic)</a>
   </dt>
 
   </dl></td>
@@ -1053,7 +1611,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.pearson_chi_squared">pearson_chi_squared() (in module echidna.limit.chi_squared)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter">Parameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.Pearson">Pearson (class in echidna.fit.test_statistic)</a>
   </dt>
 
       
@@ -1061,7 +1623,15 @@
   </dt>
 
       
+  <dt><a href="echidna.output.html#echidna.output.plot_root.plot_best_fit_vs_scale">plot_best_fit_vs_scale() (in module echidna.output.plot_root)</a>
+  </dt>
+
+      
   <dt><a href="echidna.output.html#echidna.output.plot_root.plot_chi_squared_per_bin">plot_chi_squared_per_bin() (in module echidna.output.plot_root)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.output.html#echidna.output.plot_root.plot_penalty_term_vs_scale">plot_penalty_term_vs_scale() (in module echidna.output.plot_root)</a>
   </dt>
 
       
@@ -1077,6 +1647,10 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="echidna.output.html#echidna.output.plot_root.plot_sigma_best_fit_vs_scale">plot_sigma_best_fit_vs_scale() (in module echidna.output.plot_root)</a>
+  </dt>
+
+      
   <dt><a href="echidna.scripts.html#echidna.scripts.dump_spectra_ntuple.plot_spectrum">plot_spectrum() (in module echidna.scripts.dump_spectra_ntuple)</a>
   </dt>
 
@@ -1091,6 +1665,10 @@
 
       </dl></dd>
       
+  <dt><a href="echidna.output.html#echidna.output.plot_root.plot_stats_vs_scale">plot_stats_vs_scale() (in module echidna.output.plot_root)</a>
+  </dt>
+
+      
   <dt><a href="echidna.output.html#echidna.output.plot.plot_surface">plot_surface() (in module echidna.output.plot)</a>
   </dt>
 
@@ -1100,6 +1678,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.poisson">poisson() (echidna.test.test_smear.TestSmear method)</a>
+  </dt>
+
       
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.project">project() (echidna.core.spectra.Spectra method)</a>
   </dt>
@@ -1149,15 +1731,19 @@
 
       </dl></dd>
       
+  <dt><a href="echidna.core.html#echidna.core.parameter.RateParameter">RateParameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
   <dt><a href="echidna.scripts.html#echidna.scripts.dump_spectra_ntuple.read_and_dump_ntuple">read_and_dump_ntuple() (in module echidna.scripts.dump_spectra_ntuple)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.scripts.html#echidna.scripts.dump_spectra_root.read_and_dump_root">read_and_dump_root() (in module echidna.scripts.dump_spectra_root)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.scripts.html#echidna.scripts.dump_spectra_ntuple.read_tab_delim_file">read_tab_delim_file() (in module echidna.scripts.dump_spectra_ntuple)</a>
   </dt>
@@ -1169,15 +1755,33 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.scripts.html#echidna.scripts.zero_nu_limit.ReadableDir">ReadableDir (class in echidna.scripts.zero_nu_limit)</a>
+  <dt><a href="echidna.scripts.html#echidna.scripts.klz_majoron_limits.ReadableDir">ReadableDir (class in echidna.scripts.klz_majoron_limits)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="echidna.scripts.html#echidna.scripts.zero_nu_limit.ReadableDir">(class in echidna.scripts.zero_nu_limit)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.rebin">rebin() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_config.LimitConfig.reset_chi_squareds">reset_chi_squareds() (echidna.limit.limit_config.LimitConfig method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary">ReducedSummary (class in echidna.limit.summary)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.remove_signal">remove_signal() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.reset_grids">reset_grids() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.ResolutionParameter">ResolutionParameter (class in echidna.core.parameter)</a>
   </dt>
 
       
@@ -1185,7 +1789,7 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.round">round() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.round">round() (echidna.core.parameter.SpectraParameter method)</a>
   </dt>
 
   </dl></td>
@@ -1209,7 +1813,79 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.set_calculator">set_calculator() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.ScaleParameter">ScaleParameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.set_best_fit">set_best_fit() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_best_fit">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_best_fits">set_best_fits() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.set_current_value">set_current_value() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_data">set_data() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.set_fit_config">set_fit_config() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_fit_config">(echidna.fit.fit.Fit method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_fit_config">(echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_fit_results">set_fit_results() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_fixed_background">set_fixed_background() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_floating_backgrounds">set_floating_backgrounds() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_limit">set_limit() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_limit_idx">set_limit_idx() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_minimiser">set_minimiser() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_minimum_position">set_minimum_position() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_minimum_value">set_minimum_value() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_name">set_name() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
@@ -1217,11 +1893,49 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter.set_par">set_par() (echidna.core.spectra.SpectraParameter method)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.set_par">set_par() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter.set_par">(echidna.core.parameter.SpectraParameter method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.set_penalty_term">set_penalty_term() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_penalty_term">(echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_penalty_term">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_penalty_terms">set_penalty_terms() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_penalty_terms">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_pre_made_dir">set_pre_made_dir() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.chi_squared.ChiSquared.set_penalty_term">set_penalty_term() (echidna.limit.chi_squared.ChiSquared method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_prior">set_prior() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_priors">set_priors() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
@@ -1239,19 +1953,73 @@
 
       </dl></dd>
       
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_roi">set_roi() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_scale">set_scale() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.core.html#echidna.core.scale.Scale.set_scale_factor">set_scale_factor() (echidna.core.scale.Scale method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_scales">set_scales() (echidna.limit.summary.Summary method)</a>
   </dt>
 
       
   <dt><a href="echidna.core.html#echidna.core.shift.Shift.set_shift">set_shift() (echidna.core.shift.Shift method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_sigma">set_sigma() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_sigmas">set_sigmas() (echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_signal">set_signal() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_spectra_config">set_spectra_config() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_stat">set_stat() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.ReducedSummary.set_stat">(echidna.limit.summary.ReducedSummary method)</a>
+  </dt>
+
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_stat">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit_results.FitResults.set_stats">set_stats() (echidna.fit.fit_results.FitResults method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary.set_stats">(echidna.limit.summary.Summary method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.set_style">set_style() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.LimitSetting.set_target">set_target() (echidna.limit.limit_setting.LimitSetting method)</a>
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.set_test_statistic">set_test_statistic() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
@@ -1259,15 +2027,19 @@
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.setUp">setUp() (echidna.test.test_limit_setting.TestLimitSetting method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_minimise.TestGridSearch.setUp">setUp() (echidna.test.test_minimise.TestGridSearch method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.setUp">(echidna.test.test_test_statistic.TestTestStatistic method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.core.html#echidna.core.shift.Shift">Shift (class in echidna.core.shift)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.core.html#echidna.core.shift.Shift.shift">shift() (echidna.core.shift.Shift method)</a>
   </dt>
@@ -1277,7 +2049,19 @@
   </dt>
 
       
+  <dt><a href="echidna.core.html#echidna.core.parameter.ShiftParameter">ShiftParameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
   <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.shrink">shrink() (echidna.core.spectra.Spectra method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.shrink_all">shrink_all() (echidna.fit.fit.Fit method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.fit.html#echidna.fit.fit.Fit.shrink_spectra">shrink_spectra() (echidna.fit.fit.Fit method)</a>
   </dt>
 
       
@@ -1293,7 +2077,11 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraConfig">SpectraConfig (class in echidna.core.spectra)</a>
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraConfig">SpectraConfig (class in echidna.core.config)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.config.SpectraFitConfig">SpectraFitConfig (class in echidna.core.config)</a>
   </dt>
 
       
@@ -1307,7 +2095,11 @@
 
       </dl></dd>
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.SpectraParameter">SpectraParameter (class in echidna.core.spectra)</a>
+  <dt><a href="echidna.core.html#echidna.core.parameter.SpectraParameter">SpectraParameter (class in echidna.core.parameter)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.html#echidna.utilities.start_logging">start_logging() (in module echidna.utilities)</a>
   </dt>
 
       
@@ -1319,11 +2111,15 @@
   </dt>
 
       
-  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.surface">surface() (echidna.core.spectra.Spectra method)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.limit.Limit.sum_entries">sum_entries() (echidna.limit.limit.Limit method)</a>
   </dt>
 
       
-  <dt><a href="echidna.limit.html#echidna.limit.limit_setting.SystAnalyser">SystAnalyser (class in echidna.limit.limit_setting)</a>
+  <dt><a href="echidna.limit.html#echidna.limit.summary.Summary">Summary (class in echidna.limit.summary)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.core.html#echidna.core.spectra.Spectra.surface">surface() (echidna.core.spectra.Spectra method)</a>
   </dt>
 
   </dl></td>
@@ -1337,7 +2133,15 @@
   </dt>
 
       
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.test_abstract_base_class">test_abstract_base_class() (echidna.test.test_test_statistic.TestTestStatistic method)</a>
+  </dt>
+
+      
   <dt><a href="echidna.test.html#echidna.test.test_spectra.TestSpectra.test_fill">test_fill() (echidna.test.test_spectra.TestSpectra method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.test.html#echidna.test.test_minimise.TestGridSearch.test_find_minimum">test_find_minimum() (echidna.test.test_minimise.TestGridSearch method)</a>
   </dt>
 
       
@@ -1345,27 +2149,23 @@
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_get_chi_squared">test_get_chi_squared() (echidna.test.test_chi_squared.TestChiSquared method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.test_log_likelihood">test_log_likelihood() (echidna.test.test_test_statistic.TestTestStatistic method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_get_limit">test_get_limit() (echidna.test.test_limit_setting.TestLimitSetting method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_minimise.TestGridSearch.test_minimise">test_minimise() (echidna.test.test_minimise.TestGridSearch method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting.test_init">test_init() (echidna.test.test_limit_setting.TestLimitSetting method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.test_neyman">test_neyman() (echidna.test.test_test_statistic.TestTestStatistic method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_log_likelihood">test_log_likelihood() (echidna.test.test_chi_squared.TestChiSquared method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.test_pearson">test_pearson() (echidna.test.test_test_statistic.TestTestStatistic method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_neyman_chi_squared">test_neyman_chi_squared() (echidna.test.test_chi_squared.TestChiSquared method)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.test.html#echidna.test.test_chi_squared.TestChiSquared.test_pearson_chi_squared">test_pearson_chi_squared() (echidna.test.test_chi_squared.TestChiSquared method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic.test_poisson_likelihood_chi">test_poisson_likelihood_chi() (echidna.test.test_test_statistic.TestTestStatistic method)</a>
   </dt>
 
       
@@ -1373,11 +2173,11 @@
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_random_energy_ly">test_random_energy_ly() (echidna.test.test_smear.TestSmear method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_random_energy_res_gauss">test_random_energy_res_gauss() (echidna.test.test_smear.TestSmear method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_random_energy_res">test_random_energy_res() (echidna.test.test_smear.TestSmear method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_random_energy_res_poiss">test_random_energy_res_poiss() (echidna.test.test_smear.TestSmear method)</a>
   </dt>
 
       
@@ -1398,8 +2198,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.test.html#echidna.test.test_store.TestStore.test_serialisation">test_serialisation() (echidna.test.test_store.TestStore method)</a>
   </dt>
@@ -1408,16 +2206,26 @@
   <dt><a href="echidna.test.html#echidna.test.test_shift.TestShift.test_shift">test_shift() (echidna.test.test_shift.TestShift method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="echidna.test.html#echidna.test.test_spectra.TestSpectra.test_slicing">test_slicing() (echidna.test.test_spectra.TestSpectra method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_ly">test_weight_energy_ly() (echidna.test.test_smear.TestSmear method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_ly_gauss">test_weight_energy_ly_gauss() (echidna.test.test_smear.TestSmear method)</a>
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_res">test_weight_energy_res() (echidna.test.test_smear.TestSmear method)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_ly_poiss">test_weight_energy_ly_poiss() (echidna.test.test_smear.TestSmear method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_res_gauss">test_weight_energy_res_gauss() (echidna.test.test_smear.TestSmear method)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.test.html#echidna.test.test_smear.TestSmear.test_weight_energy_res_poiss">test_weight_energy_res_poiss() (echidna.test.test_smear.TestSmear method)</a>
   </dt>
 
       
@@ -1425,11 +2233,7 @@
   </dt>
 
       
-  <dt><a href="echidna.test.html#echidna.test.test_chi_squared.TestChiSquared">TestChiSquared (class in echidna.test.test_chi_squared)</a>
-  </dt>
-
-      
-  <dt><a href="echidna.test.html#echidna.test.test_limit_setting.TestLimitSetting">TestLimitSetting (class in echidna.test.test_limit_setting)</a>
+  <dt><a href="echidna.test.html#echidna.test.test_minimise.TestGridSearch">TestGridSearch (class in echidna.test.test_minimise)</a>
   </dt>
 
       
@@ -1449,13 +2253,31 @@
   </dt>
 
       
+  <dt><a href="echidna.fit.html#echidna.fit.test_statistic.TestStatistic">TestStatistic (class in echidna.fit.test_statistic)</a>
+  </dt>
+
+      
   <dt><a href="echidna.test.html#echidna.test.test_store.TestStore">TestStore (class in echidna.test.test_store)</a>
+  </dt>
+
+      
+  <dt><a href="echidna.test.html#echidna.test.test_test_statistic.TestTestStatistic">TestTestStatistic (class in echidna.test.test_test_statistic)</a>
   </dt>
 
       
   <dt><a href="echidna.html#echidna.utilities.Timer">Timer (class in echidna.utilities)</a>
   </dt>
 
+      
+  <dt><a href="echidna.core.html#echidna.core.parameter.FitParameter.to_dict">to_dict() (echidna.core.parameter.FitParameter method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="echidna.core.html#echidna.core.parameter.Parameter.to_dict">(echidna.core.parameter.Parameter method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="echidna.output.html#echidna.output.plot_chi_squared.turn_on">turn_on() (in module echidna.output.plot_chi_squared)</a>
   </dt>
@@ -1524,6 +2346,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Ashley R. Back, Philip G. Jones, James T. Waterfield.
+      Last updated on Feb 23, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b2.
     </div>
   </body>
