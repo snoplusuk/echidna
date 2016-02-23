@@ -164,7 +164,6 @@ class TestTestStatistic(unittest.TestCase):
         result = test_statistic.compute_statistic(self._observed,
                                                   self._expected)
         self.assertIsInstance(result, float)
-        print result
         self.assertAlmostEquals((result - (-20.8948597368)), 0.)
         result = test_statistic_pb.compute_statistic(self._observed,
                                                      self._expected)
