@@ -1,7 +1,8 @@
 import numpy
 
 from echidna.fit.test_statistic import (TestStatistic, BakerCousinsChi,
-                                        BakerCousinsLL, Neyman, Pearson, ExtendedLL)
+                                        BakerCousinsLL, Neyman, Pearson,
+                                        ExtendedLL)
 
 import unittest
 
@@ -168,7 +169,7 @@ class TestTestStatistic(unittest.TestCase):
         result = test_statistic_pb.compute_statistic(self._observed,
                                                      self._expected)
         calculated = numpy.array([-10.5333264925, -1.58676627531, 1.0,
-                                   0.1, 1.56575786324, 1.0,
-                                   -1.48972567003, -10.9507991622])
+                                  0.1, 1.56575786324, 1.0,
+                                  -1.48972567003, -10.9507991622])
         self.assertIsInstance(result, numpy.ndarray)
         self.assertTrue(numpy.allclose(result, calculated))
