@@ -26,6 +26,30 @@ class TestSmear(unittest.TestCase):
         sigma = numpy.fabs(sigma)
         return A*numpy.exp(-(x-mean)**2/(2.*sigma**2))
 
+    def poisson(self, x, *p):
+        """ A poisson used for fitting.
+
+        Args:
+          x (float): Position the gaussian is calculated at.
+          *p (list): List of parameters to fit
+
+        Returns:
+          float: Value of poisson at x for given parameters (float)
+        """
+        A, mean, _ = p
+        A = numpy.fabs(A)
+        light_yield = 200.  # Nhit/MeV
+        expected = mean*light_yield
+        log_pois = numpy.zeros(len(x))
+        for i, ent in enumerate(x):
+            photons = int(ent*light_yield)
+            log_factorial = numpy.sum(numpy.log(numpy.arange(1, (photons+1))))
+            log_pois[i] = (photons*numpy.log(expected) -
+                           log_factorial - expected)
+        pois = numpy.exp(log_pois)
+        norm_pois = pois / max(pois)  # Required for scaling checks
+        return A*norm_pois
+
     def fit_gaussian_energy(self, spectrum):
         """ Fits a gausian to the energy of a spectrum.
 
@@ -48,6 +72,28 @@ class TestSmear(unittest.TestCase):
         coeff, var_mtrx = curve_fit(self.gaussian, energies, entries, p0=pars0)
         return coeff[1], numpy.fabs(coeff[2]), numpy.array(entries).sum()
 
+    def fit_poisson_energy(self, spectrum):
+        """ Fits a gausian to the energy of a spectrum.
+
+        Args:
+          spectrum (:class:`spectra.Spectra`): Spectrum to be smeared
+
+        Returns:
+          tuple: mean (float), sigma (float) and
+          integral (float) of the spectrum.
+        """
+        entries = []
+        energies = []
+        energy_width = spectrum.get_config().get_par("energy_mc").get_width()
+        energy_low = spectrum.get_config().get_par("energy_mc")._low
+        spectrum_proj = spectrum.project("energy_mc")
+        for i in range(len(spectrum_proj)):
+            entries.append(spectrum_proj[i])
+            energies.append(energy_low+energy_width*(i+0.5))
+        pars0 = [300., 2.5, 0.1]
+        coeff, var_mtrx = curve_fit(self.poisson, energies, entries, p0=pars0)
+        return coeff[1], numpy.array(entries).sum()
+
     def fit_gaussian_radius(self, spectrum):
         """ Fits a gausian to the radius of a spectrum.
 
@@ -69,7 +115,7 @@ class TestSmear(unittest.TestCase):
         coeff, var_mtrx = curve_fit(self.gaussian, radii, entries, p0=pars0)
         return coeff[1], numpy.fabs(coeff[2]), numpy.array(entries).sum()
 
-    def test_weight_energy_ly(self):
+    def test_weight_energy_ly_gauss(self):
         """ Tests the weighted gaussian smearing method for energy
         by light yield.
 
@@ -85,7 +131,7 @@ class TestSmear(unittest.TestCase):
         energy = 2.5  # MeV
         for i in range(test_decays):
             test_spectra.fill(energy_mc=energy, radial_mc=0)
-        smearing = smear.EnergySmearLY()
+        smearing = smear.EnergySmearLY(poisson=False)
         self.assertRaises(ValueError, smearing.set_resolution, -1.)
         smearing.set_resolution(200.)
         # Test set and get resolution
@@ -113,24 +159,24 @@ class TestSmear(unittest.TestCase):
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
 
-    def test_random_energy_ly(self):
-        """ Tests the random gaussian smearing method for energy light yield.
+    def test_weight_energy_ly_poiss(self):
+        """ Tests the weighted poisson smearing method for energy
+        by light yield.
 
-        Creates a delta function and fits the mean and sigma after smearing.
-        Mean and sigma are checked against set values within 1 %.
-        Integral of smeared spectrum is checked against original number of
-        entries.
+        Creates a delta function and fits the mean after smearing.
+        Mean is checked against set values within 1 %. Integral of smeared
+        spectrum is checked against original number of entries.
         """
-        test_decays = 50000
+        test_decays = 10000
         config_path = "echidna/config/spectra_example.yml"
         config = SpectraConfig.load_from_file(config_path)
         test_spectra = spectra.Spectra("Test", test_decays, config)
         energy = 2.5  # MeV
         for i in range(test_decays):
             test_spectra.fill(energy_mc=energy, radial_mc=0)
-        smearing = smear.EnergySmearLY()
-        self.assertRaises(ValueError, smearing.set_resolution, -200.)
-        smearing.set_resolution(200.)  # NHit per MeV
+        smearing = smear.EnergySmearLY(poisson=True)
+        self.assertRaises(ValueError, smearing.set_resolution, -1.)
+        smearing.set_resolution(200.)
         # Test set and get resolution
         self.assertTrue(smearing.get_resolution() == 200.,
                         msg="Expected a resolution of 200 but got %s"
@@ -141,22 +187,18 @@ class TestSmear(unittest.TestCase):
         self.assertTrue(smearing.get_num_sigma() == 5.,
                         "Expected num_sigma to be 5 but got %s"
                         % smearing.get_num_sigma())
-        smeared_spectra = smearing.random_smear(test_spectra,
-                                                par="energy_mc")
+        smeared_spectra = smearing.weighted_smear(test_spectra,
+                                                  par="energy_mc")
         expected_sigma = numpy.sqrt(energy/200.)
-        mean, sigma, integral = self.fit_gaussian_energy(smeared_spectra)
-        self.assertTrue(energy < 1.02*mean and energy > 0.98*mean,
+        mean, integral = self.fit_poisson_energy(smeared_spectra)
+        self.assertTrue(energy < 1.01*mean and energy > 0.99*mean,
                         msg="Input energy %s, fitted energy %s" % (energy,
                                                                    mean))
-        self.assertTrue(expected_sigma < 1.01*sigma and
-                        expected_sigma > 0.99*sigma,
-                        msg="Expected sigma %s, fitted sigma %s"
-                        % (expected_sigma, sigma))
         self.assertAlmostEqual(integral/float(test_decays), 1.0,
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
 
-    def test_weight_energy_res(self):
+    def test_weight_energy_res_gauss(self):
         """ Tests the weighted gaussian smearing method for energy resolution.
 
         Creates a delta function and fits the mean and sigma after smearing.
@@ -171,7 +213,7 @@ class TestSmear(unittest.TestCase):
         energy = 2.5  # MeV
         for i in range(test_decays):
             test_spectra.fill(energy_mc=energy, radial_mc=0)
-        smearing = smear.EnergySmearRes()
+        smearing = smear.EnergySmearRes(poisson=False)
         self.assertRaises(ValueError, smearing.set_resolution, 200.)
         smearing.set_resolution(0.05)
         # Test set and get resolution
@@ -199,7 +241,45 @@ class TestSmear(unittest.TestCase):
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
 
-    def test_random_energy_res(self):
+    def test_weight_energy_res_poiss(self):
+        """ Tests the weighted poisson smearing method for energy resolution.
+
+        Creates a delta function and fits the mean after smearing.
+        Mean is checked against set values within 1 %. Integral of smeared
+        spectrum is checked against original number of entries.
+        """
+        test_decays = 10000
+        config_path = "echidna/config/spectra_example.yml"
+        config = SpectraConfig.load_from_file(config_path)
+        test_spectra = spectra.Spectra("Test", test_decays, config)
+        energy = 2.5  # MeV
+        for i in range(test_decays):
+            test_spectra.fill(energy_mc=energy, radial_mc=0)
+        smearing = smear.EnergySmearRes(poisson=True)
+        self.assertRaises(ValueError, smearing.set_resolution, 200.)
+        smearing.set_resolution(0.05)
+        # Test set and get resolution
+        self.assertTrue(smearing.get_resolution() == 0.05,
+                        msg="Expected a resolution of 0.05 but got %s"
+                        % smearing.get_resolution())
+        self.assertRaises(ValueError, smearing.set_num_sigma, -1.)
+        smearing.set_num_sigma(5.)
+        # Test set and get num_sigma
+        self.assertTrue(smearing.get_num_sigma() == 5.,
+                        "Expected num_sigma to be 5 but got %s"
+                        % smearing.get_num_sigma())
+        smeared_spectra = smearing.weighted_smear(test_spectra,
+                                                  par="energy_mc")
+        expected_sigma = numpy.sqrt(energy)*0.05
+        mean, integral = self.fit_poisson_energy(smeared_spectra)
+        self.assertTrue(energy < 1.01*mean and energy > 0.99*mean,
+                        msg="Input energy %s, fitted energy %s" % (energy,
+                                                                   mean))
+        self.assertAlmostEqual(integral/float(test_decays), 1.0,
+                               msg="Input decays %s, integral of spectra %s"
+                               % (test_decays, integral))
+
+    def test_random_energy_res_gauss(self):
         """ Tests the random gaussian smearing method for energy resolution.
 
         Creates a delta function and fits the mean and sigma after smearing.
@@ -214,7 +294,7 @@ class TestSmear(unittest.TestCase):
         energy = 2.5  # MeV
         for i in range(test_decays):
             test_spectra.fill(energy_mc=energy, radial_mc=0)
-        smearing = smear.EnergySmearRes()
+        smearing = smear.EnergySmearRes(poisson=False)
         self.assertRaises(ValueError, smearing.set_resolution, 2.)
         smearing.set_resolution(0.05)  # NHit per MeV
         # Test set and get resolution
@@ -238,6 +318,44 @@ class TestSmear(unittest.TestCase):
                         expected_sigma > 0.98*sigma,
                         msg="Expected sigma %s, fitted sigma %s"
                         % (expected_sigma, sigma))
+        self.assertAlmostEqual(integral/float(test_decays), 1.0,
+                               msg="Input decays %s, integral of spectra %s"
+                               % (test_decays, integral))
+
+    def test_random_energy_res_poiss(self):
+        """ Tests the random gaussian smearing method for energy resolution.
+
+        Creates a delta function and fits the mean after smearing.
+        Mean is checked against set values within 1 %. Integral of
+        smeared spectrum is checked against original number of entries.
+        """
+        test_decays = 50000
+        config_path = "echidna/config/spectra_example.yml"
+        config = SpectraConfig.load_from_file(config_path)
+        test_spectra = spectra.Spectra("Test", test_decays, config)
+        energy = 2.5  # MeV
+        for i in range(test_decays):
+            test_spectra.fill(energy_mc=energy, radial_mc=0)
+        smearing = smear.EnergySmearRes(poisson=True)
+        self.assertRaises(ValueError, smearing.set_resolution, 2.)
+        smearing.set_resolution(0.05)  # NHit per MeV
+        # Test set and get resolution
+        self.assertTrue(smearing.get_resolution() == 0.05,
+                        msg="Expected a resolution of 0.05 but got %s"
+                        % smearing.get_resolution())
+        self.assertRaises(ValueError, smearing.set_num_sigma, -1.)
+        smearing.set_num_sigma(5.)
+        # Test set and get num_sigma
+        self.assertTrue(smearing.get_num_sigma() == 5.,
+                        "Expected num_sigma to be 5 but got %s"
+                        % smearing.get_num_sigma())
+        smeared_spectra = smearing.random_smear(test_spectra,
+                                                par="energy_mc")
+        expected_sigma = numpy.sqrt(energy)*0.05
+        mean, integral = self.fit_poisson_energy(smeared_spectra)
+        self.assertTrue(energy < 1.01*mean and energy > 0.99*mean,
+                        msg="Input energy %s, fitted energy %s" % (energy,
+                                                                   mean))
         self.assertAlmostEqual(integral/float(test_decays), 1.0,
                                msg="Input decays %s, integral of spectra %s"
                                % (test_decays, integral))
