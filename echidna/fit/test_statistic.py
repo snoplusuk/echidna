@@ -545,11 +545,10 @@ class ExtendedLL(TestStatistic):
         # Chosen due to backgrounds with low rates in ROI
         epsilon = 1e-34  # In the limit of zero
         total = 0
-        for i in range(len(observed)):
-            if expected[i] < epsilon:
-                bin_value = observed[i] * numpy.log(epsilon)
-            else:
-                bin_value = observed[i] * numpy.log(expected[i])
+        for exp, obs in zip(expected, observed):
+            if exp < epsilon:
+                exp = epsilon
+            bin_value = obs * numpy.log(exp)
             total += bin_value
         return expected.sum() - total
 
