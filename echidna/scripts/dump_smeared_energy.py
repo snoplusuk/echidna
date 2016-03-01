@@ -35,10 +35,13 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--light_yield", default=200., type=float,
                         help="specify light yield"
                         "e.g. 200 for 200 NHit/MeV")
+    parser.add_argument("-g", "--gaus", dest="gaus", action="store_true",
+                        help="Apply gaussian PDF")
     parser.add_argument("-d", "--dest", default=None, type=str,
                         help="specify destination directory")
     parser.add_argument("path", type=str,
                         help="specify path to hdf5 file")
+    parser.set_defaults(gaus=False)
     args = parser.parse_args()
 
     if args.dest:
@@ -52,10 +55,16 @@ if __name__ == "__main__":
     filename = args.path[args.path.rfind("/")+1:args.path.rfind(".")]
 
     if args.energy_resolution:
-        energy_smear = smear.EnergySmearRes()
+        if args.gaus:
+            energy_smear = smear.EnergySmearRes(poisson=False)
+        else:
+            energy_smear = smear.EnergySmearRes(poisson=True)
         energy_smear.set_resolution(args.energy_resolution)
     else:  # use light yield
-        energy_smear = smear.EnergySmearLY()
+        if args.gaus:
+            energy_smear = smear.EnergySmearLY(poisson=False)
+        else:
+            energy_smear = smear.EnergySmearLY(poisson=True)
         energy_smear.set_resolution(args.light_yield)
     spectrum = store.load(args.path)
 
