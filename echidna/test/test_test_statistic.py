@@ -1,7 +1,8 @@
 import numpy
 
 from echidna.fit.test_statistic import (TestStatistic, BakerCousinsChi,
-                                        BakerCousinsLL, Neyman, Pearson)
+                                        BakerCousinsLL, Neyman, Pearson,
+                                        ExtendedLL)
 
 import unittest
 
@@ -144,5 +145,31 @@ class TestTestStatistic(unittest.TestCase):
         calculated = numpy.array([6.74977765e-4, 1.12219800e-4, 4.54568740e-4,
                                   0.1, 1.46751740, 7.89541679e-4,
                                   2.00670020e-4, 3.54506715e-4]) * 2.
+        self.assertIsInstance(result, numpy.ndarray)
+        self.assertTrue(numpy.allclose(result, calculated))
+
+    def test_extended_log_likelihood(self):
+        """ Test the :class:`echidna.limit.test_statistic.ExtendedLL`
+        class that calculates the extended log likelihood.
+        """
+        self.assertAlmostEqual(ExtendedLL._compute(100., 110.),
+                               -360.048038579, places=5)
+        self.assertAlmostEqual(ExtendedLL._compute(100., 90.),
+                               -359.980967033, places=5)
+        self.assertAlmostEqual(ExtendedLL._compute(100., 100.),
+                               -360.517018599, places=5)
+
+        # Test arrays
+        test_statistic = ExtendedLL(per_bin=False)
+        test_statistic_pb = ExtendedLL()
+        result = test_statistic.compute_statistic(self._observed,
+                                                  self._expected)
+        self.assertIsInstance(result, float)
+        self.assertAlmostEquals((result - (-20.8948597368)), 0.)
+        result = test_statistic_pb.compute_statistic(self._observed,
+                                                     self._expected)
+        calculated = numpy.array([-10.5333264925, -1.58676627531, 1.0,
+                                  0.1, 1.56575786324, 1.0,
+                                  -1.48972567003, -10.9507991622])
         self.assertIsInstance(result, numpy.ndarray)
         self.assertTrue(numpy.allclose(result, calculated))

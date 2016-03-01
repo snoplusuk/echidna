@@ -503,3 +503,90 @@ class Pearson(TestStatistic):
           float: Value of the penalty term
         """
         return ((current_value - prior)/sigma) ** 2
+
+
+class ExtendedLL(TestStatistic):
+    """ Test statistic class for calculating the Extended Log Likelihood test
+    statistic.
+
+    Args:
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
+        statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
+    """
+    def __init__(self, per_bin=True):
+        super(ExtendedLL, self).__init__("extended_ll", per_bin)
+
+    @classmethod
+    def _compute(self, observed, expected):
+        """ Calculates the Extended Log Likelihood value.
+
+        Args:
+          observed (:class:`numpy.array` or float): Number of observed
+            events
+          expected (:class:`numpy.array` or float): Number of expected
+            events
+
+        Returns:
+          float: Calculated Extended Log Likelihood value.
+        """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
+        # Chosen due to backgrounds with low rates in ROI
+        epsilon = 1e-34  # In the limit of zero
+        total = 0
+        for exp, obs in zip(expected, observed):
+            if exp < epsilon:
+                exp = epsilon
+            bin_value = obs * numpy.log(exp)
+            total += bin_value
+        return expected.sum() - total
+
+    @classmethod
+    def _get_stats(self, observed, expected):
+        """ Gets the Extended Log Likelihood value for each bin.
+
+        Args:
+          observed (:class:`numpy.array` or float): Number of observed
+            events
+          expected (:class:`numpy.array` or float): Number of expected
+            events
+
+        Returns:
+          :class:`numpy.array`: Calculated Extended Log Likelihood value
+          for each bin
+        """
+        # Chosen due to backgrounds with low rates in ROI
+        epsilon = 1e-34  # In the limit of zero
+        stats = []
+        for exp, obs in zip(expected, observed):
+            if exp < epsilon:
+                exp = epsilon
+            bin_value = obs * numpy.log(exp)
+            stats.append(exp - bin_value)
+        return numpy.array(stats)
+
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the Extended Log Likelihood test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return ((current_value - prior)/sigma) ** 2
