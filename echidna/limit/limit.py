@@ -1,11 +1,14 @@
 import numpy
 
+from echidna.core.config import GlobalFitConfig
+from echidna.fit.fit_results import FitResults
 import echidna.output as output
 from echidna.errors.custom_errors import LimitError, CompatibilityError
 from echidna.limit import summary
 from echidna.output import store
 
 import logging
+import collections
 import time
 
 
@@ -46,6 +49,14 @@ class Limit(object):
         self._fitter.check_fit_config(signal)
         self._fitter.set_signal(signal, shrink=shrink)
         self._signal = signal
+        parameters = collections.OrderedDict()
+        name = signal.get_name() + "_limit_fit_config"
+        fit_config = GlobalFitConfig(name, parameters)
+        fit_config.add_config(signal.get_fit_config())
+        fit_config.add_config(fitter.get_fit_config())
+        spectra_config = signal.get_config()
+        name = signal.get_name() + "_limit_fit_results"
+        self._fit_results = FitResults(fit_config, spectra_config, name)
 
     def get_array_limit(self, array, limit=2.71):
         """ Get the limit from an array containing statisics
@@ -183,6 +194,11 @@ class Limit(object):
             else:  # just use single stat
                 limit_summary.set_stat(stat, i)
 
+            # Update fit_results
+            self._fit_results.set_stat(fit_results.get_raw_stats(), i)
+            self._fit_results.set_penalty_term(
+                fit_results.get_penalty_terms(), i)
+
         # Find array minimum - use whichever is largest out of array min and
         # previously calculated min_stat
         if stats.min() > min_stat:
@@ -195,6 +211,10 @@ class Limit(object):
             min_per_bin = limit_summary.get_raw_stat(stats.argmin())
             limit_summary.set_stats(limit_summary.get_raw_stats() -
                                     min_per_bin)
+
+            min_per_bin = self._fit_results.get_raw_stat(stats.argmin())
+            self._fit_results.set_stats(self._fit_results.get_raw_stats() -
+                                        min_per_bin)
 
         # Also want to know index of minimum
         min_bin = numpy.argmin(stats)
@@ -229,6 +249,7 @@ class Limit(object):
                 path = output.__default_save_path__ + "/"
                 fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
                 store.dump_summary(path + fname, limit_summary)
+                store.dump_fit_results(path + fname, self._fit_results)
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
                 if self._fitter.get_fixed_background() is not None:
@@ -273,6 +294,7 @@ class Limit(object):
                 path = output.__default_save_path__ + "/"
                 fname = limit_summary.get_name() + "_" + timestamp + ".hdf5"
                 store.dump_summary(path + fname, limit_summary)
+                store.dump_fit_results(path + fname, self._fit_results)
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
                 if self._fitter.get_fixed_background() is not None:

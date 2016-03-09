@@ -237,8 +237,10 @@ class GlobalFitConfig(Config):
                 par._name = name
                 self.add_par(par, "spectra")
         elif config._type == "global_fit":
-            for par_name in config.get_pars():
-                self.add_par(config.get_par(par_name), "global")
+            for par in config.get_global_pars():
+                self.add_par(par, "global")
+            for par in config.get_spectra_pars():
+                self.add_par(par, "spectra")
         else:
             raise ValueError("Cannot add %s-type config to a config "
                              "of type %s" % (config._type, self._type))

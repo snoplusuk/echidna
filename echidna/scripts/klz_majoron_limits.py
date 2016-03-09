@@ -253,6 +253,19 @@ def main(args):
                      per_bin=per_bin, use_pre_made=False)
     logger.info("Created fitter")
 
+    # Make data if running sensitivity study
+    if args.sensitivity:
+        data = fitter.get_data()  # Already added blank spectrum
+        # Add fixed background
+        data.add(fitter.get_fixed_background())
+        # Add floating backgrounds - scaled to prior
+        for background in fitter.get_floating_backgrounds():
+            prior = background.get_fit_config().get_par("rate").get_prior()
+            background.scale(prior)
+            data.add(background)
+        # Re-set data
+        fitter.set_data(data)
+
     # Fit with no signal
     stat_zero = fitter.fit()
     fit_results = fitter.get_fit_results()
@@ -345,6 +358,11 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--save_path", action=ReadableDir,
                         help="Path to save all ouput files to. "
                         "Overrides default from output module.")
+    parser.add_argument("--sensitivity", action="store_true",
+                        help="Use expected background as data. Note a blank "
+                        "'data' spectrum must still be supplied, which will "
+                        "then be filled with the appropriate expected "
+                        "background spectrum.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--lower_bound", action="store_true",
                        help="Estimate lower bound on limit "
