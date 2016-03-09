@@ -222,6 +222,9 @@ def main(args):
 
     # Set floating backgrounds
     floating_backgrounds = []
+    # Add any floating backgrounds passed directly
+    for background in args.floating:
+        floating_backgrounds.append(background)
     if args_config.get("floating") is not None:
         if not isinstance(args_config.get("floating"), list):
             raise TypeError("Expecting list of paths to floating backgrounds")
@@ -229,19 +232,20 @@ def main(args):
             logger.info("Using floating background: %s" % filename)
             spectrum = store.load(filename)
 
-            # Add plot-grab errors as appropriate
-            if args.upper_bound:
-                spectrum_neg_errors = utilities.get_array_errors(
-                    spectrum._data, lin_err=-plot_grab_err, log10=True)
-                spectrum._data = spectrum._data + spectrum_neg_errors
-            if args.lower_bound:
-                spectrum_pos_errors = utilities.get_array_errors(
-                    spectrum._data, lin_err=plot_grab_err, log10=True)
-                spectrum._data = spectrum._data + spectrum_pos_errors
-
             floating_backgrounds.append(spectrum)
     else:
         logger.warning("No floating backgrounds found")
+
+    # Add plot-grab errors as appropriate
+    for background in floating_backgrounds:
+        if args.upper_bound:
+            spectrum_neg_errors = utilities.get_array_errors(
+                background._data, lin_err=-plot_grab_err, log10=True)
+            background._data = background._data + spectrum_neg_errors
+        if args.lower_bound:
+            spectrum_pos_errors = utilities.get_array_errors(
+                background._data, lin_err=plot_grab_err, log10=True)
+            background._data = background._data + spectrum_pos_errors
 
     # Using default minimiser (GridSearch) so let Fit class handle this
 
@@ -276,30 +280,33 @@ def main(args):
 
     # Load signals
     signals = []
+    # Add any signals parsed directly
+    for signal in args.signals:
+        signals.append(signal)
     if args_config.get("signals") is not None:
         for name, filename in args_config.get("signals").iteritems():
             logger.info("Using signal spectrum: %s" % filename)
             signal = store.load(filename)
-
-            # Add plot-grab errors as appropriate
-            # For signal we want to swap negative and positive fluctuations
-            # The lower bound on the limit, is when all our backgrounds have
-            # fluctuated down (through plot-grabbing) but the signal has
-            # fluctuated up. Then the reverse is true for the upper bound,
-            # backgrounds are fluctuated up and signal is fluctuated down
-            if args.upper_bound:
-                signal_pos_errors = utilities.get_array_errors(
-                    signal._data, lin_err=plot_grab_err, log10=True)
-                signal._data = signal._data + signal_pos_errors
-            if args.lower_bound:
-                signal_neg_errors = utilities.get_array_errors(
-                    signal._data, lin_err=-plot_grab_err, log10=True)
-                signal._data = signal._data + signal_neg_errors
-
             signals.append(signal)
     else:
         logger.error("No signal spectra found")
         raise CompatibilityError("Must have at least one signal to set limit")
+
+    # Add plot-grab errors as appropriate
+    # For signal we want to swap negative and positive fluctuations
+    # The lower bound on the limit, is when all our backgrounds have
+    # fluctuated down (through plot-grabbing) but the signal has
+    # fluctuated up. Then the reverse is true for the upper bound,
+    # backgrounds are fluctuated up and signal is fluctuated down
+    for signal in signals:
+        if args.upper_bound:
+            signal_pos_errors = utilities.get_array_errors(
+                signal._data, lin_err=plot_grab_err, log10=True)
+            signal._data = signal._data + signal_pos_errors
+        if args.lower_bound:
+            signal_neg_errors = utilities.get_array_errors(
+                signal._data, lin_err=-plot_grab_err, log10=True)
+            signal._data = signal._data + signal_neg_errors
 
     # KamLAND-Zen limits
     klz_limits = {"Xe136_0n2b_n1": 2.6e24,
@@ -358,6 +365,10 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--save_path", action=ReadableDir,
                         help="Path to save all ouput files to. "
                         "Overrides default from output module.")
+    parser.add_argument("--floating", nargs="*", help="Parse floating "
+                        "background spectra directly")
+    parser.add_argument("--signals", nargs="*", help="Parse signal spectra "
+                        "directly")
     parser.add_argument("--sensitivity", action="store_true",
                         help="Use expected background as data. Note a blank "
                         "'data' spectrum must still be supplied, which will "
