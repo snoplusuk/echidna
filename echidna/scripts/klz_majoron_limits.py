@@ -100,12 +100,19 @@ class ReadableDir(argparse.Action):
         setattr(namespace, self.dest, values)  # keeps original format
 
 
-def main(args):
+def main(args, floating_backgrounds=[], signals=[]):
     """ The limit setting script.
 
     Args:
       args (:class:`argparse.Namespace`): Arguments passed via command-
         line
+      floating_backgrounds (list): List of background spectra to float
+      signals (list): List of signals to set limits for
+
+    .. warning:: floating backgrounds and signals specified via config
+    will be **appended** to the lists passed as args, so if you are
+    passing a spectrum to one of these arguments, make sure it is not
+    also included in the config.
     """
     logger = utilities.start_logging()
 
@@ -221,11 +228,7 @@ def main(args):
         logger.warning("No fixed spectra found")
 
     # Set floating backgrounds
-    floating_backgrounds = []
-    # Add any floating backgrounds passed directly
-    for background in args.floating:
-        floating_backgrounds.append(background)
-    if args_config.get("floating") is not None:
+    if args_config.get("floating") is not None:  # passed by config
         if not isinstance(args_config.get("floating"), list):
             raise TypeError("Expecting list of paths to floating backgrounds")
         for filename in args_config.get("floating"):
@@ -279,8 +282,6 @@ def main(args):
                                     json.dumps(fit_results.get_summary()))
 
     # Load signals
-    signals = []
-    # Add any signals parsed directly
     for signal in args.signals:
         signals.append(signal)
     if args_config.get("signals") is not None:
