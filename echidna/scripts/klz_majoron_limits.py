@@ -282,10 +282,8 @@ def main(args, floating_backgrounds=[], signals=[]):
                                     json.dumps(fit_results.get_summary()))
 
     # Load signals
-    for signal in args.signals:
-        signals.append(signal)
     if args_config.get("signals") is not None:
-        for name, filename in args_config.get("signals").iteritems():
+        for filename in args_config.get("signals"):
             logger.info("Using signal spectrum: %s" % filename)
             signal = store.load(filename)
             signals.append(signal)
