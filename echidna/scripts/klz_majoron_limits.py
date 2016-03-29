@@ -100,7 +100,7 @@ class ReadableDir(argparse.Action):
         setattr(namespace, self.dest, values)  # keeps original format
 
 
-def main(args, floating_backgrounds=[], signals=[]):
+def main(args, name=None, floating_backgrounds=[], signals=[]):
     """ The limit setting script.
 
     Args:
@@ -123,8 +123,11 @@ def main(args, floating_backgrounds=[], signals=[]):
             output.__default_save_path__)
 
     args_config = yaml.load(open(args.from_file, "r"))
-    name = args_config.get("name")
-    logger.info("Configuration name: %s" % name)
+
+    if not name:  # no name supplied, use name from config
+        name = args_config.get("name")
+        logger.info("Configuration name: %s" % name)
+
     logging.getLogger("extra").debug("\n\n%s\n" % yaml.dump(args_config))
 
     # Set plot-grab error if required
@@ -228,14 +231,19 @@ def main(args, floating_backgrounds=[], signals=[]):
         logger.warning("No fixed spectra found")
 
     # Set floating backgrounds
+    spectrum_names = [bkg.get_name() for bkg in floating_backgrounds]
     if args_config.get("floating") is not None:  # passed by config
         if not isinstance(args_config.get("floating"), list):
             raise TypeError("Expecting list of paths to floating backgrounds")
         for filename in args_config.get("floating"):
-            logger.info("Using floating background: %s" % filename)
             spectrum = store.load(filename)
-
-            floating_backgrounds.append(spectrum)
+            if spectrum.get_name() not in spectrum_names:
+                logger.info("Using floating background from: %s" % filename)
+                floating_backgrounds.append(spectrum)
+            else:  # Spectrum already loaded - passed via args
+                logger.warning(
+                    "Background %s already loaded. NOT using floating "
+                    "background from: %s" % (spectrum.get_name(), filename))
     else:
         logger.warning("No floating backgrounds found")
 
@@ -282,11 +290,17 @@ def main(args, floating_backgrounds=[], signals=[]):
                                     json.dumps(fit_results.get_summary()))
 
     # Load signals
+    spectrum_names = [signal.get_name() for signal in signals]
     if args_config.get("signals") is not None:
         for filename in args_config.get("signals"):
-            logger.info("Using signal spectrum: %s" % filename)
             signal = store.load(filename)
-            signals.append(signal)
+            if signal.get_name() not in spectrum_names:
+                logger.info("Using signal spectrum from: %s" % filename)
+                signals.append(spectrum)
+            else:  # signal already loaded - passed via args
+                logger.warning(
+                    "Signal %s already loaded. NOT using signal "
+                    "spectrum from: %s" % (signal.get_name(), filename))
     else:
         logger.error("No signal spectra found")
         raise CompatibilityError("Must have at least one signal to set limit")
@@ -361,6 +375,8 @@ if __name__ == "__main__":
         description="KamLAND-Zen (plot-grab) Majoron limits script")
     parser.add_argument("--from_file", action=ReadableDir,
                         help="Path to config file containing arg values")
+    parser.add_argument("--update_from", action=ReadableDir,
+                        help="Path to config for updating spectra")
     parser.add_argument("-s", "--save_path", action=ReadableDir,
                         help="Path to save all ouput files to. "
                         "Overrides default from output module.")

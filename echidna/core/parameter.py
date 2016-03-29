@@ -24,6 +24,8 @@ class Parameter(object):
       _low (float): The lower limit to float the parameter from
       _high (float): The higher limit to float the parameter from
       _bins (int): The number of steps between low and high values
+      _min (float): Minimum bound for values - (-inf) by default
+      _max (float): Maximum bound for values - (inf) by default
 
     """
 
@@ -35,6 +37,8 @@ class Parameter(object):
         self._low = float(low)
         self._high = float(high)
         self._bins = int(bins)
+        self._min = -numpy.inf
+        self._max = numpy.inf
 
     def get_bins(self):
         """ Get the number of bins.
@@ -227,22 +231,65 @@ class FitParameter(Parameter):
         pass
 
     def check_values(self):
-        """ For symmetric arrays, check that the prior is in the values.
-
-        Raises:
-          ValueError: If prior is not in the values array.
+        """ Check that no values/bin_boundaries fall outside the min
+        and max bounds for the paramaeter tyep. Check that the prior is
+        in the values.
         """
         values = self.get_values()
+
+        # Check for bad values
+        bin_boundaries = self.get_bin_boundaries()
+
+        bad_indices = numpy.where((bin_boundaries < self._min) |
+                                  (bin_boundaries > self._max))[0]
+        if len(bad_indices) != 0:
+            self._logger.warning(
+                "Removing %d bin bounds outside parameter bounds (< %s, >%s)" %
+                (len(bad_indices), self._min, self._max))
+            bad_values = numpy.take(bin_boundaries, bad_indices)
+            good_indices = numpy.where((bin_boundaries >= self._min) &
+                                       (bin_boundaries <= self._max))[0]
+            self._bin_boundaries = numpy.take(bin_boundaries, good_indices)
+            self._logger.debug("The following bin bounds were removed:")
+            logging.getLogger("extra").debug("\n\n%s\n" % str(bad_values))
+
+            # Also rmove corresponding values
+            # Using same indices to make sure only remove the corresponding
+            # bin values.
+            self._logger.warning(
+                "Also removing %d values outside parameter bounds" %
+                len(bad_indices))
+            bad_values = numpy.take(values, bad_indices)
+
+            # Remove last index as there is one less bin valu than there are
+            # bin bounds
+            self._values = numpy.take(values, good_indices[:-1])
+            self._logger.debug("The following values were removed:")
+            logging.getLogger("extra").debug("\n\n%s\n" % str(bad_values))
+
+            # Update low, high and bins
+            low = float(self._values[0])
+            self._logger.warning("Updating value for _low (%.4g --> %.4g)" %
+                                 (self._low, low))
+            self._low = low
+            high = float(self._values[-1])
+            self._logger.warning("Updating value for _high (%.4g --> %.4g)" %
+                                 (self._high, high))
+            self._high = high
+            bins = len(self._values)
+            self._logger.warning("Updating value for _low (%.4g --> %.4g)" %
+                                 (self._bins, bins))
+            self._bins = bins
+
+        # Check prior contained in values
         if not numpy.any(numpy.around(values / self._prior, 12) ==
                          numpy.around(1., 12)):
-            log_text = ""
-            log_text += "Values: %s\n" % str(values)
+            self._logger.warning("Prior not in values array. This can be "
+                                 "achieved with an odd number of bins and low "
+                                 "and high values symmetric about prior.")
+            log_text = "Values: %s\n" % str(values)
             log_text += "Prior: %.4g\n" % self._prior
-            logging.getLogger("extra").warning("\n%s\n" % log_text)
-            raise ValueError("Prior not in values array. "
-                             "This can be achieved with an odd number "
-                             "of bins and symmetric low and high values "
-                             "about the prior.")
+            logging.getLogger("extra").warning("\n\n%s" % log_text)
 
     def get_best_fit(self):
         """
@@ -452,6 +499,7 @@ class FitParameter(Parameter):
                                   "for parameter %s" % self._name)
                 self._values = numpy.linspace(self._low,
                                               self._high, self._bins)
+
         return self._values
 
     def get_value_at(self, index):
@@ -525,6 +573,8 @@ class FitParameter(Parameter):
           TypeError: Unknown variable type passed as a kwarg.
         """
         for kw in kwargs:
+            self._logger.warning("Updating value for %s (%.4g --> %.4g)" %
+                                 (kw, self.__dict__["_"+kw], kwargs[kw]))
             if kw == "prior":
                 self._prior = float(kwargs[kw])
             elif kw == "sigma":
@@ -548,7 +598,9 @@ class FitParameter(Parameter):
                 self._dimension = str(kwargs[kw])
             else:
                 raise TypeError("Unhandled parameter name / type %s" % kw)
+        self._logger.warning("Setting _values and _bin_boundaries to None")
         self._values = None
+        self._bin_boundaries = None
 
     def set_penalty_term(self, penalty_term):
         """ Set value for :attr:`_penalty_term`.
@@ -626,6 +678,7 @@ class RateParameter(FitParameter):
         super(RateParameter, self).__init__(
             name, prior, sigma, low, high, bins, logscale=logscale,
             base=base, logscale_deviation=logscale_deviation, **kwargs)
+        self._min = 0.  # For rates
 
     def apply_to(self, spectrum):
         """ Scales spectrum to current value of rate parameter.
