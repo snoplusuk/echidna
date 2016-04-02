@@ -6,6 +6,7 @@ import numpy
 
 import abc
 import logging
+import warnings
 
 
 class Parameter(object):
@@ -232,64 +233,46 @@ class FitParameter(Parameter):
 
     def check_values(self):
         """ Check that no values/bin_boundaries fall outside the min
-        and max bounds for the paramaeter tyep. Check that the prior is
+        and max bounds for the paramaeter type. Check that the prior is
         in the values.
+
+        Warnings:
+          UserWarning: If any values fall outside the boundaries for
+            the parameter type - defined by :attr:`_min` and
+            :attr:`_max`.
+          UserWarning: If :attr:`_prior` is not present in the
+            :attr:`_values` array.
         """
         values = self.get_values()
 
-        # Check for bad values
-        bin_boundaries = self.get_bin_boundaries()
-
-        bad_indices = numpy.where((bin_boundaries < self._min) |
-                                  (bin_boundaries > self._max))[0]
+        # Check for bad values - fall outside of allowed range for parameter
+        bad_indices = numpy.where((values < self._min) |
+                                  (values > self._max))[0]
         if len(bad_indices) != 0:
-            self._logger.warning(
-                "Removing %d bin bounds outside parameter bounds (< %s, >%s)" %
-                (len(bad_indices), self._min, self._max))
-            bad_values = numpy.take(bin_boundaries, bad_indices)
-            good_indices = numpy.where((bin_boundaries >= self._min) &
-                                       (bin_boundaries <= self._max))[0]
-            self._bin_boundaries = numpy.take(bin_boundaries, good_indices)
-            self._logger.debug("The following bin bounds were removed:")
-            logging.getLogger("extra").debug("\n\n%s\n" % str(bad_values))
-
-            # Also rmove corresponding values
-            # Using same indices to make sure only remove the corresponding
-            # bin values.
-            self._logger.warning(
-                "Also removing %d values outside parameter bounds" %
-                len(bad_indices))
+            # Bad values present
+            warnings.warn(
+                "%d values fall outside bounds (%.4g, %.4g), for parameter %s"
+                % (len(bad_indices), self._min, self._max, self._name))
             bad_values = numpy.take(values, bad_indices)
-
-            # Remove last index as there is one less bin valu than there are
-            # bin bounds
-            self._values = numpy.take(values, good_indices[:-1])
-            self._logger.debug("The following values were removed:")
+            self._logger.debug("The bad values are:")
             logging.getLogger("extra").debug("\n\n%s\n" % str(bad_values))
-
-            # Update low, high and bins
-            low = float(self._values[0])
-            self._logger.warning("Updating value for _low (%.4g --> %.4g)" %
-                                 (self._low, low))
-            self._low = low
-            high = float(self._values[-1])
-            self._logger.warning("Updating value for _high (%.4g --> %.4g)" %
-                                 (self._high, high))
-            self._high = high
-            bins = len(self._values)
-            self._logger.warning("Updating value for _low (%.4g --> %.4g)" %
-                                 (self._bins, bins))
-            self._bins = bins
 
         # Check prior contained in values
         if not numpy.any(numpy.around(values / self._prior, 12) ==
                          numpy.around(1., 12)):
-            self._logger.warning("Prior not in values array. This can be "
-                                 "achieved with an odd number of bins and low "
-                                 "and high values symmetric about prior.")
+            warnings.warn("Prior not in values array "
+                          "for parameter %s" % self._name)
+            logging.getLogger("extra").warning(
+                "\n\nUsers are strongly advised to include the value of the "
+                "in all FitParameter value arrays as failure to do this "
+                "could result in unusual Fit results.\n\n This can be "
+                "achieved with an odd number of bins and low and high values "
+                "symmetric about prior. Some scale types - logscale_deviation "
+                "build the array of values around the prior, so it is "
+                "included by definition.\n")
             log_text = "Values: %s\n" % str(values)
             log_text += "Prior: %.4g\n" % self._prior
-            logging.getLogger("extra").warning("\n\n%s" % log_text)
+            logging.getLogger("extra").debug("\n\n%s" % log_text)
 
     def get_best_fit(self):
         """
@@ -307,7 +290,9 @@ class FitParameter(Parameter):
         return self._best_fit
 
     def get_bin_boundaries(self):
-        """ Returns an array of bin boundaries, based on the :attr:`_low`,
+        """ ***PENDING DEPRECATION***
+
+        Returns an array of bin boundaries, based on the :attr:`_low`,
         :attr:`_high` and :attr:`_bins` parameters, and any flags
         (:attr:`_logscale` or :attr:`_logscale_deviation`) that have
         been applied.
@@ -315,8 +300,16 @@ class FitParameter(Parameter):
         Returns:
           (:class:`numpy.array`): Array of bin_baoundaries for the
             parameter values stored in :attr:`_values`.
+
+        Warnings:
+          PendingDeprecationWarning: This method will be deprecated
+            soon. Bin boundaries shouldn't be required here as we are
+            referring to points on a grid, not bins.
         """
-        if self._bin_boundaries is None:  # Generate array of values
+        warnings.warn(PendingDeprecationWarning(
+            "Bin boundaries shouldn't be required here "
+            "as we are referring to points on a grid, not bins"))
+        if self._bin_boundaries is None:  # Generate array of bin boundaries
             if self._logscale:
                 if self._low <= 0.:  # set low = -log(high)
                     low = -numpy.log(self._high)
@@ -478,27 +471,42 @@ class FitParameter(Parameter):
                 self._values = numpy.logspace(low, high, num=self._bins,
                                               base=numpy.e)
             elif self._logscale_deviation:
-                # Create an array with the prior as the central value, and
-                # then absolute deviations from the prior that are
-                # linearly spaced in log-space.
+                # Create an array where absolute deviations from the prior
+                # increase linearly in logspace. The array is therefore
+                # approximately symmetrical about the prior, but the positive
+                # and negative deviations are treated separatedly, so can have
+                # an extended range on either side.
                 self._logger.info("Creating logscale_deviation array of "
                                   "values for parameter %s" % self._name)
-                delta = self._high - self._prior
-                deltas = numpy.linspace(0., numpy.log(delta + 1.),
-                                        num=(self._bins + 1.) / 2.)
-                pos = self._prior + numpy.exp(deltas[1:]) - 1.
-                neg = self._prior - numpy.exp(deltas[::-1]) + 1.
-                self._values = numpy.append(neg, pos)
-                if not numpy.allclose(self._values[0], self._low):
-                    low = self._values[0]
-                    self._logger.warning(
-                        "Changing value of attr _low, from %.4g to %.4g, "
-                        "for parameter %s" % (self._low, low, self._name))
+
+                # Calculate maximum deviation above and below prior
+                delta_low = numpy.absolute(self._low - self._prior)
+                delta_high = numpy.absolute(self._high - self._prior)
+
+                # Calculate bins above and below, distributing evenly
+                bins_low = numpy.rint(
+                    (delta_low) / (delta_low + delta_high) * (self._bins + 1))
+                bins_high = numpy.rint(
+                    (delta_high) / (delta_low + delta_high) * (self._bins + 1))
+
+                # Calculate arrays of deviation, linear in logspace
+                deltas_low = numpy.linspace(
+                    0., numpy.log(delta_low + 1.), bins_low)
+                deltas_high = numpy.linspace(
+                    0., numpy.log(delta_high + 1.), bins_high)
+
+                # Create positive and negative arrays of values
+                # [::-1] reverses array
+                # Prior is included in low
+                low = self._prior - numpy.exp(deltas_low[::-1]) + 1.
+                # Prior not included in high
+                high = self._prior + numpy.exp(deltas_high[1:]) - 1.
+                self._values = numpy.append(low, high)
             else:  # Create a normal linear array
                 self._logger.info("Creating linear array of values "
                                   "for parameter %s" % self._name)
-                self._values = numpy.linspace(self._low,
-                                              self._high, self._bins)
+                self._values = numpy.linspace(
+                    self._low, self._high, self._bins)
 
         return self._values
 
