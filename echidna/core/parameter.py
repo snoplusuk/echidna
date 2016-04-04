@@ -728,6 +728,7 @@ class ScaleParameter(FitParameter):
         NotImplementedError("ShiftParameter.apply_to not yet implemented")
         return spectrum
 
+
 class ShiftParameter(FitParameter):
     """ Data container that holds information for a shift parameter
     that is included in the fit.
@@ -767,6 +768,7 @@ class ShiftParameter(FitParameter):
                              "has not been set" % self._name)
         NotImplementedError("ShiftParameter.apply_to not yet implemented")
         return spectrum
+
 
 class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
