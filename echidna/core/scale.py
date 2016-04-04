@@ -2,6 +2,7 @@ import numpy
 
 import echidna.core.spectra as spectra
 
+
 class Scale(object):
     """ A class for scaling the parameter space of a spectra.
 

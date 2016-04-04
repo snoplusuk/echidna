@@ -687,6 +687,7 @@ class ResolutionParameter(FitParameter):
         NotImplementedError("ResolutionParameter.apply_to not yet implemented")
         return spectrum
 
+
 class ScaleParameter(FitParameter):
     """ Data container that holds information for a scale parameter
     that is included in the fit.
@@ -724,10 +725,6 @@ class ScaleParameter(FitParameter):
         if self._current_value is None:
             raise ValueError("Current value of scale parameter %s "
                              "has not been set" % self._name)
-        #scaler = scale.Scale()
-        #scaler.set_scale_factor(self._current_value)
-        #print self._dimension, self._current_value
-        #return scaler.scale(spectrum, self._dimension)
         NotImplementedError("ShiftParameter.apply_to not yet implemented")
         return spectrum
 

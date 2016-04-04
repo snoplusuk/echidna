@@ -570,7 +570,7 @@ class Fit(object):
             if (sigma is not None):
                 total_penalty += self._test_statistic.get_penalty_term(
                     current_value, prior, sigma)
-        
+
         # Check for per_bin flag
         if self._per_bin:
             test_statistic = test_statistic.reshape(spectrum._data.shape)
