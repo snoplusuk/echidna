@@ -517,6 +517,7 @@ class Fit(object):
         else:
             expected = None
         global_pars = self._fit_config.get_global_pars()
+        spec_pars = self._fit_config.get_spectra_pars()
         for spectrum, floating_pars in zip(self._floating_backgrounds,
                                            self._floating_pars):
             # Apply global parameters first
@@ -524,13 +525,17 @@ class Fit(object):
                 spectrum = self.load_pre_made(spectrum, global_pars)
             else:
                 for parameter in global_pars:
-                    par = self._fit_config.get_par(parameter)
-                    spectrum = par.apply_to(spectrum)
+                    #####
+                    # THIS DOESN'T DO ANYTHING
+                    spectrum = parameter.apply_to(spectrum)
+                    #####
 
             # Apply spectrum-specific parameters
-            for parameter in spectrum.get_fit_config().get_pars():
-                par = spectrum.get_fit_config().get_par(parameter)
-                spectrum = par.apply_to(spectrum)
+            for parameter in spec_pars:
+                #####
+                # THIS DOESN'T DO ANYTHING
+                spectrum = parameter.apply_to(spectrum)
+                #####
 
             # Spectrum should now be fully convolved/scaled
             # Shrink to roi
@@ -565,6 +570,10 @@ class Fit(object):
             if (sigma is not None):
                 total_penalty += self._test_statistic.get_penalty_term(
                     current_value, prior, sigma)
+
+        # Check for per_bin flag
+        if self._per_bin:
+            test_statistic = test_statistic.reshape(spectrum._data.shape)
 
         return test_statistic, total_penalty
 

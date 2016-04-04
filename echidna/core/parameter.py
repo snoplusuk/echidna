@@ -685,6 +685,7 @@ class ResolutionParameter(FitParameter):
             raise ValueError("Current value of rate parameter %s "
                              "has not been set" % self._name)
         NotImplementedError("ResolutionParameter.apply_to not yet implemented")
+        return spectrum
 
 
 class ScaleParameter(FitParameter):
@@ -724,7 +725,8 @@ class ScaleParameter(FitParameter):
         if self._current_value is None:
             raise ValueError("Current value of scale parameter %s "
                              "has not been set" % self._name)
-        NotImplementedError("ScaleParameter.apply_to not yet implemented")
+        NotImplementedError("ShiftParameter.apply_to not yet implemented")
+        return spectrum
 
 
 class ShiftParameter(FitParameter):
@@ -765,6 +767,7 @@ class ShiftParameter(FitParameter):
             raise ValueError("Current value of shift parameter %s "
                              "has not been set" % self._name)
         NotImplementedError("ShiftParameter.apply_to not yet implemented")
+        return spectrum
 
 
 class SpectraParameter(Parameter):
