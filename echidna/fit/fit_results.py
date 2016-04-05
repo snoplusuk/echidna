@@ -113,19 +113,9 @@ class FitResults(object):
             Values of the penalty term calculated during the fit.
 
         Raises:
-          TypeError: If the indices supplied are not at tuple
-          IndexError: If the number of indices supplied does not match
-            the dimensions of the fit
           IndexError: If the indices supplied are out of bounds for
             the fit dimensions
         """
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
-        if len(indices) != len(self._fit_config.get_shape()):
-            raise IndexError("dimension mismatch, indices supplied contian "
-                             "%d dimensions but fit contains %d dimensions "
-                             "(parameters)" %
-                             (len(indices), len(self._fit_config.get_shape())))
         if indices > self._fit_config.get_shape():
             raise IndexError(
                 "indices %s out of bounds for fit with dimensions %s" %
@@ -161,12 +151,7 @@ class FitResults(object):
         Returns:
           (float or :class:`numpy.ndarray`): The raw test statistic(s)
             at the given indices.
-
-        Raises:
-          TypeError: If the indices supplied are not at tuple
         """
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
         return self._stats[indices]
 
     def get_raw_stats(self):
@@ -198,19 +183,9 @@ class FitResults(object):
             calculated during the fit and the penalty term value.
 
         Raises:
-          TypeError: If the indices supplied are not at tuple
-          IndexError: If the number of indices supplied does not match
-            the dimensions of the fit
           IndexError: If the indices supplied are out of bounds for
             the fit dimensions
         """
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
-        if len(indices) != len(self._fit_config.get_shape()):
-            raise IndexError("dimension mismatch, indices supplied contian "
-                             "%d dimensions but fit contains %d dimensions "
-                             "(parameters)" %
-                             (len(indices), len(self._fit_config.get_shape())))
         if indices > self._fit_config.get_shape():
             raise IndexError(
                 "indices %s out of bounds for fit with dimensions %s" %
@@ -285,12 +260,9 @@ class FitResults(object):
             at the given indices, onto the given parameter axes.
 
         Raises:
-          TypeError: If the indices supplied are not at tuple
           IndexError: If the parameter names supplied do not match
             any of those stored in the fit or spectra configs.
         """
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
         for parameter in parameters:
             if parameter not in itertools.chain(
                     self._fit_config.get_pars(),
@@ -438,22 +410,9 @@ class FitResults(object):
             penalty term value.
 
         Raises:
-          TypeError: If penalty_term is not a float.
-          TypeError: If the indices supplied are not at tuple
-          IndexError: If the number of indices supplied does not match
-            the dimensions of the fit
           IndexError: If the indices supplied are out of bounds for
             the fit dimensions
         """
-        if not isinstance(penalty_term, float):
-            raise TypeError("penalty_term must be a float")
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
-        if len(indices) != len(self._fit_config.get_shape()):
-            raise IndexError("dimension mismatch, indices supplied contian "
-                             "%d dimensions but fit contains %d dimensions "
-                             "(parameters)" %
-                             (len(indices), len(self._fit_config.get_shape())))
         if indices > self._fit_config.get_shape():
             raise IndexError(
                 "indices %s out of bounds for fit with dimensions %s" %
@@ -484,32 +443,16 @@ class FitResults(object):
           indices (tuple): Position in the array.
 
         Raises:
-          TypeError: If the indices supplied are not at tuple
-          IndexError: If the number of indices supplied does not match
-            the dimensions of the fit
           IndexError: If the indices supplied are out of bounds for
             the fit dimensions
           TypeError: If stat is not a :class:`numpy.ndarray`.
-          ValueError: If the stats array has incorrect shape.
         """
-        if not isinstance(indices, tuple):
-            raise TypeError("indices supplied must be a tuple of integers")
-        if len(indices) != len(self._fit_config.get_shape()):
-            raise IndexError("dimension mismatch, indices supplied contian "
-                             "%d dimensions but fit contains %d dimensions "
-                             "(parameters)" %
-                             (len(indices), len(self._fit_config.get_shape())))
         if indices > self._fit_config.get_shape():
             raise IndexError(
                 "indices %s out of bounds for fit with dimensions %s" %
                 (str(indices), str(self._fit_config.get_shape())))
         if not isinstance(stat, numpy.ndarray):
             raise TypeError("stat must be a numpy array")
-        if stat.shape != self._stats[indices].shape:
-            raise ValueError("stat array has incorrect shape (%s), "
-                             "expected shape is %s" %
-                             (str(stat.shape),
-                              str(self._stats[indices].shape)))
         self._stats[indices] = stat
 
     def set_stats(self, stats):
