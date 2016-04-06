@@ -147,12 +147,24 @@ class Limit(object):
                 self._min_stat = stat_zero
         else:  # check zero signal stat in case its not in self._stats
             self._fitter.remove_signal()
-            self._min_stat = self._fitter.fit()  # save for later
+            fit_stats = self._fitter.fit()
+            if self._per_bin:
+                if not isinstance(fit_stats, numpy.ndarray):
+                    raise TypeError("For per_bin enabled, "
+                                    "the fit output should be a numpy array")
+                self._min_per_bin = fit_stats
+                self._min_stat = numpy.sum(fit_stats)
+            else:
+                if not isinstance(fit_stats, float):
+                    raise TypeError("per_bin disabled in limit and enabled "
+                                    "in fit or test_statistic.")
+                self._min_stat = fit_stats
             self._logger.info("Calculated stat_zero: %.4g" % self._min_stat)
             fit_results = self._fitter.get_fit_results()
-            self._logger.info("Fit summary:")
-            logging.getLogger("extra").info(
-                "\n%s\n" % json.dumps(fit_results.get_summary()))
+            if fit_results:
+                self._logger.info("Fit summary:")
+                logging.getLogger("extra").info(
+                    "\n%s\n" % json.dumps(fit_results.get_summary()))
 
         # Create summary
         scales = par.get_values()
@@ -191,27 +203,29 @@ class Limit(object):
                 self._logger.warning(
                     "Removing signal in fit for scale %.4g" % scale)
 
-            stats[i] = self._fitter.fit()  # best-fit test statistic for scale
+            fit_stats = self._fitter.fit()
+            stats[i] = numpy.sum(fit_stats)
 
             fit_results = self._fitter.get_fit_results()  # get results
-            results_summary = fit_results.get_summary()
-            for par_name, value in results_summary.iteritems():
-                limit_summary.set_best_fit(value.get("best_fit"),
-                                           i, par_name)
-                limit_summary.set_penalty_term(value.get("penalty_term"),
+            if fit_results:
+                results_summary = fit_results.get_summary()
+                for par_name, value in results_summary.iteritems():
+                    limit_summary.set_best_fit(value.get("best_fit"),
                                                i, par_name)
-            if self._per_bin:
-                minimum_position = fit_results.get_minimum_position()
-                # Get per_bin array getting stats at minimum position
-                min_per_bin = fit_results.get_raw_stat(minimum_position)
-                limit_summary.set_stat(min_per_bin, i)
-            else:  # just use single stat
-                limit_summary.set_stat(stats[i], i)
+                    limit_summary.set_penalty_term(value.get("penalty_term"),
+                                                   i, par_name)
+                if self._per_bin:
+                    minimum_position = fit_results.get_minimum_position()
+                    # Get per_bin array getting stats at minimum position
+                    min_per_bin = fit_results.get_raw_stat(minimum_position)
+                    limit_summary.set_stat(min_per_bin, i)
+                else:  # just use single stat
+                    limit_summary.set_stat(stats[i], i)
 
-            # Update fit_results
-            self._fit_results.set_stat(fit_results.get_raw_stats(), i)
-            self._fit_results.set_penalty_term(
-                fit_results.get_penalty_terms(), i)
+                # Update fit_results
+                self._fit_results.set_stat(fit_results.get_raw_stats(), i)
+                self._fit_results.set_penalty_term(
+                    fit_results.get_penalty_terms(), i)
 
         # Convert stats to delta - subtracting minimum
         stats -= self._min_stat
@@ -227,7 +241,6 @@ class Limit(object):
             logging.getLogger("extra").debug("\n%s\n" % str(self._min_per_bin))
             limit_summary.set_stats(limit_summary.get_raw_stats() -
                                     self._min_per_bin)
-
             self._fit_results.set_stats(self._fit_results.get_raw_stats() -
                                         self._min_per_bin)
 
@@ -265,13 +278,14 @@ class Limit(object):
                 store.dump_fit_results(path + fname, self._fit_results)
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
-                if self._fitter.get_fixed_background() is not None:
+                if self._fitter.get_fixed_background():
                     store.dump(path + fname,
                                self._fitter.get_fixed_background(),
                                append=True, group_name="fixed")
-                for background in self._fitter.get_floating_backgrounds():
-                    store.dump(path + fname, background, append=True,
-                               group_name=background.get_name())
+                if self._fitter.get_floating_backgrounds():
+                    for background in self._fitter.get_floating_backgrounds():
+                        store.dump(path + fname, background, append=True,
+                                   group_name=background.get_name())
                 store.dump(path + fname, self._signal,
                            append=True, group_name="signal")
                 self._logger.info("Saved summary of %s to file %s" %

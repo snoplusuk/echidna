@@ -177,18 +177,21 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
             if par._values is not None:
                 group.create_dataset(parameter+"_values", data=par._values,
                                      compression="gzip")
-
-        group.create_dataset("best_fits", data=summary._best_fits,
-                             compression="gzip")
-        group.create_dataset("penalty_terms", data=summary._penalty_terms,
-                             compression="gzip")
+        if summary._best_fits:
+            group.create_dataset("best_fits", data=summary._best_fits,
+                                 compression="gzip")
+        if summary._penalty_terms:
+            group.create_dataset("penalty_terms", data=summary._penalty_terms,
+                                 compression="gzip")
         group.create_dataset("scales", data=summary._scales,
                              compression="gzip")
         group.create_dataset("stats", data=summary._stats, compression="gzip")
-        group.create_dataset("priors", data=summary._priors,
-                             compression="gzip")
-        group.create_dataset("sigmas", data=summary._sigmas,
-                             compression="gzip")
+        if summary._priors:
+            group.create_dataset("priors", data=summary._priors,
+                                 compression="gzip")
+        if summary._sigmas:
+            group.create_dataset("sigmas", data=summary._sigmas,
+                                 compression="gzip")
 
         group.attrs["limit"] = json.dumps(summary._limit)
         group.attrs["limit_idx"] = json.dumps(summary._limit_idx)
