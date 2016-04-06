@@ -110,9 +110,10 @@ def main(args, name=None, floating_backgrounds=[], signals=[]):
       signals (list): List of signals to set limits for
 
     .. warning:: floating backgrounds and signals specified via config
-    will be **appended** to the lists passed as args, so if you are
-    passing a spectrum to one of these arguments, make sure it is not
-    also included in the config.
+      will be **appended** to the lists passed as args, so if you are
+      passing a spectrum to one of these arguments, make sure it is not
+      also included in the config.
+
     """
     logger = utilities.start_logging()
 
