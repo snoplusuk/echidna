@@ -1,6 +1,7 @@
 import yaml
 from collections import OrderedDict
 
+
 def ordered_load(stream):
     """ Loads a .yml file, retaining the ordering of the file's
     structure.
@@ -8,7 +9,7 @@ def ordered_load(stream):
     Args:
       stream (file stream): Reference to readable .yml file
 
-    Returns: 
+    Returns:
       (dict): Dictionary to create spectra config out of.
     """
     class OrderedLoader(yaml.Loader):
@@ -21,5 +22,5 @@ def ordered_load(stream):
     OrderedLoader.add_constructor(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         construct_mapping)
-    
+
     return yaml.load(stream, OrderedLoader)
