@@ -189,7 +189,8 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
                              compression="gzip")
 
         group.attrs["limit"] = json.dumps(summary._limit, sort_keys=True)
-        group.attrs["limit_idx"] = json.dumps(summary._limit_idx, sort_keys=True)
+        group.attrs["limit_idx"] = json.dumps(
+            summary._limit_idx, sort_keys=True)
 
     _logger.info("Saved summary %s to %s" % (summary.get_name(), file_path))
 
@@ -210,13 +211,15 @@ def load(file_path, group_name="spectrum"):
             num_decays = group.attrs["num_decays"]
             config_name = group.attrs["config_name"]
             config = SpectraConfig.load(
-                json.loads(group.attrs["config"], object_pairs_hook=OrderedDict), 
+                json.loads(group.attrs["config"],
+                           object_pairs_hook=OrderedDict),
                 name=config_name)
             try:
                 fit_config_name = group.attrs["fit_config_name"]
                 fit_config = SpectraFitConfig.load(
                     json.loads(
-                        group.attrs["fit_config"], object_pairs_hook=OrderedDict),
+                        group.attrs["fit_config"],
+                        object_pairs_hook=OrderedDict),
                     spectra_name=spec_name, name=fit_config_name)
             except KeyError as detail:
                 _logger.warning("Handling run-time error: %s" % detail)
@@ -331,14 +334,14 @@ def load_summary(file_path, group_name="summary"):
         num_scales = group.attrs["num_scales"]
         spectra_config_name = group.attrs["spectra_config_name"]
         spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"], 
+            json.loads(group.attrs["spectra_config"],
                        object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
         fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"], 
+            json.loads(group.attrs["fit_config"],
                        object_pairs_hook=OrderedDict)[0],
-            spectral_config=json.loads(group.attrs["fit_config"], 
+            spectral_config=json.loads(group.attrs["fit_config"],
                                        object_pairs_hook=OrderedDict)[1],
             name=fit_config_name)
         for parameter in fit_config.get_pars():
@@ -362,9 +365,9 @@ def load_summary(file_path, group_name="summary"):
         summary.set_sigmas(group["sigmas"].value)
         summary.set_stats(group["stats"].value)
 
-        summary.set_limit(json.loads(group.attrs["limit"], 
+        summary.set_limit(json.loads(group.attrs["limit"],
                                      object_pairs_hook=OrderedDict))
-        summary.set_limit_idx(json.loads(group.attrs["limit_idx"], 
+        summary.set_limit_idx(json.loads(group.attrs["limit_idx"],
                                          object_pairs_hook=OrderedDict))
 
     _logger.info("Loaded summary %s" % summary.get_name())
