@@ -25,6 +25,7 @@ def ordered_load(stream):
 
     return yaml.load(stream, OrderedLoader)
 
+
 def ordered_dump(data, stream=None, **kwargs):
     """ Dumps a .yml file, retaining the ordering of the dict
     structure.
@@ -34,9 +35,6 @@ def ordered_dump(data, stream=None, **kwargs):
       stream (file stream, optional): Reference to pre-existing
         .yml file to write to.
       kwargs (float): Key word arguments to be passed to yaml.dump
-
-    Returns:
-      (dict): Dictionary to create spectra config out of.
     """
     class OrderedDumper(yaml.SafeDumper):
         pass
@@ -48,4 +46,4 @@ def ordered_dump(data, stream=None, **kwargs):
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
 
-    return yaml.dump(data, stream, OrderedDumper, **kwargs)
+    yaml.dump(data, stream, OrderedDumper, **kwargs)
