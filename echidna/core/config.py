@@ -5,6 +5,7 @@ Contains the :class:`Config` class and all classes that inherit from it.
 from echidna.core.parameter import (RateParameter, ScaleParameter,
                                     ShiftParameter, ResolutionParameter,
                                     SpectraParameter)
+import echidna.util.yaml_loader as yaml_loader
 
 import abc
 import yaml
@@ -756,7 +757,7 @@ class SpectraConfig(Config):
             parameters in the file.
         """
         with open(filename, 'r') as stream:
-            config = yaml.load(stream)
+            config = yaml_loader.ordered_load(stream)
         if not name:
             return cls.load(config)
         if name == "":
