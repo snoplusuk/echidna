@@ -331,7 +331,8 @@ class GlobalFitConfig(Config):
         if ".yml" not in global_fname:
             global_fname += ".yml"
         with open(path+global_fname, "w") as stream:
-            yaml.dump(global_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                global_fit_config, stream=stream, indent=8)
 
         if spectral_fname is None:
             spectral_fname = "spectral_fit_config"
@@ -340,7 +341,8 @@ class GlobalFitConfig(Config):
         if ".yml" not in spectral_fname:
             spectral_fname += ".yml"
         with open(path+spectral_fname, "w") as stream:
-            yaml.dump(spectral_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                spectral_fit_config, stream=stream, indent=8)
 
     def get_par(self, name):
         """ Get requested parameter:
@@ -489,9 +491,10 @@ class GlobalFitConfig(Config):
           (:class:`echidna.core.spectra.GlobalFitConfig`): A config object
             containing the parameters in the file called filename.
         """
-        config = yaml.load(open(filename, 'r'))
+        config = yaml_loader.ordered_load(open(filename, 'r'))
         if sf_filename:
-            spectral_fit_config = yaml.load(open(sf_filename, "r"))
+            spectral_fit_config = yaml_loader.ordered_load(
+                open(sf_filename, "r"))
         else:
             spectral_fit_config = None
         if not name:
@@ -569,7 +572,8 @@ class SpectraFitConfig(Config):
         if ".yml" not in spectral_fname:
             spectral_fname += ".yml"
         with open(path+spectral_fname, "w") as stream:
-            yaml.dump(spectral_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                spectral_fit_config, stream=stream, indent=8)
 
     @classmethod
     def load(cls, config, spectra_name, name="spectral_fit_config"):
@@ -635,7 +639,7 @@ class SpectraFitConfig(Config):
           (:class:`SpectraFitConfig`): A config object containing the
             parameters in the file.
         """
-        config = yaml.load(open(filename, 'r'))
+        config = yaml_loader.ordered_load(open(filename, 'r'))
         if not name:
             return cls.load(config, spectra_name)
         if name == "":
@@ -698,7 +702,7 @@ class SpectraConfig(Config):
         if ".yml" not in filename:
             filename += ".yml"
         with open(path+filename, "w") as stream:
-            yaml.dump(config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(config, stream=stream, indent=8)
 
     @classmethod
     def load(cls, config, name="config"):
