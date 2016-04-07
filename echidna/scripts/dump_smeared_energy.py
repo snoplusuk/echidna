@@ -24,27 +24,14 @@ import echidna.output.store as store
 import echidna.core.smear as smear
 import os
 
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--smear_method", nargs='?', const="weight",
-                        type=str, default="weight",
-                        help="specify the smearing method to use")
-    parser.add_argument("-r", "--energy_resolution", default=None, type=float,
-                        help="specify energy resolution "
-                        "e.g. 0.05 for 5 percent")
-    parser.add_argument("-l", "--light_yield", default=200., type=float,
-                        help="specify light yield"
-                        "e.g. 200 for 200 NHit/MeV")
-    parser.add_argument("-g", "--gaus", dest="gaus", action="store_true",
-                        help="Apply gaussian PDF")
-    parser.add_argument("-d", "--dest", default=None, type=str,
-                        help="specify destination directory")
-    parser.add_argument("path", type=str,
-                        help="specify path to hdf5 file")
-    parser.set_defaults(gaus=False)
-    args = parser.parse_args()
 
+def main(args):
+    """Smears energy and dumps spectra.
+
+    Args:
+      args (Namespace): Container for arguments. See
+        >>> python dump_smeared_energy.py -h
+    """
     if args.dest:
         if os.path.isdir(args.dest):
             directory = args.dest
@@ -93,3 +80,31 @@ if __name__ == "__main__":
         str_ly = str(args.light_yield).rstrip('.0')
         filename = directory + filename + "_" + str_ly + "ly.hdf5"
     store.dump(filename, spectrum)
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--smear_method", nargs='?', const="weight",
+                        type=str, default="weight",
+                        help="specify the smearing method to use")
+    parser.add_argument("-r", "--energy_resolution", default=None, type=float,
+                        help="specify energy resolution "
+                        "e.g. 0.05 for 5 percent")
+    parser.add_argument("-l", "--light_yield", default=200., type=float,
+                        help="specify light yield"
+                        "e.g. 200 for 200 NHit/MeV")
+    parser.add_argument("-g", "--gaus", dest="gaus", action="store_true",
+                        help="Apply gaussian PDF")
+    parser.add_argument("-d", "--dest", default=None, type=str,
+                        help="specify destination directory")
+    parser.add_argument("path", type=str,
+                        help="specify path to hdf5 file")
+    parser.set_defaults(gaus=False)
+    args = parser.parse_args()
+    _logger = utilities.start_logging()
+
+    try:
+        main(args)
+    except Exception:
+        _logger.exception("echidna terminated because of the following error.")
