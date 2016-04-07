@@ -60,16 +60,16 @@ class Scale(object):
         axis = spectrum.get_config().get_index(dimension)
         par = spectrum.get_config().get_par(dimension)
         low = par._low
+        high = par._high
         n_bins = par._bins
         step = par.get_width()
         for bin in range(n_bins):
             x = par.get_bin_centre(bin)
-            if (x/sf) <= par._high - 0.5*step:
-                ratio = x/sf
-            else:
-                ratio = par._high - 0.5*step
-            if ratio < low or ratio >= par._high:
+            ratio = x/sf
+            if ratio < low or ratio >= high:
                 continue  # Trying to scale values outside range (Unknown)
+            elif ratio < low + 0.5*step:
+                ratio = low + 0.5*step
             y = interpolation(ratio)
             if y <= 0.:
                 continue
@@ -80,6 +80,8 @@ class Scale(object):
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
                     x_high1 = ratio + 0.5*step
+                    if x_high1 > high - 0.5*step:
+                        x_high1 = high - 0.5*step - 1e-6
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
@@ -95,7 +97,9 @@ class Scale(object):
                 old_bin2 = old_bin1 + 1
                 if old_bin2 < n_bins:
                     x_low1 = ratio - 0.5*step
-                    x_high1 = old_bin_centre1 + 0.5*step  # Equals x_low2
+                    if x_low1 < low + 0.5*step:
+                        x_low1 = low + 0.5*step
+                    x_high1 = old_bin_centre1 + 0.5*step  # = x_low2
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
