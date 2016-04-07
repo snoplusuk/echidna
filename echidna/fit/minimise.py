@@ -183,7 +183,7 @@ class GridSearch(FitResults, Minimiser):
         self.set_minimum_position(position)  # save position of minimum
         # Return minimum to fitting
         if self._per_bin:
-            return self.get_raw_stat(postion) + self.get_penalty_term(position)
+            return self.get_raw_stat(position) + self.get_penalty_term(position)
         else:
             return minimum
 

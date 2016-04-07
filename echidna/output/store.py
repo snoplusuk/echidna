@@ -1,3 +1,5 @@
+import numpy
+
 from echidna.core.spectra import Spectra
 from echidna.core.config import (SpectraConfig, SpectraParameter,
                                  SpectraFitConfig, GlobalFitConfig)
@@ -177,19 +179,32 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
             if par._values is not None:
                 group.create_dataset(parameter+"_values", data=par._values,
                                      compression="gzip")
-        if summary._best_fits:
+
+        # Write best fits array if it exists and is not empty
+        if (summary._best_fits is not None and
+                numpy.any(summary._best_fits)):
             group.create_dataset("best_fits", data=summary._best_fits,
                                  compression="gzip")
-        if summary._penalty_terms:
+
+        # Write penalty terms array if it exists and is not empty
+        if (summary._penalty_terms is not None and
+                numpy.any(summary._penalty_terms)):
             group.create_dataset("penalty_terms", data=summary._penalty_terms,
                                  compression="gzip")
+
         group.create_dataset("scales", data=summary._scales,
                              compression="gzip")
         group.create_dataset("stats", data=summary._stats, compression="gzip")
-        if summary._priors:
+
+        # Write priors array if it exists and is not empty
+        if (summary._priors is not None and
+                numpy.any(summary._priors)):
             group.create_dataset("priors", data=summary._priors,
                                  compression="gzip")
-        if summary._sigmas:
+
+        # Write sigmas array if it exists and is not empty
+        if (summary._sigmas is not None and
+                numpy.any(summary._sigmas)):
             group.create_dataset("sigmas", data=summary._sigmas,
                                  compression="gzip")
 

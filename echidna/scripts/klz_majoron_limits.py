@@ -285,7 +285,7 @@ def main(args, name=None, floating_backgrounds=[], signals=[]):
     # Fit with no signal
     stat_zero = fitter.fit()
     fit_results = fitter.get_fit_results()
-    logger.info("Calculated stat_zero: %.4f" % stat_zero)
+    logger.info("Calculated stat_zero: %.4f" % numpy.sum(stat_zero))
     logger.info("Fit summary:")
     logging.getLogger("extra").info("\n%s\n" %
                                     json.dumps(fit_results.get_summary()))
@@ -297,7 +297,7 @@ def main(args, name=None, floating_backgrounds=[], signals=[]):
             signal = store.load(filename)
             if signal.get_name() not in spectrum_names:
                 logger.info("Using signal spectrum from: %s" % filename)
-                signals.append(spectrum)
+                signals.append(signal)
             else:  # signal already loaded - passed via args
                 logger.warning(
                     "Signal %s already loaded. NOT using signal "
