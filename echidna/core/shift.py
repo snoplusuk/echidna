@@ -62,22 +62,26 @@ class Shift(object):
         n_bins = par._bins
         for bin in range(n_bins):
             x = low + (bin + 0.5) * step
-            if (x - shift) < low or (x - shift) > high:
+            if (x - shift) >= low + 0.5*step:
+                current = x - shift
+            else:
+                current = low + 0.5*step
+            if (current) < low or (current) >= high:
                 continue  # Trying to shift values outside range (Unknown)
-            y = interpolation(x - shift)
+            y = interpolation(current)
             if y <= 0.:  # Cant have negative num_events
                 continue
-            old_bin1 = par.get_bin(x - shift)
+            old_bin1 = par.get_bin(current)
             old_bin_centre1 = par.get_bin_centre(old_bin1)
-            if old_bin_centre1 > x - shift:
+            if old_bin_centre1 > current:
                 old_bin2 = old_bin1 - 1
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
-                    x_high1 = x - shift + 0.5*step
+                    x_high1 =  current + 0.5*step
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_low2 = x - shift - 0.5*step
+                    x_low2 = current - 0.5*step
                     area2 = numpy.fabs(0.5 * (x_low1 - x_low2) *
                                        (interpolation(x_low1) +
                                         interpolation(x_low2)))
@@ -88,12 +92,12 @@ class Shift(object):
             else:
                 old_bin2 = old_bin1 + 1
                 if old_bin2 < n_bins:
-                    x_low1 = x - shift - 0.5*step
+                    x_low1 = current - 0.5*step
                     x_high1 = old_bin_centre1 + 0.5*step  # Equals x_low2
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_high2 = x - shift + 0.5*step
+                    x_high2 = current + 0.5*step
                     area2 = numpy.fabs(0.5 * (x_high2 - x_high1) *
                                        (interpolation(x_high2) +
                                         interpolation(x_high1)))

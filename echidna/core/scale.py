@@ -64,22 +64,26 @@ class Scale(object):
         step = par.get_width()
         for bin in range(n_bins):
             x = par.get_bin_centre(bin)
-            if x/sf < low or x/sf > par._high:
+            if (x/sf) <= par._high - 0.5*step:
+                ratio = x/sf
+            else:
+                ratio = par._high - 0.5*step
+            if ratio < low or ratio >= par._high:
                 continue  # Trying to scale values outside range (Unknown)
-            y = interpolation(x/sf)
+            y = interpolation(ratio)
             if y <= 0.:
                 continue
-            old_bin1 = par.get_bin(x/sf)
+            old_bin1 = par.get_bin(ratio)
             old_bin_centre1 = par.get_bin_centre(old_bin1)
-            if par.get_bin_centre(old_bin1) > x/sf:
+            if par.get_bin_centre(old_bin1) > ratio:
                 old_bin2 = old_bin1 - 1
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
-                    x_high1 = x/sf + 0.5*step
+                    x_high1 = ratio + 0.5*step
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_low2 = x/sf - 0.5*step
+                    x_low2 = ratio - 0.5*step
                     area2 = numpy.fabs(0.5 * (x_low1 - x_low2) *
                                        (interpolation(x_low1) +
                                         interpolation(x_low2)))
@@ -90,12 +94,12 @@ class Scale(object):
             else:
                 old_bin2 = old_bin1 + 1
                 if old_bin2 < n_bins:
-                    x_low1 = x/sf - 0.5*step
+                    x_low1 = ratio - 0.5*step
                     x_high1 = old_bin_centre1 + 0.5*step  # Equals x_low2
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_high2 = x/sf + 0.5*step
+                    x_high2 = ratio + 0.5*step
                     area2 = numpy.fabs(0.5 * (x_high2 - x_high1) *
                                        (interpolation(x_high2) +
                                         interpolation(x_high1)))
