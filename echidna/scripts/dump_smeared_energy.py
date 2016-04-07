@@ -22,6 +22,7 @@ Examples:
 
 import echidna.output.store as store
 import echidna.core.smear as smear
+import os
 
 if __name__ == "__main__":
     import argparse
@@ -47,12 +48,14 @@ if __name__ == "__main__":
     if args.dest:
         if os.path.isdir(args.dest):
             directory = args.dest
+            if directory[-1] != "/":
+                directory += "/"
         else:
             raise ValueError("%s does not exist" % args.dest)
     else:
-        directory = args.path[:args.path.rfind("/")+1]  # strip filename
+        directory = os.path.dirname(args.path)+"/"  # strip filename
     # strip directory and extension
-    filename = args.path[args.path.rfind("/")+1:args.path.rfind(".")]
+    filename = os.path.splitext(os.path.basename(args.path))[0]
 
     if args.energy_resolution:
         if args.gaus:
