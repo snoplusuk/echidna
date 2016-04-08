@@ -468,11 +468,9 @@ def load_fit_results(file_path, group_name="fit_results"):
         fit_results.set_penalty_terms(group["penalty_terms"].value)
         fit_results.set_stats(group["stats"].value)
 
-        fit_results.set_minimum_position(
-            json.loads(group.attrs["minimum_position"]))
-        fit_results.set_minimum_value(
-            json.loads(group.attrs["minimum_value"]))
-        fit_results._resets = json.loads(group.attrs["resets"])
+        fit_results.set_minimum_position(group.attrs["minimum_position"])
+        fit_results.set_minimum_value(group.attrs["minimum_value"])
+        fit_results._resets = group.attrs["resets"]
 
     _logger.info("Loaded FitResults %s" % fit_results.get_name())
     return fit_results
