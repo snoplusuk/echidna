@@ -456,12 +456,12 @@ def load_fit_results(file_path, group_name="fit_results"):
         name = group.attrs["name"]
         spectra_config_name = group.attrs["spectra_config_name"]
         spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"], 
+            json.loads(group.attrs["spectra_config"],
                        object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
         fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"], 
+            json.loads(group.attrs["fit_config"],
                        object_pairs_hook=OrderedDict)[0],
             spectral_config=json.loads(group.attrs["fit_config"],
                                        object_pairs_hook=OrderedDict)[1],
