@@ -185,7 +185,7 @@ class FitParameter(Parameter):
         """Initialise FitParameter class
         """
         super(FitParameter, self).__init__("fit", name, low, high, bins)
-        self._logger = logging.getLogger("fit_parameter")
+        self._logger = logging.getLogger("FitParameter")
         self._prior = float(prior)
         if sigma is None:
             self._logger.warning(
