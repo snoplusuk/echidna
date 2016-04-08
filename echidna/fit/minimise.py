@@ -182,7 +182,11 @@ class GridSearch(FitResults, Minimiser):
         self.set_minimum_value(minimum)
         self.set_minimum_position(position)  # save position of minimum
         # Return minimum to fitting
-        return minimum
+        if self._per_bin:
+            return (self.get_raw_stat(position) +
+                    self.get_penalty_term(position))
+        else:
+            return minimum
 
     def _update_coords(self, coords, new_coords):
         """ Internal method called by :meth:`find_minimum` to update the
