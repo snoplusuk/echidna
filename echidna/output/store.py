@@ -1,8 +1,12 @@
+import numpy
+
 from echidna.core.spectra import Spectra
 from echidna.core.config import (SpectraConfig, SpectraParameter,
                                  SpectraFitConfig, GlobalFitConfig)
 from echidna.limit.summary import Summary, ReducedSummary
+from echidna.fit.fit_results import FitResults
 
+from collections import OrderedDict
 import logging
 import h5py
 import sys
@@ -73,7 +77,8 @@ def string_to_dict(in_string):
     return out_dict
 
 
-def dump(file_path, spectrum, append=False, group_name="spectrum"):
+def dump(file_path, spectrum, append=False,
+         overwrite=False, group_name="spectrum"):
     """ Dump the spectrum to the file_path.
 
     Args:
@@ -85,26 +90,31 @@ def dump(file_path, spectrum, append=False, group_name="spectrum"):
     else:
         file_opt = "w"
     with h5py.File(file_path, file_opt) as file_:
+        if overwrite and group_name in file_.keys():  # Delete existing group
+            _logger.warning("Removing existing group %s" % group_name)
+            del file_[group_name]
         group = file_.create_group(group_name)
         group.attrs["name"] = spectrum.get_name()
         group.attrs["config_name"] = spectrum.get_config().get_name()
-        group.attrs["config"] = json.dumps(spectrum.get_config().dump())
+        group.attrs["config"] = json.dumps(
+            spectrum.get_config().dump(), sort_keys=True)
         if spectrum.get_fit_config():
             group.attrs["fit_config_name"] = spectrum.get_fit_config().\
                 get_name()
             group.attrs["fit_config"] = json.dumps(
-                spectrum.get_fit_config().dump())
+                spectrum.get_fit_config().dump(), sort_keys=True)
         group.attrs["num_decays"] = spectrum.get_num_decays()
         group.attrs["raw_events"] = spectrum._raw_events
         group.attrs["bipo"] = spectrum.get_bipo()
         if len(spectrum.get_style()) == 0:
             group.attrs["style"] = ""
         else:
-            group.attrs["style"] = json.dumps(spectrum.get_style())
+            group.attrs["style"] = json.dumps(
+                spectrum.get_style(), sort_keys=True)
         if len(spectrum._rois) == 0:
             group.attrs["rois"] = ""
         else:
-            group.attrs["rois"] = json.dumps(spectrum._rois)
+            group.attrs["rois"] = json.dumps(spectrum._rois, sort_keys=True)
         group.create_dataset("data", data=spectrum._data, compression="gzip")
     _logger.info("Saved spectrum %s to %s" % (spectrum.get_name(), file_path))
 
@@ -152,19 +162,19 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
         group = file_.create_group(group_name)
         if isinstance(summary, ReducedSummary):
             reduced = True
-            group.attrs["reduced"] = json.dumps(reduced)
+            group.attrs["reduced"] = json.dumps(reduced, sort_keys=True)
         else:
             reduced = False
-            group.attrs["reduced"] = json.dumps(reduced)
+            group.attrs["reduced"] = json.dumps(reduced, sort_keys=True)
 
         group.attrs["name"] = summary._name
         group.attrs["num_scales"] = summary._num_scales
         group.attrs["spectra_config"] = json.dumps(
-            summary._spectra_config.dump())
+            summary._spectra_config.dump(), sort_keys=True)
         group.attrs["spectra_config_name"] = (
             summary._spectra_config.get_name())
         group.attrs["fit_config"] = json.dumps(
-            summary._fit_config.dump())
+            summary._fit_config.dump(), sort_keys=True)
         group.attrs["fit_config_name"] = summary._fit_config.get_name()
 
         for parameter in summary.get_fit_config().get_pars():
@@ -173,22 +183,80 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
                 group.create_dataset(parameter+"_values", data=par._values,
                                      compression="gzip")
 
-        group.create_dataset("best_fits", data=summary._best_fits,
-                             compression="gzip")
-        group.create_dataset("penalty_terms", data=summary._penalty_terms,
-                             compression="gzip")
+        # Write best fits array if it exists and is not empty
+        if (summary._best_fits is not None and
+                numpy.any(summary._best_fits)):
+            group.create_dataset("best_fits", data=summary._best_fits,
+                                 compression="gzip")
+
+        # Write penalty terms array if it exists and is not empty
+        if (summary._penalty_terms is not None and
+                numpy.any(summary._penalty_terms)):
+            group.create_dataset("penalty_terms", data=summary._penalty_terms,
+                                 compression="gzip")
+
         group.create_dataset("scales", data=summary._scales,
                              compression="gzip")
         group.create_dataset("stats", data=summary._stats, compression="gzip")
-        group.create_dataset("priors", data=summary._priors,
-                             compression="gzip")
-        group.create_dataset("sigmas", data=summary._sigmas,
-                             compression="gzip")
 
-        group.attrs["limit"] = json.dumps(summary._limit)
-        group.attrs["limit_idx"] = json.dumps(summary._limit_idx)
+        # Write priors array if it exists and is not empty
+        if (summary._priors is not None and
+                numpy.any(summary._priors)):
+            group.create_dataset("priors", data=summary._priors,
+                                 compression="gzip")
+
+        # Write sigmas array if it exists and is not empty
+        if (summary._sigmas is not None and
+                numpy.any(summary._sigmas)):
+            group.create_dataset("sigmas", data=summary._sigmas,
+                                 compression="gzip")
+
+        group.attrs["limit"] = json.dumps(summary._limit, sort_keys=True)
+        group.attrs["limit_idx"] = json.dumps(
+            summary._limit_idx, sort_keys=True)
 
     _logger.info("Saved summary %s to %s" % (summary.get_name(), file_path))
+
+
+def dump_fit_results(file_path, fit_results, append=False,
+                     group_name="fit_results"):
+    """ Dump the fit results to the specified file_path.
+
+    Args:
+      file_path (string): Location to save to.
+      summary (:class:`echdina.fit.fit_results.FitResults`): The
+        FitResults to save.
+      append (bool, optional): Append to existing hdf5 file.
+      group_name (string, optional): Name of group within hdf5 file, in
+        which to save the fit results.
+    """
+    if append:
+        file_opt = "a"
+    else:
+        file_opt = "w"
+    with h5py.File(file_path, file_opt) as file_:
+        group = file_.create_group(group_name)
+        group.attrs["name"] = fit_results._name
+        group.attrs["spectra_config"] = json.dumps(
+            fit_results._spectra_config.dump())
+        group.attrs["spectra_config_name"] = (
+            fit_results._spectra_config.get_name())
+        group.attrs["fit_config"] = json.dumps(
+            fit_results._fit_config.dump())
+        group.attrs["fit_config_name"] = fit_results._fit_config.get_name()
+
+        group.create_dataset("penalty_terms", data=fit_results._penalty_terms,
+                             compression="gzip")
+        group.create_dataset("stats", data=fit_results._stats,
+                             compression="gzip")
+
+        group.attrs["minimum_value"] = json.dumps(fit_results._minimum_value)
+        group.attrs["minimum_position"] = json.dumps(
+            fit_results._minimum_position)
+        group.attrs["resets"] = json.dumps(fit_results._resets)
+
+    _logger.info("Saved fit results %s to %s" %
+                 (fit_results.get_name(), file_path))
 
 
 def load(file_path, group_name="spectrum"):
@@ -206,12 +274,16 @@ def load(file_path, group_name="spectrum"):
             spec_name = group.attrs["name"]
             num_decays = group.attrs["num_decays"]
             config_name = group.attrs["config_name"]
-            config = SpectraConfig.load(json.loads(group.attrs["config"]),
-                                        name=config_name)
+            config = SpectraConfig.load(
+                json.loads(group.attrs["config"],
+                           object_pairs_hook=OrderedDict),
+                name=config_name)
             try:
                 fit_config_name = group.attrs["fit_config_name"]
                 fit_config = SpectraFitConfig.load(
-                    json.loads(group.attrs["fit_config"]),
+                    json.loads(
+                        group.attrs["fit_config"],
+                        object_pairs_hook=OrderedDict),
                     spectra_name=spec_name, name=fit_config_name)
             except KeyError as detail:
                 _logger.warning("Handling run-time error: %s" % detail)
@@ -230,10 +302,12 @@ def load(file_path, group_name="spectrum"):
                 spec._bipo = 0
             style_dict = group.attrs["style"]
             if len(style_dict) > 0:
-                spec._style = json.loads(style_dict)
+                spec._style = json.loads(
+                    style_dict, object_pairs_hook=OrderedDict)
             rois_dict = group.attrs["rois"]
             if len(rois_dict) > 0:
-                spec._rois = json.loads(rois_dict)
+                spec._rois = json.loads(
+                    rois_dict, object_pairs_hook=OrderedDict)
             # else the default values of Spectra __init__ are kept
 
             spec._data = group["data"].value
@@ -315,7 +389,7 @@ def load_summary(file_path, group_name="summary"):
     """
     with h5py.File(file_path, "r") as file_:
         group = file_[group_name]
-        if json.loads(group.attrs["reduced"]):  # use ReducedSummary
+        if json.loads(group.attrs["reduced"], object_pairs_hook=OrderedDict):
             reduced = True
         else:
             reduced = False
@@ -324,12 +398,15 @@ def load_summary(file_path, group_name="summary"):
         num_scales = group.attrs["num_scales"]
         spectra_config_name = group.attrs["spectra_config_name"]
         spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"]),
+            json.loads(group.attrs["spectra_config"],
+                       object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
         fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"])[0],
-            spectral_config=json.loads(group.attrs["fit_config"])[1],
+            json.loads(group.attrs["fit_config"],
+                       object_pairs_hook=OrderedDict)[0],
+            spectral_config=json.loads(group.attrs["fit_config"],
+                                       object_pairs_hook=OrderedDict)[1],
             name=fit_config_name)
         for parameter in fit_config.get_pars():
             par = fit_config.get_par(parameter)
@@ -352,8 +429,50 @@ def load_summary(file_path, group_name="summary"):
         summary.set_sigmas(group["sigmas"].value)
         summary.set_stats(group["stats"].value)
 
-        summary.set_limit(json.loads(group.attrs["limit"]))
-        summary.set_limit_idx(json.loads(group.attrs["limit_idx"]))
+        summary.set_limit(json.loads(group.attrs["limit"],
+                                     object_pairs_hook=OrderedDict))
+        summary.set_limit_idx(json.loads(group.attrs["limit_idx"],
+                                         object_pairs_hook=OrderedDict))
 
     _logger.info("Loaded summary %s" % summary.get_name())
     return summary
+
+
+def load_fit_results(file_path, group_name="fit_results"):
+    """ Load a :class:`FitResults` object from file.
+
+    Args:
+      file_path (string): Location from which to load :class:`FitResults`.
+      group_name (string, optional): HDF5 file group from which to load
+        :class:`FitResults` object.
+
+    Returns:
+      :class:`FitResults`: The loaded fit results object.
+    """
+    with h5py.File(file_path, "r") as file_:
+        group = file_[group_name]
+
+        name = group.attrs["name"]
+        spectra_config_name = group.attrs["spectra_config_name"]
+        spectra_config = SpectraConfig.load(
+            json.loads(group.attrs["spectra_config"]),
+            name=spectra_config_name)
+        fit_config_name = group.attrs["fit_config_name"]
+        fit_config = GlobalFitConfig.load(
+            json.loads(group.attrs["fit_config"])[0],
+            spectral_config=json.loads(group.attrs["fit_config"])[1],
+            name=fit_config_name)
+        fit_results = FitResults(fit_config=fit_config,
+                                 spectra_config=spectra_config, name=name)
+
+        fit_results.set_penalty_terms(group["penalty_terms"].value)
+        fit_results.set_stats(group["stats"].value)
+
+        fit_results.set_minimum_position(
+            json.loads(group.attrs["minimum_position"]))
+        fit_results.set_minimum_value(
+            json.loads(group.attrs["minimum_value"]))
+        fit_results._resets = json.loads(group.attrs["resets"])
+
+    _logger.info("Loaded FitResults %s" % fit_results.get_name())
+    return fit_results

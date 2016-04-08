@@ -2,10 +2,12 @@
 
 Add to any module that imports ROOT or rat.
 '''
+import ROOT
+
 import sys
+
 _argv = sys.argv
 sys.argv = []
-import ROOT
 ROOT.TObject
 sys.argv = _argv
 del _argv
