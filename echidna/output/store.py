@@ -238,11 +238,11 @@ def dump_fit_results(file_path, fit_results, append=False,
         group = file_.create_group(group_name)
         group.attrs["name"] = fit_results._name
         group.attrs["spectra_config"] = json.dumps(
-            fit_results._spectra_config.dump())
+            fit_results._spectra_config.dump(), sort_keys=True)
         group.attrs["spectra_config_name"] = (
             fit_results._spectra_config.get_name())
         group.attrs["fit_config"] = json.dumps(
-            fit_results._fit_config.dump())
+            fit_results._fit_config.dump(), sort_keys=True)
         group.attrs["fit_config_name"] = fit_results._fit_config.get_name()
 
         group.create_dataset("penalty_terms", data=fit_results._penalty_terms,
@@ -250,9 +250,10 @@ def dump_fit_results(file_path, fit_results, append=False,
         group.create_dataset("stats", data=fit_results._stats,
                              compression="gzip")
 
-        group.attrs["minimum_value"] = json.dumps(fit_results._minimum_value)
+        group.attrs["minimum_value"] = json.dumps(
+            fit_results._minimum_value, sort_keys=True)
         group.attrs["minimum_position"] = json.dumps(
-            fit_results._minimum_position)
+            fit_results._minimum_position, sort_keys=True)
         group.attrs["resets"] = json.dumps(fit_results._resets)
 
     _logger.info("Saved fit results %s to %s" %
@@ -455,12 +456,15 @@ def load_fit_results(file_path, group_name="fit_results"):
         name = group.attrs["name"]
         spectra_config_name = group.attrs["spectra_config_name"]
         spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"]),
+            json.loads(group.attrs["spectra_config"], 
+                       object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
         fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"])[0],
-            spectral_config=json.loads(group.attrs["fit_config"])[1],
+            json.loads(group.attrs["fit_config"], 
+                       object_pairs_hook=OrderedDict)[0],
+            spectral_config=json.loads(group.attrs["fit_config"],
+                                       object_pairs_hook=OrderedDict)[1],
             name=fit_config_name)
         fit_results = FitResults(fit_config=fit_config,
                                  spectra_config=spectra_config, name=name)
