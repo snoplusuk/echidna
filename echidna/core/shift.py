@@ -67,6 +67,8 @@ class Shift(object):
                 continue  # Trying to shift values outside range (Unknown)
             elif current < low + 0.5*step:
                 current = low + 0.5*step
+            elif current > high - 0.5*step: 
+                current = high - 0.5*step - 1e-6 # floating point issue
             y = interpolation(current)
             if y <= 0.:  # Cant have negative num_events
                 continue
