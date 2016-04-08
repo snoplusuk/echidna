@@ -32,7 +32,7 @@ class TestStatistic(object):
     """
     __metaclass__ = abc.ABCMeta  # Only required for python 2
 
-    def __init__(self, name, per_bin=True):
+    def __init__(self, name, per_bin=False):
         self._name = name
         self._per_bin = per_bin
 
@@ -139,7 +139,7 @@ class BakerCousinsChi(TestStatistic):
         a :class:`numpy.array`. If False one value for the statistic is
         returned for the entire array.
     """
-    def __init__(self, per_bin=True):
+    def __init__(self, per_bin=False):
         super(BakerCousinsChi, self).__init__("baker_cousins", per_bin)
 
     @classmethod
@@ -242,7 +242,7 @@ class BakerCousinsLL(TestStatistic):
         a :class:`numpy.array`. If False one value for the statistic is
         returned for the entire array.
     """
-    def __init__(self, per_bin=True):
+    def __init__(self, per_bin=False):
         super(BakerCousinsLL, self).__init__("baker_cousins_ll", per_bin)
 
     @classmethod
@@ -334,7 +334,7 @@ class Neyman(TestStatistic):
         a :class:`numpy.array`. If False one value for the statistic is
         returned for the entire array.
     """
-    def __init__(self, per_bin=True):
+    def __init__(self, per_bin=False):
         super(Neyman, self).__init__("neyman", per_bin)
 
     @classmethod
@@ -426,7 +426,7 @@ class Pearson(TestStatistic):
         a :class:`numpy.array`. If False one value for the statistic is
         returned for the entire array.
     """
-    def __init__(self, per_bin=True):
+    def __init__(self, per_bin=False):
         super(Pearson, self).__init__("pearson", per_bin)
 
     @classmethod
@@ -521,7 +521,7 @@ class ExtendedLL(TestStatistic):
         a :class:`numpy.array`. If False one value for the statistic is
         returned for the entire array.
     """
-    def __init__(self, per_bin=True):
+    def __init__(self, per_bin=False):
         super(ExtendedLL, self).__init__("extended_ll", per_bin)
 
     @classmethod

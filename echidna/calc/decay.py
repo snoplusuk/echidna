@@ -9,6 +9,7 @@ import numpy
 from echidna.calc import constants as const
 import echidna.test.physics_tests as physics_tests
 
+
 class DBIsotope(object):
     """ Class which calculates expected counts for a DBD isotope
       over a given experiment livetime.
@@ -448,7 +449,7 @@ def test(args):
     # ROI counts, SNO+-doc-2593v8 (3 sigma FC limit @ 5 y livetime)
     expected = 31.2
     # /y SNO+-doc-2593v8 - adjusted to FV
-    activity = 50.4 
+    activity = 50.4
     result, message = physics_tests.test_function_float(
         te130_converter.activity_to_counts, expected, activity=activity,
         livetime=livetime)

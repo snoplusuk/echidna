@@ -7,6 +7,7 @@ from echidna.core.parameter import (RateParameter, ScaleParameter,
                                     SpectraParameter)
 import echidna.util.yaml_loader as yaml_loader
 
+import logging
 import abc
 import yaml
 import collections
@@ -19,6 +20,7 @@ class Config(object):
       name (string): The name of the config.
 
     Attributes:
+      _
       _name (string): The name of the config.
       _type (string): The type of the config, this affects it's
         parameter types
@@ -29,6 +31,7 @@ class Config(object):
     def __init__(self, name, parameters):
         """ Initialise config class
         """
+        self._logger = logging.getLogger("Config")
         self._name = name
         self._type = "general"
         self._parameters = parameters
@@ -238,8 +241,10 @@ class GlobalFitConfig(Config):
                 par._name = name
                 self.add_par(par, "spectra")
         elif config._type == "global_fit":
-            for par_name in config.get_pars():
-                self.add_par(config.get_par(par_name), "global")
+            for par in config.get_global_pars():
+                self.add_par(par, "global")
+            for par in config.get_spectra_pars():
+                self.add_par(par, "spectra")
         else:
             raise ValueError("Cannot add %s-type config to a config "
                              "of type %s" % (config._type, self._type))
@@ -429,7 +434,8 @@ class GlobalFitConfig(Config):
         main_key = "global_fit_parameters"
         parameters = collections.OrderedDict()
         if main_key not in global_config.keys():
-            raise KeyError("Cannot read global_config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(global_config))
+            raise KeyError("Cannot read global fit config dictionary. "
                            "Please check it has the correct form")
         for dim in global_config[main_key]:
             for syst in global_config[main_key][dim]:
@@ -461,7 +467,8 @@ class GlobalFitConfig(Config):
         # Add spectral fit parameters:
         main_key = "spectral_fit_parameters"
         if not spectral_config.get(main_key):
-            raise KeyError("Cannot read config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(spectral_config))
+            raise KeyError("Cannot read spectra fit config dictionary. "
                            "Please check it has the correct form")
         for syst in spectral_config[main_key]:
             if "rate" in syst:
@@ -611,7 +618,8 @@ class SpectraFitConfig(Config):
         """
         main_key = "spectral_fit_parameters"
         if not config.get(main_key):
-            raise KeyError("Cannot read config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(config))
+            raise KeyError("Cannot read spectra fit config dictionary. "
                            "Please check it has the correct form")
         parameters = collections.OrderedDict()
         for syst in config[main_key]:
@@ -736,6 +744,7 @@ class SpectraConfig(Config):
         """
         main_key = "parameters"
         if not config.get(main_key):
+            logging.getLogger("extra").debug("\n\n%s\n" % str(config))
             raise KeyError("Cannot read config dictionary. "
                            "Please check it has the correct form")
         parameters = collections.OrderedDict()
