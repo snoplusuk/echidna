@@ -318,11 +318,13 @@ class FitResults(object):
                     projection = numpy.sum(projection, axis=axis)
         else:  # No penalty terms, use raw stats
             projection = copy.copy(self.get_raw_stats())
+            counter = 0
             for axis, parameter in enumerate(
                     itertools.chain(self._fit_config.get_pars(),
                                     self._spectra_config.get_pars())):
                 if parameter not in parameters:
-                    projection = numpy.sum(projection, axis=axis)
+                    projection = numpy.sum(projection, axis=(axis-counter))
+                    counter = counter + 1 # compensate for earlier sums
         return projection
 
     def reset_grids(self):
