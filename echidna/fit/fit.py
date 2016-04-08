@@ -777,7 +777,8 @@ class Fit(object):
                 self._minimiser = GridSearch(
                     fit_config=self._fit_config,
                     spectra_config=self._data.get_config(),
-                    name=self._fit_config.get_name())
+                    name=self._fit_config.get_name(),
+                    per_bin=self._per_bin)
             self._logger.debug("Created GridSearch (%s) to use as minimiser" %
                                self._minimiser.get_name())
 
