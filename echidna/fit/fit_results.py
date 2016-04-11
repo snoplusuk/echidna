@@ -62,7 +62,8 @@ class FitResults(object):
     def get_fit_config(self):
         """
         Returns:
-          (:class:`echidna.limit.fit.FitConfig`): Configuration of fit.
+          (:class:`echidna.core.config.GlobalFitConfig`): Configuration
+            of fit.
         """
         return self._fit_config
 
@@ -164,6 +165,14 @@ class FitResults(object):
             combination of fit parameter values.
         """
         return self._stats
+
+    def get_spectra_config(self):
+        """
+        Returns:
+          (:class:`echidna.core.config.SpectraConfig`): Configuration
+            spectrum.
+        """
+        return self._spectra_config
 
     def get_stat(self, indices):
         """ Combines the test-statistic array (collapsed to the parameter
