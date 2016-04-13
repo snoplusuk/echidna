@@ -80,7 +80,9 @@ def main(args):
         str_rs = str(args.energy_resolution)
         filename = directory + filename + "_" + str_rs + "rs.hdf5"
     else:
-        str_ly = str(args.light_yield).rstrip('.0')
+        str_ly = str(args.light_yield)
+        if str_ly[-2:] == '.0':
+            str_ly = str_ly[:-2]
         filename = directory + filename + "_" + str_ly + "ly.hdf5"
     store.dump(filename, spectrum)
 
