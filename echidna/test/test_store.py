@@ -42,6 +42,7 @@ class TestStore(unittest.TestCase):
 
         # Save values
         spectra_config = test_spectra.get_config()
+        spectra_pars = spectra_config.get_pars()
         energy_high = spectra_config.get_par("energy_mc").get_high()
         energy_bins = spectra_config.get_par("energy_mc").get_bins()
         energy_low = spectra_config.get_par("energy_mc").get_low()
@@ -52,6 +53,7 @@ class TestStore(unittest.TestCase):
         radial_width = spectra_config.get_par("radial_mc").get_width()
 
         spectra_fit_config = test_spectra.get_fit_config()
+        spectra_fit_pars = spectra_fit_config.get_pars()
         rate_prior = spectra_fit_config.get_par("rate").get_prior()
         rate_sigma = spectra_fit_config.get_par("rate").get_sigma()
         rate_low = spectra_fit_config.get_par("rate").get_low()
@@ -72,6 +74,7 @@ class TestStore(unittest.TestCase):
 
         # Re-load saved values
         spectra_config = loaded_spectra.get_config()
+        spectra_pars2 = spectra_config.get_pars()
         energy_high2 = spectra_config.get_par("energy_mc").get_high()
         energy_bins2 = spectra_config.get_par("energy_mc").get_bins()
         energy_low2 = spectra_config.get_par("energy_mc").get_low()
@@ -82,6 +85,7 @@ class TestStore(unittest.TestCase):
         radial_width2 = spectra_config.get_par("radial_mc").get_width()
 
         spectra_fit_config = loaded_spectra.get_fit_config()
+        spectra_fit_pars2 = spectra_fit_config.get_pars()
         rate_prior2 = spectra_fit_config.get_par("rate").get_prior()
         rate_sigma2 = spectra_fit_config.get_par("rate").get_sigma()
         rate_low2 = spectra_fit_config.get_par("rate").get_low()
@@ -100,6 +104,10 @@ class TestStore(unittest.TestCase):
                         msg="Original num decays: %.3f, Loaded: %.3f"
                         % (float(test_spectra._num_decays),
                            float(loaded_spectra._num_decays)))
+
+        # Check order of parameters
+        self.assertListEqual(spectra_pars, spectra_pars2)
+        self.assertListEqual(spectra_fit_pars, spectra_fit_pars2)
 
         self.assertTrue(energy_low == energy_low2,
                         msg="Original energy low: %.4f, Loaded: %.4f"
@@ -165,6 +173,7 @@ class TestStore(unittest.TestCase):
 
         # Save values
         spectra_config = fit_results.get_spectra_config()
+        spectra_pars = spectra_config.get_pars()
         energy_high = spectra_config.get_par("energy_mc").get_high()
         energy_bins = spectra_config.get_par("energy_mc").get_bins()
         energy_low = spectra_config.get_par("energy_mc").get_low()
@@ -175,6 +184,7 @@ class TestStore(unittest.TestCase):
         radial_width = spectra_config.get_par("radial_mc").get_width()
 
         fit_config = fit_results.get_fit_config()
+        fit_pars = fit_config.get_pars()
         rate_prior = fit_config.get_par("rate").get_prior()
         rate_sigma = fit_config.get_par("rate").get_sigma()
         rate_low = fit_config.get_par("rate").get_low()
@@ -189,6 +199,7 @@ class TestStore(unittest.TestCase):
 
         # Re-load saved values
         spectra_config = loaded.get_spectra_config()
+        spectra_pars2 = spectra_config.get_pars()
         energy_high2 = spectra_config.get_par("energy_mc").get_high()
         energy_bins2 = spectra_config.get_par("energy_mc").get_bins()
         energy_low2 = spectra_config.get_par("energy_mc").get_low()
@@ -199,6 +210,7 @@ class TestStore(unittest.TestCase):
         radial_width2 = spectra_config.get_par("radial_mc").get_width()
 
         fit_config = loaded.get_fit_config()
+        fit_pars2 = fit_config.get_pars()
         rate_prior2 = fit_config.get_par("rate").get_prior()
         rate_sigma2 = fit_config.get_par("rate").get_sigma()
         rate_low2 = fit_config.get_par("rate").get_low()
@@ -213,6 +225,11 @@ class TestStore(unittest.TestCase):
                                           loaded.get_penalty_terms()),
                         msg="Original _penalty_terms "
                         "does not match loaded _penlty_terms")
+
+        # Check order of parameters
+        self.assertListEqual(spectra_pars, spectra_pars2)
+        self.assertListEqual(fit_pars, fit_pars2)
+
         self.assertTrue(energy_low == energy_low2,
                         msg="Original energy low: %.4f, Loaded: %.4f"
                         % (energy_low, energy_low2))
