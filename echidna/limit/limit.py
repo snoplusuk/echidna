@@ -329,9 +329,10 @@ class Limit(object):
                     store.dump(path + fname,
                                self._fitter.get_fixed_background(),
                                append=True, group_name="fixed")
-                for background in self._fitter.get_floating_backgrounds():
-                    store.dump(path + fname, background, append=True,
-                               group_name=background.get_name())
+                if self._fitter.get_floating_backgrounds():
+                    for background in self._fitter.get_floating_backgrounds():
+                        store.dump(path + fname, background, append=True,
+                                   group_name=background.get_name())
                 store.dump(path + fname, self._signal,
                            append=True, group_name="signal")
                 self._logger.info("Saved summary of %s to file %s" %
