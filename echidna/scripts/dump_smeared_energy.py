@@ -24,6 +24,8 @@ import echidna.output.store as store
 import echidna.core.smear as smear
 import os
 
+_logger = utilities.start_logging()
+
 
 def main(args):
     """Smears energy and dumps spectra.
@@ -102,7 +104,6 @@ if __name__ == "__main__":
                         help="specify path to hdf5 file")
     parser.set_defaults(gaus=False)
     args = parser.parse_args()
-    _logger = utilities.start_logging()
 
     try:
         main(args)
