@@ -22,6 +22,7 @@ Examples:
 
 import echidna.output.store as store
 import echidna.core.smear as smear
+import echidna.utilities as utilities
 import os
 
 _logger = utilities.start_logging()
