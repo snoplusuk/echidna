@@ -140,8 +140,8 @@ def start_logging(short_name=False, script_name=True):
 
     # Set up logging to file
     path = output.__default_save_path__ + "/"
-    if os.path.isdir(path+"logs/"):
-        path += "logs/"
+    if os.path.isdir(path+"output/logs/"):
+        path += "output/logs/"
     filename = "echidna"
     if script_name:
         filename += "." + current_module
