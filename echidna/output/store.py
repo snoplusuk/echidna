@@ -96,25 +96,23 @@ def dump(file_path, spectrum, append=False,
         group = file_.create_group(group_name)
         group.attrs["name"] = spectrum.get_name()
         group.attrs["config_name"] = spectrum.get_config().get_name()
-        group.attrs["config"] = json.dumps(
-            spectrum.get_config().dump(), sort_keys=True)
+        group.attrs["config"] = json.dumps(spectrum.get_config().dump())
         if spectrum.get_fit_config():
             group.attrs["fit_config_name"] = spectrum.get_fit_config().\
                 get_name()
             group.attrs["fit_config"] = json.dumps(
-                spectrum.get_fit_config().dump(), sort_keys=True)
+                spectrum.get_fit_config().dump())
         group.attrs["num_decays"] = spectrum.get_num_decays()
         group.attrs["raw_events"] = spectrum._raw_events
         group.attrs["bipo"] = spectrum.get_bipo()
         if len(spectrum.get_style()) == 0:
             group.attrs["style"] = ""
         else:
-            group.attrs["style"] = json.dumps(
-                spectrum.get_style(), sort_keys=True)
+            group.attrs["style"] = json.dumps(spectrum.get_style())
         if len(spectrum._rois) == 0:
             group.attrs["rois"] = ""
         else:
-            group.attrs["rois"] = json.dumps(spectrum._rois, sort_keys=True)
+            group.attrs["rois"] = json.dumps(spectrum._rois)
         group.create_dataset("data", data=spectrum._data, compression="gzip")
     _logger.info("Saved spectrum %s to %s" % (spectrum.get_name(), file_path))
 
@@ -162,19 +160,18 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
         group = file_.create_group(group_name)
         if isinstance(summary, ReducedSummary):
             reduced = True
-            group.attrs["reduced"] = json.dumps(reduced, sort_keys=True)
+            group.attrs["reduced"] = reduced
         else:
             reduced = False
-            group.attrs["reduced"] = json.dumps(reduced, sort_keys=True)
+            group.attrs["reduced"] = reduced
 
         group.attrs["name"] = summary._name
         group.attrs["num_scales"] = summary._num_scales
         group.attrs["spectra_config"] = json.dumps(
-            summary._spectra_config.dump(), sort_keys=True)
-        group.attrs["spectra_config_name"] = (
-            summary._spectra_config.get_name())
+            summary._spectra_config.dump())
+        group.attrs["spectra_config_name"] = summary._spectra_config.get_name()
         group.attrs["fit_config"] = json.dumps(
-            summary._fit_config.dump(), sort_keys=True)
+            summary._fit_config.dump())
         group.attrs["fit_config_name"] = summary._fit_config.get_name()
 
         for parameter in summary.get_fit_config().get_pars():
@@ -211,9 +208,8 @@ def dump_summary(file_path, summary, append=False, group_name="summary"):
             group.create_dataset("sigmas", data=summary._sigmas,
                                  compression="gzip")
 
-        group.attrs["limit"] = json.dumps(summary._limit, sort_keys=True)
-        group.attrs["limit_idx"] = json.dumps(
-            summary._limit_idx, sort_keys=True)
+        group.attrs["limit"] = summary._limit
+        group.attrs["limit_idx"] = summary._limit_idx
 
     _logger.info("Saved summary %s to %s" % (summary.get_name(), file_path))
 
@@ -250,10 +246,9 @@ def dump_fit_results(file_path, fit_results, append=False,
         group.create_dataset("stats", data=fit_results._stats,
                              compression="gzip")
 
-        group.attrs["minimum_value"] = json.dumps(fit_results._minimum_value)
-        group.attrs["minimum_position"] = json.dumps(
-            fit_results._minimum_position)
-        group.attrs["resets"] = json.dumps(fit_results._resets)
+        group.attrs["minimum_value"] = fit_results._minimum_value
+        group.attrs["minimum_position"] = fit_results._minimum_position
+        group.attrs["resets"] = fit_results._resets
 
     _logger.info("Saved fit results %s to %s" %
                  (fit_results.get_name(), file_path))
@@ -455,12 +450,15 @@ def load_fit_results(file_path, group_name="fit_results"):
         name = group.attrs["name"]
         spectra_config_name = group.attrs["spectra_config_name"]
         spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"]),
+            json.loads(group.attrs["spectra_config"],
+                       object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
         fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"])[0],
-            spectral_config=json.loads(group.attrs["fit_config"])[1],
+            json.loads(group.attrs["fit_config"],
+                       object_pairs_hook=OrderedDict)[0],
+            spectral_config=json.loads(group.attrs["fit_config"],
+                                       object_pairs_hook=OrderedDict)[1],
             name=fit_config_name)
         fit_results = FitResults(fit_config=fit_config,
                                  spectra_config=spectra_config, name=name)
@@ -468,11 +466,9 @@ def load_fit_results(file_path, group_name="fit_results"):
         fit_results.set_penalty_terms(group["penalty_terms"].value)
         fit_results.set_stats(group["stats"].value)
 
-        fit_results.set_minimum_position(
-            json.loads(group.attrs["minimum_position"]))
-        fit_results.set_minimum_value(
-            json.loads(group.attrs["minimum_value"]))
-        fit_results._resets = json.loads(group.attrs["resets"])
+        fit_results.set_minimum_position(group.attrs["minimum_position"])
+        fit_results.set_minimum_value(group.attrs["minimum_value"])
+        fit_results._resets = group.attrs["resets"]
 
     _logger.info("Loaded FitResults %s" % fit_results.get_name())
     return fit_results

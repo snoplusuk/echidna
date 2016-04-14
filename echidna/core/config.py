@@ -9,8 +9,7 @@ import echidna.util.yaml_loader as yaml_loader
 
 import logging
 import abc
-import yaml
-import collections
+from collections import OrderedDict
 
 
 class Config(object):
@@ -24,7 +23,7 @@ class Config(object):
       _name (string): The name of the config.
       _type (string): The type of the config, this affects it's
         parameter types
-      _parameters (:class:`collections.OrderedDict`): Dictionary of
+      _parameters (:class:`OrderedDict`): Dictionary of
         parameters.
     """
 
@@ -216,7 +215,7 @@ class GlobalFitConfig(Config):
 
     Args:
       config_name (string): Name of config
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         FitParameter objects
     """
 
@@ -279,14 +278,15 @@ class GlobalFitConfig(Config):
         """
         # Global fit parameters
         main_key = "global_fit_parameters"
-        global_fit_config = {main_key: {}}
+        global_fit_config = OrderedDict()
+        global_fit_config[main_key] = OrderedDict()
 
         for par in self.get_global_pars():
             dimension = par.get_dimension()
 
             # Make entry for dimensions - as required
             if dimension not in global_fit_config[main_key].keys():
-                global_fit_config[main_key][dimension] = {}
+                global_fit_config[main_key][dimension] = OrderedDict()
 
             name = par.get_name()
             # Remove dimension from name, if required
@@ -298,7 +298,8 @@ class GlobalFitConfig(Config):
 
         # Spectral fit parameters
         main_key = "spectral_fit_parameters"
-        spectral_fit_config = {main_key: {}}
+        spectral_fit_config = OrderedDict()
+        spectral_fit_config[main_key] = OrderedDict()
 
         for par in self.get_spectra_pars():
             # No dimesnions required here
@@ -432,7 +433,7 @@ class GlobalFitConfig(Config):
 
         """
         main_key = "global_fit_parameters"
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         if main_key not in global_config.keys():
             logging.getLogger("extra").debug("\n\n%s\n" % str(global_config))
             raise KeyError("Cannot read global fit config dictionary. "
@@ -475,7 +476,7 @@ class GlobalFitConfig(Config):
                 parameters[syst] = {
                     'par': RateParameter(
                         syst, **spectral_config[main_key][syst]),
-                    'type': 'spectral'}
+                    'type': 'spectra'}
             else:
                 raise IndexError("Unknown systematic in config: %s" % syst)
 
@@ -518,7 +519,7 @@ class SpectraFitConfig(Config):
 
     Args:
       config_name (string): Name of config
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         FitParameter objects
       spectra_name (string): Name of the spectra associated with the
          :class:`echidna.core.spectra.SpectraFitConfig`
@@ -547,7 +548,8 @@ class SpectraFitConfig(Config):
         """
         # Spectral fit parameters
         main_key = "spectral_fit_parameters"
-        spectral_fit_config = {main_key: {}}
+        spectral_fit_config = OrderedDict()
+        spectral_fit_config[main_key] = OrderedDict()
 
         for parameter in self.get_pars():
             par = self.get_par(parameter)
@@ -621,7 +623,7 @@ class SpectraFitConfig(Config):
             logging.getLogger("extra").debug("\n\n%s\n" % str(config))
             raise KeyError("Cannot read spectra fit config dictionary. "
                            "Please check it has the correct form")
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         for syst in config[main_key]:
             if "rate" in syst:
                 parameters[syst] = RateParameter(syst,
@@ -661,7 +663,7 @@ class SpectraConfig(Config):
     configuration files.
 
     Args:
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         SpectraParameter objects
     """
 
@@ -682,7 +684,8 @@ class SpectraConfig(Config):
         """
         # Spectral parameters
         main_key = "parameters"
-        config = {main_key: {}}
+        config = OrderedDict()
+        config[main_key] = OrderedDict()
 
         for parameter in self.get_pars():
             par = self.get_par(parameter)
@@ -747,7 +750,7 @@ class SpectraConfig(Config):
             logging.getLogger("extra").debug("\n\n%s\n" % str(config))
             raise KeyError("Cannot read config dictionary. "
                            "Please check it has the correct form")
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         for parameter in config[main_key]:
             parameters[parameter] = SpectraParameter(
                 parameter, **config[main_key][parameter])
