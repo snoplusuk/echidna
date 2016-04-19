@@ -53,12 +53,14 @@ class Extractor(object):
       fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
+      external (bool): Set to True for external backgrounds.
 
     Attributes:
       _name (str): of the dimension
       _fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
+      _external (bool): True if external background is being extracted.
     '''
 
     def __init__(self, name, fv_radius, external):
@@ -76,12 +78,16 @@ class EnergyExtractMC(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
@@ -213,12 +219,14 @@ class EnergyExtractReco(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
     '''
 
@@ -340,12 +348,14 @@ class EnergyExtractTruth(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
@@ -478,12 +488,14 @@ class RadialExtractMC(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
@@ -611,12 +623,14 @@ class RadialExtractReco(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
     '''
 
@@ -743,11 +757,16 @@ class Radial3ExtractMC(Extractor):
       outer_radius (float, optional): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
+        reconstructed position. If False (default) then MC position is used
+        for cuts.
 
     Attributes:
       _outer_radius (float): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`.
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
@@ -887,14 +906,16 @@ class Radial3ExtractReco(Extractor):
       outer_radius (float, optional): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
       _outer_radius (float: The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`.
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
     '''
 
