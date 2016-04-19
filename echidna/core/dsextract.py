@@ -21,6 +21,8 @@ def function_factory(dimension, **kwargs):
     kwdict = {}
     if "fv_radius" in kwargs:
         kwdict["fv_radius"] = kwargs["fv_radius"]
+    if "external" in kwargs:
+        kwdict["external"] = kwargs["external"]
     if dimension == "energy_mc":
         return EnergyExtractMC(**kwdict)
     elif dimension == "energy_reco":
@@ -59,11 +61,12 @@ class Extractor(object):
         fiducial volume. If None no cut is applied.
     '''
 
-    def __init__(self, name, fv_radius):
+    def __init__(self, name, fv_radius, external):
         '''Initialise the class
         '''
         self._name = name
         self._fv_radius = fv_radius
+        self._external = external
 
 
 class EnergyExtractMC(Extractor):
@@ -82,10 +85,12 @@ class EnergyExtractMC(Extractor):
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractMC, self).__init__("energy_mc", fv_radius)
+        super(EnergyExtractMC, self).__init__("energy_mc", fv_radius, external)
+        if external:
+            reco_pos = True  # Overwrite Default. No mc pos for external.
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -150,6 +155,9 @@ class EnergyExtractMC(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if ds.GetEVCount == 0:
+                return False  # Failed reconstruction
         if mc.GetMCParticleCount > 0:
             if self._fv_radius:
                 return self.fv_cut_root(mc, ds)
@@ -176,6 +184,9 @@ class EnergyExtractMC(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if entry.scintFit != 1:
+                return False  # Reco failed
         if entry.mc == 1:
             if self._fv_radius:
                 return self.fv_cut_ntuple(entry)
@@ -211,10 +222,14 @@ class EnergyExtractReco(Extractor):
         If False then position cuts will be made on reconstructed position.
     '''
 
-    def __init__(self, fv_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, mc_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractReco, self).__init__("energy_reco", fv_radius)
+        super(EnergyExtractReco, self).__init__("energy_reco", fv_radius,
+                                                external)
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
@@ -334,10 +349,13 @@ class EnergyExtractTruth(Extractor):
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractTruth, self).__init__("energy_truth", fv_radius)
+        super(EnergyExtractTruth, self).__init__("energy_truth", fv_radius,
+                                                 external)
+        if external:
+            reco_pos = True  # Overwrite Default. No mc pos for external.
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -402,6 +420,9 @@ class EnergyExtractTruth(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if ds.GetEVCount == 0:
+                return False  # Failed reconstruction
         if mc.GetMCParticleCount > 0:
             if self._fv_radius:
                 return self.fv_cut_root(mc, ds)
@@ -428,6 +449,9 @@ class EnergyExtractTruth(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if entry.scintFit != 1:
+                return False  # Reco failed
         if entry.mc == 1:
             if self._fv_radius:
                 return self.fv_cut_ntuple(entry)
@@ -463,10 +487,12 @@ class RadialExtractMC(Extractor):
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(RadialExtractMC, self).__init__("radial_mc", fv_radius)
+        super(RadialExtractMC, self).__init__("radial_mc", fv_radius, external)
+        if external:
+            raise ValueError("External is True. No mc pos info for externals")
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -594,10 +620,14 @@ class RadialExtractReco(Extractor):
         If False then position cuts will be made on reconstructed position.
     '''
 
-    def __init__(self, fv_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, mc_pos=False):
         '''Initialise the class
         '''
-        super(RadialExtractReco, self).__init__("radial_reco", fv_radius)
+        super(RadialExtractReco, self).__init__("radial_reco", fv_radius,
+                                                external)
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
@@ -721,14 +751,18 @@ class Radial3ExtractMC(Extractor):
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, outer_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, outer_radius=None, external=False,
+                 reco_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius)
+        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius,
+                                               external)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
             self._outer_radius = const._av_radius
+        if external:
+            raise ValueError("External is True. No mc pos info for externals")
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -864,14 +898,19 @@ class Radial3ExtractReco(Extractor):
         If False then position cuts will be made on reconstructed position.
     '''
 
-    def __init__(self, fv_radius=None, outer_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, outer_radius=None,
+                 mc_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius)
+        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius,
+                                                 external)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
             self._outer_radius = const._av_radius
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
