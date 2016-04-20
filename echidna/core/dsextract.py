@@ -228,6 +228,11 @@ class EnergyExtractReco(Extractor):
     Attributes:
       _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
     def __init__(self, fv_radius=None, external=False, mc_pos=False):
@@ -497,6 +502,11 @@ class RadialExtractMC(Extractor):
     Attributes:
       _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
+
+    Raises:
+      ValueError: If external is True. Cant have MC Positions info for
+        externals. These are original isotope positions
+        (outside active volume).
     '''
 
     def __init__(self, fv_radius=None, external=False, reco_pos=False):
@@ -632,6 +642,11 @@ class RadialExtractReco(Extractor):
     Attributes:
       _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
     def __init__(self, fv_radius=None, external=False, mc_pos=False):
@@ -768,6 +783,11 @@ class Radial3ExtractMC(Extractor):
         :math:`(radius/outer\_radius)^3`.
       _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
+
+    Raises:
+      ValueError: If external is True. Cant have MC Positions info for
+        externals. These are original isotope positions
+        (outside active volume).
     '''
 
     def __init__(self, fv_radius=None, outer_radius=None, external=False,
@@ -917,6 +937,11 @@ class Radial3ExtractReco(Extractor):
         :math:`(radius/outer\_radius)^3`.
       _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
     def __init__(self, fv_radius=None, external=False, outer_radius=None,
