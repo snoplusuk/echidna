@@ -1,0 +1,8 @@
+global_fit_parameters:
+        energy_mc:
+                resolution_ly:
+                        prior: 200.
+                        sigma: 5.
+                        low: 175.
+                        high: 225.
+                        bins: 101

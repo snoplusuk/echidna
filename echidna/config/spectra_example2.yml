@@ -1,0 +1,9 @@
+parameters:
+        energy_mc:
+                low: 0
+                high: 5.0
+                bins: 100
+        radial_mc:
+                low: 0
+                high: 10000
+                bins: 100

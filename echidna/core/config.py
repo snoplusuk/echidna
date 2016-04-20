@@ -5,10 +5,11 @@ Contains the :class:`Config` class and all classes that inherit from it.
 from echidna.core.parameter import (RateParameter, ScaleParameter,
                                     ShiftParameter, ResolutionParameter,
                                     SpectraParameter)
+import echidna.util.yaml_loader as yaml_loader
 
+import logging
 import abc
-import yaml
-import collections
+from collections import OrderedDict
 
 
 class Config(object):
@@ -18,16 +19,18 @@ class Config(object):
       name (string): The name of the config.
 
     Attributes:
+      _
       _name (string): The name of the config.
       _type (string): The type of the config, this affects it's
         parameter types
-      _parameters (:class:`collections.OrderedDict`): Dictionary of
+      _parameters (:class:`OrderedDict`): Dictionary of
         parameters.
     """
 
     def __init__(self, name, parameters):
         """ Initialise config class
         """
+        self._logger = logging.getLogger("Config")
         self._name = name
         self._type = "general"
         self._parameters = parameters
@@ -212,7 +215,7 @@ class GlobalFitConfig(Config):
 
     Args:
       config_name (string): Name of config
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         FitParameter objects
     """
 
@@ -237,8 +240,10 @@ class GlobalFitConfig(Config):
                 par._name = name
                 self.add_par(par, "spectra")
         elif config._type == "global_fit":
-            for par_name in config.get_pars():
-                self.add_par(config.get_par(par_name), "global")
+            for par in config.get_global_pars():
+                self.add_par(par, "global")
+            for par in config.get_spectra_pars():
+                self.add_par(par, "spectra")
         else:
             raise ValueError("Cannot add %s-type config to a config "
                              "of type %s" % (config._type, self._type))
@@ -273,14 +278,15 @@ class GlobalFitConfig(Config):
         """
         # Global fit parameters
         main_key = "global_fit_parameters"
-        global_fit_config = {main_key: {}}
+        global_fit_config = OrderedDict()
+        global_fit_config[main_key] = OrderedDict()
 
         for par in self.get_global_pars():
             dimension = par.get_dimension()
 
             # Make entry for dimensions - as required
             if dimension not in global_fit_config[main_key].keys():
-                global_fit_config[main_key][dimension] = {}
+                global_fit_config[main_key][dimension] = OrderedDict()
 
             name = par.get_name()
             # Remove dimension from name, if required
@@ -292,7 +298,8 @@ class GlobalFitConfig(Config):
 
         # Spectral fit parameters
         main_key = "spectral_fit_parameters"
-        spectral_fit_config = {main_key: {}}
+        spectral_fit_config = OrderedDict()
+        spectral_fit_config[main_key] = OrderedDict()
 
         for par in self.get_spectra_pars():
             # No dimesnions required here
@@ -330,7 +337,8 @@ class GlobalFitConfig(Config):
         if ".yml" not in global_fname:
             global_fname += ".yml"
         with open(path+global_fname, "w") as stream:
-            yaml.dump(global_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                global_fit_config, stream=stream, indent=8)
 
         if spectral_fname is None:
             spectral_fname = "spectral_fit_config"
@@ -339,7 +347,8 @@ class GlobalFitConfig(Config):
         if ".yml" not in spectral_fname:
             spectral_fname += ".yml"
         with open(path+spectral_fname, "w") as stream:
-            yaml.dump(spectral_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                spectral_fit_config, stream=stream, indent=8)
 
     def get_par(self, name):
         """ Get requested parameter:
@@ -424,9 +433,10 @@ class GlobalFitConfig(Config):
 
         """
         main_key = "global_fit_parameters"
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         if main_key not in global_config.keys():
-            raise KeyError("Cannot read global_config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(global_config))
+            raise KeyError("Cannot read global fit config dictionary. "
                            "Please check it has the correct form")
         for dim in global_config[main_key]:
             for syst in global_config[main_key][dim]:
@@ -458,14 +468,15 @@ class GlobalFitConfig(Config):
         # Add spectral fit parameters:
         main_key = "spectral_fit_parameters"
         if not spectral_config.get(main_key):
-            raise KeyError("Cannot read config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(spectral_config))
+            raise KeyError("Cannot read spectra fit config dictionary. "
                            "Please check it has the correct form")
         for syst in spectral_config[main_key]:
             if "rate" in syst:
                 parameters[syst] = {
                     'par': RateParameter(
                         syst, **spectral_config[main_key][syst]),
-                    'type': 'spectral'}
+                    'type': 'spectra'}
             else:
                 raise IndexError("Unknown systematic in config: %s" % syst)
 
@@ -488,9 +499,10 @@ class GlobalFitConfig(Config):
           (:class:`echidna.core.spectra.GlobalFitConfig`): A config object
             containing the parameters in the file called filename.
         """
-        config = yaml.load(open(filename, 'r'))
+        config = yaml_loader.ordered_load(open(filename, 'r'))
         if sf_filename:
-            spectral_fit_config = yaml.load(open(sf_filename, "r"))
+            spectral_fit_config = yaml_loader.ordered_load(
+                open(sf_filename, "r"))
         else:
             spectral_fit_config = None
         if not name:
@@ -507,7 +519,7 @@ class SpectraFitConfig(Config):
 
     Args:
       config_name (string): Name of config
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         FitParameter objects
       spectra_name (string): Name of the spectra associated with the
          :class:`echidna.core.spectra.SpectraFitConfig`
@@ -536,7 +548,8 @@ class SpectraFitConfig(Config):
         """
         # Spectral fit parameters
         main_key = "spectral_fit_parameters"
-        spectral_fit_config = {main_key: {}}
+        spectral_fit_config = OrderedDict()
+        spectral_fit_config[main_key] = OrderedDict()
 
         for parameter in self.get_pars():
             par = self.get_par(parameter)
@@ -568,7 +581,8 @@ class SpectraFitConfig(Config):
         if ".yml" not in spectral_fname:
             spectral_fname += ".yml"
         with open(path+spectral_fname, "w") as stream:
-            yaml.dump(spectral_fit_config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(
+                spectral_fit_config, stream=stream, indent=8)
 
     @classmethod
     def load(cls, config, spectra_name, name="spectral_fit_config"):
@@ -606,9 +620,10 @@ class SpectraFitConfig(Config):
         """
         main_key = "spectral_fit_parameters"
         if not config.get(main_key):
-            raise KeyError("Cannot read config dictionary. "
+            logging.getLogger("extra").debug("\n\n%s\n" % str(config))
+            raise KeyError("Cannot read spectra fit config dictionary. "
                            "Please check it has the correct form")
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         for syst in config[main_key]:
             if "rate" in syst:
                 parameters[syst] = RateParameter(syst,
@@ -634,7 +649,7 @@ class SpectraFitConfig(Config):
           (:class:`SpectraFitConfig`): A config object containing the
             parameters in the file.
         """
-        config = yaml.load(open(filename, 'r'))
+        config = yaml_loader.ordered_load(open(filename, 'r'))
         if not name:
             return cls.load(config, spectra_name)
         if name == "":
@@ -648,7 +663,7 @@ class SpectraConfig(Config):
     configuration files.
 
     Args:
-      parameters (:class:`collections.OrderedDict`): List of
+      parameters (:class:`OrderedDict`): List of
         SpectraParameter objects
     """
 
@@ -669,7 +684,8 @@ class SpectraConfig(Config):
         """
         # Spectral parameters
         main_key = "parameters"
-        config = {main_key: {}}
+        config = OrderedDict()
+        config[main_key] = OrderedDict()
 
         for parameter in self.get_pars():
             par = self.get_par(parameter)
@@ -697,7 +713,7 @@ class SpectraConfig(Config):
         if ".yml" not in filename:
             filename += ".yml"
         with open(path+filename, "w") as stream:
-            yaml.dump(config, stream=stream, indent=8)
+            yaml_loader.ordered_dump(config, stream=stream, indent=8)
 
     @classmethod
     def load(cls, config, name="config"):
@@ -731,9 +747,10 @@ class SpectraConfig(Config):
         """
         main_key = "parameters"
         if not config.get(main_key):
+            logging.getLogger("extra").debug("\n\n%s\n" % str(config))
             raise KeyError("Cannot read config dictionary. "
                            "Please check it has the correct form")
-        parameters = collections.OrderedDict()
+        parameters = OrderedDict()
         for parameter in config[main_key]:
             parameters[parameter] = SpectraParameter(
                 parameter, **config[main_key][parameter])
@@ -756,7 +773,7 @@ class SpectraConfig(Config):
             parameters in the file.
         """
         with open(filename, 'r') as stream:
-            config = yaml.load(stream)
+            config = yaml_loader.ordered_load(stream)
         if not name:
             return cls.load(config)
         if name == "":

@@ -100,12 +100,20 @@ class ReadableDir(argparse.Action):
         setattr(namespace, self.dest, values)  # keeps original format
 
 
-def main(args):
+def main(args, name=None, floating_backgrounds=[], signals=[]):
     """ The limit setting script.
 
     Args:
       args (:class:`argparse.Namespace`): Arguments passed via command-
         line
+      floating_backgrounds (list): List of background spectra to float
+      signals (list): List of signals to set limits for
+
+    .. warning:: floating backgrounds and signals specified via config
+      will be **appended** to the lists passed as args, so if you are
+      passing a spectrum to one of these arguments, make sure it is not
+      also included in the config.
+
     """
     logger = utilities.start_logging()
 
@@ -116,8 +124,11 @@ def main(args):
             output.__default_save_path__)
 
     args_config = yaml.load(open(args.from_file, "r"))
-    name = args_config.get("name")
-    logger.info("Configuration name: %s" % name)
+
+    if not name:  # no name supplied, use name from config
+        name = args_config.get("name")
+        logger.info("Configuration name: %s" % name)
+
     logging.getLogger("extra").debug("\n\n%s\n" % yaml.dump(args_config))
 
     # Set plot-grab error if required
@@ -221,27 +232,32 @@ def main(args):
         logger.warning("No fixed spectra found")
 
     # Set floating backgrounds
-    floating_backgrounds = []
-    if args_config.get("floating") is not None:
+    spectrum_names = [bkg.get_name() for bkg in floating_backgrounds]
+    if args_config.get("floating") is not None:  # passed by config
         if not isinstance(args_config.get("floating"), list):
             raise TypeError("Expecting list of paths to floating backgrounds")
         for filename in args_config.get("floating"):
-            logger.info("Using floating background: %s" % filename)
             spectrum = store.load(filename)
-
-            # Add plot-grab errors as appropriate
-            if args.upper_bound:
-                spectrum_neg_errors = utilities.get_array_errors(
-                    spectrum._data, lin_err=-plot_grab_err, log10=True)
-                spectrum._data = spectrum._data + spectrum_neg_errors
-            if args.lower_bound:
-                spectrum_pos_errors = utilities.get_array_errors(
-                    spectrum._data, lin_err=plot_grab_err, log10=True)
-                spectrum._data = spectrum._data + spectrum_pos_errors
-
-            floating_backgrounds.append(spectrum)
+            if spectrum.get_name() not in spectrum_names:
+                logger.info("Using floating background from: %s" % filename)
+                floating_backgrounds.append(spectrum)
+            else:  # Spectrum already loaded - passed via args
+                logger.warning(
+                    "Background %s already loaded. NOT using floating "
+                    "background from: %s" % (spectrum.get_name(), filename))
     else:
         logger.warning("No floating backgrounds found")
+
+    # Add plot-grab errors as appropriate
+    for background in floating_backgrounds:
+        if args.upper_bound:
+            spectrum_neg_errors = utilities.get_array_errors(
+                background._data, lin_err=-plot_grab_err, log10=True)
+            background._data = background._data + spectrum_neg_errors
+        if args.lower_bound:
+            spectrum_pos_errors = utilities.get_array_errors(
+                background._data, lin_err=plot_grab_err, log10=True)
+            background._data = background._data + spectrum_pos_errors
 
     # Using default minimiser (GridSearch) so let Fit class handle this
 
@@ -253,40 +269,58 @@ def main(args):
                      per_bin=per_bin, use_pre_made=False)
     logger.info("Created fitter")
 
+    # Make data if running sensitivity study
+    if args.sensitivity:
+        data = fitter.get_data()  # Already added blank spectrum
+        # Add fixed background
+        data.add(fitter.get_fixed_background())
+        # Add floating backgrounds - scaled to prior
+        for background in fitter.get_floating_backgrounds():
+            prior = background.get_fit_config().get_par("rate").get_prior()
+            background.scale(prior)
+            data.add(background)
+        # Re-set data
+        fitter.set_data(data)
+
     # Fit with no signal
     stat_zero = fitter.fit()
     fit_results = fitter.get_fit_results()
-    logger.info("Calculated stat_zero: %.4f" % stat_zero)
+    logger.info("Calculated stat_zero: %.4f" % numpy.sum(stat_zero))
     logger.info("Fit summary:")
     logging.getLogger("extra").info("\n%s\n" %
                                     json.dumps(fit_results.get_summary()))
 
     # Load signals
-    signals = []
+    spectrum_names = [signal.get_name() for signal in signals]
     if args_config.get("signals") is not None:
-        for name, filename in args_config.get("signals").iteritems():
-            logger.info("Using signal spectrum: %s" % filename)
+        for filename in args_config.get("signals"):
             signal = store.load(filename)
-
-            # Add plot-grab errors as appropriate
-            # For signal we want to swap negative and positive fluctuations
-            # The lower bound on the limit, is when all our backgrounds have
-            # fluctuated down (through plot-grabbing) but the signal has
-            # fluctuated up. Then the reverse is true for the upper bound,
-            # backgrounds are fluctuated up and signal is fluctuated down
-            if args.upper_bound:
-                signal_pos_errors = utilities.get_array_errors(
-                    signal._data, lin_err=plot_grab_err, log10=True)
-                signal._data = signal._data + signal_pos_errors
-            if args.lower_bound:
-                signal_neg_errors = utilities.get_array_errors(
-                    signal._data, lin_err=-plot_grab_err, log10=True)
-                signal._data = signal._data + signal_neg_errors
-
-            signals.append(signal)
+            if signal.get_name() not in spectrum_names:
+                logger.info("Using signal spectrum from: %s" % filename)
+                signals.append(signal)
+            else:  # signal already loaded - passed via args
+                logger.warning(
+                    "Signal %s already loaded. NOT using signal "
+                    "spectrum from: %s" % (signal.get_name(), filename))
     else:
         logger.error("No signal spectra found")
         raise CompatibilityError("Must have at least one signal to set limit")
+
+    # Add plot-grab errors as appropriate
+    # For signal we want to swap negative and positive fluctuations
+    # The lower bound on the limit, is when all our backgrounds have
+    # fluctuated down (through plot-grabbing) but the signal has
+    # fluctuated up. Then the reverse is true for the upper bound,
+    # backgrounds are fluctuated up and signal is fluctuated down
+    for signal in signals:
+        if args.upper_bound:
+            signal_pos_errors = utilities.get_array_errors(
+                signal._data, lin_err=plot_grab_err, log10=True)
+            signal._data = signal._data + signal_pos_errors
+        if args.lower_bound:
+            signal_neg_errors = utilities.get_array_errors(
+                signal._data, lin_err=-plot_grab_err, log10=True)
+            signal._data = signal._data + signal_neg_errors
 
     # KamLAND-Zen limits
     klz_limits = {"Xe136_0n2b_n1": 2.6e24,
@@ -342,9 +376,20 @@ if __name__ == "__main__":
         description="KamLAND-Zen (plot-grab) Majoron limits script")
     parser.add_argument("--from_file", action=ReadableDir,
                         help="Path to config file containing arg values")
+    parser.add_argument("--update_from", action=ReadableDir,
+                        help="Path to config for updating spectra")
     parser.add_argument("-s", "--save_path", action=ReadableDir,
                         help="Path to save all ouput files to. "
                         "Overrides default from output module.")
+    parser.add_argument("--floating", nargs="*", help="Parse floating "
+                        "background spectra directly")
+    parser.add_argument("--signals", nargs="*", help="Parse signal spectra "
+                        "directly")
+    parser.add_argument("--sensitivity", action="store_true",
+                        help="Use expected background as data. Note a blank "
+                        "'data' spectrum must still be supplied, which will "
+                        "then be filled with the appropriate expected "
+                        "background spectrum.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--lower_bound", action="store_true",
                        help="Estimate lower bound on limit "

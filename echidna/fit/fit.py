@@ -147,10 +147,17 @@ class Fit(object):
             self._minimiser = None
             self._logger.warning("Minimiser could not be set because: %s" %
                                  detail)
-
+        except IndexError as detail:
+            self._minimiser = None
+            self._logger.warning("Minimiser could not be set because: %s" %
+                                 detail)
         try:
             self.set_fit_results(fit_results)
         except CompatibilityError as detail:
+            self._fit_results = None
+            self._logger.warning("Fit results could not be set because: %s" %
+                                 detail)
+        except IndexError as detail:
             self._fit_results = None
             self._logger.warning("Fit results could not be set because: %s" %
                                  detail)
@@ -265,9 +272,9 @@ class Fit(object):
         self.check_all_spectra()
 
         # Check fit parameters
-        if len(self.get_fit_config().get_pars()) == 0:
-            raise IndexError("No parameters found in fit config.")
-        if self._floating_backgrounds is not None:
+        if self._floating_backgrounds:
+            if len(self.get_fit_config().get_pars()) == 0:
+                raise IndexError("No parameters found in fit config.")
             if (len(self.get_fit_config().get_spectra_pars()) !=
                     len(self._floating_backgrounds)):
                 self._logger.error(
@@ -286,19 +293,14 @@ class Fit(object):
         # Check minimiser and fit results
         if self._minimiser is None:
             raise AttributeError("Minimiser has not been set.")
-        if self._fit_results is None:
-            raise AttributeError("Fit results has not been set.")
 
         # Check per_bin propagation
         if self._per_bin:
             if not self._minimiser._per_bin:
                 raise ValueError("Expected per_bin True flag in minimiser")
-        else:
-            if self._minimiser._per_bin:
-                raise ValueError("Unexpected per_bin True flag in minimiser")
-
-        if not self._test_statistic._per_bin:
-            raise ValueError("Expected per_bin True flag in test_statistic")
+            if not self._test_statistic._per_bin:
+                raise ValueError("Expected per_bin True flag in "
+                                 "test_statistic")
 
         self._checked = True
 
@@ -456,8 +458,7 @@ class Fit(object):
         """ Gets the value of the test statistic used for fitting.
 
         Returns:
-          float or :class:`numpy.array`: The resulting test statisic(s)
-            dependent upon what method is used to compute the statistic.
+          float: The resulting test statisic.
         """
         if not self._checked:
             self.check_fitter()
@@ -517,6 +518,7 @@ class Fit(object):
         else:
             expected = None
         global_pars = self._fit_config.get_global_pars()
+        spec_pars = self._fit_config.get_spectra_pars()
         for spectrum, floating_pars in zip(self._floating_backgrounds,
                                            self._floating_pars):
             # Apply global parameters first
@@ -524,13 +526,17 @@ class Fit(object):
                 spectrum = self.load_pre_made(spectrum, global_pars)
             else:
                 for parameter in global_pars:
-                    par = self._fit_config.get_par(parameter)
-                    spectrum = par.apply_to(spectrum)
+                    #####
+                    # THIS DOESN'T DO ANYTHING
+                    spectrum = parameter.apply_to(spectrum)
+                    #####
 
             # Apply spectrum-specific parameters
-            for parameter in spectrum.get_fit_config().get_pars():
-                par = spectrum.get_fit_config().get_par(parameter)
-                spectrum = par.apply_to(spectrum)
+            for parameter in spec_pars:
+                #####
+                # THIS DOESN'T DO ANYTHING
+                spectrum = parameter.apply_to(spectrum)
+                #####
 
             # Spectrum should now be fully convolved/scaled
             # Shrink to roi
@@ -565,6 +571,10 @@ class Fit(object):
             if (sigma is not None):
                 total_penalty += self._test_statistic.get_penalty_term(
                     current_value, prior, sigma)
+
+        # Check for per_bin flag
+        if self._per_bin:
+            test_statistic = test_statistic.reshape(spectrum._data.shape)
 
         return test_statistic, total_penalty
 
@@ -756,8 +766,6 @@ class Fit(object):
             self._logger.debug("Setting %s as minimiser" %
                                minimiser.get_name())
         else:  # Use default GridSearch
-            if len(self.get_fit_config().get_pars()) == 0:
-                raise IndexError("No parameters found in fit config.")
             if self._per_bin:
                 self._minimiser = GridSearch(
                     fit_config=self._fit_config,
@@ -769,7 +777,8 @@ class Fit(object):
                 self._minimiser = GridSearch(
                     fit_config=self._fit_config,
                     spectra_config=self._data.get_config(),
-                    name=self._fit_config.get_name())
+                    name=self._fit_config.get_name(),
+                    per_bin=self._per_bin)
             self._logger.debug("Created GridSearch (%s) to use as minimiser" %
                                self._minimiser.get_name())
 

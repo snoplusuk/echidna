@@ -1,8 +1,10 @@
 import numpy
 
-from echidna.core.config import SpectraConfig, SpectraFitConfig
+from echidna.core.config import (SpectraConfig, SpectraFitConfig,
+                                 GlobalFitConfig)
 import echidna.core.spectra as spectra
 import echidna.output.store as store
+from echidna.fit.fit_results import FitResults
 
 import unittest
 import random
@@ -10,112 +12,263 @@ import random
 
 class TestStore(unittest.TestCase):
 
+    def setUp(self):
+        """ Set up before each test.
+        """
+        # Set up test decays
+        self._test_decays = 1000
+
+        # Set up spectra config
+        self._spectra_config = SpectraConfig.load_from_file(
+            "echidna/config/spectra_example2.yml")
+
+        # Set up global fit config
+        self._global_fit_config = GlobalFitConfig.load_from_file(
+            "echidna/config/fit_example2.yml",
+            sf_filename="echidna/config/spectra_fit_example.yml")
+
+        # Set up spectra fit config
+        self._spectra_fit_config = SpectraFitConfig.load_from_file(
+            "echidna/config/spectra_fit_example.yml", "Test")
+
+        self._test_spectra = spectra.Spectra(
+            "Test", self._test_decays, self._spectra_config,
+            fit_config=self._spectra_fit_config)
+
     def test_serialisation(self):
         """ Test saving and then reloading a test spectra.
-
         """
-        test_decays = 10
-        config_path = "echidna/config/spectra_example.yml"
-        config = SpectraConfig.load_from_file(config_path)
-        fit_config_path = "echidna/config/spectra_fit_example.yml"
-        fit_config = SpectraFitConfig.load_from_file(fit_config_path, "Test")
+        test_spectra = self._test_spectra
 
-        test_spectra = spectra.Spectra("Test", test_decays, config,
-                                       fit_config=fit_config)
+        # Save values
+        spectra_config = test_spectra.get_config()
+        spectra_pars = spectra_config.get_pars()
+        energy_high = spectra_config.get_par("energy_mc").get_high()
+        energy_bins = spectra_config.get_par("energy_mc").get_bins()
+        energy_low = spectra_config.get_par("energy_mc").get_low()
+        radial_high = spectra_config.get_par("radial_mc").get_high()
+        radial_bins = spectra_config.get_par("radial_mc").get_bins()
+        radial_low = spectra_config.get_par("radial_mc").get_low()
+        energy_width = spectra_config.get_par("energy_mc").get_width()
+        radial_width = spectra_config.get_par("radial_mc").get_width()
 
-        energy_high = test_spectra.get_config().get_par("energy_mc").get_high()
-        energy_bins = test_spectra.get_config().get_par("energy_mc").get_bins()
-        energy_low = test_spectra.get_config().get_par("energy_mc").get_low()
-        radial_high = test_spectra.get_config().get_par("radial_mc").get_high()
-        radial_bins = test_spectra.get_config().get_par("radial_mc").get_bins()
-        radial_low = test_spectra.get_config().get_par("radial_mc").get_low()
-        energy_width = test_spectra.get_config().get_par("energy_mc").\
-            get_width()
-        radial_width = test_spectra.get_config().get_par("radial_mc").\
-            get_width()
+        spectra_fit_config = test_spectra.get_fit_config()
+        spectra_fit_pars = spectra_fit_config.get_pars()
+        rate_prior = spectra_fit_config.get_par("rate").get_prior()
+        rate_sigma = spectra_fit_config.get_par("rate").get_sigma()
+        rate_low = spectra_fit_config.get_par("rate").get_low()
+        rate_high = spectra_fit_config.get_par("rate").get_high()
+        rate_bins = spectra_fit_config.get_par("rate").get_bins()
 
-        rate_prior = test_spectra.get_fit_config().get_par("rate").get_prior()
-        rate_sigma = test_spectra.get_fit_config().get_par("rate").get_sigma()
-        rate_low = test_spectra.get_fit_config().get_par("rate").get_low()
-        rate_high = test_spectra.get_fit_config().get_par("rate").get_high()
-        rate_bins = test_spectra.get_fit_config().get_par("rate").get_bins()
-
-        for x in range(0, test_decays):
+        # Fill spectrum
+        for x in range(0, self._test_decays):
             energy = random.uniform(energy_low, energy_high)
             radius = random.uniform(radial_low, radial_high)
             test_spectra.fill(energy_mc=energy, radial_mc=radius)
 
+        # Dump spectrum
         store.dump("test.hdf5", test_spectra)
+
+        # Re-load spectrum
         loaded_spectra = store.load("test.hdf5")
 
-        energy_high2 = loaded_spectra.get_config().get_par("energy_mc").\
-            get_high()
-        energy_bins2 = loaded_spectra.get_config().get_par("energy_mc").\
-            get_bins()
-        energy_low2 = loaded_spectra.get_config().get_par("energy_mc").\
-            get_low()
-        radial_high2 = loaded_spectra.get_config().get_par("radial_mc").\
-            get_high()
-        radial_bins2 = loaded_spectra.get_config().get_par("radial_mc").\
-            get_bins()
-        radial_low2 = loaded_spectra.get_config().get_par("radial_mc").\
-            get_low()
-        energy_width2 = loaded_spectra.get_config().get_par("energy_mc").\
-            get_width()
-        radial_width2 = loaded_spectra.get_config().get_par("radial_mc").\
-            get_width()
+        # Re-load saved values
+        spectra_config = loaded_spectra.get_config()
+        spectra_pars2 = spectra_config.get_pars()
+        energy_high2 = spectra_config.get_par("energy_mc").get_high()
+        energy_bins2 = spectra_config.get_par("energy_mc").get_bins()
+        energy_low2 = spectra_config.get_par("energy_mc").get_low()
+        radial_high2 = spectra_config.get_par("radial_mc").get_high()
+        radial_bins2 = spectra_config.get_par("radial_mc").get_bins()
+        radial_low2 = spectra_config.get_par("radial_mc").get_low()
+        energy_width2 = spectra_config.get_par("energy_mc").get_width()
+        radial_width2 = spectra_config.get_par("radial_mc").get_width()
 
-        rate_prior2 = test_spectra.get_fit_config().get_par("rate").get_prior()
-        rate_sigma2 = test_spectra.get_fit_config().get_par("rate").get_sigma()
-        rate_low2 = test_spectra.get_fit_config().get_par("rate").get_low()
-        rate_high2 = test_spectra.get_fit_config().get_par("rate").get_high()
-        rate_bins2 = test_spectra.get_fit_config().get_par("rate").get_bins()
+        spectra_fit_config = loaded_spectra.get_fit_config()
+        spectra_fit_pars2 = spectra_fit_config.get_pars()
+        rate_prior2 = spectra_fit_config.get_par("rate").get_prior()
+        rate_sigma2 = spectra_fit_config.get_par("rate").get_sigma()
+        rate_low2 = spectra_fit_config.get_par("rate").get_low()
+        rate_high2 = spectra_fit_config.get_par("rate").get_high()
+        rate_bins2 = spectra_fit_config.get_par("rate").get_bins()
 
-        self.assertTrue(loaded_spectra.sum() == test_decays,
-                        msg="Input decays: %s, loaded spectra sum %s"
-                        % (test_decays, loaded_spectra.sum()))
-        self.assertTrue(numpy.array_equal(test_spectra._data,
-                                          loaded_spectra._data))
+        # Run tests
+        self.assertTrue(loaded_spectra.sum() == self._test_decays,
+                        msg="Original decays: %.3f, loaded spectra sum %3f"
+                        % (float(self._test_decays),
+                           float(loaded_spectra.sum())))
+        self.assertTrue(numpy.array_equal(self._test_spectra._data,
+                                          loaded_spectra._data),
+                        msg="Original _data does not match loaded _data")
+        self.assertTrue(test_spectra._num_decays == loaded_spectra._num_decays,
+                        msg="Original num decays: %.3f, Loaded: %.3f"
+                        % (float(test_spectra._num_decays),
+                           float(loaded_spectra._num_decays)))
+
+        # Check order of parameters
+        self.assertListEqual(spectra_pars, spectra_pars2)
+        self.assertListEqual(spectra_fit_pars, spectra_fit_pars2)
+
         self.assertTrue(energy_low == energy_low2,
-                        msg="Original energy low: %s, Loaded: %s"
+                        msg="Original energy low: %.4f, Loaded: %.4f"
                         % (energy_low, energy_low2))
         self.assertTrue(energy_high == energy_high2,
-                        msg="Original energy high: %s, Loaded: %s"
+                        msg="Original energy high: %.4f, Loaded: %.4f"
                         % (energy_high, energy_high2))
         self.assertTrue(energy_bins == energy_bins2,
-                        msg="Original energy bins: %s, Loaded: %s"
+                        msg="Original energy bins: %.4f, Loaded: %.4f"
                         % (energy_bins, energy_bins2))
         self.assertTrue(energy_width == energy_width2,
-                        msg="Original energy width: %s, Loaded: %s"
+                        msg="Original energy width: %.4f, Loaded: %.4f"
                         % (energy_width, energy_width2))
         self.assertTrue(radial_low == radial_low2,
-                        msg="Original radial low: %s, Loaded: %s"
+                        msg="Original radial low: %.4f, Loaded: %.4f"
                         % (radial_low, radial_low2))
         self.assertTrue(radial_high == radial_high2,
-                        msg="Original radial high: %s, Loaded: %s"
+                        msg="Original radial high: %.4f, Loaded: %.4f"
                         % (radial_high, radial_high2))
         self.assertTrue(radial_bins == radial_bins2,
-                        msg="Original radial bins: %s, Loaded: %s"
+                        msg="Original radial bins: %.4f, Loaded: %.4f"
                         % (radial_bins, radial_bins2))
         self.assertTrue(radial_width == radial_width2,
-                        msg="Original radial width: %s, Loaded: %s"
+                        msg="Original radial width: %.4f, Loaded: %.4f"
                         % (radial_width, radial_width2))
         self.assertTrue(rate_prior == rate_prior2,
-                        msg="Original rate prior: %s, Loaded: %s"
+                        msg="Original rate prior: %.4f, Loaded: %.4f"
                         % (rate_prior, rate_prior2))
         self.assertTrue(rate_sigma == rate_sigma2,
-                        msg="Original rate sigma: %s, Loaded: %s"
+                        msg="Original rate sigma: %.4f, Loaded: %.4f"
                         % (rate_sigma, rate_sigma2))
         self.assertTrue(rate_low == rate_low2,
-                        msg="Original rate low: %s, Loaded: %s"
+                        msg="Original rate low: %.4f, Loaded: %.4f"
                         % (rate_low, rate_low2))
         self.assertTrue(rate_high == rate_high2,
-                        msg="Original rate high: %s, Loaded: %s"
+                        msg="Original rate high: %.4f, Loaded: %.4f"
                         % (rate_high, rate_high2))
         self.assertTrue(rate_bins == rate_bins2,
-                        msg="Original rate bins: %s, Loaded: %s"
+                        msg="Original rate bins: %.4f, Loaded: %.4f"
                         % (rate_bins, rate_bins2))
-        self.assertTrue(test_spectra._num_decays == loaded_spectra._num_decays,
-                        msg="Original num decays: %s, Loaded: %s"
-                        % (test_spectra._num_decays,
-                           loaded_spectra._num_decays))
+
+    def test_serialisation_fit_results(self):
+        """ Test saving and then reloading :class:`FitResults`
+        """
+        fit_results = FitResults(self._global_fit_config,
+                                 self._spectra_config,
+                                 name="test_fit_results")
+
+        # Fill with some random data
+        shape = fit_results.get_fit_config().get_shape()
+        penalty_terms = numpy.random.uniform(high=10, size=shape)
+        fit_results.set_penalty_terms(penalty_terms)
+
+        shape += fit_results._spectra_config.get_shape()
+        stats = numpy.random.uniform(high=100, size=shape)
+        fit_results.set_stats(stats)
+
+        # Set minimum value and position
+        minimum_value = numpy.min(fit_results.get_stats())
+        fit_results.set_minimum_value(minimum_value)
+        minimum_position = numpy.argmin(fit_results.get_stats())
+        fit_results.set_minimum_position(minimum_position)
+
+        # Save values
+        spectra_config = fit_results.get_spectra_config()
+        spectra_pars = spectra_config.get_pars()
+        energy_high = spectra_config.get_par("energy_mc").get_high()
+        energy_bins = spectra_config.get_par("energy_mc").get_bins()
+        energy_low = spectra_config.get_par("energy_mc").get_low()
+        radial_high = spectra_config.get_par("radial_mc").get_high()
+        radial_bins = spectra_config.get_par("radial_mc").get_bins()
+        radial_low = spectra_config.get_par("radial_mc").get_low()
+        energy_width = spectra_config.get_par("energy_mc").get_width()
+        radial_width = spectra_config.get_par("radial_mc").get_width()
+
+        fit_config = fit_results.get_fit_config()
+        fit_pars = fit_config.get_pars()
+        rate_prior = fit_config.get_par("rate").get_prior()
+        rate_sigma = fit_config.get_par("rate").get_sigma()
+        rate_low = fit_config.get_par("rate").get_low()
+        rate_high = fit_config.get_par("rate").get_high()
+        rate_bins = fit_config.get_par("rate").get_bins()
+
+        # Dump fit results
+        store.dump_fit_results("fit_results.hdf5", fit_results)
+
+        # Re-load fit_results
+        loaded = store.load_fit_results("fit_results.hdf5")
+
+        # Re-load saved values
+        spectra_config = loaded.get_spectra_config()
+        spectra_pars2 = spectra_config.get_pars()
+        energy_high2 = spectra_config.get_par("energy_mc").get_high()
+        energy_bins2 = spectra_config.get_par("energy_mc").get_bins()
+        energy_low2 = spectra_config.get_par("energy_mc").get_low()
+        radial_high2 = spectra_config.get_par("radial_mc").get_high()
+        radial_bins2 = spectra_config.get_par("radial_mc").get_bins()
+        radial_low2 = spectra_config.get_par("radial_mc").get_low()
+        energy_width2 = spectra_config.get_par("energy_mc").get_width()
+        radial_width2 = spectra_config.get_par("radial_mc").get_width()
+
+        fit_config = loaded.get_fit_config()
+        fit_pars2 = fit_config.get_pars()
+        rate_prior2 = fit_config.get_par("rate").get_prior()
+        rate_sigma2 = fit_config.get_par("rate").get_sigma()
+        rate_low2 = fit_config.get_par("rate").get_low()
+        rate_high2 = fit_config.get_par("rate").get_high()
+        rate_bins2 = fit_config.get_par("rate").get_bins()
+
+        # Run tests
+        self.assertTrue(numpy.array_equal(fit_results.get_raw_stats(),
+                                          loaded.get_raw_stats()),
+                        msg="Original _stats does not match loaded _stats")
+        self.assertTrue(numpy.array_equal(fit_results.get_penalty_terms(),
+                                          loaded.get_penalty_terms()),
+                        msg="Original _penalty_terms "
+                        "does not match loaded _penlty_terms")
+
+        # Check order of parameters
+        self.assertListEqual(spectra_pars, spectra_pars2)
+        self.assertListEqual(fit_pars, fit_pars2)
+
+        self.assertTrue(energy_low == energy_low2,
+                        msg="Original energy low: %.4f, Loaded: %.4f"
+                        % (energy_low, energy_low2))
+        self.assertTrue(energy_high == energy_high2,
+                        msg="Original energy high: %.4f, Loaded: %.4f"
+                        % (energy_high, energy_high2))
+        self.assertTrue(energy_bins == energy_bins2,
+                        msg="Original energy bins: %.4f, Loaded: %.4f"
+                        % (energy_bins, energy_bins2))
+        self.assertTrue(energy_width == energy_width2,
+                        msg="Original energy width: %.4f, Loaded: %.4f"
+                        % (energy_width, energy_width2))
+        self.assertTrue(radial_low == radial_low2,
+                        msg="Original radial low: %.4f, Loaded: %.4f"
+                        % (radial_low, radial_low2))
+        self.assertTrue(radial_high == radial_high2,
+                        msg="Original radial high: %.4f, Loaded: %.4f"
+                        % (radial_high, radial_high2))
+        self.assertTrue(radial_bins == radial_bins2,
+                        msg="Original radial bins: %.4f, Loaded: %.4f"
+                        % (radial_bins, radial_bins2))
+        self.assertTrue(radial_width == radial_width2,
+                        msg="Original radial width: %.4f, Loaded: %.4f"
+                        % (radial_width, radial_width2))
+        self.assertTrue(rate_prior == rate_prior2,
+                        msg="Original rate prior: %.4f, Loaded: %.4f"
+                        % (rate_prior, rate_prior2))
+        self.assertTrue(rate_sigma == rate_sigma2,
+                        msg="Original rate sigma: %.4f, Loaded: %.4f"
+                        % (rate_sigma, rate_sigma2))
+        self.assertTrue(rate_low == rate_low2,
+                        msg="Original rate low: %.4f, Loaded: %.4f"
+                        % (rate_low, rate_low2))
+        self.assertTrue(rate_high == rate_high2,
+                        msg="Original rate high: %.4f, Loaded: %.4f"
+                        % (rate_high, rate_high2))
+        self.assertTrue(rate_bins == rate_bins2,
+                        msg="Original rate bins: %.4f, Loaded: %.4f"
+                        % (rate_bins, rate_bins2))
+
+if __name__ == '__main__':
+    unittest.main()

@@ -14,7 +14,7 @@ This script:
 This file has been generated automatically by running::
 
     (ENV) $ jupyter nbconvert --to python --template getting_started
-getting_started.ipynb
+    getting_started.ipynb
 
 Examples:
   To run (from the base directory)::
