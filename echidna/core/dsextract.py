@@ -21,6 +21,8 @@ def function_factory(dimension, **kwargs):
     kwdict = {}
     if "fv_radius" in kwargs:
         kwdict["fv_radius"] = kwargs["fv_radius"]
+    if "external" in kwargs:
+        kwdict["external"] = kwargs["external"]
     if dimension == "energy_mc":
         return EnergyExtractMC(**kwdict)
     elif dimension == "energy_reco":
@@ -51,19 +53,22 @@ class Extractor(object):
       fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
+      external (bool): Set to True for external backgrounds.
 
     Attributes:
       _name (str): of the dimension
       _fv_radius (float): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
+      _external (bool): True if external background is being extracted.
     '''
 
-    def __init__(self, name, fv_radius):
+    def __init__(self, name, fv_radius, external):
         '''Initialise the class
         '''
         self._name = name
         self._fv_radius = fv_radius
+        self._external = external
 
 
 class EnergyExtractMC(Extractor):
@@ -73,19 +78,25 @@ class EnergyExtractMC(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractMC, self).__init__("energy_mc", fv_radius)
+        super(EnergyExtractMC, self).__init__("energy_mc", fv_radius, external)
+        if external:
+            reco_pos = True  # Overwrite Default. No mc pos for external.
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -150,6 +161,9 @@ class EnergyExtractMC(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if ds.GetEVCount == 0:
+                return False  # Failed reconstruction
         if mc.GetMCParticleCount > 0:
             if self._fv_radius:
                 return self.fv_cut_root(mc, ds)
@@ -176,6 +190,9 @@ class EnergyExtractMC(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if entry.scintFit != 1:
+                return False  # Reco failed
         if entry.mc == 1:
             if self._fv_radius:
                 return self.fv_cut_ntuple(entry)
@@ -202,19 +219,30 @@ class EnergyExtractReco(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
-    def __init__(self, fv_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, mc_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractReco, self).__init__("energy_reco", fv_radius)
+        super(EnergyExtractReco, self).__init__("energy_reco", fv_radius,
+                                                external)
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
@@ -325,19 +353,24 @@ class EnergyExtractTruth(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(EnergyExtractTruth, self).__init__("energy_truth", fv_radius)
+        super(EnergyExtractTruth, self).__init__("energy_truth", fv_radius,
+                                                 external)
+        if external:
+            reco_pos = True  # Overwrite Default. No mc pos for external.
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -402,6 +435,9 @@ class EnergyExtractTruth(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if ds.GetEVCount == 0:
+                return False  # Failed reconstruction
         if mc.GetMCParticleCount > 0:
             if self._fv_radius:
                 return self.fv_cut_root(mc, ds)
@@ -428,6 +464,9 @@ class EnergyExtractTruth(Extractor):
         Returns:
           bool: Validity boolean
         '''
+        if self._external:
+            if entry.scintFit != 1:
+                return False  # Reco failed
         if entry.mc == 1:
             if self._fv_radius:
                 return self.fv_cut_ntuple(entry)
@@ -454,19 +493,28 @@ class RadialExtractMC(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      reco_pos (bool, optional): If true then position cuts will be made on
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
         reconstructed position. If False (default) then MC position is used
         for cuts.
 
     Attributes:
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
+
+    Raises:
+      ValueError: If external is True. Cant have MC Positions info for
+        externals. These are original isotope positions
+        (outside active volume).
     '''
 
-    def __init__(self, fv_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, external=False, reco_pos=False):
         '''Initialise the class
         '''
-        super(RadialExtractMC, self).__init__("radial_mc", fv_radius)
+        super(RadialExtractMC, self).__init__("radial_mc", fv_radius, external)
+        if external:
+            raise ValueError("External is True. No mc pos info for externals")
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -585,19 +633,30 @@ class RadialExtractReco(Extractor):
       fv_radius (float, optional): Fiducial radius. Applies a cut to remove
         events which have a radial position greater than the radius of the
         fiducial volume. If None no cut is applied.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
-    def __init__(self, fv_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, mc_pos=False):
         '''Initialise the class
         '''
-        super(RadialExtractReco, self).__init__("radial_reco", fv_radius)
+        super(RadialExtractReco, self).__init__("radial_reco", fv_radius,
+                                                external)
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
@@ -713,22 +772,36 @@ class Radial3ExtractMC(Extractor):
       outer_radius (float, optional): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      reco_pos (bool, optional): If True then position cuts will be made on
+        reconstructed position. If False (default) then MC position is used
+        for cuts.
 
     Attributes:
       _outer_radius (float): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`.
-      _reco_pos (bool): If true then position cuts will be made on
+      _reco_pos (bool): If True then position cuts will be made on
       reconstructed position. If False then MC position is used for cuts.
+
+    Raises:
+      ValueError: If external is True. Cant have MC Positions info for
+        externals. These are original isotope positions
+        (outside active volume).
     '''
 
-    def __init__(self, fv_radius=None, outer_radius=None, reco_pos=False):
+    def __init__(self, fv_radius=None, outer_radius=None, external=False,
+                 reco_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius)
+        super(Radial3ExtractMC, self).__init__("radial3_mc", fv_radius,
+                                               external)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
             self._outer_radius = const._av_radius
+        if external:
+            raise ValueError("External is True. No mc pos info for externals")
         self._reco_pos = reco_pos
 
     def fv_cut_ntuple(self, entry):
@@ -853,25 +926,37 @@ class Radial3ExtractReco(Extractor):
       outer_radius (float, optional): The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`. If None then the av_radius in
         :class:`echidna.calc.constants` is used in the calculation.
-      mc_pos (bool, optional): If true then  MC position is used for cuts.
+      external (bool, optional): Set to True for external backgrounds.
+        Default is False.
+      mc_pos (bool, optional): If True then  MC position is used for cuts.
         If False (default) then position cuts will be made on reconstructed
         position.
 
     Attributes:
       _outer_radius (float: The fixed radius used in calculating
         :math:`(radius/outer\_radius)^3`.
-      _mc_pos (bool): If true then MC position is used for cuts.
+      _mc_pos (bool): If True then MC position is used for cuts.
         If False then position cuts will be made on reconstructed position.
+
+    Raises:
+      ValueError: If external and mc_pos is True. Cant have MC Positions info
+        for externals. These are original isotope positions
+        (outside active volume).
     '''
 
-    def __init__(self, fv_radius=None, outer_radius=None, mc_pos=False):
+    def __init__(self, fv_radius=None, external=False, outer_radius=None,
+                 mc_pos=False):
         '''Initialise the class
         '''
-        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius)
+        super(Radial3ExtractReco, self).__init__("radial3_reco", fv_radius,
+                                                 external)
         if outer_radius:
             self._outer_radius = outer_radius
         else:
             self._outer_radius = const._av_radius
+        if external and mc_pos:
+            raise ValueError("External and mc_pos are True. Can't have mc_pos "
+                             "for externals.")
         self._mc_pos = mc_pos
 
     def fv_cut_ntuple(self, entry):
