@@ -71,8 +71,8 @@ def main(args):
             par_high = par+"_high"
             shrink[par_high] = args.up[i]
         spectrum.shrink(**shrink)
-    fout = args.output
-    if not fout:
+    f_out = args.output
+    if not f_out:
         directory = os.path.dirname(args.input)
         filename = os.path.splitext(os.path.basename(args.input))[0]
         f_out = directory + "/" + filename + "_shrunk.hdf5"
