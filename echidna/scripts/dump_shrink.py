@@ -76,7 +76,7 @@ def main(args):
     if not fout:
         directory = os.path.dirname(args.input)
         filename = os.path.splitext(os.path.basename(args.input))[0]
-        f_out = directory + filename + "_shrunk.hdf5"
+        f_out = directory + "/" + filename + "_shrunk.hdf5"
     store.dump(f_out, spectrum)
     print "Shrunk", args.input, ", saved to", f_out
 
