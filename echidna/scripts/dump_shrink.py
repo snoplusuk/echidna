@@ -71,7 +71,6 @@ def main(args):
             par_high = par+"_high"
             shrink[par_high] = args.up[i]
         spectrum.shrink(**shrink)
-    spectrum = store.load(args.input)
     fout = args.output
     if not fout:
         directory = os.path.dirname(args.input)
