@@ -1,16 +1,16 @@
 """ Example shrinking script
 
 This script:
-  * Reads in spectrum from hdf5
-  * shrinks spectrum with user input pars and low high values
+  * Reads in spectrum from hdf5.
+  * Shrinks spectrum with user input pars and low high values.
   * Saves shrunk spectrum to given output or, by default, to the same
     directory with _shrink added to the filename.
 
 Examples:
-  To shrink hdf5 file ``example.hdf5`` that has dimensions energy_mc and
-  radial3_mc to a range in energy of 1. to 4. MeV and radial3 from 0. to 0.5
-  and save the spectrum to ``example2.hdf5`` then the following command is
-  required::
+  To shrink hdf5 file ``example.hdf5`` that has dimensions ``energy_mc`` and
+  ``radial3_mc`` to a range in energy of 1. to 4. MeV and radial3 from
+  0. to 0.5 and save the spectrum to ``example2.hdf5`` then the following
+  command is required::
 
     $ python dump_shrink.py -i /path/to/example.hdf5 -o /path/to/example2.hdf5
       -p energy_mc radial3_mc -l 1. 0. -u 4. 0.5
@@ -30,8 +30,8 @@ def main(args):
     """Smears energy and dumps spectra.
 
     Args:
-      args (Namespace): Container for arguments. See
-        >>> python dump_smeared_energy.py -h
+      args (Namespace): Container for arguments. See::
+        python dump_smeared_energy.py -h
     """
     if not args.input:
         parser.print_help()
@@ -77,7 +77,7 @@ def main(args):
         filename = os.path.splitext(os.path.basename(args.input))[0]
         f_out = directory + "/" + filename + "_shrunk.hdf5"
     store.dump(f_out, spectrum)
-    print "Shrunk", args.input, ", saved to", f_out
+    _logger.info("Shrunk "+str(args.input)+", saved to "+str(f_out))
 
 
 if __name__ == "__main__":

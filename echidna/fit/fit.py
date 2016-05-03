@@ -354,14 +354,14 @@ class Fit(object):
             if not numpy.isclose(self._roi[dim][0],
                                  spectra.get_config().get_par(par)._low):
                 raise ValueError("roi %s low (%s) not equal to spectra %s"
-                                 " %s low (%s)"
-                                 % (dim, self.roi[dim][0], dim,
+                                 " low (%s)"
+                                 % (dim, self._roi[dim][0], dim,
                                     spectra.get_config().get_par(par)._low))
             if not numpy.isclose(self._roi[dim][1],
                                  spectra.get_config().get_par(par)._high):
                 raise ValueError("roi %s high (%s) not equal to spectra %s"
-                                 " %s high (%s)"
-                                 % (dim, self.roi[dim][0], dim,
+                                 " high (%s)"
+                                 % (dim, self._roi[dim][0], dim,
                                     spectra.get_config().get_par(par)._high))
 
     def get_data(self):
@@ -645,7 +645,7 @@ class Fit(object):
             self._fixed_background = total_spectrum  # No need to check
             self._fixed_pars = self.get_roi_pars(total_spectrum)
         else:
-            self.set_fixed_background(total_spectrum)
+            self.set_fixed_background(total_spectrum, shrink)
 
     def remove_signal(self):
         """ Removes the signal spectra from the class.
