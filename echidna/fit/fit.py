@@ -706,9 +706,15 @@ class Fit(object):
                 self._logger.debug("Setting GridSearch (%s) as fit_results" %
                                    self._minimiser.get_name())
             else:
-                self._fit_results = FitResults(
-                    self._fit_config, copy.copy(self._data.get_config()),
-                    name=self._fit_config.get_name())
+                if self._floating_backgrounds:
+                    self._fit_results = FitResults(
+                        self._fit_config, 
+                        copy.copy(self._floating_backgrounds[0].get_config()),
+                        name=self._fit_config.get_name())
+                else:
+                    self._fit_results = FitResults(
+                        self._fit_config, copy.copy(self._data.get_config()),
+                        name=self._fit_config.get_name())
 
     def set_fixed_background(self, fixed_background, shrink=True):
         """ Sets the fixed background you want to fit.
@@ -767,12 +773,20 @@ class Fit(object):
                                minimiser.get_name())
         else:  # Use default GridSearch
             if self._per_bin:
-                self._minimiser = GridSearch(
-                    fit_config=self._fit_config,
-                    spectra_config=self._data.get_config(),
-                    name=self._fit_config.get_name(),
-                    # This assumes fitting over all dimensions
-                    per_bin=self._per_bin)
+                if self._floating_backgrounds:
+                    self._minimiser = GridSearch(
+                        fit_config=self._fit_config,
+                        spectra_config=self._floating_backgrounds[0].get_config(),
+                        name=self._fit_config.get_name(),
+                        # This assumes fitting over all dimensions
+                        per_bin=self._per_bin)
+                else:
+                    self._minimiser = GridSearch(
+                        fit_config=self._fit_config,
+                        spectra_config=self._data.get_config(),
+                        name=self._fit_config.get_name(),
+                        # This assumes fitting over all dimensions
+                        per_bin=self._per_bin)
             else:
                 self._minimiser = GridSearch(
                     fit_config=self._fit_config,

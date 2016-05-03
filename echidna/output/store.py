@@ -234,11 +234,11 @@ def dump_fit_results(file_path, fit_results, append=False,
         group = file_.create_group(group_name)
         group.attrs["name"] = fit_results._name
         group.attrs["spectra_config"] = json.dumps(
-            fit_results._spectra_config.dump())
+            fit_results._spectra_config.dump(), sort_keys=True)
         group.attrs["spectra_config_name"] = (
             fit_results._spectra_config.get_name())
         group.attrs["fit_config"] = json.dumps(
-            fit_results._fit_config.dump())
+            fit_results._fit_config.dump(), sort_keys=True)
         group.attrs["fit_config_name"] = fit_results._fit_config.get_name()
 
         group.create_dataset("penalty_terms", data=fit_results._penalty_terms,

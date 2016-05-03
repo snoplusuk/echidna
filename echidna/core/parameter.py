@@ -786,8 +786,13 @@ class ScaleParameter(FitParameter):
         if self._current_value is None:
             raise ValueError("Current value of scale parameter %s "
                              "has not been set" % self._name)
-        NotImplementedError("ShiftParameter.apply_to not yet implemented")
-        return spectrum
+        try:
+            scaler = scale.Scale()
+        except NameError:
+            import echidna.core.scale as scale
+            scaler = scale.Scale()
+        scaler.set_scale_factor(self._current_value)
+        return scaler.scale(spectrum, self._dimension)
 
 
 class ShiftParameter(FitParameter):
@@ -827,9 +832,13 @@ class ShiftParameter(FitParameter):
         if self._current_value is None:
             raise ValueError("Current value of shift parameter %s "
                              "has not been set" % self._name)
-        NotImplementedError("ShiftParameter.apply_to not yet implemented")
-        return spectrum
-
+        try:
+            shifter = shift.Shift()
+        except NameError:
+            import echidna.core.shift as shift
+            shifter = shift.Shift()
+        shifter.set_shift(self._current_value)
+        return shifter.shift(spectrum, self._dimension)
 
 class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
