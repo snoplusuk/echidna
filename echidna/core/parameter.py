@@ -840,6 +840,7 @@ class ShiftParameter(FitParameter):
         shifter.set_shift(self._current_value)
         return shifter.shift(spectrum, self._dimension)
 
+
 class SpectraParameter(Parameter):
     """Simple data container that holds information for a Spectra parameter
     (i.e. axis of the spectrum).

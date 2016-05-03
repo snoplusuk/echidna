@@ -708,7 +708,7 @@ class Fit(object):
             else:
                 if self._floating_backgrounds:
                     self._fit_results = FitResults(
-                        self._fit_config, 
+                        self._fit_config,
                         copy.copy(self._floating_backgrounds[0].get_config()),
                         name=self._fit_config.get_name())
                 else:
@@ -776,7 +776,8 @@ class Fit(object):
                 if self._floating_backgrounds:
                     self._minimiser = GridSearch(
                         fit_config=self._fit_config,
-                        spectra_config=self._floating_backgrounds[0].get_config(),
+                        spectra_config=self._floating_backgrounds[0].
+                        get_config(),
                         name=self._fit_config.get_name(),
                         # This assumes fitting over all dimensions
                         per_bin=self._per_bin)

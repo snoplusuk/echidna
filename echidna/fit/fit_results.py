@@ -333,7 +333,7 @@ class FitResults(object):
                                     self._spectra_config.get_pars())):
                 if parameter not in parameters:
                     projection = numpy.sum(projection, axis=(axis-counter))
-                    counter = counter + 1 # compensate for earlier sums
+                    counter = counter + 1  # compensate for earlier sums
         return projection
 
     def reset_grids(self):

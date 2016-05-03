@@ -71,7 +71,7 @@ class Scale(object):
             elif ratio < low + 0.5*step:
                 ratio = low + 0.5*step
             elif ratio > high - 0.5*step:
-                ratio = high - 0.5*step - 1e-6 #Floating point issue
+                ratio = high - 0.5*step - 1e-6  # Floating point issue
             y = interpolation(ratio)
             if y <= 0.:
                 continue
