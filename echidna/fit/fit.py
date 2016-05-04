@@ -526,17 +526,11 @@ class Fit(object):
                 spectrum = self.load_pre_made(spectrum, global_pars)
             else:
                 for parameter in global_pars:
-                    #####
-                    # THIS DOESN'T DO ANYTHING
                     spectrum = parameter.apply_to(spectrum)
-                    #####
 
             # Apply spectrum-specific parameters
             for parameter in spec_pars:
-                #####
-                # THIS DOESN'T DO ANYTHING
                 spectrum = parameter.apply_to(spectrum)
-                #####
 
             # Spectrum should now be fully convolved/scaled
             # Shrink to roi
@@ -710,11 +704,13 @@ class Fit(object):
                     self._fit_results = FitResults(
                         self._fit_config,
                         copy.copy(self._floating_backgrounds[0].get_config()),
-                        name=self._fit_config.get_name())
+                        name=self._fit_config.get_name(),
+                        per_bin=self._per_bin)
                 else:
                     self._fit_results = FitResults(
                         self._fit_config, copy.copy(self._data.get_config()),
-                        name=self._fit_config.get_name())
+                        name=self._fit_config.get_name(),
+                        per_bin=self._per_bin)
 
     def set_fixed_background(self, fixed_background, shrink=True):
         """ Sets the fixed background you want to fit.

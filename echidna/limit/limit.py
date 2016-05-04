@@ -61,7 +61,8 @@ class Limit(object):
         fit_config.add_config(fitter.get_fit_config())
         spectra_config = signal.get_config()
         name = signal.get_name() + "_limit_fit_results"
-        self._fit_results = FitResults(fit_config, spectra_config, name)
+        self._fit_results = FitResults(fit_config, spectra_config, name,
+                                       per_bin=self._per_bin)
         self._logger.info("Setting limit with the following parameters:")
         logging.getLogger("extra").info(
             yaml.dump(fit_config.dump(basic=True)))

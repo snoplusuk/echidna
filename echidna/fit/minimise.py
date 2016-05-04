@@ -152,6 +152,8 @@ class GridSearch(FitResults, Minimiser):
                             "Expecting result to be numpy array with shape "
                             "%s (not %s), for per_bin enabled" %
                             (str(expected_shape), str(result.shape)))
+            else:
+                result = numpy.array(result)
             self.set_stat(result, tuple(indices))
             self.set_penalty_term(penalty, tuple(indices))
 

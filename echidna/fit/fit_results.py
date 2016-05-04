@@ -46,13 +46,17 @@ class FitResults(object):
 
         >>> fit_results = FitResults(fitter.get_config(), data.get_config())
     """
-    def __init__(self, fit_config, spectra_config, name=None):
+    def __init__(self, fit_config, spectra_config, name=None, per_bin=False):
         self._fit_config = fit_config
         self._spectra_config = spectra_config
         if name is None:
             name = fit_config.get_name() + "_results"
         self._name = name
-        stats_shape = fit_config.get_shape() + spectra_config.get_shape()
+        if per_bin:
+            stats_shape = fit_config.get_shape() + spectra_config.get_shape()
+        else:
+            stats_shape = fit_config.get_shape()
+        self._per_bin = per_bin
         self._stats = numpy.zeros(stats_shape)
         self._penalty_terms = numpy.zeros(fit_config.get_shape())
         self._minimum_value = None
@@ -201,9 +205,10 @@ class FitResults(object):
                 (str(indices), str(self._fit_config.get_shape())))
         combined = copy.copy(self._stats[indices])
 
-        # Collapse by summing over spectral dimensions
-        for dim_size in self._spectra_config.get_shape():
-            combined = numpy.sum(combined, axis=-1)  # always last axis
+        if self._per_bin:
+            # Collapse by summing over spectral dimensions
+            for dim_size in self._spectra_config.get_shape():
+                combined = numpy.sum(combined, axis=-1)  # always last axis
 
         # Add penalties
         combined = combined + self._penalty_terms[indices]
@@ -224,8 +229,9 @@ class FitResults(object):
         combined = copy.copy(self._stats)
 
         # Collapse by summing over spectral dimensions
-        for dim_size in self._spectra_config.get_shape():
-            combined = numpy.sum(combined, axis=-1)  # always last axis
+        if self._per_bin:
+            for dim_size in self._spectra_config.get_shape():
+                combined = numpy.sum(combined, axis=-1)  # always last axis
 
         # Add penalties
         combined = combined + self._penalty_terms
