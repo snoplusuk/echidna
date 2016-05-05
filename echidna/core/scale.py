@@ -1,6 +1,5 @@
 import numpy
-
-import echidna.core.spectra as spectra
+import copy
 
 
 class Scale(object):
@@ -52,10 +51,9 @@ class Scale(object):
         prescale_sum = spectrum.sum()
         interpolation = spectrum.interpolate1d(dimension, **kwargs)
         sf = self.get_scale_factor()
-        scaled_spec = spectra.Spectra(spectrum._name+"_sf" +
-                                      str(sf),
-                                      spectrum._num_decays,
-                                      spectrum.get_config())
+        scaled_spec = copy.deep_copy(spectrum)
+        scaled_spec._name = spectrum._name + "_sf" + str(sf)
+        scaled_spec._data = numpy.zeros(spectrum._data.shape)
         n_dim = len(spectrum._data.shape)
         axis = spectrum.get_config().get_index(dimension)
         par = spectrum.get_config().get_par(dimension)

@@ -1,6 +1,5 @@
 import numpy
-
-import echidna.core.spectra as spectra
+import copy
 
 
 class Shift(object):
@@ -50,10 +49,9 @@ class Shift(object):
             return self.shift_by_bin(spectrum, dimension)
         preshift_sum = spectrum.sum()
         interpolation = spectrum.interpolate1d(dimension, **kwargs)
-        shifted_spec = spectra.Spectra(spectrum._name+"_shift" +
-                                       str(shift),
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        shifted_spec = copy.deepcopy(spectrum)
+        shifted_spec._name = spectrum._name + "_shift" + str(shift)
+        shifted_spec._data = numpy.zeros(spectrum._data.shape)
         n_dim = len(spectrum._data.shape)
         axis = spectrum.get_config().get_index(dimension)
         par = spectrum.get_config().get_par(dimension)
@@ -67,8 +65,8 @@ class Shift(object):
                 continue  # Trying to shift values outside range (Unknown)
             elif current < low + 0.5*step:
                 current = low + 0.5*step
-            elif current > high - 0.5*step: 
-                current = high - 0.5*step - 1e-6 # floating point issue
+            elif current > high - 0.5*step:
+                current = high - 0.5*step - 1e-6  # floating point issue
             y = interpolation(current)
             if y <= 0.:  # Cant have negative num_events
                 continue
@@ -78,7 +76,7 @@ class Shift(object):
                 old_bin2 = old_bin1 - 1
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
-                    x_high1 =  current + 0.5*step
+                    x_high1 = current + 0.5*step
                     if x_high1 > high - 0.5*step:
                         x_high1 = high - 0.5*step - 1e-6
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
