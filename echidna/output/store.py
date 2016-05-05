@@ -234,11 +234,11 @@ def dump_fit_results(file_path, fit_results, append=False,
         group = file_.create_group(group_name)
         group.attrs["name"] = fit_results._name
         group.attrs["spectra_config"] = json.dumps(
-            fit_results._spectra_config.dump(), sort_keys=True)
+            fit_results._spectra_config.dump())
         group.attrs["spectra_config_name"] = (
             fit_results._spectra_config.get_name())
         group.attrs["fit_config"] = json.dumps(
-            fit_results._fit_config.dump(), sort_keys=True)
+            fit_results._fit_config.dump())
         group.attrs["fit_config_name"] = fit_results._fit_config.get_name()
 
         group.create_dataset("penalty_terms", data=fit_results._penalty_terms,
@@ -468,8 +468,14 @@ def load_fit_results(file_path, group_name="fit_results"):
         fit_results.set_penalty_terms(group["penalty_terms"].value)
         fit_results.set_stats(group["stats"].value)
 
-        fit_results.set_minimum_position(group.attrs["minimum_position"])
-        fit_results.set_minimum_value(group.attrs["minimum_value"])
+        try:
+            fit_results.set_minimum_position(group.attrs["minimum_position"])
+        except:
+            fit_results.set_minimum_position(None)
+        try:
+            fit_results.set_minimum_value(group.attrs["minimum_value"])
+        except:
+            fit_results.set_minimum_value(None)
         fit_results._resets = group.attrs["resets"]
 
     _logger.info("Loaded FitResults %s" % fit_results.get_name())

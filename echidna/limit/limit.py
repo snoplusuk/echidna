@@ -195,6 +195,7 @@ class Limit(object):
         logging.getLogger("extra").debug(str(par.get_values()))
         for i, scale in enumerate(par.get_values()):
             self._logger.debug("signal scale: %.4g" % scale)
+            print "scale", scale
             if not numpy.isclose(scale, 0.):
                 if self._fitter.get_signal() is None:
                     self._fitter.set_signal(self._signal, shrink=False)
