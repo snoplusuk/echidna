@@ -100,7 +100,7 @@ class Limit(object):
                          % (array[-1], limit))
 
     def get_limit(self, limit=2.71, stat_zero=None, store_limit=True,
-                  store_fits=False, store_spectra=False):
+                  store_fits=False, store_spectra=False, limit_fname=None):
         """ Get the limit using the signal spectrum.
 
         Args:
@@ -122,6 +122,8 @@ class Limit(object):
             Default is False.
           store_spectra (bool, optional): If True then the spectra used for
             fitting are saved to hdf5. Default is False.
+          limit_fname (string): Filename to save the
+            `:class:`echidna.fit.fit_results.LimitResults` to.
 
         Raises:
           TypeError: If stat_zero is not a numpy array, when per_bin is
@@ -246,26 +248,37 @@ class Limit(object):
             logging.getLogger("extra").info("\n%s\n" % log_text)
 
             if store_limit:
-                timestamp = datetime.datetime.now().strftime(
-                    "%Y-%m-%d_%H-%M-%S")
-                path = output.__default_save_path__ + "/"
-                fname = (self._limit_results.get_name() + "_" + timestamp +
-                         ".hdf5")
-                store.dump_limit_results(path + fname, self._limit_results)
+                if limit_fname:
+                    if limit_fname[-5:] != '.hdf5':
+                        limit_fname += '.hdf5'
+                else:
+                    timestamp = datetime.datetime.now().strftime(
+                        "%Y-%m-%d_%H-%M-%S")
+                    path = output.__default_save_path__ + "/"
+                    fname = (self._limit_results.get_name() + "_" + timestamp +
+                             ".hdf5")
+                    limit_fname = path + fname
+                store.dump_limit_results(limit_fname, self._limit_results)
                 self._logger.info("Saved summary of %s to file %s" %
                                   (self._limit_results.get_name(),
-                                   path + fname))
+                                   limit_fname))
             if store_spectra:
+                path = output.__default_save_path__ + "/"
+                fname = self._fitter.get_data()._name + "_data.hdf5"
                 store.dump(path + fname, self._fitter.get_data(),
                            append=True, group_name="data")
                 if self._fitter.get_fixed_background():
+                    fname = (self._fitter.get_fixed_background()._name +
+                             "_fixed.hdf5")
                     store.dump(path + fname,
                                self._fitter.get_fixed_background(),
                                append=True, group_name="fixed")
                 if self._fitter.get_floating_backgrounds():
                     for background in self._fitter.get_floating_backgrounds():
+                        fname = background._name + "_float.hdf5"
                         store.dump(path + fname, background, append=True,
                                    group_name=background.get_name())
+                fname = self._signal._name + "_signal.hdf5"
                 store.dump(path + fname, self._signal, append=True,
                            group_name="signal")
 
