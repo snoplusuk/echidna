@@ -262,11 +262,6 @@ class GridSearch(FitResults, Minimiser):
 
         # Return minimum to fitting
         return self.get_raw_stat(position), self.get_penalty_term(position)
-        #if self._per_bin:
-        #    return (self.get_raw_stat(position) +
-        #            self.get_penalty_term(position))
-        #else:
-        #    return minimum
 
     def nd_project_stat(self, indices, *parameters):
         """ Projects the test statistic values, at given the given

@@ -517,6 +517,14 @@ class Fit(object):
 
         # Add signal, if required
         if self._signal:
+            if global_pars:
+                if self._use_pre_made:  # Load pre-made spectrum from file
+                    self._signal = self.load_pre_made(self._signal,
+                                                      global_pars)
+                else:
+                    for parameter in global_pars:
+                        self._signal = parameter.apply_to(self._signal)
+                self.shrink_spectra(self._signal)
             expected += self._signal.nd_project(self._signal_pars)
 
         # If single bin - sum over expected and observed
