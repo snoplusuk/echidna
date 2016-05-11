@@ -501,6 +501,8 @@ class Fit(object):
             # Spectrum should now be fully convolved/scaled
             # Shrink to roi
             self.shrink_spectra(spectrum)
+            # rebin
+            spectrum.rebin(self._data._data.shape)
             # and then add projection to expected spectrum
             if expected is not None:
                 expected += spectrum.nd_project(floating_pars)
@@ -517,6 +519,7 @@ class Fit(object):
                     for parameter in global_pars:
                         self._signal = parameter.apply_to(self._signal)
                 self.shrink_spectra(self._signal)
+                self._signal.rebin(self._data._data.shape)
             expected += self._signal.nd_project(self._signal_pars)
 
         # If single bin - sum over expected and observed
@@ -565,20 +568,25 @@ class Fit(object):
             ready for applying further systematics or fitting.
         """
         # Locate spectrum to load from HDF5
-        # Base directory should be set beforehand
-        if self._pre_made_base_dir is None:
-            raise AttributeError("Pre-made directory is not set.")
-
         # Start with base spectrum name
-        filename = spectrum.get_name()
-        directory = self._pre_made_base_dir
+        filename = os.path.basename(spectrum._location)
+        if self._pre_made_base_dir:
+            directory = pre_made_base_dir
+        else:
+            directory = os.path.dirname(spectrum._location) + '/'
 
         # Add current value of each global parameter
-        for parameter in global_pars:
-            par = self._fit_config.get_par(parameter)
-            directory, filename = par.get_pre_convolved(directory, filename)
+        for par in global_pars:
+            dim = par._dimension
+            added_dim = False
+            if dim not in directory:
+                added_dim = True
+                directory += dim + '/'
+            directory, filename = par.get_pre_convolved(directory, filename,
+                                                        added_dim)
         # Load spectrum from hdf5
-        spectrum = store.load(directory + filename + ".hdf5")
+        print "loading", directory+filename
+        spectrum = store.load(directory + filename)
 
         return spectrum
 

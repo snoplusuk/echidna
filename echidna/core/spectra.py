@@ -54,6 +54,7 @@ class Spectra(object):
         self._rois = {}
         self._name = name
         self._num_decays = float(num_decays)
+        self._location = None
 
     def add(self, spectrum):
         """ Adds a spectrum to current spectra object.

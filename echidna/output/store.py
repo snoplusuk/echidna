@@ -369,6 +369,7 @@ def load(file_path):
             # else the default values of Spectra __init__ are kept
 
             spec._data = group["data"].value
+            spec._location = file_path
         _logger.info("Loaded spectrum %s" % spec.get_name())
         return spec
     except KeyError as detail:

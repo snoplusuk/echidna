@@ -10,6 +10,7 @@ import warnings
 
 from echidna.core import scale, shift
 
+
 class Parameter(object):
     """ The base class for creating parameter classes.
 
@@ -374,58 +375,6 @@ class FitParameter(Parameter):
                              self._name + " has not been set")
         return self._penalty_term
 
-    def get_pre_convolved(self, directory, filename):
-        """ Appends the name and current value of a the :class:`FitParameter`
-
-        .. note:: Before any calls to this function, the base directory
-          should be of the form::
-
-              ../hyphen-separated-dimensions/spectrum_name/
-
-          and a base filename of the form ``spectrum_name``.
-
-        .. note:: Each call to this method, then appends the name of
-          the :class:`FitParamter` to the ``directory`` and its current
-          value to the ``filename``. So for three :class:`FitParameters``,
-          after three calls to this method, the directory should be e.g.::
-
-              ../energy_mc-radial3_mc/Te130_0n2b/syst1/syst2/syst3/
-
-          and the filename might be::
-
-              Te130_0n2b_250.0_0.012_1.07
-
-        .. note:: To construct the full path to pass to
-          :func:`echidna.output.store.load`, the ``directory`` and
-          ``filename`` returned by the last call to this method,
-          should be added together, and appended with ``".hdf5"``.
-
-              path = director + filename + ".hdf5"
-
-        Args:
-          directory (string): Current or base directory containing
-            pre-convolved :class:`Spectra` object
-          name (string): Current or base name of :class:`Spectra`
-            object
-
-        Returns:
-          string: Directory containing pre-convolved :class:`Spectra`,
-            appended with name of this :class:`FitParameter`
-          string: Name of pre-convolved :class:`Spectra`, appended with
-            current value of this :class:`FitParameter`
-
-        Raises:
-          ValueError: If :attr:`_current_value` is not set.
-        """
-        if self._current_value is None:
-            raise ValueError("Current value of fit parameter %s "
-                             "has not been set" % self._name)
-        directory += "_%s/" % self._name
-        value_string = "%f" % self._current_value
-        # Strip leading/trailling zeros in filename
-        filename += ("_%s" % value_string.strip("0"))
-        return directory, filename
-
     def get_prior(self):
         """
         Returns:
@@ -749,6 +698,82 @@ class ResolutionParameter(FitParameter):
         NotImplementedError("ResolutionParameter.apply_to not yet implemented")
         return spectrum
 
+    def get_pre_convolved(self, directory, filename, added_dim=False):
+        """ Constructs the filename and directory from which a pre_convolved
+          spectrum can be loaded from.
+
+        .. note:: Before any calls to this function, the directory
+          and filename is should be of the form::
+
+              ../dimension/syst/file_XXyy.hdf5
+
+          where dimension is the dimension you are applying systematics to e.g.
+          `energy_mc` and syst is the type of systematic e.g. `smear`.
+          XX and yy represent the syst value e.g. 200 and syst denoted type
+          e.g. ly for 200 NHits/MeV light yield.
+          For multiple dimensions and systematics then it is of the form::
+
+              ../dimension/syst1/syst2/dimension/syst3/file_AAbb_CCdd_EEff.hdf5
+
+          where the order of directories and filename is the order in which
+          the systematics have been applied.
+
+        Args:
+          directory (string): Current or base directory containing
+            pre-convolved :class:`Spectra` object
+          filename (string): Current or base name of :class:`Spectra`
+            object
+          added_dim (bool, optional): If a dimension has just been added to the
+            directory then this flag is True.
+
+        Returns:
+          string: Directory containing pre-convolved :class:`Spectra`,
+            appended with name of this :class:`FitParameter`
+          string: Name of pre-convolved :class:`Spectra`, appended with
+            current value of this :class:`FitParameter`
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of fit parameter %s "
+                             "has not been set" % self._name)
+
+        if directory[-1] != '/':
+            directory += '/'
+        if not added_dim:
+            dir_list = directory.split('/')
+            # Find last occurance of dimension and search from here
+            idx = dir_list[::-1].index(self._dimension)
+            if 'smear' not in dir_list[-idx:]:
+                directory += 'smear/'
+        else:
+            directory += 'smear/'
+        if self._current_value > 10.:
+            ext = 'ly'
+        else:
+            ext = 'rs'
+        value_string = str(self._current_value)
+        # Strip trailling zero in filename
+        value_string = value_string.rstrip('0').rstrip('.')
+        filename_list = filename.split('_')
+        temp_fname = ''
+        subbed = False
+        for x in filename_list:
+            if x[-2:] == ext:
+                x = value_string + ext
+                subbed = True
+            elif x[-7:] == ext + ".hdf5":
+                x = value_string + ext + ".hdf5"
+                subbed = True
+            if x[-5:] == ".hdf5":
+                temp_fname += x
+            else:
+                temp_fname += x + "_"
+        if not subbed:
+            temp_fname = temp_fname[:-5] + "_" + value_string + ext + ".hdf5"
+        return directory, temp_fname
+
 
 class ScaleParameter(FitParameter):
     """ Data container that holds information for a scale parameter
@@ -791,6 +816,78 @@ class ScaleParameter(FitParameter):
         scaler.set_scale_factor(self._current_value)
         return scaler.scale(spectrum, self._dimension)
 
+    def get_pre_convolved(self, directory, filename, added_dim=False):
+        """ Constructs the filename and directory from which a pre_convolved
+          spectrum can be loaded from.
+
+        .. note:: Before any calls to this function, the directory
+          and filename is should be of the form::
+
+              ../dimension/syst/file_XXyy.hdf5
+
+          where dimension is the dimension you are applying systematics to e.g.
+          `energy_mc` and syst is the type of systematic e.g. `smear`.
+          XX and yy represent the syst value e.g. 200 and syst denoted type
+          e.g. ly for 200 NHits/MeV light yield.
+          For multiple dimensions and systematics then it is of the form::
+
+              ../dimension/syst1/syst2/dimension/syst3/file_AAbb_CCdd_EEff.hdf5
+
+          where the order of directories and filename is the order in which
+          the systematics have been applied.
+
+        Args:
+          directory (string): Current or base directory containing
+            pre-convolved :class:`Spectra` object
+          filename (string): Current or base name of :class:`Spectra`
+            object
+          added_dim (bool, optional): If a dimension has just been added to the
+            directory then this flag is True.
+
+        Returns:
+          string: Directory containing pre-convolved :class:`Spectra`,
+            appended with name of this :class:`FitParameter`
+          string: Name of pre-convolved :class:`Spectra`, appended with
+            current value of this :class:`FitParameter`
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of fit parameter %s "
+                             "has not been set" % self._name)
+
+        if directory[-1] != '/':
+            directory += '/'
+        if not added_dim:
+            dir_list = directory.split('/')
+            # Find last occurance of dimension and search from here
+            idx = dir_list[::-1].index(self._dimension)
+            if 'scale' not in dir_list[-idx:]:
+                directory += 'scale/'
+        else:
+            directory += 'scale/'
+        value_string = str(self._current_value)
+        # Strip trailling zero in filename
+        value_string = value_string.rstrip('0').rstrip('.')
+        filename_list = filename.split('_')
+        temp_fname = ''
+        subbed = False
+        for x in filename_list:
+            if x[-2:] == "sc":
+                x = value_string + "sc"
+                subbed = True
+            elif x[-7:] == "sc.hdf5":
+                x = value_string + "sc.hdf5"
+                subbed = True
+            if x[-5:] == ".hdf5":
+                temp_fname += x
+            else:
+                temp_fname += x + "_"
+        if not subbed:
+            temp_fname = temp_fname[:-5] + "_" + value_string + "sc.hdf5"
+        return directory, temp_fname
+
 
 class ShiftParameter(FitParameter):
     """ Data container that holds information for a shift parameter
@@ -832,6 +929,78 @@ class ShiftParameter(FitParameter):
         shifter = shift.Shift()
         shifter.set_shift(self._current_value)
         return shifter.shift(spectrum, self._dimension)
+
+    def get_pre_convolved(self, directory, filename, added_dim=False):
+        """ Constructs the filename and directory from which a pre_convolved
+          spectrum can be loaded from.
+
+        .. note:: Before any calls to this function, the directory
+          and filename is should be of the form::
+
+              ../dimension/syst/file_XXyy.hdf5
+
+          where dimension is the dimension you are applying systematics to e.g.
+          `energy_mc` and syst is the type of systematic e.g. `smear`.
+          XX and yy represent the syst value e.g. 200 and syst denoted type
+          e.g. ly for 200 NHits/MeV light yield.
+          For multiple dimensions and systematics then it is of the form::
+
+              ../dimension/syst1/syst2/dimension/syst3/file_AAbb_CCdd_EEff.hdf5
+
+          where the order of directories and filename is the order in which
+          the systematics have been applied.
+
+        Args:
+          directory (string): Current or base directory containing
+            pre-convolved :class:`Spectra` object
+          filename (string): Current or base name of :class:`Spectra`
+            object
+          added_dim (bool, optional): If a dimension has just been added to the
+            directory then this flag is True.
+
+        Returns:
+          string: Directory containing pre-convolved :class:`Spectra`,
+            appended with name of this :class:`FitParameter`
+          string: Name of pre-convolved :class:`Spectra`, appended with
+            current value of this :class:`FitParameter`
+
+        Raises:
+          ValueError: If :attr:`_current_value` is not set.
+        """
+        if self._current_value is None:
+            raise ValueError("Current value of fit parameter %s "
+                             "has not been set" % self._name)
+
+        if directory[-1] != '/':
+            directory += '/'
+        if not added_dim:
+            dir_list = directory.split('/')
+            # Find last occurance of dimension and search from here
+            idx = dir_list[::-1].index(self._dimension)
+            if 'shift' not in dir_list[-idx:]:
+                directory += 'shift/'
+        else:
+            directory += 'shift/'
+        value_string = str(self._current_value)
+        # Strip trailling zero in filename
+        value_string = value_string.rstrip('0').rstrip('.')
+        filename_list = filename.split('_')
+        temp_fname = ''
+        subbed = False
+        for x in filename_list:
+            if x[-2:] == "sh":
+                x = value_string + "sh"
+                subbed = True
+            elif x[-7:] == "sh.hdf5":
+                x = value_string + "sh.hdf5"
+                subbed = True
+            if x[-5:] == ".hdf5":
+                temp_fname += x
+            else:
+                temp_fname += x + "_"
+        if not subbed:
+            temp_fname = temp_fname[:-5] + "_" + value_string + "sh.hdf5"
+        return directory, temp_fname
 
 
 class SpectraParameter(Parameter):
