@@ -5,6 +5,7 @@ from echidna.core.config import (SpectraConfig, SpectraParameter,
                                  SpectraFitConfig, GlobalFitConfig)
 from echidna.limit.summary import Summary, ReducedSummary
 from echidna.fit.fit_results import FitResults, LimitResults
+from echidna.fit.minimise import GridSearch
 
 from collections import OrderedDict
 import logging
@@ -298,15 +299,15 @@ def dump_limit_results(file_path, limit_results, append=False):
         if limit_results._fit_results.any():
             group.attrs["fits_exist"] = 1.
             for i, fit_result in enumerate(limit_results._fit_results):
-                sub_group = group.create_group(i)
-                if type(fit_result) is FitResults:
+                sub_group = group.create_group(str(i))
+                if type(fit_result) is GridSearch:
                     sub_group.attrs["exists"] = 1.
                     sub_group.create_dataset("penalty_terms",
                                              data=fit_result._penalty_terms,
                                              compression="gzip")
                     sub_group.create_dataset("stats", data=fit_result._stats,
                                              compression="gzip")
-                    sub_group.attrs["resets"] = fit_results._resets
+                    sub_group.attrs["resets"] = fit_result._resets
                 else:
                     sub_group.attrs["exists"] = 0.
         else:
@@ -561,12 +562,17 @@ def load_limit_results(file_path):
                        object_pairs_hook=OrderedDict),
             name=spectra_config_name)
         fit_config_name = group.attrs["fit_config_name"]
-        fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"],
-                       object_pairs_hook=OrderedDict)[0],
-            spectral_config=json.loads(group.attrs["fit_config"],
-                                       object_pairs_hook=OrderedDict)[1],
-            name=fit_config_name)
+        global_config = json.loads(group.attrs["fit_config"],
+                                   object_pairs_hook=OrderedDict)[0]
+        spectral_config = json.loads(group.attrs["fit_config"],
+                                     object_pairs_hook=OrderedDict)[1]
+        if spectral_config["spectral_fit_parameters"]:
+            fit_config = GlobalFitConfig.load(global_config,
+                                              spectral_config=spectral_config,
+                                              name=fit_config_name)
+        else:
+            fit_config = GlobalFitConfig.load(global_config,
+                                              name=fit_config_name)
         limit_config = json.loads(group.attrs["limit_config"],
                                   object_pairs_hook=OrderedDict)
         limit_config_name = group.attrs["limit_config_name"]
@@ -589,14 +595,14 @@ def load_limit_results(file_path):
             for i in range(len(limit_results._stats)):
                 sub_group_name = group_name+"/"+str(i)
                 sub_group = file_[sub_group_name]
-                if sub_group["exists"] == 1.:
+                if sub_group.attrs["exists"] == 1.:
                     fit_results = GridSearch(fit_config=fit_config,
                                              spectra_config=spectra_config,
                                              name=fit_config_name)
                     fit_results._stats = sub_group["stats"].value
-                    fit_results._resets = sub_group.attrs["resets"].value
-                    fit_results._penalty_terms = sub_group.attrs[
-                        "penalty_terms"]
+                    fit_results._resets = sub_group.attrs["resets"]
+                    fit_results._penalty_terms = sub_group[
+                        "penalty_terms"].value
                     limit_results._fit_results[i] = fit_results
 
     _logger.info("Loaded LimitResults %s" % limit_results.get_name())

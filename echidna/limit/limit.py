@@ -12,6 +12,7 @@ import collections
 import yaml
 import datetime
 import json
+import copy
 
 
 class Limit(object):
@@ -195,14 +196,14 @@ class Limit(object):
                 fit_stats = fit_stats[0]
             stats[i] = numpy.sum(fit_stats)
 
-            fit_results = self._fitter.get_minimiser()  # get results
+            fit_results = copy.deepcopy(self._fitter.get_minimiser())
             if fit_results:
                 results_summary = fit_results.get_summary()
                 for par_name, value in results_summary.iteritems():
-                    self._limit_results.set_best_fit(value.get("best_fit"),
-                                                     i, par_name)
+                    self._limit_results.set_best_fit(i, value.get("best_fit"),
+                                                     par_name)
                     self._limit_results.set_penalty_term(
-                        value.get("penalty_term"), i, par_name)
+                        i, value.get("penalty_term"), par_name)
                 if store_fits:
                     self._limit_results.set_fit_result(i, fit_results)
 
@@ -215,11 +216,8 @@ class Limit(object):
         if self._per_bin:
             stats = stats.sum(-1)
 
-        print "stats1", stats
         self._limit_results._stats = stats
         stats = self._limit_results.get_full_stats()
-        print "stats2", stats
-        print stats[-1]
 
         try:
             # Slice from min_bin upwards
@@ -244,7 +242,6 @@ class Limit(object):
             log_text += "----------------------------\n"
             log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
-            print log_text
             logging.getLogger("extra").info("\n%s\n" % log_text)
 
             if store_limit:

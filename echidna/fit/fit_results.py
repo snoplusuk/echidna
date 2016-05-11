@@ -112,18 +112,27 @@ class FitResults(object):
                 (str(indices), str(self._fit_config.get_shape())))
         return self._penalty_terms[indices]
 
-    def get_penalty_terms(self):
+    def get_penalty_terms(self, par):
         """ Gets the array of penalty terms.
-
-        .. note:: Unlike the :class:`echidna.fit.summary.Summary` class
-          individual penalty contributions from each fit parameter are
-          not stored here, only the total penalty term value.
 
         Returns:
           (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.
             Values of the penalty term calculated during the fit.
         """
-        return self._penalty_terms
+        if len(self._fit_config.get_pars()) == 1.:
+            return self._penalty_terms
+        par_idx = self._fit_config.get_index(par)
+        return self._penalty_terms[par_idx]
+
+    def get_scales(self, par):
+        """Gets the parameter scales used in the fit
+
+        par (string): Name of parameter
+
+        Returns:
+          numpy.ndarray: Parameter scales.
+        """
+        return self._fit_config.get_par(par).get_values()
 
     def get_spectra_config(self):
         """
@@ -381,7 +390,7 @@ class LimitResults(FitResults):
         """
         return self._limit_config.get_par("rate").get_values()
 
-    def set_best_fit(self, best_fit, scale_idx, par):
+    def set_best_fit(self, scale_idx, best_fit, par):
         """ Sets the best fit for parameter with index par_idx and scale
         with index scale_idx.
 
@@ -393,7 +402,7 @@ class LimitResults(FitResults):
         par_idx = self._fit_config.get_index(par)
         self._best_fits[scale_idx][par_idx] = best_fit
 
-    def set_penalty_term(self, penalty_term, scale_idx, par):
+    def set_penalty_term(self, scale_idx, penalty_term, par):
         """ Sets the penalty term for parameter with index par_idx and scale
         with index scale_idx.
 
@@ -405,14 +414,14 @@ class LimitResults(FitResults):
         par_idx = self._fit_config.get_index(par)
         self._penalty_terms[scale_idx][par_idx] = penalty_term
 
-    def set_limit_stat(self, stat, scale_idx):
+    def set_limit_stat(self, scale_idx, stat):
         """ Set the test statistic at scale with index scale_idx
 
         Args:
           stat (float): Test statitstic.
           scale_idx (int): Scale index.
        """
-        self._stats[i] = stat
+        self._stats[scale_idx] = stat
 
     def set_fit_result(self, scale_idx, fit_result):
         """ Sets the fit results object for a given signal scaling.
@@ -422,4 +431,4 @@ class LimitResults(FitResults):
           fit_result (:class:`echidna.fit.fit_results.FitResults`): Results
             from fitting a given signal scale.
         """
-        self._fit_results[i] = fit_result
+        self._fit_results[scale_idx] = fit_result

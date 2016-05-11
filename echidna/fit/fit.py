@@ -219,8 +219,9 @@ class Fit(object):
                                          "pars as the number of floating "
                                          "backgrounds.")
             for background in self._floating_backgrounds:
-                self.check_fit_config(background)
                 self.check_spectra(background)
+                if background.get_fit_config():
+                    self.check_fit_config(background)
 
     def check_fit_config(self, spectra):
         """ Checks that a spectra has a fit config.
@@ -243,8 +244,6 @@ class Fit(object):
 
         Raises:
           IndexError: If fit config contains no parameters
-          ValueError: If number of floating backgrounds and number of
-            spectral fit parameters do not match.
           AttributeError: If :attr:`_minimiser` has not been set.
           ValueError: If (un)expected per_bin flag in minimiser.
           ValueError: If (un)expected integer value for num_bins, in
@@ -257,13 +256,6 @@ class Fit(object):
         if self._floating_backgrounds:
             if len(self.get_fit_config().get_pars()) == 0:
                 raise IndexError("No parameters found in fit config.")
-            if (len(self.get_fit_config().get_spectra_pars()) !=
-                    len(self._floating_backgrounds)):
-                self._logger.error(
-                    "Spectral fit parameters: %s" %
-                    str(self.get_fit_config().get_spectra_pars()))
-                raise ValueError("Number of spectral fit pars and "
-                                 "number of floating backgrounds do not match")
         else:
             if len(self.get_fit_config().get_spectra_pars()) != 0:
                 self._logger.error(
@@ -690,9 +682,10 @@ class Fit(object):
         for background in floating_backgrounds:
             self._logger.debug("Adding Spectra with name %s to"
                                "_floating_backgrounds" % background.get_name())
-            self.check_fit_config(background)
-            # Spectrum has a valid fit config, add to GlobalFit Config
-            self._fit_config.add_config(background.get_fit_config())
+            if background.get_fit_config():
+                self.check_fit_config(background)
+                # Spectrum has a valid fit config, add to GlobalFit Config
+                self._fit_config.add_config(background.get_fit_config())
             if shrink:
                 self.shrink_spectra(background)
             else:

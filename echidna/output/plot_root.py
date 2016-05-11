@@ -244,6 +244,56 @@ def plot_stats_vs_scale(limit_results, graphical=True):
     return g
 
 
+def plot_raw_stats_vs_par_scale(fit_results, par, graphical=True):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object. The penalty term has not been added to the test_statistic.
+
+    Args:
+      limit_results (:class:`echidna.fit.fit_results.LimitResults`): The
+        limit_results object which contains the data.
+      par (string): The name of the parameter you want to plot.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    scales = fit_results.get_scales(par)
+    g = ROOT.TGraph(len(scales), scales, fit_results.get_raw_stats())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle(par)
+    g.GetYaxis().SetTitle("Test Statistic")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_stats_vs_par_scale(fit_results, par, graphical=True):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object.
+
+    Args:
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
+      par (string): The name of the parameter you want to plot.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    scales = fit_results.get_scales(par)
+    g = ROOT.TGraph(len(scales), scales, fit_results.get_stats())
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle(par)
+    g.GetYaxis().SetTitle("Test Statistic")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
 def plot_best_fit_vs_scale(limit_results, par, graphical=True):
     """ Plots the best fit of the parameter vs signal scales as a
       :class:`ROOT.TGraph` object.
@@ -294,6 +344,31 @@ def plot_sigma_best_fit_vs_scale(limit_results, par, graphical=True):
     g.SetMarkerStyle(3)
     g.GetXaxis().SetTitle("Number of Signal Decays")
     g.GetYaxis().SetTitle(par+" Best fit (Num. #sigma)")
+    if graphical:
+        g.Draw("AP")
+        raw_input("RET to quit")
+    return g
+
+
+def plot_penalty_term_vs_par_scale(fit_results, par, graphical=True):
+    """ Plots the contribution of the penalty term to the test statistic for
+      the parameter vs signal scales as a :class:`ROOT.TGraph` object.
+
+    Args:
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
+      par (string): Paramter name you want to plot.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    scales = fit_results.get_scales(par)
+    g = ROOT.TGraph(len(scales), scales, fit_results.get_penalty_terms(par))
+    g.SetMarkerStyle(3)
+    g.GetXaxis().SetTitle(par)
+    g.GetYaxis().SetTitle("Test Statistic Penalty")
     if graphical:
         g.Draw("AP")
         raw_input("RET to quit")

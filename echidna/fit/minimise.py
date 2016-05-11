@@ -122,7 +122,7 @@ class GridSearch(FitResults, Minimiser):
         .. warning:: This has no penalty term contributions added.
 
         Returns:
-        :class:`numpy.array`: The raw test statistics values at each 
+        :class:`numpy.array`: The raw test statistics values at each
           combination of fit parameter values.
         """
         return self._stats
@@ -150,7 +150,7 @@ class GridSearch(FitResults, Minimiser):
         Returns:
           (float): Combination of the value of the test statistic
             calculated during the fit and the penalty term value.
-                                                                               
+
         Raises:
           IndexError: If the indices supplied are out of bounds for
             the fit dimensions
@@ -399,7 +399,8 @@ class GridSearch(FitResults, Minimiser):
         """ Sets the total test statistics array.
 
         Args:
-          stats (:class:`numpy.ndarray`): The total test statistics array.                                                                                
+          stats (:class:`numpy.ndarray`): The total test statistics array.
+
         Raises:
           TypeError: If stats is not a :class:`numpy.ndarray`.
           ValueError: If the stats array has incorrect shape.
