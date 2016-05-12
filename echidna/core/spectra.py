@@ -18,10 +18,14 @@ class Spectra(object):
       num_decays (float): The number of decays this spectra is created to
         represent.
       spectra_config (:class:`SpectraConfig`): The configuration object
+      fit_config (:class:`FitConfig`, optional): The config used for fitting.
+      background_name (str, optional): Name of the background
+        e.g. TeLoadedTe130_2n2b
 
     Attributes:
       _data (:class:`numpy.ndarray`): The histogram of data
       _name (str): The name of this spectra
+      _background_name (str): The name of the background the spectra is.
       _config (:class:`SpectraConfig`): The configuration object
       _num_decays (float): The number of decays this spectra currently
         represents.
@@ -36,7 +40,8 @@ class Spectra(object):
       _rois (dict): Dictionary containing the details of any ROI, along
         any axis, which has been defined.
     """
-    def __init__(self, name, num_decays, spectra_config, fit_config=None):
+    def __init__(self, name, num_decays, spectra_config, fit_config=None,
+                 background_name=None):
         """ Initialise the spectra data container.
         """
         self._config = spectra_config
@@ -53,6 +58,7 @@ class Spectra(object):
         self._style = {"color": "blue"}  # default style for plotting
         self._rois = {}
         self._name = name
+        self._background_name = background_name
         self._num_decays = float(num_decays)
         self._location = None
 
@@ -192,6 +198,28 @@ class Spectra(object):
                              self._config.get_par(v)._low) *
                             self._config.get_par(v)._bins))
         self._data[tuple(bins)] += weight
+
+    def get_background_name(self):
+        """Returns the name of the background
+
+        Raises:
+          ValueError: The format of self._name is incorrect to construct a
+            background name from it.
+        """
+        # Create background name for older spectra
+        if not self._background_name:
+            if 'mc' in self._name:
+                self._background_name = self._name.split('mc')[0][:-1]
+            elif 'mix' in self._name:
+                self._background_name = self._name.split('mix')[0][:-1]
+            elif 'reco' in self._name:
+                self._background_name = self._name.split('reco')[0][:-1]
+            else:
+                raise ValueError("Couldn't construct background name of %s. "
+                                 "This spectra must have its background name "
+                                 "set manually."
+                                 % self._name)
+        return self._background_name
 
     def get_bipo(self):
         """ Get the BiPo flag value of the spectra (no BiPo cut = 0,
@@ -363,6 +391,14 @@ class Spectra(object):
         self._data = numpy.multiply(self._data, num_decays / self._num_decays)
         # Make sure self._num_decays stays as a float
         self._num_decays = float(num_decays)
+
+    def set_background_name(self, background_name):
+        """ Sets the specta's background name.
+
+        Args:
+          background_name (string): The name of the background the spectra is.
+        """
+        self._background_name = background_name
 
     def set_fit_config(self, config):
         """ Get the config of the spectra.

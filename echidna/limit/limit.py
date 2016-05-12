@@ -289,16 +289,16 @@ class Limit(object):
             log_text += "\n===== Limit Summary =====\nNo limit found:\n"
             log_text += "Signal Decays (at max stat): %.4g\n" % limit
             for parameter in self._fitter.get_fit_config().get_pars():
+                cur_par = self._fitter.get_fit_config().get_par(parameter)
                 log_text += "--- systematic: %s ---\n" % parameter
                 log_text += ("Best fit: %4g\n" %
-                             limit_summary.get_best_fit(i_limit, parameter))
-                log_text += ("Prior: %.4g\n" %
-                             limit_summary.get_prior(parameter))
-                log_text += ("Sigma: %.4g\n" %
-                             limit_summary.get_sigma(parameter))
+                             self._limit_results.get_best_fit(i_limit,
+                                                              parameter))
+                log_text += ("Prior: %.4g\n" % cur_par.get_prior())
+                log_text += ("Sigma: %.4g\n" % cur_par.get_sigma())
                 log_text += ("Penalty term: %.4g\n" %
-                             limit_summary.get_penalty_term(i_limit,
-                                                            parameter))
+                             self._limit_results.get_penalty_term(i_limit,
+                                                                  parameter))
             log_text += "----------------------------\n"
             log_text += "Test statistic: %.4f\n" % stats[i_limit]
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently

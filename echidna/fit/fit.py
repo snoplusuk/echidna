@@ -117,6 +117,8 @@ class Fit(object):
                                  "fixed background or at least one floating "
                                  "is required to run the fit.")
 
+        self._global_dict = {}
+
         # Now all floating backgrounds are loaded, check fit par values
         for par in self.get_fit_config().get_spectra_pars():
             par.check_values()  # raises an error if prior is not in values
@@ -484,23 +486,37 @@ class Fit(object):
         else:
             expected = None
         global_pars = self._fit_config.get_global_pars()
-        spec_pars = self._fit_config.get_spectra_pars()
+        cur_val = ""
+        for parameter in global_pars:
+            cur_val += parameter._name + str(parameter._current_value) + "_"
         for spectrum, floating_pars in zip(self._floating_backgrounds,
                                            self._floating_pars):
             # Apply global parameters first
-            if self._use_pre_made:  # Load pre-made spectrum from file
-                spectrum = self.load_pre_made(spectrum, global_pars)
-            else:
-                for parameter in global_pars:
-                    spectrum = parameter.apply_to(spectrum)
+            if global_pars:
+                background_name = spectrum.get_background_name()
+                if background_name not in self._global_dict:
+                    self._global_dict[background_name] = {}
+                if cur_val not in self._global_dict[background_name]:
+                    fit_config = spectrum._fit_config
+                    if self._use_pre_made:  # Load pre-made spectrum from file
+                        spectrum = self.load_pre_made(spectrum, global_pars)
+                    else:
+                        for parameter in global_pars:
+                            spectrum = parameter.apply_to(spectrum)
+                    spectrum._fit_config = fit_config
+                    self._global_dict[background_name][cur_val] = spectrum
+                else:
+                    spectrum = self._global_dict[background_name][cur_val]
 
             # Apply spectrum-specific parameters
-            for parameter in spec_pars:
-                spectrum = parameter.apply_to(spectrum)
+            if spectrum._fit_config:
+                for par_name in spectrum._fit_config.get_pars():
+                    parameter = spectrum._fit_config.get_par(par_name)
+                    spectrum = parameter.apply_to(spectrum)
 
             # Spectrum should now be fully convolved/scaled
             # Shrink to roi
-            self.shrink_spectra(spectrum)
+            self.shrink_to_data(spectrum)
             # rebin
             spectrum.rebin(self._data._data.shape)
             # and then add projection to expected spectrum
@@ -512,14 +528,25 @@ class Fit(object):
         # Add signal, if required
         if self._signal:
             if global_pars:
-                if self._use_pre_made:  # Load pre-made spectrum from file
-                    self._signal = self.load_pre_made(self._signal,
-                                                      global_pars)
+                num_decays = self._signal._num_decays
+                background_name = self._signal.get_background_name()
+                if background_name not in self._global_dict:
+                    self._global_dict[background_name] = {}
+                if cur_val not in self._global_dict[background_name]:
+                    fit_config = self._signal._fit_config
+                    if self._use_pre_made:  # Load pre-made spectrum from file
+                        self._signal = self.load_pre_made(self._signal,
+                                                          global_pars)
+                    else:
+                        for parameter in global_pars:
+                            self._signal = parameter.apply_to(self._signal)
+                    self._signal._fit_config = fit_config
+                    self._global_dict[background_name][cur_val] = self._signal
                 else:
-                    for parameter in global_pars:
-                        self._signal = parameter.apply_to(self._signal)
-                self.shrink_spectra(self._signal)
+                    self._signal = self._global_dict[background_name][cur_val]
+                self.shrink_to_data(self._signal)
                 self._signal.rebin(self._data._data.shape)
+                self._signal.scale(num_decays)
             expected += self._signal.nd_project(self._signal_pars)
 
         # If single bin - sum over expected and observed
@@ -585,9 +612,9 @@ class Fit(object):
             directory, filename = par.get_pre_convolved(directory, filename,
                                                         added_dim)
         # Load spectrum from hdf5
-        print "loading", directory+filename
+        num_decays = spectrum._num_decays
         spectrum = store.load(directory + filename)
-
+        spectrum.scale(num_decays)
         return spectrum
 
     def make_fixed_background(self, spectra_dict, shrink=True):
@@ -826,4 +853,24 @@ class Fit(object):
             par_low = dim + "_" + dim_type + "_low"
             par_high = dim + "_" + dim_type + "_high"
             shrink[par_low], shrink[par_high] = self._roi[dim]
+        spectra.shrink(**shrink)
+
+    def shrink_to_data(self, spectra):
+        """ Shrinks the spectra used in the fit to the data.
+
+        Args:
+          spectra (:class:`echidna.core.spectra.Spectra`): Spectra you want to
+            shrink to the roi.
+        """
+        shrink = {}
+        for par_name in self._data.get_config().get_pars():
+            par = self._data.get_config().get_par(par_name)
+            low = par._low
+            high = par._high
+            dim = self._data.get_config().get_dim(par_name)
+            dim_type = spectra.get_config().get_dim_type(dim)
+            par_low = dim + "_" + dim_type + "_low"
+            par_high = dim + "_" + dim_type + "_high"
+            shrink[par_low] = low
+            shrink[par_high] = high
         spectra.shrink(**shrink)

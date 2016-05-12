@@ -8,7 +8,7 @@ import abc
 import logging
 import warnings
 
-from echidna.core import scale, shift
+from echidna.core import scale, shift, smear
 
 
 class Parameter(object):
@@ -695,7 +695,13 @@ class ResolutionParameter(FitParameter):
         if self._current_value is None:
             raise ValueError("Current value of rate parameter %s "
                              "has not been set" % self._name)
-        NotImplementedError("ResolutionParameter.apply_to not yet implemented")
+        cur_value = self._current_value
+        if cur_value > 10.:
+            smearer = smear.EnergySmearLY()
+        else:
+            smearer = smear.EnergySmearRes()
+        smearer.set_resolution(self._current_value)
+        spectrum = smearer.weighted_smear(spectrum, self._dimension)
         return spectrum
 
     def get_pre_convolved(self, directory, filename, added_dim=False):

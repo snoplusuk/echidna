@@ -96,6 +96,7 @@ def dump(file_path, spectrum, append=False, overwrite=False):
             del file_[group_name]
         group = file_.create_group(group_name)
         group.attrs["name"] = spectrum.get_name()
+        group.attrs["background_name"] = spectrum.get_background_name()
         group.attrs["config_name"] = spectrum.get_config().get_name()
         group.attrs["config"] = json.dumps(spectrum.get_config().dump())
         if spectrum.get_fit_config():
@@ -330,6 +331,10 @@ def load(file_path):
         with h5py.File(file_path, "r") as file_:
             group = file_[group_name]
             spec_name = group.attrs["name"]
+            try:
+                background_name = group.attrs["background_name"]
+            except:
+                background_name = None
             num_decays = group.attrs["num_decays"]
             config_name = group.attrs["config_name"]
             config = SpectraConfig.load(
@@ -350,7 +355,8 @@ def load(file_path):
 
             # Create spectrum
             spec = Spectra(spec_name, num_decays,
-                           config, fit_config=fit_config)
+                           config, fit_config=fit_config,
+                           background_name=background_name)
             spec._raw_events = group.attrs["raw_events"]
             try:
                 spec._bipo = group.attrs["bipo"]
