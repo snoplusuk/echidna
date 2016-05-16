@@ -613,7 +613,12 @@ class Fit(object):
                                                         added_dim)
         # Load spectrum from hdf5
         num_decays = spectrum._num_decays
+        orig_num_decays = None
+        if hasattr(spectrum, '_orig_num_decays'):
+            orig_num_decays = spectrum._orig_num_decays
         spectrum = store.load(directory + filename)
+        if orig_num_decays:
+            spectrum._num_decays = orig_num_decays
         spectrum.scale(num_decays)
         return spectrum
 

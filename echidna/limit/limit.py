@@ -185,7 +185,7 @@ class Limit(object):
             if not numpy.isclose(scale, 0.):
                 if self._fitter.get_signal() is None:
                     self._fitter.set_signal(self._signal, shrink=False)
-                self._signal.scale(scale)
+                self._fitter._signal.scale(scale)
             else:  # want no signal contribution
                 self._fitter.remove_signal()
                 self._logger.warning(
