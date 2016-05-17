@@ -613,6 +613,7 @@ class Fit(object):
                                                         added_dim)
         # Load spectrum from hdf5
         num_decays = spectrum._num_decays
+        fit_config = spectrum._fit_config
         orig_num_decays = None
         if hasattr(spectrum, '_orig_num_decays'):
             orig_num_decays = spectrum._orig_num_decays
@@ -620,6 +621,7 @@ class Fit(object):
         if orig_num_decays:
             spectrum._num_decays = orig_num_decays
         spectrum.scale(num_decays)
+        spectrum._fit_config = fit_config
         return spectrum
 
     def make_fixed_background(self, spectra_dict, shrink=True):
