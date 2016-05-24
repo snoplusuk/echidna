@@ -12,6 +12,7 @@ Examples:
 """
 import numpy
 import itertools
+import copy
 
 
 class Smear(object):
@@ -236,7 +237,7 @@ class EnergySmearLY(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = spectrum._name + "_ly" + str(self._light_yield)
         smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
@@ -313,7 +314,7 @@ class EnergySmearLY(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = spectrum._name + "_ly" + str(self._light_yield)
         smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
@@ -483,7 +484,7 @@ class EnergySmearRes(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = (spectrum._name + "_" +
                               str(100. * self._resolution) + "%")
         smeared_spec._data = numpy.zeros(spectrum._data.shape)
@@ -561,7 +562,7 @@ class EnergySmearRes(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = (spectrum._name + "_" +
                               str(100. * self._resolution) + "%")
         smeared_spec._data = numpy.zeros(spectrum._data.shape)
@@ -701,7 +702,7 @@ class RadialSmear(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = (spectrum._name + "_" +
                               str(100. * self._resolution) + "mm")
         smeared_spec._data = numpy.zeros(spectrum._data.shape)
@@ -775,7 +776,7 @@ class RadialSmear(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = copy.deep_copy(spectrum)
+        smeared_spec = copy.copy(spectrum)
         smeared_spec._name = (spectrum._name + "_" +
                               str(100. * self._resolution) + "mm")
         smeared_spec._data = numpy.zeros(spectrum._data.shape)

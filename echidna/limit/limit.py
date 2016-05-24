@@ -4,7 +4,6 @@ from echidna.core.config import GlobalFitConfig
 from echidna.fit.fit_results import LimitResults
 import echidna.output as output
 from echidna.errors.custom_errors import LimitError, CompatibilityError
-from echidna.limit import summary
 from echidna.output import store
 
 import logging
@@ -26,14 +25,9 @@ class Limit(object):
       shrink (bool, optional): If set to True, :meth:`shrink` method is
         called on the signal spectrum before limit setting, shrinking to
         ROI.
-      per_bin (bool, optional): If set to True, the values of the test
-        statistic over spectral dimensions (per bin) will be stored.
 
     Attributes:
-      _min_stat (float): Minimum test statistic value when limit setting.
       _logger (:class:`logging.Logger`): The output logger.
-      _per_bin (bool): If set to True, the values of the test statistic
-        over spectral dimensions (per bin) will be stored.
       _fitter (:class:`echidna.limit.fit.Fit`): The fitter used to set a
         a limit with.
       _signal (:class:`echidna.core.spectra.Spectra`): signal spectrum you wish
@@ -41,16 +35,7 @@ class Limit(object):
       _limit_results (:class:`echidna.fit.fit_results.LimitResults`): Limit
         results instance to report limit fit results
     """
-    def __init__(self, signal, fitter, shrink=True, per_bin=False,
-                 store_all=False):
-        if ((per_bin and not fitter._per_bin) or
-                (not per_bin and fitter._per_bin)):
-            raise ValueError("Mismatch in per_bin flags. To use per_bin "
-                             "effectively, both Fitter and Limit instances "
-                             "should have per_bin enabled.\n fitter: %s\n "
-                             "limit: %s" (fitter._per_bin, per_bin))
-        self._min_stat = 0.
-        self._per_bin = per_bin
+    def __init__(self, signal, fitter, shrink=True, store_all=False):
         self._logger = logging.getLogger(name="Limit")
         self._fitter = fitter
         self._fitter.check_fit_config(signal)
@@ -100,7 +85,7 @@ class Limit(object):
         raise LimitError("Unable to find limit. Max stat: %s, Limit: %s"
                          % (array[-1], limit))
 
-    def get_limit(self, limit=2.71, stat_zero=None, store_limit=True,
+    def get_limit(self, limit=2.71, min_stat=None, store_limit=True,
                   store_fits=False, store_spectra=False, limit_fname=None):
         """ Get the limit using the signal spectrum.
 
@@ -127,8 +112,6 @@ class Limit(object):
             `:class:`echidna.fit.fit_results.LimitResults` to.
 
         Raises:
-          TypeError: If stat_zero is not a numpy array, when per_bin is
-            enabled.
           LimitError: If all values in the array are below limit.
 
         Returns:
@@ -136,37 +119,16 @@ class Limit(object):
         """
         par = self._signal.get_fit_config().get_par("rate")
 
-        # Create stats array
-        shape = self._signal.get_fit_config().get_shape()
-        stats = numpy.zeros(shape, dtype=numpy.float64)
-        self._logger.debug("Creating stats array with shape %s" % str(shape))
-
-        if stat_zero:  # If supplied specific stat_zero use this
-            self._logger.warning("Overriding stat_zero with supplied value")
-            logging.getLogger("extra").warning(" --> %s" % stat_zero)
-            if self._per_bin:
-                if not isinstance(stat_zero, numpy.ndarray):
-                    raise TypeError("For per_bin enabled, "
-                                    "stat_zero should be a numpy array")
-                self._min_stat = numpy.sum(stat_zero)
-            else:
-                self._min_stat = stat_zero
+        if min_stat:  # If supplied specific stat_zero use this
+            self._logger.warning("Overriding min_stat with supplied value")
+            logging.getLogger("extra").warning(" --> %s" % min_stat)
         else:  # check zero signal stat in case its not in self._stats
             self._fitter.remove_signal()
             fit_stats = self._fitter.fit()
             if type(fit_stats) is tuple:
                 fit_stats = fit_stats[0]
-            if self._per_bin:
-                if not isinstance(fit_stats, numpy.ndarray):
-                    raise TypeError("For per_bin enabled, "
-                                    "the fit output should be a numpy array")
-                self._min_stat = numpy.sum(fit_stats)
-            else:
-                if not isinstance(fit_stats, float):
-                    raise TypeError("per_bin disabled in limit and enabled "
-                                    "in fit or test_statistic.")
-                self._min_stat = fit_stats
-            self._logger.info("Calculated stat_zero: %.4g" % self._min_stat)
+            min_stat = copy.copy(fit_stats)
+            self._logger.info("Calculated stat_zero: %s" % min_stat)
             fit_results = self._fitter.get_minimiser()
             if fit_results:
                 self._logger.info("Fit summary:")
@@ -175,6 +137,14 @@ class Limit(object):
 
         # Create summary
         scales = par.get_values()
+
+        if type(min_stat) is numpy.ndarray:
+            shape = self._signal.get_fit_config().get_shape() + min_stat.shape
+        else:
+            shape = self._signal.get_fit_config().get_shape()
+        stats = numpy.zeros(shape, dtype=numpy.float64)
+        # Create stats array
+        self._logger.debug("Creating stats array with shape %s" % str(shape))
 
         # Loop through signal scalings
         self._logger.debug("Testing signal scalings:\n\n")
@@ -194,7 +164,7 @@ class Limit(object):
             fit_stats = self._fitter.fit()
             if type(fit_stats) is tuple:
                 fit_stats = fit_stats[0]
-            stats[i] = numpy.sum(fit_stats)
+            stats[i] = fit_stats
 
             fit_results = copy.deepcopy(self._fitter.get_minimiser())
             if fit_results:
@@ -208,13 +178,10 @@ class Limit(object):
                     self._limit_results.set_fit_result(i, fit_results)
 
         # Convert stats to delta - subtracting minimum
-        stats -= self._min_stat
+        stats -= min_stat
 
         # Also want to know index of minimum
         min_bin = numpy.argmin(stats)
-
-        if self._per_bin:
-            stats = stats.sum(-1)
 
         self._limit_results._stats = stats
         stats = self._limit_results.get_full_stats()
@@ -240,7 +207,7 @@ class Limit(object):
                              self._limit_results.get_penalty_term(i_limit,
                                                                   parameter))
             log_text += "----------------------------\n"
-            log_text += "Test statistic: %.4f\n" % stats[i_limit]
+            log_text += "Test statistic: %.4f\n" % numpy.sum(stats[i_limit])
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
             logging.getLogger("extra").info("\n%s\n" % log_text)
 
@@ -300,7 +267,7 @@ class Limit(object):
                              self._limit_results.get_penalty_term(i_limit,
                                                                   parameter))
             log_text += "----------------------------\n"
-            log_text += "Test statistic: %.4f\n" % stats[i_limit]
+            log_text += "Test statistic: %.4f\n" % numpy.sum(stats[i_limit])
             log_text += "N.D.F.: 1\n"  # Only fit one dof currently
             logging.getLogger("extra").info("\n%s" % log_text)
 

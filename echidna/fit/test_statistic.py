@@ -226,6 +226,112 @@ class BakerCousinsChi(TestStatistic):
         return ((current_value - prior)/float(sigma)) ** 2
 
 
+class BakerCousinsChiUp(TestStatistic):
+    """ Test statistic class for calculating the Baker-Cousins
+    chi-squared (poisson likelihood) test statistic. This test statistic only
+    counts upward fluctuations.
+
+    Args:
+      name (string): Name of test statistic.
+      per_bin (bool): If True (default) the statistic in each bin is
+        returned as a :class:`numpy.array`. If False one value for the
+        statistic is returned for the entire array.
+
+    Attributes:
+      _name (string): Name of test statistic.
+      _per_bin (bool): If True the statistic in each bin is returned as
+        a :class:`numpy.array`. If False one value for the statistic is
+        returned for the entire array.
+    """
+    def __init__(self, per_bin=False):
+        super(BakerCousinsChiUp, self).__init__("baker_cousins_up", per_bin)
+
+    @classmethod
+    def _compute(self, observed, expected):
+        """ Calculates the chi-squared.
+
+        Args:
+          observed (:class:`numpy.array` or float): Number of observed
+            events
+          expected (:class:`numpy.array` or float): Number of expected
+            events
+
+        Returns:
+          float: Calculated Baker-Cousins chi squared
+        """
+        # Convert to arrays, if observed and expected are floats
+        if isinstance(observed, float):
+            observed = numpy.array([observed])
+        if isinstance(expected, float):
+            expected = numpy.array([expected])
+        observed = observed.astype('float')
+        expected = expected.astype('float')
+        epsilon = 1e-34  # In the limit of zero
+        total = 0
+        for exp, obs in zip(expected, observed):
+            if obs > exp:
+                continue
+            if exp < epsilon:
+                exp = epsilon
+            if obs < epsilon:
+                bin_value = exp
+            else:
+                bin_value = exp - obs + obs * numpy.log(obs / exp)
+            total += bin_value
+        return 2. * total
+
+    @classmethod
+    def _get_stats(self, observed, expected):
+        """ Gets chi squared for each bin.
+
+        Args:
+          observed (:class:`numpy.array` or float): Number of observed
+            events
+          expected (:class:`numpy.array` or float): Number of expected
+            events
+
+        Raises:
+          ValueError: If arrays are different lengths.
+
+        Returns:
+          :class:`numpy.array`: Calculated chi squared for each bin
+        """
+        not_per_bin = self._compute(observed, expected)
+        observed = observed.astype('float')
+        expected = expected.astype('float')
+        epsilon = 1e-34  # In the limit of zero
+        stats = []
+        for exp, obs in zip(expected, observed):
+            if exp < epsilon:
+                exp = epsilon
+            if obs < epsilon:
+                bin_value = exp
+            else:
+                bin_value = exp - obs + obs * numpy.log(obs / exp)
+            stats.append(bin_value)
+        stats = 2. * numpy.array(stats)
+        if not numpy.allclose(numpy.sum(stats), not_per_bin):
+            raise ValueError("Sum of chi squared array and value returned by "
+                             "_compute method for same observed and expected "
+                             "do not match!")
+        return stats
+
+    @classmethod
+    def get_penalty_term(self, current_value, prior, sigma):
+        """ Calculates a penalty term value, for a given fit parameter,
+        for the BakerCousinsChi test statistic.
+
+        Args:
+          current_value (float): current value of a given fit parameter
+          prior (float): Prior value of a given fit parameter
+          sigma (float): Sigma value of a given fit parameter
+
+        Returns:
+          float: Value of the penalty term
+        """
+        return ((current_value - prior)/float(sigma)) ** 2
+
+
 class BakerCousinsLL(TestStatistic):
     """ Test statistic class for calculating the Baker-Cousins log likelihood
       ratio test statistic.

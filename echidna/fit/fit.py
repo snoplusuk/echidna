@@ -1,10 +1,9 @@
-import numpy
-
 import echidna.output.store as store
 from echidna.fit.minimise import GridSearch
 from echidna.errors.custom_errors import CompatibilityError
 from echidna.core.config import GlobalFitConfig
 
+import numpy
 import logging
 import collections
 import os
@@ -221,7 +220,6 @@ class Fit(object):
                                          "pars as the number of floating "
                                          "backgrounds.")
             for background in self._floating_backgrounds:
-                self.check_spectra(background)
                 if background.get_fit_config():
                     self.check_fit_config(background)
 
@@ -436,6 +434,9 @@ class Fit(object):
             expected = self._fixed_background.nd_project(self._fixed_pars)
             if self._signal:
                 expected += self._signal.nd_project(self._signal_pars)
+            if self._single_bin:
+                expected = numpy.sum(expected)
+                observed = numpy.sum(observed)
             return self._test_statistic.compute_statistic(observed.ravel(),
                                                           expected.ravel())
         else:  # Pass to minimiser
@@ -535,19 +536,21 @@ class Fit(object):
                 if cur_val not in self._global_dict[background_name]:
                     fit_config = self._signal._fit_config
                     if self._use_pre_made:  # Load pre-made spectrum from file
-                        self._signal = self.load_pre_made(self._signal,
-                                                          global_pars)
+                        signal = self.load_pre_made(self._signal,
+                                                    global_pars)
                     else:
                         for parameter in global_pars:
-                            self._signal = parameter.apply_to(self._signal)
-                    self._signal._fit_config = fit_config
-                    self._global_dict[background_name][cur_val] = self._signal
+                            signal = parameter.apply_to(self._signal)
+                    signal._fit_config = fit_config
+                    self._global_dict[background_name][cur_val] = signal
                 else:
-                    self._signal = self._global_dict[background_name][cur_val]
-                self.shrink_to_data(self._signal)
-                self._signal.rebin(self._data._data.shape)
-                self._signal.scale(num_decays)
-            expected += self._signal.nd_project(self._signal_pars)
+                    signal = self._global_dict[background_name][cur_val]
+                self.shrink_to_data(signal)
+                signal.rebin(self._data._data.shape)
+                signal.scale(num_decays)
+            else:
+                signal = self._signal
+            expected += signal.nd_project(self._signal_pars)
 
         # If single bin - sum over expected and observed
         if self._single_bin:
@@ -598,7 +601,7 @@ class Fit(object):
         # Start with base spectrum name
         filename = os.path.basename(spectrum._location)
         if self._pre_made_base_dir:
-            directory = pre_made_base_dir
+            directory = self._pre_made_base_dir
         else:
             directory = os.path.dirname(spectrum._location) + '/'
 
@@ -813,8 +816,6 @@ class Fit(object):
         """
         if shrink:
             self.shrink_spectra(signal)
-        else:
-            self.check_spectra(signal)
         self._signal = signal
         self._logger.debug("Set _signal as Spectra with name %s" %
                            signal.get_name())

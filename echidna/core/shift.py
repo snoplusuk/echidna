@@ -49,7 +49,7 @@ class Shift(object):
             return self.shift_by_bin(spectrum, dimension)
         preshift_sum = spectrum.sum()
         interpolation = spectrum.interpolate1d(dimension, **kwargs)
-        shifted_spec = copy.deepcopy(spectrum)
+        shifted_spec = copy.copy(spectrum)
         shifted_spec._name = spectrum._name + "_shift" + str(shift)
         shifted_spec._data = numpy.zeros(spectrum._data.shape)
         n_dim = len(spectrum._data.shape)

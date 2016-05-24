@@ -306,7 +306,7 @@ class LimitResults(FitResults):
         Returns:
           float: The test statistic with penalty terms addded.
         """
-        stat = self._stats[i]
+        stat = numpy.sum(self._stats[i])
         for penalty in self._penalty_terms[i]:
             stat += penalty
         return stat
@@ -320,6 +320,7 @@ class LimitResults(FitResults):
         """
         stats = numpy.zeros(self._stats.shape)
         for i, stat in enumerate(self._stats):
+            stat = numpy.sum(stat)
             for penalty in self._penalty_terms[i]:
                 stat += penalty
             stats[i] = stat

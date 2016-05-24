@@ -43,7 +43,11 @@ def main(args):
         else:
             raise ValueError("%s does not exist" % args.dest)
     else:
-        directory = os.path.dirname(args.path)+"/"  # strip filename
+        directory = os.path.dirname(args.path)  # strip filename
+        if directory:
+            directory += '/'
+        else:
+            directory = './'
     # strip directory and extension
     filename = os.path.splitext(os.path.basename(args.path))[0]
 
