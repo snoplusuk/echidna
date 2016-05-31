@@ -246,8 +246,10 @@ def dump_fit_results(file_path, fit_results, append=False,
         group.create_dataset("stats", data=fit_results._stats,
                              compression="gzip")
 
-        group.attrs["minimum_value"] = fit_results._minimum_value
-        group.attrs["minimum_position"] = fit_results._minimum_position
+        if fit_results._minimum_value:
+            group.attrs["minimum_value"] = fit_results._minimum_value
+        if fit_results._minimum_position:
+            group.attrs["minimum_position"] = fit_results._minimum_position
         group.attrs["resets"] = fit_results._resets
 
     _logger.info("Saved fit results %s to %s" %
