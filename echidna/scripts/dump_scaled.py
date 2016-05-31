@@ -26,7 +26,9 @@ def main(args):
     """ Scales and dumps spectra.
 
     Args:
-      args (Namespace): Container for arguments. See: python dump_scaled.py -h
+      args (Namespace): Container for arguments. See::
+
+        $ python dump_scaled.py -h
 
     Raises:
       IOError: If no file is given to scale
@@ -79,4 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dest", default=None, type=str,
                         help="specify path to dump hdf5 file")
     args = parser.parse_args()
-    main(args)
+    try:
+        main(args)
+    except:
+        _logger.exception("echidna terminated because of the following error.")

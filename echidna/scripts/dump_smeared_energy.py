@@ -32,8 +32,9 @@ def main(args):
     """Smears energy and dumps spectra.
 
     Args:
-      args (Namespace): Container for arguments. See
-        >>> python dump_smeared_energy.py -h
+      args (Namespace): Container for arguments. See::
+
+        $ python dump_smeared_energy.py -h
 
     Raises:
       ValueError: If destination directory does not exist.
