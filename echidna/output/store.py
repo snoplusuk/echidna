@@ -13,6 +13,7 @@ import h5py
 import sys
 import collections
 import json
+import copy
 
 
 _logger = logging.getLogger("store")
@@ -246,7 +247,6 @@ def dump_fit_results(file_path, fit_results, append=False):
                              compression="gzip")
         group.create_dataset("stats", data=fit_results._stats,
                              compression="gzip")
-
         if fit_results._minimum_value:
             group.attrs["minimum_value"] = fit_results._minimum_value
         if fit_results._minimum_position:
@@ -610,7 +610,9 @@ def load_limit_results(file_path):
                     fit_results._resets = sub_group.attrs["resets"]
                     fit_results._penalty_terms = sub_group[
                         "penalty_terms"].value
-                    limit_results._fit_results[i] = fit_results
-
+                    for par in fit_results._fit_config.get_pars():
+                        p = fit_results._fit_config.get_par(par)
+                        p.set_best_fit(limit_results.get_best_fit(i, par))
+                    limit_results._fit_results[i] = copy.deepcopy(fit_results)
     _logger.info("Loaded LimitResults %s" % limit_results.get_name())
     return limit_results

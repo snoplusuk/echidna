@@ -2,7 +2,8 @@ from echidna.util import root_help, strings
 from echidna.output import root_style
 
 import ROOT
-from ROOT import TH1D, TH2D, TCanvas
+import numpy
+import copy
 
 
 def plot_projection(spectra, dimension, graphical=True, fig_num=1,
@@ -22,15 +23,15 @@ def plot_projection(spectra, dimension, graphical=True, fig_num=1,
     """
     if not h_name:
         h_name = dimension + strings.id_generator()
-    plot = TH1D(h_name, "; %s; Count per bin" % dimension,
-                int(spectra.get_config().get_par(dimension)._bins),
-                spectra.get_config().get_par(dimension)._low,
-                spectra.get_config().get_par(dimension)._high)
+    plot = ROOT.TH1D(h_name, "; %s; Count per bin" % dimension,
+                     int(spectra.get_config().get_par(dimension)._bins),
+                     spectra.get_config().get_par(dimension)._low,
+                     spectra.get_config().get_par(dimension)._high)
     data = spectra.project(dimension)
     for index, datum in enumerate(data):
         plot.SetBinContent(index + 1, datum)
     if graphical:
-        can = TCanvas()
+        can = ROOT.TCanvas()
         can.cd()
         plot.Draw()
         raw_input("Return to quit")
@@ -55,20 +56,20 @@ def plot_surface(spectra, dimension1, dimension2, graphical=True, h_name=None):
     """
     if not h_name:
         h_name = dimension1 + ":" + dimension2 + strings.id_generator()
-    plot = TH2D(h_name,
-                "%s;%s;Count per bin" % (dimension1, dimension2),
-                spectra.get_config().get_par(dimension1)._bins,
-                spectra.get_config().get_par(dimension1)._low,
-                spectra.get_config().get_par(dimension1)._high,
-                spectra.get_config().get_par(dimension2)._bins,
-                spectra.get_config().get_par(dimension2)._low,
-                spectra.get_config().get_par(dimension2)._high)
+    plot = ROOT.TH2D(h_name,
+                     "%s;%s;Count per bin" % (dimension1, dimension2),
+                     spectra.get_config().get_par(dimension1)._bins,
+                     spectra.get_config().get_par(dimension1)._low,
+                     spectra.get_config().get_par(dimension1)._high,
+                     spectra.get_config().get_par(dimension2)._bins,
+                     spectra.get_config().get_par(dimension2)._low,
+                     spectra.get_config().get_par(dimension2)._high)
     data = spectra.surface(dimension1, dimension2)
     for index_x, data_x in enumerate(data):
         for index_y, datum in enumerate(data_x):
             plot.SetBinContent(index_x + 1, index_y + 1, datum)
     if graphical:
-        can = TCanvas("Figure", "Figure")
+        can = ROOT.TCanvas("Figure", "Figure")
         can.cd()
         plot.Draw("COLZ")
         raw_input("Return to quit")
@@ -244,22 +245,23 @@ def plot_stats_vs_scale(limit_results, graphical=True):
     return g
 
 
-def plot_raw_stats_vs_par_scale(fit_results, par, graphical=True):
+def plot_raw_stats_vs_par_scale(fit_results, par, graphical=True, **kwargs):
     """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
       object. The penalty term has not been added to the test_statistic.
 
     Args:
-      limit_results (:class:`echidna.fit.fit_results.LimitResults`): The
-        limit_results object which contains the data.
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
       par (string): The name of the parameter you want to plot.
       graphical (bool, optionl): Plots hist to screen if True.
         Default is False.
+      kwargs (dict): Fit par names as keys and fit par values as values.
 
     Returns:
       :class:`ROOT.TGraph`: The plot.
     """
     scales = fit_results.get_scales(par)
-    g = ROOT.TGraph(len(scales), scales, fit_results.get_raw_stats())
+    g = ROOT.TGraph(len(scales), scales, fit_results.get_raw_stats(**kwargs))
     g.SetMarkerStyle(3)
     g.GetXaxis().SetTitle(par)
     g.GetYaxis().SetTitle("Test Statistic")
@@ -267,6 +269,88 @@ def plot_raw_stats_vs_par_scale(fit_results, par, graphical=True):
         g.Draw("AP")
         raw_input("RET to quit")
     return g
+
+
+def plot_raw_stats_vs_pars(fit_results, par1, par2, graphical=True, **kwargs):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object. The penalty term has not been added to the test_statistic.
+
+    Args:
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
+      par1 (string): The name of the parameter you want to plot (x axis).
+      par2 (string): The name of the parameter you want to plot (y axis).
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+      kwargs (dict): Other fit par names as keys and fit par values as values.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    p1 = fit_results._fit_config.get_par(par1)
+    p2 = fit_results._fit_config.get_par(par2)
+    h = ROOT.TH2D("chi_sq"+strings.id_generator(), ";"+par1+";"+par2,
+                  p1._bins, p1._low, p1._high, p2._bins, p2._low, p2._high)
+    stats = fit_results.get_raw_stats(**kwargs)
+    idx_x = fit_results._fit_config.get_index(par1)
+    idx_y = fit_results._fit_config.get_index(par2)
+    for idx_1, data_1 in enumerate(stats):
+        for idx_2, datum in enumerate(data_1):
+            if idx_x < idx_y:
+                h.SetBinContent(idx_1 + 1, idx_2 + 1, datum)
+            else:
+                h.SetBinContent(idx_2 + 1, idx_1 + 1, datum)
+    if graphical:
+        can = ROOT.TCanvas()
+        can.SetLogz()
+        h.Draw("colz")
+        can.Print("test.png")
+        raw_input("RET to quit")
+    return h
+
+
+def plot_stats_vs_pars(fit_results, par1, par2, graphical=True, **kwargs):
+    """ Plots the test statistics vs signal scales as a :class:`ROOT.TGraph`
+      object. The penalty term has not been added to the test_statistic.
+
+    Args:
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
+      par1 (string): The name of the parameter you want to plot (x axis).
+      par2 (string): The name of the parameter you want to plot (y axis).
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+      kwargs (dict): Other fit par names as keys and fit par values as values.
+
+    Returns:
+      :class:`ROOT.TGraph`: The plot.
+    """
+    p1 = fit_results._fit_config.get_par(par1)
+    p2 = fit_results._fit_config.get_par(par2)
+    h = ROOT.TH2D("chi_sq"+strings.id_generator(), ";"+par1+";"+par2,
+                  p1._bins, p1._low, p1._high, p2._bins, p2._low, p2._high)
+    stats = fit_results.get_raw_stats(**kwargs)
+    idx_x = fit_results._fit_config.get_index(par1)
+    idx_y = fit_results._fit_config.get_index(par2)
+    for idx_1, data_1 in enumerate(stats):
+        for idx_2, datum in enumerate(data_1):
+            if idx_x < idx_y:
+                kwargs[par1] = p1.get_value_at(idx_1)
+                kwargs[par2] = p2.get_value_at(idx_2)
+                datum += fit_results.get_penalty_at(**kwargs)
+                h.SetBinContent(idx_1 + 1, idx_2 + 1, datum)
+            else:
+                kwargs[par1] = p1.get_value_at(idx_2)
+                kwargs[par2] = p2.get_value_at(idx_1)
+                datum += fit_results.get_penalty_at(**kwargs)
+                h.SetBinContent(idx_2 + 1, idx_1 + 1, datum)
+    if graphical:
+        can = ROOT.TCanvas()
+        can.SetLogz()
+        h.Draw("colz")
+        can.Print("test.png")
+        raw_input("RET to quit")
+    return h
 
 
 def plot_stats_vs_par_scale(fit_results, par, graphical=True):
@@ -348,6 +432,66 @@ def plot_sigma_best_fit_vs_scale(limit_results, par, graphical=True):
         g.Draw("AP")
         raw_input("RET to quit")
     return g
+
+
+def plot_per_bin(fit_results, min_chisq=True, graphical=True,
+                 x_dim="energy_mc", y_dim=None, **kwargs):
+    """ Plots the raw test statistics (no penalty) of the fitting space.
+
+    Args:
+      fit_results (:class:`echidna.fit.fit_results.FitResults`): The
+        fit_results object which contains the data.
+      min_chisq (bool, optional): Plots fitted minimum test statistic space.
+      graphical (bool, optionl): Plots hist to screen if True.
+        Default is False.
+      x_dim (string, optional): The name of the parameter you want to plot
+        (x axis). Default is energy_mc.
+      y_dim (string, optional): The name of the parameter you want to plot
+        (y axis). Default is None.
+      kwargs (dict): Other fit par names as keys and fit par values as values
+        you want to plot the test statistic space at.
+
+    Returns:
+      :class:`ROOT.TH1D` or :class:`ROOT.TH2D`: The test statistic space
+        histogram.
+    """
+    if min_chisq:
+        best_fits = {}
+        summary = fit_results.get_summary()
+        for par in fit_results._fit_config.get_pars():
+            best_fits[par] = fit_results._fit_config.get_par(par)._best_fit
+        stats = fit_results.get_raw_stats_at(**best_fits)
+    else:
+        stats = fit_results.get_raw_stats_at(**kwargs)
+    if y_dim:
+        x_par = fit_results._spectra_config.get_par(x_dim)
+        y_par = fit_results._spectra_config.get_par(y_dim)
+        idx_x = fit_results._spectra_config.get_index(x_dim)
+        idx_y = fit_results._spectra_config.get_index(x_dim)
+        h = ROOT.TH2D("chi_sq" + strings.id_generator(),
+                      ";" + x_dim + ";" + y_dim + ";#chi^{2}", x_par._bins,
+                      x_par._low, x_par._high, y_par._bins, y_par._low,
+                      y_par._high)
+        for idx_1, data_1 in enumerate(stats):
+            for idx_2, datum in enumerate(data_1):
+                if idx_x < idx_y:
+                    h.SetBinContent(idx_1 + 1, idx_2 + 1, datum)
+                else:
+                    h.SetBinContent(idx_2 + 1, idx_1 + 1, datum)
+    else:
+        x_par = fit_results._spectra_config.get_par(x_dim)
+        h = ROOT.TH1D("chi_sq" + strings.id_generator(),
+                      ";" + x_dim + "; #chi^{2}", x_par._bins, x_par._low,
+                      x_par._high)
+        for i, stat in enumerate(stats):
+            h.SetBinContent(i+1, stat)
+    if graphical:
+        if y_dim:
+            h.Draw("colz")
+        else:
+            h.Draw()
+        raw_input("RET to cont")
+    return h
 
 
 def plot_penalty_term_vs_par_scale(fit_results, par, graphical=True):

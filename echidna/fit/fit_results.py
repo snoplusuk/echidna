@@ -1,7 +1,6 @@
 """ Fit results module, containing ``FitResults`` class.
 """
 import numpy
-
 import copy
 import itertools
 from collections import OrderedDict
@@ -86,6 +85,21 @@ class FitResults(object):
         """
         return self._name
 
+    def get_penalty_at(self, **kwargs):
+        """ Get penalty term at given fit parameter values
+
+        Args:
+          kwargs (dict): Dict with par names as keys and par values as values.
+
+        Returns:
+          float: The value of the penalty term
+        """
+        bins = []
+        for par_name in self._fit_config.get_pars():
+            par = self._fit_config.get_par(par_name)
+            bins.append(par.get_bin(kwargs[par_name]))
+        return self._penalty_terms[tuple(bins)]
+
     def get_penalty_term(self, indices):
         """ Gets the array of penalty terms.
 
@@ -123,6 +137,28 @@ class FitResults(object):
             return self._penalty_terms
         par_idx = self._fit_config.get_index(par)
         return self._penalty_terms[par_idx]
+
+    def get_raw_stats_at(self, **kwargs):
+        """ Get stats with no penalty added at given fit parmeters.
+
+        Args:
+          kwargs (dict): Dict with par names as keys and par values as values.
+
+        Returns:
+          float or :class:`numpy.ndarray`: Raw stats.
+        """
+        bins = []
+        for par_name in self._fit_config.get_pars():
+            par = self._fit_config.get_par(par_name)
+            bins.append(par.get_bin(kwargs[par_name]))
+        stats = copy.copy(self._stats[tuple(bins)])
+        while stats.shape[0] == 1:
+            stats = stats.sum(0)
+        if type(stats) is float:
+            return stats
+        while stats.shape[-1] == 1:
+            stats = stats.sum(-1)
+        return stats
 
     def get_scales(self, par):
         """Gets the parameter scales used in the fit

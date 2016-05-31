@@ -2,6 +2,7 @@ import numpy
 
 from echidna.core.config import GlobalFitConfig
 from echidna.fit.fit_results import LimitResults
+from echidna.fit.minimise import GridSearch
 import echidna.output as output
 from echidna.errors.custom_errors import LimitError, CompatibilityError
 from echidna.output import store
@@ -129,7 +130,7 @@ class Limit(object):
                 fit_stats = fit_stats[0]
             min_stat = copy.copy(fit_stats)
             self._logger.info("Calculated stat_zero: %s" % min_stat)
-            fit_results = self._fitter.get_minimiser()
+            fit_results = copy.deepcopy(self._fitter.get_minimiser())
             if fit_results:
                 self._logger.info("Fit summary:")
                 logging.getLogger("extra").info(

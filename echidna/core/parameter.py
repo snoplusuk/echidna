@@ -51,6 +51,17 @@ class Parameter(object):
         """
         return self._bins
 
+    def get_bin(self, value):
+        """ Get bin for value of parameter.
+
+        Args:
+          value (float): Value of parameter.
+
+        Returns:
+          int: Bin index.
+        """
+        return int((value - self._low) / (self._high - self._low) * self._bins)
+
     def get_high(self):
         """ Get the high value of the parameter
 
@@ -290,6 +301,21 @@ class FitParameter(Parameter):
             raise ValueError("Best fit value for parameter" +
                              self._name + " has not been set")
         return self._best_fit
+
+    def get_bin(self, value):
+        """ Get bin for value of parameter.
+
+        Args:
+          value (float): Value of parameter.
+
+        Returns:
+          int: Bin index.
+        """
+        try:
+            return numpy.where(numpy.isclose(self.get_values(), value))[0][0]
+        except:
+            return int((value - self._low) / (self._high - self._low) *
+                       self._bins)
 
     def get_bin_boundaries(self):
         """ ***PENDING DEPRECATION***

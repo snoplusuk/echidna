@@ -116,16 +116,34 @@ class GridSearch(FitResults, Minimiser):
         """
         return self._stats[indices]
 
-    def get_raw_stats(self):
+    def get_raw_stats(self, **kwargs):
         """ Gets the raw test statistics array.
 
         .. warning:: This has no penalty term contributions added.
+
+        Args:
+          kwargs (dict): Fit par names as keys and fit par values as values.
 
         Returns:
         :class:`numpy.array`: The raw test statistics values at each
           combination of fit parameter values.
         """
-        return self._stats
+        stats = copy.copy(self._stats)
+        if self._stats.shape == self._fit_config.get_shape() +\
+                self._spectra_config.get_shape():
+            for i in range(len(self._spectra_config.get_shape())):
+                stats = stats.sum(-1)
+        if kwargs:
+            cmd = "stats["
+            for par in self._fit_config.get_pars():
+                if par in kwargs:
+                    idx = par.get_bin(kwargs[par])
+                    cmd += str(idx)+","
+                else:
+                    cmd += ":,"
+            cmd = cmd[:-1] + "]"
+            stats = eval(cmd)
+        return stats
 
     def get_resets(self):
         """
