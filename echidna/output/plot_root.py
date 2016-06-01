@@ -4,7 +4,7 @@ from echidna.output import root_style
 import ROOT
 import numpy
 import copy
-
+import rootStyle
 
 def plot_projection(spectra, dimension, graphical=True, fig_num=1,
                     h_name=None):
@@ -302,6 +302,8 @@ def plot_raw_stats_vs_pars(fit_results, par1, par2, graphical=True, **kwargs):
                 h.SetBinContent(idx_2 + 1, idx_1 + 1, datum)
     if graphical:
         can = ROOT.TCanvas()
+        root_style.root_style()
+        root_style.set_ticks(can)
         can.SetLogz()
         h.Draw("colz")
         can.Print("test.png")
@@ -347,6 +349,8 @@ def plot_stats_vs_pars(fit_results, par1, par2, graphical=True, **kwargs):
     if graphical:
         can = ROOT.TCanvas()
         can.SetLogz()
+        root_style.root_style()
+        root_style.set_ticks(can)
         h.Draw("colz")
         can.Print("test.png")
         raw_input("RET to quit")
