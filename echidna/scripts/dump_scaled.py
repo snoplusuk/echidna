@@ -19,6 +19,8 @@ import echidna.output.store as store
 import echidna.core.scale as scale
 import echidna.utilities as utilities
 
+import os
+
 _logger = utilities.start_logging()
 
 
@@ -47,7 +49,7 @@ def main(args):
         raise ValueError("No parameter to scale given")
     if args.dest:
         if os.path.isdir(args.dest):
-            direcory = args.dest
+            directory = args.dest
             if directory[-1] != "/":
                 directory += "/"
         else:
