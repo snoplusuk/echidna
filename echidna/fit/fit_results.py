@@ -94,7 +94,6 @@ class FitResults(object):
             :class:`echidna.limit.fit.Fit`.
         """
         self._fit_config = fit_config
-        self.reset_grid()
 
     def set_spectra_config(self, spectra_config):
         """ Set the spectra config.
@@ -109,7 +108,6 @@ class FitResults(object):
             in the data spectrum.
         """
         self._spectra_config = spectra_config
-        self.reset_grid()
 
 
 class LimitResults(FitResults):

@@ -4,7 +4,6 @@ from echidna.output import root_style
 import ROOT
 import numpy
 import copy
-import rootStyle
 
 def plot_projection(spectra, dimension, graphical=True, fig_num=1,
                     h_name=None):
