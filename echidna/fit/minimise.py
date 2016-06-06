@@ -79,6 +79,8 @@ class GridSearch(FitResults, Minimiser):
     Attributes:
       _stats (:class:`numpy.ndarray`): Array of values of the test
         statistic calculated during the fit.
+      _penalty_terms (:class:`numpy.ndarray`): Array of values of the
+        penalty terms calculated during the fit.                               
       _resets (int): Number of times the grid has been reset.
       _use_numpy (bool, optional): Flag to indicate whether to use the
         built-in numpy functions for minimisation and locating the
@@ -95,7 +97,61 @@ class GridSearch(FitResults, Minimiser):
             stats_shape = fit_config.get_shape()
         self._resets = 0.
         self._stats = numpy.zeros(stats_shape)
+        self._penalty_terms = numpy.zeros(fit_config.get_shape())
         self._use_numpy = use_numpy
+
+    def get_penalty_at(self, **kwargs):
+        """ Get penalty term at given fit parameter values
+
+        Args:
+          kwargs (dict): Dict with par names as keys and par values as values.
+
+        Returns:
+          float: The value of the penalty term
+        """
+        bins = []
+        for par_name in self._fit_config.get_pars():
+            par = self._fit_config.get_par(par_name)
+            bins.append(par.get_bin(kwargs[par_name]))
+        return self._penalty_terms[tuple(bins)]
+
+    def get_penalty_term(self, indices):
+        """ Gets the array of penalty terms.
+
+        .. note:: Unlike the :class:`echidna.fit.summary.Summary` class
+          individual penalty contributions from each fit parameter are
+          not stored here, only the total penalty term value.
+
+        Args:
+          indices (tuple): The index along each fit parameter dimension
+            specifying the coordinates from which to retrieve the total
+            penalty term value.
+
+        Returns:
+          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.
+            Values of the penalty term calculated during the fit.
+
+        Raises:
+          IndexError: If the indices supplied are out of bounds for
+            the fit dimensions
+        """
+        if indices > self._fit_config.get_shape():
+            raise IndexError(
+                "indices %s out of bounds for fit with dimensions %s" %
+                (str(indices), str(self._fit_config.get_shape())))
+        return self._penalty_terms[indices]
+
+    def get_penalty_terms(self, par):
+        """ Gets the array of penalty terms.
+
+        Returns:
+          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.
+            Values of the penalty term calculated during the fit.
+        """
+        if len(self._fit_config.get_pars()) == 1.:
+            return self._penalty_terms
+        par_idx = self._fit_config.get_index(par)
+        return self._penalty_terms[par_idx]
 
     def get_raw_stat(self, indices):
         """ Gets the raw test statistic(s) from array at the given indices.
@@ -145,12 +201,45 @@ class GridSearch(FitResults, Minimiser):
             stats = eval(cmd)
         return stats
 
+    def get_raw_stats_at(self, **kwargs):
+        """ Get stats with no penalty added at given fit parmeters.
+
+        Args:
+          kwargs (dict): Dict with par names as keys and par values as values.
+
+        Returns:
+          float or :class:`numpy.ndarray`: Raw stats.
+        """
+        bins = []
+        for par_name in self._fit_config.get_pars():
+            par = self._fit_config.get_par(par_name)
+            bins.append(par.get_bin(kwargs[par_name]))
+        stats = copy.copy(self._stats[tuple(bins)])
+        while stats.shape[0] == 1:
+            stats = stats.sum(0)
+        if type(stats) is float:
+            return stats
+        while stats.shape[-1] == 1:
+            stats = stats.sum(-1)
+        return stats
+
     def get_resets(self):
         """
         Returns:
           int: Number of times the grid has been reset (:attr:`_resets`).
         """
         return self._resets
+
+    def get_scales(self, par):
+        """Gets the parameter scales used in the fit
+
+        Args:
+          par (string): Name of parameter
+
+        Returns:
+          numpy.ndarray: Parameter scales.
+        """
+        return self._fit_config.get_par(par).get_values()
 
     def get_stat(self, indices):
         """ Combines the test-statistic array (collapsed to the parameter
@@ -224,10 +313,6 @@ class GridSearch(FitResults, Minimiser):
             method is the recommened callable to use here.
           test_statistic (:class:`echidna.limit.test_statistic`): The
             test_statistic object used to calcualte the test statistics.
-
-        Attributes:
-          _minimum_value (float): Minimum value of test statistic found.
-          _minimum_position (tuple): Position of minimum.
 
         Returns:
           float: Minimum value found during minimisation.
@@ -391,6 +476,47 @@ class GridSearch(FitResults, Minimiser):
                        self._spectra_config.get_shape())
         self._stats = numpy.zeros(stats_shape)
         self._penalty_terms = numpy.zeros(self._fit_config.get_shape())
+
+    def set_penalty_terms(self, penalty_terms):
+        """ Sets the array containing penalty term values.
+
+        Args:
+          penalty_terms (:class:`numpy.ndarray`): The array of penalty
+            term values
+
+        Raises:
+          TypeError: If penalty_terms is not an :class:`numpy.ndarray`
+          ValueError: If the penalty_terms array does not have the required
+            shape.
+        """
+        if not isinstance(penalty_terms, numpy.ndarray):
+            raise TypeError("penalty_terms must be a numpy array")
+        if penalty_terms.shape != self._fit_config.get_shape():
+            raise ValueError("penalty_terms array has incorrect shape (%s), "
+                             "expected shape is %s" %
+                             (str(penalty_terms.shape),
+                              str(self._fit_config.get_shape())))
+        self._penalty_terms = penalty_terms
+
+    def set_penalty_term(self, penalty_term, indices):
+        """ Sets the total penalty term value at the point in the array
+        specified by indices.
+
+        Args:
+          penalty_term (float): Best fit value of a fit parameter.
+          indices (tuple): The index along each fit parameter dimension
+            specifying the coordinates from which to set the total
+            penalty term value.
+
+        Raises:
+          IndexError: If the indices supplied are out of bounds for
+            the fit dimensions
+        """
+        if indices > self._fit_config.get_shape():
+            raise IndexError(
+                "indices %s out of bounds for fit with dimensions %s" %
+                (str(indices), str(self._fit_config.get_shape())))
+        self._penalty_terms[indices] = penalty_term
 
     def set_stat(self, stat, indices):
         """ Sets the test statistic values in array at the point

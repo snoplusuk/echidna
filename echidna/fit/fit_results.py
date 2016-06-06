@@ -30,17 +30,6 @@ class FitResults(object):
         include here is the one from the data spectrum, to which you
         are fitting.
       _name (string): Name of this :class:`FitResults` class instance.
-      _stats (:class:`numpy.ndarray`): Array of values of the test
-        statistic calculated during the fit.
-      _penalty_terms (:class:`numpy.ndarray`): Array of values of the
-        penalty terms calculated during the fit.
-      _minimum_value (float): Minimum value of the array returned by
-        :meth:`get_fit_data`.
-      _minimum_position (tuple): Position of the test statistic minimum
-        value. The tuple contains the indices along each fit parameter
-        (dimension), acting as coordinates of the position of the
-        minimum.
-      _resets (int): Number of times the grid has been reset.
 
     Examples:
 
@@ -52,7 +41,6 @@ class FitResults(object):
         if name is None:
             name = fit_config.get_name() + "_results"
         self._name = name
-        self._penalty_terms = numpy.zeros(fit_config.get_shape())
 
     def get_fit_config(self):
         """
@@ -62,113 +50,12 @@ class FitResults(object):
         """
         return self._fit_config
 
-    def get_minimum_position(self):
-        """
-        Returns:
-          (float): Position of the minimum value in the array returned
-            by :meth:`get_fit_data`, stored in :attr:`_minimum_position`.
-        """
-        return self._minimum_position
-
-    def get_minimum_value(self):
-        """
-        Returns:
-          (float): Minimum value of the array returned by
-            :meth:`get_fit_data`, stored in :attr:`_minimum_value`.
-        """
-        return self._minimum_value
-
     def get_name(self):
         """
         Returns:
           string: Name of fit results object.
         """
         return self._name
-
-    def get_penalty_at(self, **kwargs):
-        """ Get penalty term at given fit parameter values
-
-        Args:
-          kwargs (dict): Dict with par names as keys and par values as values.
-
-        Returns:
-          float: The value of the penalty term
-        """
-        bins = []
-        for par_name in self._fit_config.get_pars():
-            par = self._fit_config.get_par(par_name)
-            bins.append(par.get_bin(kwargs[par_name]))
-        return self._penalty_terms[tuple(bins)]
-
-    def get_penalty_term(self, indices):
-        """ Gets the array of penalty terms.
-
-        .. note:: Unlike the :class:`echidna.fit.summary.Summary` class
-          individual penalty contributions from each fit parameter are
-          not stored here, only the total penalty term value.
-
-        Args:
-          indices (tuple): The index along each fit parameter dimension
-            specifying the coordinates from which to retrieve the total
-            penalty term value.
-
-        Returns:
-          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.
-            Values of the penalty term calculated during the fit.
-
-        Raises:
-          IndexError: If the indices supplied are out of bounds for
-            the fit dimensions
-        """
-        if indices > self._fit_config.get_shape():
-            raise IndexError(
-                "indices %s out of bounds for fit with dimensions %s" %
-                (str(indices), str(self._fit_config.get_shape())))
-        return self._penalty_terms[indices]
-
-    def get_penalty_terms(self, par):
-        """ Gets the array of penalty terms.
-
-        Returns:
-          (:class:`numpy.ndarray`): Array stored in :attr:`_penalty_terms`.
-            Values of the penalty term calculated during the fit.
-        """
-        if len(self._fit_config.get_pars()) == 1.:
-            return self._penalty_terms
-        par_idx = self._fit_config.get_index(par)
-        return self._penalty_terms[par_idx]
-
-    def get_raw_stats_at(self, **kwargs):
-        """ Get stats with no penalty added at given fit parmeters.
-
-        Args:
-          kwargs (dict): Dict with par names as keys and par values as values.
-
-        Returns:
-          float or :class:`numpy.ndarray`: Raw stats.
-        """
-        bins = []
-        for par_name in self._fit_config.get_pars():
-            par = self._fit_config.get_par(par_name)
-            bins.append(par.get_bin(kwargs[par_name]))
-        stats = copy.copy(self._stats[tuple(bins)])
-        while stats.shape[0] == 1:
-            stats = stats.sum(0)
-        if type(stats) is float:
-            return stats
-        while stats.shape[-1] == 1:
-            stats = stats.sum(-1)
-        return stats
-
-    def get_scales(self, par):
-        """Gets the parameter scales used in the fit
-
-        par (string): Name of parameter
-
-        Returns:
-          numpy.ndarray: Parameter scales.
-        """
-        return self._fit_config.get_par(par).get_values()
 
     def get_spectra_config(self):
         """
@@ -208,47 +95,6 @@ class FitResults(object):
         """
         self._fit_config = fit_config
         self.reset_grid()
-
-    def set_penalty_terms(self, penalty_terms):
-        """ Sets the array containing penalty term values.
-
-        Args:
-          penalty_terms (:class:`numpy.ndarray`): The array of penalty
-            term values
-
-        Raises:
-          TypeError: If penalty_terms is not an :class:`numpy.ndarray`
-          ValueError: If the penalty_terms array does not have the required
-            shape.
-        """
-        if not isinstance(penalty_terms, numpy.ndarray):
-            raise TypeError("penalty_terms must be a numpy array")
-        if penalty_terms.shape != self._fit_config.get_shape():
-            raise ValueError("penalty_terms array has incorrect shape (%s), "
-                             "expected shape is %s" %
-                             (str(penalty_terms.shape),
-                              str(self._fit_config.get_shape())))
-        self._penalty_terms = penalty_terms
-
-    def set_penalty_term(self, penalty_term, indices):
-        """ Sets the total penalty term value at the point in the array
-        specified by indices.
-
-        Args:
-          penalty_term (float): Best fit value of a fit parameter.
-          indices (tuple): The index along each fit parameter dimension
-            specifying the coordinates from which to set the total
-            penalty term value.
-
-        Raises:
-          IndexError: If the indices supplied are out of bounds for
-            the fit dimensions
-        """
-        if indices > self._fit_config.get_shape():
-            raise IndexError(
-                "indices %s out of bounds for fit with dimensions %s" %
-                (str(indices), str(self._fit_config.get_shape())))
-        self._penalty_terms[indices] = penalty_term
 
     def set_spectra_config(self, spectra_config):
         """ Set the spectra config.

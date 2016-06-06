@@ -148,76 +148,6 @@ def dump_ndarray(file_path, ndarray_object):
     _logger.info("Saved %s to %s" % (str(ndarray_object), file_path))
 
 
-def dump_summary(file_path, summary, append=False):
-    """ Dump the limit setting summary to the file_path.
-
-    Args:
-      file_path (string): Location to save to.
-      summary (:class:`echdina.limit.summary.Summary`): The summary to save
-    """
-    group_name = "summary"
-    if append:
-        file_opt = "a"
-    else:
-        file_opt = "w"
-    with h5py.File(file_path, file_opt) as file_:
-        group = file_.create_group(group_name)
-        if isinstance(summary, ReducedSummary):
-            reduced = True
-            group.attrs["reduced"] = reduced
-        else:
-            reduced = False
-            group.attrs["reduced"] = reduced
-
-        group.attrs["name"] = summary._name
-        group.attrs["num_scales"] = summary._num_scales
-        group.attrs["spectra_config"] = json.dumps(
-            summary._spectra_config.dump())
-        group.attrs["spectra_config_name"] = summary._spectra_config.get_name()
-        group.attrs["fit_config"] = json.dumps(
-            summary._fit_config.dump())
-        group.attrs["fit_config_name"] = summary._fit_config.get_name()
-
-        for parameter in summary.get_fit_config().get_pars():
-            par = summary.get_fit_config().get_par(parameter)
-            if par._values is not None:
-                group.create_dataset(parameter+"_values", data=par._values,
-                                     compression="gzip")
-
-        # Write best fits array if it exists and is not empty
-        if (summary._best_fits is not None and
-                numpy.any(summary._best_fits)):
-            group.create_dataset("best_fits", data=summary._best_fits,
-                                 compression="gzip")
-
-        # Write penalty terms array if it exists and is not empty
-        if (summary._penalty_terms is not None and
-                numpy.any(summary._penalty_terms)):
-            group.create_dataset("penalty_terms", data=summary._penalty_terms,
-                                 compression="gzip")
-
-        group.create_dataset("scales", data=summary._scales,
-                             compression="gzip")
-        group.create_dataset("stats", data=summary._stats, compression="gzip")
-
-        # Write priors array if it exists and is not empty
-        if (summary._priors is not None and
-                numpy.any(summary._priors)):
-            group.create_dataset("priors", data=summary._priors,
-                                 compression="gzip")
-
-        # Write sigmas array if it exists and is not empty
-        if (summary._sigmas is not None and
-                numpy.any(summary._sigmas)):
-            group.create_dataset("sigmas", data=summary._sigmas,
-                                 compression="gzip")
-
-        group.attrs["limit"] = summary._limit
-        group.attrs["limit_idx"] = summary._limit_idx
-
-    _logger.info("Saved summary %s to %s" % (summary.get_name(), file_path))
-
-
 def dump_fit_results(file_path, fit_results, append=False):
     """ Dump the fit results to the specified file_path.
 
@@ -443,67 +373,6 @@ def load_ndarray(file_path, ndarray_object):
     return ndarray_object
 
 
-def load_summary(file_path):
-    """ Load a limit setting summary from file_path.
-
-    Args:
-      file_path (string): Location to load from.
-
-    Returns:
-      :class:`Summary`: The Summary object.
-    """
-    group_name = "summary"
-    with h5py.File(file_path, "r") as file_:
-        group = file_[group_name]
-        if json.loads(group.attrs["reduced"], object_pairs_hook=OrderedDict):
-            reduced = True
-        else:
-            reduced = False
-
-        name = group.attrs["name"]
-        num_scales = group.attrs["num_scales"]
-        spectra_config_name = group.attrs["spectra_config_name"]
-        spectra_config = SpectraConfig.load(
-            json.loads(group.attrs["spectra_config"],
-                       object_pairs_hook=OrderedDict),
-            name=spectra_config_name)
-        fit_config_name = group.attrs["fit_config_name"]
-        fit_config = GlobalFitConfig.load(
-            json.loads(group.attrs["fit_config"],
-                       object_pairs_hook=OrderedDict)[0],
-            spectral_config=json.loads(group.attrs["fit_config"],
-                                       object_pairs_hook=OrderedDict)[1],
-            name=fit_config_name)
-        for parameter in fit_config.get_pars():
-            par = fit_config.get_par(parameter)
-            try:
-                par._values = group[parameter+"_values"].value
-            except KeyError as detail:  # unable to locate attribute, skip
-                _logger.warning("Handling run-time error: %s" % detail)
-                logging.getLogger("extra").warning(" --> skipping")
-
-        if reduced:
-            summary = ReducedSummary(name, num_scales,
-                                     spectra_config, fit_config)
-        else:
-            summary = Summary(name, num_scales, spectra_config, fit_config)
-
-        summary.set_best_fits(group["best_fits"].value)
-        summary.set_penalty_terms(group["penalty_terms"].value)
-        summary.set_priors(group["priors"].value)
-        summary.set_scales(group["scales"].value)
-        summary.set_sigmas(group["sigmas"].value)
-        summary.set_stats(group["stats"].value)
-
-        summary.set_limit(json.loads(group.attrs["limit"],
-                                     object_pairs_hook=OrderedDict))
-        summary.set_limit_idx(json.loads(group.attrs["limit_idx"],
-                                         object_pairs_hook=OrderedDict))
-
-    _logger.info("Loaded summary %s" % summary.get_name())
-    return summary
-
-
 def load_fit_results(file_path):
     """ Load a :class:`FitResults` object from file.
 
@@ -535,15 +404,6 @@ def load_fit_results(file_path):
 
         fit_results.set_penalty_terms(group["penalty_terms"].value)
         fit_results.set_stats(group["stats"].value)
-
-        try:
-            fit_results.set_minimum_position(group.attrs["minimum_position"])
-        except:
-            fit_results.set_minimum_position(None)
-        try:
-            fit_results.set_minimum_value(group.attrs["minimum_value"])
-        except:
-            fit_results.set_minimum_value(None)
         fit_results._resets = group.attrs["resets"]
 
     _logger.info("Loaded FitResults %s" % fit_results.get_name())
