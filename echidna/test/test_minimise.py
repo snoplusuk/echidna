@@ -51,7 +51,8 @@ class TestGridSearch(unittest.TestCase):
         for i_decay in range(int(num_decays)):
             x = numpy.random.normal(loc=2.5, scale=0.1)
             if numpy.random.uniform() > 0.1:
-                spectrum.fill(x=x)
+                if x > 2.0 and x < 3.0:
+                    spectrum.fill(x=x)
 
         # Save three copies of spectrum
         self._A = copy.copy(spectrum)
@@ -104,12 +105,14 @@ class TestGridSearch(unittest.TestCase):
         # Initialise default GridSearch
         self._default_grid_search = GridSearch(fit_config,
                                                spectra_config,
-                                               "default_grid_search")
+                                               "default_grid_search",
+                                               per_bin=True)
         # Initialise GridSearch using find_minimum
         self._grid_search = GridSearch(fit_config,
                                        spectra_config,
                                        "grid_search",
-                                       use_numpy=False)
+                                       use_numpy=False,
+                                       per_bin=True)
 
     def _funct(self, *args):
         """ Callable to pass to minimiser.
@@ -190,9 +193,9 @@ class TestGridSearch(unittest.TestCase):
         fit_C = 13.0
 
         # Test default grid search, with numpy
-        minimum = self._default_grid_search.minimise(self._funct,
-                                                     self._test_statistic)
-        self.assertIsInstance(minimum, float)
+        minimum, penalty = self._default_grid_search.minimise(
+            self._funct, self._test_statistic)
+        self.assertIsInstance(minimum, numpy.ndarray)
         results = self._default_grid_search.get_summary()
         self.assertAlmostEqual(results.get("A_rate").get("best_fit"), fit_A)
         self.assertAlmostEqual(results.get("B_rate").get("best_fit"), fit_B)

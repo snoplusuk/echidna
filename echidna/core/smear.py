@@ -11,10 +11,8 @@ Examples:
 .. note:: Similar methods are available in all other smearing classes.
 """
 import numpy
-
-import echidna.core.spectra as spectra
-
 import itertools
+import copy
 
 
 class Smear(object):
@@ -239,10 +237,9 @@ class EnergySmearLY(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
-                                       str(self._light_yield),
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = spectrum._name + "_ly" + str(self._light_yield)
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
@@ -317,10 +314,9 @@ class EnergySmearLY(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name+"_ly" +
-                                       str(self._light_yield),
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = spectrum._name + "_ly" + str(self._light_yield)
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = int(spectrum._data[bin])
             if entries:
@@ -488,10 +484,10 @@ class EnergySmearRes(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       str(100.*self._resolution)+"%",
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = (spectrum._name + "_" +
+                              str(100. * self._resolution) + "%")
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
@@ -566,10 +562,10 @@ class EnergySmearRes(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       str(100.*self._resolution)+"%",
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = (spectrum._name + "_" +
+                              str(100. * self._resolution) + "%")
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = int(spectrum._data[bin])
             if entries:
@@ -706,10 +702,10 @@ class RadialSmear(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       str(self._resolution) + "mm",
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = (spectrum._name + "_" +
+                              str(100. * self._resolution) + "mm")
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:
@@ -780,10 +776,10 @@ class RadialSmear(Smear):
             lows.append(spectrum.get_config().get_par(par_name)._low)
             widths.append(spectrum.get_config().get_par(par_name).get_width())
             par_names.append(par_name)
-        smeared_spec = spectra.Spectra(spectrum._name + "_" +
-                                       str(self._resolution) + "mm",
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        smeared_spec = copy.copy(spectrum)
+        smeared_spec._name = (spectrum._name + "_" +
+                              str(100. * self._resolution) + "mm")
+        smeared_spec._data = numpy.zeros(spectrum._data.shape)
         for bin in itertools.product(*bins):
             entries = spectrum._data[bin]
             if entries:

@@ -1,6 +1,5 @@
 import numpy
-
-import echidna.core.spectra as spectra
+import copy
 
 
 class Scale(object):
@@ -52,34 +51,41 @@ class Scale(object):
         prescale_sum = spectrum.sum()
         interpolation = spectrum.interpolate1d(dimension, **kwargs)
         sf = self.get_scale_factor()
-        scaled_spec = spectra.Spectra(spectrum._name+"_sf" +
-                                      str(sf),
-                                      spectrum._num_decays,
-                                      spectrum.get_config())
+        scaled_spec = copy.copy(spectrum)
+        scaled_spec._name = spectrum._name + "_sf" + str(sf)
+        scaled_spec._data = numpy.zeros(spectrum._data.shape)
         n_dim = len(spectrum._data.shape)
         axis = spectrum.get_config().get_index(dimension)
         par = spectrum.get_config().get_par(dimension)
         low = par._low
+        high = par._high
         n_bins = par._bins
         step = par.get_width()
         for bin in range(n_bins):
             x = par.get_bin_centre(bin)
-            if x/sf < low or x/sf > par._high:
+            ratio = x/sf
+            if ratio < low or ratio >= high:
                 continue  # Trying to scale values outside range (Unknown)
-            y = interpolation(x/sf)
+            elif ratio < low + 0.5*step:
+                ratio = low + 0.5*step
+            elif ratio > high - 0.5*step:
+                ratio = high - 0.5*step - 1e-6  # Floating point issue
+            y = interpolation(ratio)
             if y <= 0.:
                 continue
-            old_bin1 = par.get_bin(x/sf)
+            old_bin1 = par.get_bin(ratio)
             old_bin_centre1 = par.get_bin_centre(old_bin1)
-            if par.get_bin_centre(old_bin1) > x/sf:
+            if par.get_bin_centre(old_bin1) > ratio:
                 old_bin2 = old_bin1 - 1
                 if old_bin2 >= 0:
                     x_low1 = old_bin_centre1 - 0.5*step  # Equals x_high2
-                    x_high1 = x/sf + 0.5*step
+                    x_high1 = ratio + 0.5*step
+                    if x_high1 > high - 0.5*step:
+                        x_high1 = high - 0.5*step - 1e-6
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_low2 = x/sf - 0.5*step
+                    x_low2 = ratio - 0.5*step
                     area2 = numpy.fabs(0.5 * (x_low1 - x_low2) *
                                        (interpolation(x_low1) +
                                         interpolation(x_low2)))
@@ -90,12 +96,14 @@ class Scale(object):
             else:
                 old_bin2 = old_bin1 + 1
                 if old_bin2 < n_bins:
-                    x_low1 = x/sf - 0.5*step
-                    x_high1 = old_bin_centre1 + 0.5*step  # Equals x_low2
+                    x_low1 = ratio - 0.5*step
+                    if x_low1 < low + 0.5*step:
+                        x_low1 = low + 0.5*step
+                    x_high1 = old_bin_centre1 + 0.5*step  # = x_low2
                     area1 = numpy.fabs(0.5 * (x_high1 - x_low1) *
                                        (interpolation(x_high1) +
                                         interpolation(x_low1)))
-                    x_high2 = x/sf + 0.5*step
+                    x_high2 = ratio + 0.5*step
                     area2 = numpy.fabs(0.5 * (x_high2 - x_high1) *
                                        (interpolation(x_high2) +
                                         interpolation(x_high1)))
