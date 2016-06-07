@@ -1,5 +1,3 @@
-import echidna
-
 """ Settings module for echidna
 
 Use this module to store echidna-wide settings that can be set
@@ -28,6 +26,9 @@ Attributes:
 
 
 """
+import echidna
+
+
 user_profile = {
     # hdf5 save path
     "hdf5_save_path": echidna.__echidna_base__ + "/output/hdf5/",
