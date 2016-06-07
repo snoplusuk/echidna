@@ -30,13 +30,13 @@ Attributes:
 """
 user_profile = {
     # hdf5 save path
-    "hdf5_save_path": echidna.__echidna_base__ + "/output/hdf5/"
+    "hdf5_save_path": echidna.__echidna_base__ + "/output/hdf5/",
     # Select the mode - "normal" or "cautious"
     "mode": "normal",
     # Select the logging level - "debug", "info" or "warning"
     "log_level": "info",
     # Log save path
-    "log_save_path": echidna.__echidna_base__ + "/output/logs/"
+    "log_save_path": echidna.__echidna_base__ + "/output/logs/",
     # Save Path
     "save_path": echidna.__echidna_base__ + "/output/"
     }
