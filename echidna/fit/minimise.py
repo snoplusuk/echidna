@@ -80,7 +80,7 @@ class GridSearch(FitResults, Minimiser):
       _stats (:class:`numpy.ndarray`): Array of values of the test
         statistic calculated during the fit.
       _penalty_terms (:class:`numpy.ndarray`): Array of values of the
-        penalty terms calculated during the fit.                               
+        penalty terms calculated during the fit.
       _resets (int): Number of times the grid has been reset.
       _use_numpy (bool, optional): Flag to indicate whether to use the
         built-in numpy functions for minimisation and locating the

@@ -84,9 +84,6 @@ class FitResults(object):
     def set_fit_config(self, fit_config):
         """ Set the fit config.
 
-        .. warning:: This will automatically call :meth:`reset_grid`
-          to update the grid based on the new fit config
-
         Args:
           fit_config (:class:`echidna.core.spectra.GlobalFitConfig`): The
             configuration for fit. This should be a direct copy of the
@@ -97,9 +94,6 @@ class FitResults(object):
 
     def set_spectra_config(self, spectra_config):
         """ Set the spectra config.
-
-        .. warning:: This will automatically call :meth:`reset_grid`
-          to update the grid based on the new fit config
 
         Args:
           spectra_config (:class:`echidna.core.spectra.SpectraConfig`): The

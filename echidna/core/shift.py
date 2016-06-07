@@ -182,10 +182,9 @@ class Shift(object):
         if not numpy.isclose(shift % step, 0.):
             raise ValueError("Shift (%s) must be a multiple of bin width (%s)"
                              % (shift, step))
-        shifted_spec = spectra.Spectra(spectrum._name+"_shift" +
-                                       str(shift),
-                                       spectrum._num_decays,
-                                       spectrum.get_config())
+        shifted_spec = copy.copy(spectrum)
+        shifted_spec._name = spectrum._name + "_shift" + str(shift)
+        shifted_spec._data = numpy.zeros(spectrum._data.shape)
         n_dim = len(spectrum._data.shape)
         axis = spectrum.get_config().get_index(dimension)
         low = spectrum.get_config().get_par(dimension)._low

@@ -31,7 +31,6 @@ def root_style(font=132):
     hipStyle.SetCanvasColor(0)
     hipStyle.SetTitleColor(0)
     hipStyle.SetStatColor(0)
-    #hipStyle.SetFillColor(0)
 
     # use bold lines
     hipStyle.SetHistLineWidth(2)

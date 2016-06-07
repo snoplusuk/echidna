@@ -1,9 +1,9 @@
 import numpy
 from scipy.optimize import curve_fit
 
+import echidna.core.spectra as spectra
 import echidna.core.shift as shift
 from echidna.core.config import SpectraConfig
-import echidna.core.spectra as spectra
 
 import unittest
 

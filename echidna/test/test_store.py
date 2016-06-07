@@ -4,7 +4,7 @@ from echidna.core.config import (SpectraConfig, SpectraFitConfig,
                                  GlobalFitConfig)
 import echidna.core.spectra as spectra
 import echidna.output.store as store
-from echidna.fit.fit_results import FitResults
+from echidna.fit.minimise import GridSearch
 
 import unittest
 import random
@@ -33,7 +33,7 @@ class TestStore(unittest.TestCase):
 
         self._test_spectra = spectra.Spectra(
             "Test", self._test_decays, self._spectra_config,
-            fit_config=self._spectra_fit_config)
+            fit_config=self._spectra_fit_config, background_name="Test")
 
     def test_serialisation(self):
         """ Test saving and then reloading a test spectra.
@@ -149,12 +149,13 @@ class TestStore(unittest.TestCase):
                         msg="Original rate bins: %.4f, Loaded: %.4f"
                         % (rate_bins, rate_bins2))
 
-    def test_serialisation_fit_results(self):
-        """ Test saving and then reloading :class:`FitResults`
+    def test_serialisation_grid_search(self):
+        """ Test saving and then reloading :class:`GridSearch`
         """
-        fit_results = FitResults(self._global_fit_config,
+        fit_results = GridSearch(self._global_fit_config,
                                  self._spectra_config,
-                                 name="test_fit_results")
+                                 name="test_fit_results",
+                                 per_bin=True)
 
         # Fill with some random data
         shape = fit_results.get_fit_config().get_shape()
@@ -164,12 +165,6 @@ class TestStore(unittest.TestCase):
         shape += fit_results._spectra_config.get_shape()
         stats = numpy.random.uniform(high=100, size=shape)
         fit_results.set_stats(stats)
-
-        # Set minimum value and position
-        minimum_value = numpy.min(fit_results.get_stats())
-        fit_results.set_minimum_value(minimum_value)
-        minimum_position = numpy.argmin(fit_results.get_stats())
-        fit_results.set_minimum_position(minimum_position)
 
         # Save values
         spectra_config = fit_results.get_spectra_config()
@@ -221,10 +216,12 @@ class TestStore(unittest.TestCase):
         self.assertTrue(numpy.array_equal(fit_results.get_raw_stats(),
                                           loaded.get_raw_stats()),
                         msg="Original _stats does not match loaded _stats")
-        self.assertTrue(numpy.array_equal(fit_results.get_penalty_terms(),
-                                          loaded.get_penalty_terms()),
-                        msg="Original _penalty_terms "
-                        "does not match loaded _penlty_terms")
+        for par in fit_results._fit_config.get_pars():
+            self.assertTrue(numpy.array_equal(
+                    fit_results.get_penalty_terms(par),
+                    loaded.get_penalty_terms(par)),
+                            msg="Original _penalty_terms "
+                            "does not match loaded _penlty_terms")
 
         # Check order of parameters
         self.assertListEqual(spectra_pars, spectra_pars2)

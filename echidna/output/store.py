@@ -177,10 +177,6 @@ def dump_fit_results(file_path, fit_results, append=False):
                              compression="gzip")
         group.create_dataset("stats", data=fit_results._stats,
                              compression="gzip")
-        if fit_results._minimum_value:
-            group.attrs["minimum_value"] = fit_results._minimum_value
-        if fit_results._minimum_position:
-            group.attrs["minimum_position"] = fit_results._minimum_position
         group.attrs["resets"] = fit_results._resets
 
     _logger.info("Saved fit results %s to %s" %
@@ -379,6 +375,10 @@ def load_fit_results(file_path):
     Args:
       file_path (string): Location from which to load :class:`FitResults`.
 
+    Raises:
+      ValueError: If stats shape is not equal to fit_config shape and/or
+        spectra_config shape.
+
     Returns:
       :class:`FitResults`: The loaded fit results object.
     """
@@ -399,11 +399,21 @@ def load_fit_results(file_path):
             spectral_config=json.loads(group.attrs["fit_config"],
                                        object_pairs_hook=OrderedDict)[1],
             name=fit_config_name)
-        fit_results = GridSearch(fit_config=fit_config,
-                                 spectra_config=spectra_config, name=name)
 
+        stats = group["stats"].value
+        if stats.shape == fit_config.get_shape():
+            per_bin = False
+        elif stats.shape == fit_config.get_shape() + \
+                spectra_config.get_shape():
+            per_bin = True
+        else:
+            raise ValueError("Stats shape inconsitent with fit_config and/or "
+                             "spectra_config shape.")
+        fit_results = GridSearch(fit_config=fit_config,
+                                 spectra_config=spectra_config, name=name,
+                                 per_bin=per_bin)
+        fit_results.set_stats(stats)
         fit_results.set_penalty_terms(group["penalty_terms"].value)
-        fit_results.set_stats(group["stats"].value)
         fit_results._resets = group.attrs["resets"]
 
     _logger.info("Loaded FitResults %s" % fit_results.get_name())

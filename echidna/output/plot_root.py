@@ -5,6 +5,7 @@ import ROOT
 import numpy
 import copy
 
+
 def plot_projection(spectra, dimension, graphical=True, fig_num=1,
                     h_name=None):
     """ Plot the spectra as projected onto the dimension.
