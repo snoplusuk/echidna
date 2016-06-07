@@ -217,11 +217,11 @@ class TestStore(unittest.TestCase):
                                           loaded.get_raw_stats()),
                         msg="Original _stats does not match loaded _stats")
         for par in fit_results._fit_config.get_pars():
-            self.assertTrue(numpy.array_equal(
-                    fit_results.get_penalty_terms(par),
-                    loaded.get_penalty_terms(par)),
-                            msg="Original _penalty_terms "
-                            "does not match loaded _penlty_terms")
+            self.assertTrue(
+                numpy.array_equal(fit_results.get_penalty_terms(par),
+                                  loaded.get_penalty_terms(par)),
+                msg="Original _penalty_terms "
+                "does not match loaded _penlty_terms")
 
         # Check order of parameters
         self.assertListEqual(spectra_pars, spectra_pars2)
