@@ -285,20 +285,19 @@ class Spectra(object):
         """
         return self._style
 
-    def interpolate1d(self, dimension, kind='cubic'):
+    def interpolate1d(self, dimension, k=3):
         """ Interpolates a given dimension of a spectra.
 
         Args:
           dimension (string): Dimension you want to interpolate.
-          kind (string): Method of interpolation.
-            See :class:`scipy.interpolate.interp1d` for available methods.
+          k (int, optional): Degree of smoothing. Must be 1 <= k <= 5.
 
         Returns:
           :class:`scipy.interpolate.interp1d`: Interpolation function.
         """
         x = self._config.get_par(dimension).get_bin_centres()
         y = self.project(dimension)
-        return interpolate.interp1d(x, y, kind=kind, bounds_error=False)
+        return interpolate.InterpolatedUnivariateSpline(x, y, k=k)
 
     def nd_project(self, dimensions):
         """ Project the histogram along an arbitary number of axes.
