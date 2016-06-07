@@ -5,7 +5,6 @@ import numpy
 
 import echidna
 import echidna.settings as settings
-import echidna.output as output
 
 import time
 import warnings
@@ -148,7 +147,10 @@ def start_logging(capture_warnings=True, short_name=False, script_name=True):
         return logging.getLogger(name=current_module)
 
     # Set up logging to file
-    path = output.__default_save_path__ + "/"
+    path = settings.user_profile["log_save_path"]
+    if not os.path.isdir(path):
+        raise IOError("No directory named: %s.\nCheck user_profile in "
+                      "settings." % path)
     filename = "echidna"
     if script_name:
         filename += "." + current_module
