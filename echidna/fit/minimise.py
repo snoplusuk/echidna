@@ -181,8 +181,8 @@ class GridSearch(FitResults, Minimiser):
           kwargs (dict): Fit par names as keys and fit par values as values.
 
         Returns:
-        :class:`numpy.array`: The raw test statistics values at each
-          combination of fit parameter values.
+          :class:`numpy.array`: The raw test statistics values at each
+            combination of fit parameter values.
         """
         stats = copy.copy(self._stats)
         if self._stats.shape == self._fit_config.get_shape() +\
